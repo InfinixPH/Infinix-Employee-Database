@@ -508,7 +508,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 // ============================================================
 const CLIENT_ID   = '995259716921-k5m9g081spimdf6ph3gpermr4d7t0fr6.apps.googleusercontent.com';
 const SHEET_ID    = '1OJ8SMQFbC3iGxPvYRAqXwKYXIYyMuufEa_oQNcPWaMY';
-const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets';
+const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid';
 const DISCOVERY   = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
 
 // Sheet tab names
@@ -547,51 +547,77 @@ let employees = [], currentView = 'dashboard', filterStatus = null, editingId = 
 // ============================================================
 // GOOGLE AUTH
 // ============================================================
+
+// Step 1: Load GAPI client
 window.onload = () => {
   gapi.load('client', async () => {
     await gapi.client.init({ discoveryDocs: [DISCOVERY] });
     gapiInited = true;
-    maybeInit();
+    maybeRestoreSession();
   });
 };
 
+// Step 2: GIS loaded — set up token client
 window.onGoogleLibraryLoad = () => {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: async (resp) => {
-      if (resp.error) { toast('Sign-in failed: ' + resp.error, 'error'); return; }
+      if (resp.error) {
+        toast('Sign-in failed: ' + resp.error, 'error');
+        console.error('Auth error:', resp);
+        return;
+      }
       accessToken = resp.access_token;
       gapi.client.setToken({ access_token: accessToken });
-      gisInited = true;
-      maybeInit();
+      sessionStorage.setItem('gtoken', accessToken);
+      await loadUserAndStart();
     }
   });
   gisInited = true;
-  maybeInit();
 };
 
-function maybeInit() {
-  if (!gapiInited || !gisInited) return;
-  // Check if we have a stored token
+// Try to restore session from sessionStorage
+async function maybeRestoreSession() {
   const stored = sessionStorage.getItem('gtoken');
-  if (stored) {
-    accessToken = stored;
-    gapi.client.setToken({ access_token: accessToken });
-    // Verify token is still valid
-    fetchUserInfo(stored).then(user => {
-      if (user) { currentUser = user; showApp(); loadData(); }
-      else { sessionStorage.removeItem('gtoken'); }
-    });
+  if (!stored) return;
+  accessToken = stored;
+  gapi.client.setToken({ access_token: accessToken });
+  const user = await fetchUserInfo(accessToken);
+  if (user) {
+    currentUser = user;
+    showApp();
+    await loadData();
+  } else {
+    // Token expired, clear it
+    sessionStorage.removeItem('gtoken');
+    accessToken = null;
   }
 }
 
+async function loadUserAndStart() {
+  // Get user info using the token directly via fetch
+  const user = await fetchUserInfo(accessToken);
+  if (user) {
+    currentUser = user;
+  } else {
+    // Fallback: create minimal user object from token
+    currentUser = { name: 'User', email: 'user@google.com', given_name: 'U', family_name: 'S' };
+  }
+  showApp();
+  await ensureHeaders();
+  await loadData();
+}
+
 function signIn() {
-  if (tokenClient) tokenClient.requestAccessToken({ prompt: '' });
+  if (!tokenClient) { toast('Auth not ready, please wait...', 'error'); return; }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 function signOut() {
-  if (accessToken) google.accounts.oauth2.revoke(accessToken);
+  if (accessToken) {
+    try { google.accounts.oauth2.revoke(accessToken); } catch(e) {}
+  }
   sessionStorage.removeItem('gtoken');
   accessToken = null; currentUser = null;
   document.getElementById('login-screen').style.display = 'flex';
@@ -607,32 +633,6 @@ async function fetchUserInfo(token) {
     return await r.json();
   } catch(e) { return null; }
 }
-
-async function onSignedIn(token) {
-  sessionStorage.setItem('gtoken', token);
-  const user = await fetchUserInfo(token);
-  if (!user) { toast('Could not get user info', 'error'); return; }
-  currentUser = user;
-  showApp();
-  await ensureHeaders();
-  await loadData();
-}
-
-// Override tokenClient callback to call onSignedIn
-window.onGoogleLibraryLoad = () => {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: async (resp) => {
-      if (resp.error) { toast('Sign-in failed: ' + resp.error, 'error'); return; }
-      accessToken = resp.access_token;
-      gapi.client.setToken({ access_token: accessToken });
-      await onSignedIn(accessToken);
-    }
-  });
-  gisInited = true;
-  maybeInit();
-};
 
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
