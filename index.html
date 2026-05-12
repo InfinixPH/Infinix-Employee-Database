@@ -622,8 +622,9 @@ function doLogin() {
   const btn = document.getElementById('btn-google-signin');
   if (btn) { btn.classList.add('loading'); btn.textContent = 'Opening Google sign-in…'; }
   setLoginStatus('', '');
-  // prompt:'select_account' forces Google account picker popup
-  tokenClient.requestAccessToken({ prompt: 'select_account' });
+  // Use empty prompt for returning users (no popup), 'consent' only for first time
+  const storedUser = localStorage.getItem('hr_user');
+  tokenClient.requestAccessToken({ prompt: storedUser ? '' : 'consent' });
 }
 
 // ============================================================
@@ -678,6 +679,11 @@ function _onAuthReady(resp) {
       const stored = localStorage.getItem('hr_user');
       currentUser = stored ? JSON.parse(stored) : { name: 'User', email: '', given_name: 'U', family_name: 'S' };
     }
+    // Ensure Sheets API is loaded before any spreadsheet calls
+    if (!gapi.client.sheets) {
+      await gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
+    }
+
     showApp();
     if (!window._headersChecked) {
       window._headersChecked = true;
