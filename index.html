@@ -336,7 +336,9 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .log-meta { font-size: 12.5px; line-height: 1.5; }
 .log-time { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
 
-/* LOGIN */
+/* ============================================================
+   LOGIN — FIXED: Google OAuth button, no fake username/password
+   ============================================================ */
 .login-screen {
   position: fixed; inset: 0; background: var(--bg);
   display: flex; align-items: center; justify-content: center; z-index: 500;
@@ -356,28 +358,40 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .login-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
 .login-sub { font-size: 12.5px; color: var(--text2); margin-bottom: 28px; line-height: 1.5; }
-.login-form label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text3); margin-bottom: 5px; letter-spacing: .5px; text-transform: uppercase; }
-.login-form input {
-  width: 100%; padding: 10px 13px; border: 1.5px solid var(--border2);
-  border-radius: 9px; font-size: 13.5px; font-family: 'DM Sans', sans-serif;
-  color: var(--text); background: var(--surface2); outline: none;
-  transition: border .15s; margin-bottom: 14px;
+
+/* Google Sign-In button */
+.btn-google {
+  width: 100%; padding: 12px 20px; border-radius: 10px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2); color: var(--text);
+  font-size: 14px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: all .18s; display: flex; align-items: center;
+  justify-content: center; gap: 10px;
 }
-.login-form input:focus { border-color: var(--accent); }
-.login-form input.err { border-color: var(--danger) !important; }
-.btn-login {
-  width: 100%; padding: 11px 20px; border-radius: 10px; border: none;
-  background: var(--accent); color: #fff; font-size: 14px; font-weight: 700;
-  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .18s;
-  box-shadow: 0 0 20px var(--accent-glow);
+.btn-google:hover { border-color: var(--accent); background: var(--accent-dim); color: var(--accent2); }
+.btn-google:active { transform: scale(.98); }
+.btn-google.loading { opacity: .6; pointer-events: none; }
+.google-icon {
+  width: 20px; height: 20px; flex-shrink: 0;
 }
-.btn-login:hover { background: var(--accent2); }
-.login-error { font-size: 11.5px; color: var(--danger); margin-top: 10px; text-align: center; min-height: 18px; }
-.login-note { font-size: 10.5px; color: var(--text3); margin-top: 14px; text-align: center; }
-.role-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.role-admin { background: rgba(108,99,255,.2); color: var(--accent2); }
-.role-staff { background: rgba(0,229,160,.1); color: var(--success); }
-.role-readonly { background: rgba(255,179,64,.1); color: var(--warning); }
+
+.login-status {
+  font-size: 12px; color: var(--text3); margin-top: 14px;
+  min-height: 20px; transition: color .2s;
+}
+.login-status.error { color: var(--danger); }
+.login-status.info  { color: var(--accent2); }
+
+.login-note { font-size: 10.5px; color: var(--text3); margin-top: 18px; line-height: 1.6; }
+
+/* Waiting state shown while silent re-auth runs */
+.login-waiting {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 10px 0 4px;
+}
+.login-waiting .spinner { width: 26px; height: 26px; border-width: 2.5px; }
+.login-waiting p { font-size: 12px; color: var(--text2); }
 
 /* DETAIL PANEL */
 .detail-row { display: flex; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
@@ -394,26 +408,42 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- ============================================================
+     LOGIN SCREEN — FIXED
+     Uses Google OAuth. No username/password needed.
+     ============================================================ -->
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <div class="login-logo">📱</div>
     <div class="login-title">Infinix HR</div>
-    <div class="login-sub">Employee Database System</div>
-    <div class="login-form">
-      <label>Username</label>
-      <input type="text" id="login-user" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
-      <label>Password</label>
-      <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="btn-login" onclick="doLogin()">Sign In →</button>
-      <div class="login-error" id="login-error"></div>
+    <div class="login-sub">Employee Database System<br>Sign in with your Google account to continue.</div>
+
+    <!-- Shown while silent re-auth is running -->
+    <div class="login-waiting" id="login-waiting">
+      <div class="spinner"></div>
+      <p>Checking session…</p>
     </div>
-    <div class="login-note">Access restricted to authorized personnel only</div>
+
+    <!-- Google Sign-In button (hidden until we know silent auth failed) -->
+    <button class="btn-google" id="btn-google-signin" style="display:none" onclick="doLogin()">
+      <!-- Google "G" SVG icon -->
+      <svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/>
+        <path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/>
+        <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/>
+        <path fill="none" d="M0 0h48v48H0z"/>
+      </svg>
+      Sign in with Google
+    </button>
+
+    <div class="login-status" id="login-status"></div>
+    <div class="login-note">Access restricted to authorized Infinix HR personnel only.</div>
   </div>
 </div>
 
 <!-- APP (hidden until signed in) -->
-<div id="app" style="display:none;width:100%;height:100vh;display:none;flex-direction:row">
+<div id="app" style="display:none;width:100%;height:100vh;flex-direction:row">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -528,7 +558,6 @@ const SHEET_ID    = '1OJ8SMQFbC3iGxPvYRAqXwKYXIYyMuufEa_oQNcPWaMY';
 const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid';
 const DISCOVERY   = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
 
-// Sheet tab names
 const ACTIVE_SHEET   = 'Active';
 const INACTIVE_SHEET = 'Inactive';
 const LOG_SHEET      = 'Log';
@@ -562,13 +591,44 @@ let accessToken = null, currentUser = null;
 let employees = [], currentView = 'dashboard', filterStatus = null, editingId = null;
 
 // ============================================================
+// LOGIN UI HELPERS
+// ============================================================
+function setLoginStatus(msg, type) {
+  const el = document.getElementById('login-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'login-status' + (type ? ' ' + type : '');
+}
+
+function showGoogleButton() {
+  document.getElementById('login-waiting').style.display = 'none';
+  document.getElementById('btn-google-signin').style.display = 'flex';
+}
+
+function hideGoogleButton() {
+  document.getElementById('login-waiting').style.display = 'flex';
+  document.getElementById('btn-google-signin').style.display = 'none';
+}
+
+// ============================================================
+// FIX: doLogin() — called by the Google Sign-In button
+// Triggers the Google OAuth popup so the user can pick their account
+// ============================================================
+function doLogin() {
+  if (!tokenClient) {
+    setLoginStatus('Auth not ready yet, please wait a moment…', 'error');
+    return;
+  }
+  const btn = document.getElementById('btn-google-signin');
+  if (btn) { btn.classList.add('loading'); btn.textContent = 'Opening Google sign-in…'; }
+  setLoginStatus('', '');
+  // prompt:'select_account' forces Google account picker popup
+  tokenClient.requestAccessToken({ prompt: 'select_account' });
+}
+
+// ============================================================
 // GOOGLE AUTH
 // ============================================================
-// Strategy: store user info in localStorage (permanent).
-// On refresh, silently request a fresh token (no popup) using
-// prompt:'' — works as long as the user's Google session is active.
-// Only shows login screen if silent re-auth fails.
-
 window.onload = () => {
   gapi.load('client', async () => {
     await gapi.client.init({ discoveryDocs: [DISCOVERY] });
@@ -579,21 +639,32 @@ window.onload = () => {
 
 window.onGoogleLibraryLoad = () => {
   gisInited = true;
-  // Set up token client once
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
     prompt: '',
     callback: async (resp) => {
+      // Reset button state
+      const btn = document.getElementById('btn-google-signin');
+      if (btn) {
+        btn.classList.remove('loading');
+        btn.innerHTML = `<svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>Sign in with Google`;
+      }
+
       if (resp.error) {
-        // Silent auth failed — show login screen
-        showLoginScreen();
+        // Silent auth failed — show the Google button so user can click
+        showGoogleButton();
+        if (resp.error !== 'user_closed_modal') {
+          setLoginStatus('Sign-in failed: ' + resp.error, 'error');
+        }
         return;
       }
+
       accessToken = resp.access_token;
       gapi.client.setToken({ access_token: accessToken });
+      setLoginStatus('Signed in! Loading data…', 'info');
 
-      // Get + store user info
+      // Get user info
       const user = await fetchUserInfo(accessToken);
       if (user) {
         currentUser = user;
@@ -602,7 +673,6 @@ window.onGoogleLibraryLoad = () => {
           given_name: user.given_name, family_name: user.family_name
         }));
       } else {
-        // Use stored user info as fallback
         const stored = localStorage.getItem('hr_user');
         currentUser = stored ? JSON.parse(stored) : { name: 'User', email: '', given_name: 'U', family_name: 'S' };
       }
@@ -620,15 +690,15 @@ window.onGoogleLibraryLoad = () => {
 
 function trySilentAuth() {
   if (!gapiInited || !gisInited || !tokenClient) return;
-  // Only attempt silent auth if user has logged in before
   const storedUser = localStorage.getItem('hr_user');
   if (!storedUser) {
-    showLoginScreen();
+    // First-time visitor: skip silent auth, just show login button
+    showLoginScreen(false);
     return;
   }
-  // Show a subtle loading state while silently re-authing
-  document.getElementById('login-screen').style.display = 'flex';
-  // hint: use stored email so Google knows which account to use silently
+  // Has logged in before — attempt silent re-auth (no popup)
+  hideGoogleButton();
+  setLoginStatus('Resuming your session…', 'info');
   try {
     const u = JSON.parse(storedUser);
     tokenClient.requestAccessToken({ prompt: '', login_hint: u.email || '' });
@@ -637,16 +707,23 @@ function trySilentAuth() {
   }
 }
 
-function showLoginScreen() {
+/**
+ * Show the login screen.
+ * @param {boolean} showWaiting - true = show spinner (silent auth in progress), false = show button
+ */
+function showLoginScreen(showWaiting) {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
+  if (showWaiting) {
+    hideGoogleButton();
+  } else {
+    showGoogleButton();
+    setLoginStatus('', '');
+  }
 }
 
-function signIn() {
-  if (!tokenClient) { toast('Auth not ready, please wait...', 'error'); return; }
-  // Explicit sign-in: show account picker
-  tokenClient.requestAccessToken({ prompt: 'select_account' });
-}
+// signIn() kept for backward compatibility — same as doLogin()
+function signIn() { doLogin(); }
 
 function signOut() {
   if (accessToken) {
@@ -655,7 +732,7 @@ function signOut() {
   localStorage.removeItem('hr_user');
   accessToken = null; currentUser = null;
   window._headersChecked = false;
-  showLoginScreen();
+  showLoginScreen(false);
 }
 
 async function fetchUserInfo(token) {
@@ -680,11 +757,10 @@ function showApp() {
 }
 
 // ============================================================
-// SHEET SETUP — ensure headers exist
+// SHEET SETUP
 // ============================================================
 async function ensureHeaders() {
   try {
-    // Check Active sheet
     const r = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID, range: `${ACTIVE_SHEET}!A1:AC1`
     });
@@ -695,7 +771,6 @@ async function ensureHeaders() {
         valueInputOption: 'RAW', resource: { values: [HEADERS] }
       });
     }
-    // Check Inactive sheet
     const r2 = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID, range: `${INACTIVE_SHEET}!A1:AC1`
     });
@@ -706,7 +781,6 @@ async function ensureHeaders() {
         valueInputOption: 'RAW', resource: { values: [HEADERS] }
       });
     }
-    // Check Log sheet
     const r3 = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A1:G1`
     });
@@ -721,12 +795,11 @@ async function ensureHeaders() {
 }
 
 // ============================================================
-// DATA LOADING — both sheets in parallel (FAST!)
+// DATA LOADING
 // ============================================================
 async function loadData() {
   showLoading(true, 'Loading employees...');
   try {
-    // Fetch both sheets simultaneously
     const [activeRes, inactiveRes] = await Promise.all([
       gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID, range: `${ACTIVE_SHEET}!A2:AC`
@@ -768,12 +841,6 @@ async function refreshData() {
 // ============================================================
 // DATA HELPERS
 // ============================================================
-function fmtDate(val) {
-  if (!val) return '';
-  try { return new Date(val).toLocaleDateString('en-US', { month:'2-digit', day:'2-digit', year:'numeric' }); }
-  catch(e) { return String(val); }
-}
-
 function ts() {
   return new Date().toLocaleString('en-US', { month:'2-digit', day:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
 }
@@ -825,9 +892,6 @@ async function writeLog(empId, name, action, from, to) {
   } catch(e) { console.warn('Log write failed:', e); }
 }
 
-// ============================================================
-// FIND EMPLOYEE ROW IN SHEET
-// ============================================================
 async function findEmployeeRowInSheet(infinixId, sheetName) {
   const r = await gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID, range: `${sheetName}!E:E`
@@ -840,10 +904,9 @@ async function findEmployeeRowInSheet(infinixId, sheetName) {
 }
 
 // ============================================================
-// CRUD OPERATIONS
+// CRUD
 // ============================================================
 async function apiAddEmployee(data) {
-  // Check duplicate
   const exists = employees.some(e => String(e.infinixId).trim() === String(data.infinixId).trim());
   if (exists) return { ok: false, msg: 'Infinix Employee ID already exists.' };
 
@@ -870,13 +933,11 @@ async function apiUpdateEmployee(data) {
   if (row < 0) return { ok: false, msg: 'Could not find employee row in sheet.' };
 
   if (oldSheet !== newSheet) {
-    // Move: append to new sheet, delete from old
     await gapi.client.sheets.spreadsheets.values.append({
       spreadsheetId: SHEET_ID, range: `${newSheet}!A:AC`,
       valueInputOption: 'RAW', insertDataOption: 'INSERT_ROWS',
       resource: { values: [objToRow(data)] }
     });
-    // Delete old row
     const sheetMeta = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
     const sheetObj = sheetMeta.result.sheets.find(s => s.properties.title === oldSheet);
     if (sheetObj) {
@@ -890,7 +951,6 @@ async function apiUpdateEmployee(data) {
     }
     await writeLog(data.infinixId, `${data.firstName} ${data.lastName}`, 'Status Changed', oldStatus, newStatus);
   } else {
-    // Update in place
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID, range: `${oldSheet}!A${row}:AC${row}`,
       valueInputOption: 'RAW', resource: { values: [objToRow(data)] }
@@ -925,7 +985,7 @@ async function apiDeleteEmployee(infinixId) {
 }
 
 // ============================================================
-// RENDER FUNCTIONS
+// RENDER
 // ============================================================
 function getStats() {
   const s = { Active: 0, Floating: 0, Resigned: 0, AWOL: 0, Terminated: 0 };
@@ -1207,21 +1267,18 @@ async function renderLog() {
 // ============================================================
 function getFormHTML(emp) {
   const v = k => emp ? (emp[k]||'') : '';
-
   const toDateInput = val => {
     if (!val) return '';
     const d = new Date(val);
     if (isNaN(d)) return '';
     return d.toISOString().split('T')[0];
   };
-
   const inp = (k, type, ph, extra) =>
     `<input id="f_${k}" type="${type||'text'}" value="${v(k).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
   const dateInp = (k) =>
     `<input id="f_${k}" type="date" value="${toDateInput(v(k))}">`;
   const sel = (k, opts) =>
     `<select id="f_${k}">${opts.map(o => `<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
-
   const fn = emp ? `${emp.firstName||''} ${emp.lastName||''}`.trim() : '';
 
   return `
