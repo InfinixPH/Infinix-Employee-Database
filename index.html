@@ -570,16 +570,16 @@ window.onGoogleLibraryLoad = () => {
       }
       accessToken = resp.access_token;
       gapi.client.setToken({ access_token: accessToken });
-      sessionStorage.setItem('gtoken', accessToken);
+      localStorage.setItem('gtoken', accessToken);
       await loadUserAndStart();
     }
   });
   gisInited = true;
 };
 
-// Try to restore session from sessionStorage
+// Try to restore session from localStorage
 async function maybeRestoreSession() {
-  const stored = sessionStorage.getItem('gtoken');
+  const stored = localStorage.getItem('gtoken');
   if (!stored) return;
   accessToken = stored;
   gapi.client.setToken({ access_token: accessToken });
@@ -590,7 +590,7 @@ async function maybeRestoreSession() {
     await loadData();
   } else {
     // Token expired, clear it
-    sessionStorage.removeItem('gtoken');
+    localStorage.removeItem('gtoken');
     accessToken = null;
   }
 }
@@ -618,7 +618,7 @@ function signOut() {
   if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken); } catch(e) {}
   }
-  sessionStorage.removeItem('gtoken');
+  localStorage.removeItem('gtoken');
   accessToken = null; currentUser = null;
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
