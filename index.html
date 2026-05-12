@@ -356,15 +356,28 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .login-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
 .login-sub { font-size: 12.5px; color: var(--text2); margin-bottom: 28px; line-height: 1.5; }
-.btn-google {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 11px 20px; border-radius: 10px; border: 1px solid var(--border2);
-  background: var(--surface2); color: var(--text); font-size: 13.5px; font-weight: 600;
-  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .18s;
+.login-form label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text3); margin-bottom: 5px; letter-spacing: .5px; text-transform: uppercase; }
+.login-form input {
+  width: 100%; padding: 10px 13px; border: 1.5px solid var(--border2);
+  border-radius: 9px; font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+  color: var(--text); background: var(--surface2); outline: none;
+  transition: border .15s; margin-bottom: 14px;
 }
-.btn-google:hover { background: var(--surface3); border-color: var(--accent); color: var(--accent2); }
-.btn-google img { width: 18px; height: 18px; }
-.login-note { font-size: 10.5px; color: var(--text3); margin-top: 14px; }
+.login-form input:focus { border-color: var(--accent); }
+.login-form input.err { border-color: var(--danger) !important; }
+.btn-login {
+  width: 100%; padding: 11px 20px; border-radius: 10px; border: none;
+  background: var(--accent); color: #fff; font-size: 14px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .18s;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.btn-login:hover { background: var(--accent2); }
+.login-error { font-size: 11.5px; color: var(--danger); margin-top: 10px; text-align: center; min-height: 18px; }
+.login-note { font-size: 10.5px; color: var(--text3); margin-top: 14px; text-align: center; }
+.role-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.role-admin { background: rgba(108,99,255,.2); color: var(--accent2); }
+.role-staff { background: rgba(0,229,160,.1); color: var(--success); }
+.role-readonly { background: rgba(255,179,64,.1); color: var(--warning); }
 
 /* DETAIL PANEL */
 .detail-row { display: flex; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
@@ -386,11 +399,15 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="login-card">
     <div class="login-logo">📱</div>
     <div class="login-title">Infinix HR</div>
-    <div class="login-sub">Employee Database System<br>Sign in with your Google account to continue</div>
-    <button class="btn-google" onclick="signIn()">
-      <img src="https://www.google.com/favicon.ico" alt="Google">
-      Sign in with Google
-    </button>
+    <div class="login-sub">Employee Database System</div>
+    <div class="login-form">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn-login" onclick="doLogin()">Sign In →</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
     <div class="login-note">Access restricted to authorized personnel only</div>
   </div>
 </div>
