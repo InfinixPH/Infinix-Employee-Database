@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,64 +7,115 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root {
-  /* === PALETTE: Smoky Black / Olive Drab / Bone / Floral White === */
-  --smoky-black:    #11120D;
-  --olive-drab:     #565449;
-  --bone:           #D8CFBC;
-  --floral-white:   #FFFBF4;
+/* ============================================================
+   THEME TOKENS — DARK (default)
+   Palette: Café Noir / Kombu Green / Moss Green / Tan / Bone
+   ============================================================ */
+:root,
+[data-theme="dark"] {
+  --cafe-noir:      #4C3D19;
+  --kombu-green:    #354024;
+  --moss-green:     #889063;
+  --tan:            #CFBB99;
+  --bone:           #E5D7C4;
 
-  /* Derived tokens */
-  --bg-base:        #11120D;
-  --bg-deep:        #0b0c09;
-  --bg-mid:         #1a1b16;
-  --bg-card:        rgba(86, 84, 73, 0.13);
-  --bg-card-hover:  rgba(86, 84, 73, 0.22);
-  --bg-glass:       rgba(17, 18, 13, 0.75);
-  --bg-frosted:     rgba(216, 207, 188, 0.06);
+  --bg-base:        #1e1f18;
+  --bg-deep:        #17180f;
+  --bg-mid:         #252619;
+  --bg-card:        rgba(53,64,36,0.22);
+  --bg-card-hover:  rgba(53,64,36,0.35);
+  --bg-glass:       rgba(30,31,24,0.82);
+  --bg-frosted:     rgba(229,215,196,0.06);
 
-  --accent:         #D8CFBC;
-  --accent-bright:  #FFFBF4;
-  --accent-dim:     rgba(216, 207, 188, 0.12);
-  --accent-glow:    rgba(216, 207, 188, 0.18);
+  --accent:         #CFBB99;
+  --accent-bright:  #E5D7C4;
+  --accent-dim:     rgba(207,187,153,0.12);
+  --accent-glow:    rgba(207,187,153,0.18);
 
-  --border:         rgba(216, 207, 188, 0.1);
-  --border2:        rgba(216, 207, 188, 0.2);
-  --border3:        rgba(216, 207, 188, 0.35);
+  --border:         rgba(207,187,153,0.1);
+  --border2:        rgba(207,187,153,0.22);
+  --border3:        rgba(207,187,153,0.38);
 
-  --text:           #FFFBF4;
-  --text2:          rgba(255, 251, 244, 0.6);
-  --text3:          rgba(255, 251, 244, 0.35);
-  --text4:          rgba(255, 251, 244, 0.18);
+  --text:           #E5D7C4;
+  --text2:          rgba(229,215,196,0.65);
+  --text3:          rgba(229,215,196,0.38);
+  --text4:          rgba(229,215,196,0.18);
+
+  --sidebar-bg:     rgba(23,24,15,0.92);
+  --topbar-bg:      rgba(23,24,15,0.85);
 
   --success:        #7ab894;
-  --success-bg:     rgba(122, 184, 148, 0.12);
+  --success-bg:     rgba(122,184,148,0.12);
   --warning:        #c9b87a;
-  --warning-bg:     rgba(201, 184, 122, 0.12);
+  --warning-bg:     rgba(201,184,122,0.12);
   --danger:         #c47a7a;
-  --danger-bg:      rgba(196, 122, 122, 0.12);
+  --danger-bg:      rgba(196,122,122,0.12);
   --info:           #7a9ec4;
-  --info-bg:        rgba(122, 158, 196, 0.12);
+  --info-bg:        rgba(122,158,196,0.12);
 
-  --radius:         14px;
-  --radius-sm:      9px;
-  --radius-lg:      20px;
-  --shadow:         0 4px 24px rgba(0,0,0,0.55);
-  --shadow-lg:      0 12px 60px rgba(0,0,0,0.75);
-  --shadow-accent:  0 0 40px rgba(216,207,188,0.07);
-
-  --sidebar-w:      224px;
-  --topbar-h:       58px;
-
-  /* Status colors mapped to palette */
   --c-active:       #7ab894;
   --c-floating:     #c9b87a;
   --c-resigned:     #c4a07a;
   --c-awol:         #c47a7a;
   --c-terminated:   #a07ac4;
+
+  --shadow:         0 4px 24px rgba(0,0,0,0.55);
+  --shadow-lg:      0 12px 60px rgba(0,0,0,0.75);
+  --shadow-accent:  0 0 40px rgba(207,187,153,0.07);
 }
 
+[data-theme="light"] {
+  --bg-base:        #f5f0e8;
+  --bg-deep:        #ede6d8;
+  --bg-mid:         #ede6d8;
+  --bg-card:        rgba(255,255,255,0.72);
+  --bg-card-hover:  rgba(255,255,255,0.9);
+  --bg-glass:       rgba(245,240,232,0.88);
+  --bg-frosted:     rgba(76,61,25,0.05);
+
+  --accent:         #4C3D19;
+  --accent-bright:  #354024;
+  --accent-dim:     rgba(76,61,25,0.1);
+  --accent-glow:    rgba(76,61,25,0.14);
+
+  --border:         rgba(76,61,25,0.12);
+  --border2:        rgba(76,61,25,0.22);
+  --border3:        rgba(76,61,25,0.38);
+
+  --text:           #2a2214;
+  --text2:          rgba(42,34,20,0.65);
+  --text3:          rgba(42,34,20,0.4);
+  --text4:          rgba(42,34,20,0.2);
+
+  --sidebar-bg:     rgba(229,215,196,0.95);
+  --topbar-bg:      rgba(229,215,196,0.9);
+
+  --success:        #3d7a58;
+  --success-bg:     rgba(61,122,88,0.1);
+  --warning:        #7a6020;
+  --warning-bg:     rgba(122,96,32,0.1);
+  --danger:         #a03030;
+  --danger-bg:      rgba(160,48,48,0.1);
+  --info:           #2a5a8a;
+  --info-bg:        rgba(42,90,138,0.1);
+
+  --shadow:         0 4px 24px rgba(76,61,25,0.12);
+  --shadow-lg:      0 12px 60px rgba(76,61,25,0.2);
+  --shadow-accent:  0 0 40px rgba(76,61,25,0.06);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --radius:    14px;
+  --radius-sm: 9px;
+  --radius-lg: 20px;
+  --sidebar-w: 224px;
+  --topbar-h:  58px;
+}
 
 body {
   font-family: 'DM Sans', sans-serif;
@@ -73,61 +124,48 @@ body {
   height: 100vh;
   overflow: hidden;
   display: flex;
+  transition: background .3s, color .3s;
 }
 
-/* === SUBTLE GRAIN === */
 body::after {
   content: '';
   position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 9999; opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.28;
 }
 
-/* === AMBIENT === */
 .ambient-1 {
   position: fixed; top: -300px; left: -200px;
   width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(86,84,73,0.18) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(53,64,36,0.22) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
   animation: amb 14s ease-in-out infinite;
 }
 .ambient-2 {
   position: fixed; bottom: -250px; right: -150px;
   width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(216,207,188,0.05) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(136,144,99,0.08) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
   animation: amb 18s ease-in-out infinite reverse;
 }
-@keyframes amb { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.12);opacity:0.6} }
+@keyframes amb { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:0.6} }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 /* ============================================================
-   SVG ICON SYSTEM
-   ============================================================ */
-.icon {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; flex-shrink: 0;
-  opacity: 0.65;
-}
-.icon svg { width: 100%; height: 100%; }
-.nav-item.active .icon { opacity: 1; }
-.icon-lg { width: 18px; height: 18px; }
-.icon-sm { width: 14px; height: 14px; }
-
-/* ============================================================
    SIDEBAR
    ============================================================ */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
-  background: rgba(10, 10, 8, 0.88);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(32px) saturate(1.4);
   -webkit-backdrop-filter: blur(32px) saturate(1.4);
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column; overflow: hidden;
   position: relative; z-index: 10;
+  transition: background .3s;
 }
 
 .brand {
@@ -138,24 +176,22 @@ body::after {
   display: flex; align-items: center; gap: 10px;
 }
 .brand-logo img {
-  height: 28px; width: auto;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: 0.92;
+  height: 28px; width: auto; object-fit: contain;
+  filter: brightness(0) invert(1); opacity: 0.9;
 }
+[data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.8; }
 .brand-sub {
-  font-size: 9px; color: var(--bone);
+  font-size: 9px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
-  margin-top: 8px; font-weight: 600;
-  opacity: 0.45;
+  margin-top: 8px; font-weight: 700; opacity: 0.7;
 }
 
 .nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
 .nav-section {
-  font-size: 8.5px; color: var(--bone);
+  font-size: 8.5px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
   padding: 0 8px; margin: 16px 0 5px;
-  font-weight: 700; opacity: 0.35;
+  font-weight: 700; opacity: 0.5;
 }
 
 .nav-item {
@@ -166,29 +202,25 @@ body::after {
   margin-bottom: 2px; position: relative;
   border: 1px solid transparent;
 }
-.nav-item:hover {
-  background: var(--bg-frosted);
-  border-color: var(--border);
-  color: var(--text);
-}
+.nav-item:hover { background: var(--bg-frosted); border-color: var(--border); color: var(--text); }
 .nav-item.active {
-  background: rgba(216, 207, 188, 0.1);
+  background: rgba(136,144,99,0.15);
   border-color: var(--border2);
-  color: var(--floral-white);
+  color: var(--text);
   font-weight: 600;
 }
 .nav-item.active::before {
   content: '';
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 2.5px; height: 50%;
-  background: var(--bone);
+  background: var(--moss-green);
   border-radius: 0 2px 2px 0;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .nav-badge {
   margin-left: auto;
-  background: rgba(216,207,188,0.08);
+  background: rgba(136,144,99,0.12);
   border: 1px solid var(--border);
   color: var(--text3);
   font-size: 10px; font-weight: 700;
@@ -197,8 +229,12 @@ body::after {
 .nav-item.active .nav-badge {
   background: var(--accent-dim);
   border-color: var(--border2);
-  color: var(--bone);
+  color: var(--moss-green);
 }
+
+.icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; opacity: 0.65; }
+.icon svg { width: 100%; height: 100%; }
+.nav-item.active .icon { opacity: 1; }
 
 .status-filters { padding: 0 8px 12px; }
 .sf-item {
@@ -213,20 +249,15 @@ body::after {
 .sf-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .sf-count { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 700; }
 
-.sidebar-footer {
-  padding: 12px 12px;
-  border-top: 1px solid var(--border);
-}
+.sidebar-footer { padding: 12px 12px; border-top: 1px solid var(--border); }
 .user-pill {
   display: flex; align-items: center; gap: 9px;
-  padding: 8px 10px;
-  background: var(--bg-frosted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  padding: 8px 10px; background: var(--bg-frosted);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
 }
 .user-avatar {
   width: 26px; height: 26px; border-radius: 50%;
-  background: var(--olive-drab);
+  background: var(--kombu-green);
   border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; color: var(--bone); flex-shrink: 0; font-weight: 800;
@@ -234,9 +265,8 @@ body::after {
 }
 .user-name { font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .btn-signout {
-  background: none; border: none;
-  cursor: pointer; color: var(--text3); font-size: 12px;
-  padding: 2px 4px; border-radius: 4px; transition: color .15s;
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  font-size: 12px; padding: 2px 4px; border-radius: 4px; transition: color .15s;
   display: flex; align-items: center;
 }
 .btn-signout:hover { color: var(--danger); }
@@ -247,21 +277,28 @@ body::after {
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; position: relative; z-index: 5; }
 
 .topbar {
-  background: rgba(10, 10, 8, 0.8);
+  background: var(--topbar-bg);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border-bottom: 1px solid var(--border);
   padding: 0 24px; height: var(--topbar-h);
   display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  transition: background .3s;
 }
 .topbar-left { display: flex; flex-direction: column; }
-.topbar-title {
-  font-family: 'Sora', sans-serif;
-  font-size: 14px; font-weight: 700;
-  letter-spacing: 0.2px;
-}
+.topbar-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2px; }
 .topbar-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+/* Theme toggle */
+.theme-toggle {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-frosted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text2); transition: all .15s;
+}
+.theme-toggle:hover { border-color: var(--border2); color: var(--text); }
 
 .search-wrap { position: relative; }
 .search-wrap input {
@@ -271,18 +308,11 @@ body::after {
   border-radius: var(--radius-sm);
   padding: 7px 12px 7px 32px;
   font-size: 12.5px; color: var(--text); width: 220px;
-  font-family: 'DM Sans', sans-serif; outline: none;
-  transition: all .2s;
+  font-family: 'DM Sans', sans-serif; outline: none; transition: all .2s;
 }
-.search-wrap input:focus {
-  border-color: var(--border2);
-  box-shadow: 0 0 0 3px var(--accent-dim);
-}
+.search-wrap input:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
 .search-wrap input::placeholder { color: var(--text3); }
-.search-icon {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-  pointer-events: none; opacity: 0.4; display: flex; align-items: center;
-}
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.4; display: flex; align-items: center; }
 
 /* BUTTONS */
 .btn {
@@ -291,40 +321,23 @@ body::after {
   border: 1px solid transparent; cursor: pointer;
   font-size: 12px; font-weight: 600;
   font-family: 'DM Sans', sans-serif;
-  transition: all .18s; white-space: nowrap;
-  letter-spacing: 0.2px;
+  transition: all .18s; white-space: nowrap; letter-spacing: 0.2px;
 }
 .btn-primary {
-  background: var(--bone);
-  color: var(--smoky-black);
-  border-color: rgba(216,207,188,0.3);
-  font-weight: 700;
+  background: var(--moss-green); color: #fff;
+  border-color: rgba(136,144,99,0.4); font-weight: 700;
 }
-.btn-primary:hover {
-  background: var(--floral-white);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(216,207,188,0.15);
-}
+.btn-primary:hover { background: #7a8358; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(136,144,99,0.25); }
 .btn-ghost {
-  background: var(--bg-frosted);
-  color: var(--text2);
-  border-color: var(--border);
-  backdrop-filter: blur(8px);
+  background: var(--bg-frosted); color: var(--text2);
+  border-color: var(--border); backdrop-filter: blur(8px);
 }
-.btn-ghost:hover { border-color: var(--border2); color: var(--text); background: rgba(255,255,255,0.05); }
-.btn-danger {
-  background: var(--danger-bg);
-  color: var(--danger);
-  border-color: rgba(196,122,122,0.2);
-}
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); background: rgba(136,144,99,0.08); }
+.btn-danger { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.2); }
 .btn-danger:hover { background: rgba(196,122,122,0.22); border-color: rgba(196,122,122,0.4); }
 .btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 7px; }
-.btn-refresh {
-  background: var(--bg-frosted);
-  color: var(--text2);
-  border-color: var(--border);
-}
-.btn-refresh:hover { border-color: var(--border2); color: var(--bone); }
+.btn-refresh { background: var(--bg-frosted); color: var(--text2); border-color: var(--border); }
+.btn-refresh:hover { border-color: var(--border2); color: var(--tan); }
 .btn-refresh.spinning span { display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -353,22 +366,15 @@ body::after {
   position: relative; overflow: hidden;
   transition: all .22s cubic-bezier(.4,0,.2,1);
 }
-.glass-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border2);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-accent);
-}
+.glass-card:hover { background: var(--bg-card-hover); border-color: var(--border2); transform: translateY(-1px); box-shadow: var(--shadow-accent); }
 .glass-card::before {
-  content: '';
-  position: absolute; inset: 0;
+  content: ''; position: absolute; inset: 0;
   background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
   pointer-events: none;
 }
 .glass-card::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(216,207,188,0.18), transparent);
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(207,187,153,0.18), transparent);
 }
 
 /* ============================================================
@@ -376,54 +382,53 @@ body::after {
    ============================================================ */
 .dash-kf-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
 .kf-card { padding: 20px 22px; }
-.kf-label-top {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px;
-}
-.kf-num {
-  font-family: 'Sora', sans-serif;
-  font-size: 32px; font-weight: 800; line-height: 1;
-  color: var(--floral-white);
-}
+.kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
+.kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
 .kf-sub { font-size: 10.5px; color: var(--text3); margin-top: 6px; }
-.kf-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 14px; overflow: hidden; }
-.kf-bar-fill { height: 100%; border-radius: 2px; background: var(--bone); transition: width 1s cubic-bezier(.4,0,.2,1); opacity: 0.6; }
+.kf-bar { height: 2px; background: rgba(136,144,99,0.12); border-radius: 2px; margin-top: 14px; overflow: hidden; }
+.kf-bar-fill { height: 100%; border-radius: 2px; background: var(--moss-green); transition: width 1s cubic-bezier(.4,0,.2,1); opacity: 0.7; }
 
-/* Status row */
 .dash-status-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
 .status-card { padding: 14px 16px; cursor: pointer; }
 .status-card-dot { width: 6px; height: 6px; border-radius: 50%; margin-bottom: 10px; }
-.status-num { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 800; color: var(--floral-white); }
+.status-num { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 800; color: var(--text); }
 .status-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-.status-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.status-bar { height: 2px; background: rgba(136,144,99,0.1); border-radius: 2px; margin-top: 10px; overflow: hidden; }
 .status-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
 
-/* Dash 2-col bottom */
 .dash-bottom { display: grid; grid-template-columns: 1.1fr 1.6fr; gap: 14px; margin-top: 16px; }
-
-/* Charts */
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }
 .chart-card { padding: 18px; }
-.chart-title {
-  font-size: 9px; font-weight: 700; margin-bottom: 14px;
-  color: var(--bone); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6;
-}
+.chart-title { font-size: 9px; font-weight: 700; margin-bottom: 14px; color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; }
 .chart-wrap { position: relative; height: 160px; }
+
+/* Birthday widget */
+.birthday-widget { padding: 16px; }
+.bday-list { display: flex; flex-direction: column; gap: 8px; }
+.bday-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  font-size: 12px;
+}
+.bday-icon { font-size: 16px; flex-shrink: 0; }
+.bday-name { font-weight: 600; flex: 1; }
+.bday-date { font-size: 10.5px; color: var(--text3); }
+.bday-today { border-color: rgba(201,184,122,0.3); background: rgba(201,184,122,0.06); }
+.bday-soon { border-color: rgba(136,144,99,0.2); }
 
 /* Summary quick pills */
 .summary-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .summary-pill {
   display: flex; align-items: center; gap: 7px;
   padding: 8px 14px; border-radius: 30px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  font-size: 11.5px; color: var(--text2);
-  backdrop-filter: blur(12px);
-  transition: all .15s;
+  border: 1px solid var(--border); background: var(--bg-card);
+  font-size: 11.5px; color: var(--text2); backdrop-filter: blur(12px);
+  transition: all .15s; cursor: pointer;
 }
-.summary-pill:hover { border-color: var(--border2); color: var(--text); cursor: pointer; }
+.summary-pill:hover { border-color: var(--border2); color: var(--text); transform: translateY(-1px); }
 .summary-pill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.summary-pill-num { font-weight: 800; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--floral-white); }
+.summary-pill-num { font-weight: 800; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text); }
 .summary-pill-warn { border-color: rgba(196,122,122,0.25); }
 .summary-pill-warn .summary-pill-dot { background: var(--danger); }
 .summary-pill-warn .summary-pill-num { color: var(--danger); }
@@ -434,109 +439,128 @@ body::after {
 .section-heading {
   display: flex; align-items: center; gap: 8px;
   font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
-  color: var(--bone); opacity: 0.5; margin-bottom: 10px;
+  color: var(--moss-green); opacity: 0.7; margin-bottom: 10px;
 }
 .section-heading-line { flex: 1; height: 1px; background: var(--border); }
+
+/* Dashboard search */
+.dash-search-wrap {
+  position: relative; margin-bottom: 16px;
+}
+.dash-search-wrap input {
+  width: 100%; padding: 11px 16px 11px 42px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13.5px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; outline: none; transition: all .2s;
+}
+.dash-search-wrap input:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
+.dash-search-wrap input::placeholder { color: var(--text3); }
+.dash-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; }
 
 /* ============================================================
    FILTER BAR
    ============================================================ */
 .filter-bar {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  padding: 10px 16px;
-  background: rgba(10,10,8,0.5);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
+  padding: 10px 16px; background: rgba(53,64,36,0.08);
+  border-bottom: 1px solid var(--border); backdrop-filter: blur(12px);
 }
 .filter-bar select {
-  background: var(--bg-frosted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 5px 10px; font-size: 11.5px;
-  color: var(--text2);
-  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 5px 10px; font-size: 11.5px;
+  color: var(--text2); font-family: 'DM Sans', sans-serif;
   outline: none; cursor: pointer; transition: all .15s;
 }
 .filter-bar select:focus { border-color: var(--border2); color: var(--text); }
-.filter-bar select option { background: #1a1b16; }
-.filter-label { font-size: 9.5px; color: var(--bone); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; }
+.filter-bar select option { background: var(--bg-mid); }
+.filter-label { font-size: 9.5px; color: var(--moss-green); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
 .filter-active-count {
-  font-size: 11px;
-  background: var(--accent-dim);
-  border: 1px solid var(--border2);
-  color: var(--bone);
+  font-size: 11px; background: var(--accent-dim);
+  border: 1px solid var(--border2); color: var(--moss-green);
   padding: 3px 9px; border-radius: 20px; font-weight: 700;
 }
+
+/* Column visibility toggle */
+.col-toggle-wrap { position: relative; margin-left: auto; }
+.col-toggle-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-frosted);
+  color: var(--text2); font-size: 11.5px; cursor: pointer; transition: all .15s;
+  font-family: 'DM Sans', sans-serif; font-weight: 600;
+}
+.col-toggle-btn:hover { border-color: var(--border2); color: var(--text); }
+.col-dropdown {
+  position: absolute; right: 0; top: calc(100% + 6px);
+  background: var(--bg-mid); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 8px;
+  min-width: 180px; z-index: 50; box-shadow: var(--shadow-lg);
+  display: none;
+}
+.col-dropdown.open { display: block; }
+.col-check-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; color: var(--text2); transition: background .12s;
+  user-select: none;
+}
+.col-check-item:hover { background: var(--bg-frosted); color: var(--text); }
+.col-check-item input { accent-color: var(--moss-green); width: 13px; height: 13px; }
 
 /* ============================================================
    TABLE
    ============================================================ */
 .table-wrap {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: var(--radius); overflow: hidden;
-  position: relative;
+  background: var(--bg-card); border: 1px solid var(--border);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius); overflow: hidden; position: relative;
 }
 .table-wrap::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(216,207,188,0.18), transparent);
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(207,187,153,0.18), transparent);
   pointer-events: none;
 }
 
 .table-head {
-  padding: 13px 18px;
-  border-bottom: 1px solid var(--border);
+  padding: 13px 18px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  background: rgba(86,84,73,0.1);
-  position: relative; z-index: 1;
+  background: rgba(53,64,36,0.1); position: relative; z-index: 1;
 }
-.table-head h3 {
-  font-family: 'Sora', sans-serif;
-  font-size: 13px; font-weight: 700; letter-spacing: 0.2px;
-}
+.table-head h3 { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2px; }
 .table-head .rec { font-size: 11px; color: var(--text3); }
 .table-scroll { overflow-x: auto; position: relative; z-index: 1; }
 
 table { width: 100%; border-collapse: collapse; min-width: 900px; }
 thead th {
-  background: rgba(86,84,73,0.08);
-  padding: 9px 13px; font-size: 9.5px; font-weight: 700;
-  color: var(--bone); text-align: left;
+  background: rgba(53,64,36,0.1); padding: 9px 13px; font-size: 9.5px; font-weight: 700;
+  color: var(--moss-green); text-align: left;
   letter-spacing: 1px; text-transform: uppercase;
   border-bottom: 1px solid var(--border); white-space: nowrap;
-  cursor: pointer; user-select: none; transition: color .15s;
-  opacity: 0.65;
+  cursor: pointer; user-select: none; transition: color .15s; opacity: 0.75;
 }
-thead th:hover { color: var(--floral-white); opacity: 1; }
-thead th.sort-asc::after { content: ' ↑'; color: var(--bone); }
-thead th.sort-desc::after { content: ' ↓'; color: var(--bone); }
+thead th:hover { opacity: 1; }
+thead th.sort-asc::after { content: ' ↑'; color: var(--moss-green); }
+thead th.sort-desc::after { content: ' ↓'; color: var(--moss-green); }
 thead th.no-sort { cursor: default; }
 
-tbody tr { border-bottom: 1px solid rgba(216,207,188,0.05); transition: background .15s; cursor: pointer; }
+tbody tr { border-bottom: 1px solid rgba(207,187,153,0.05); transition: background .15s; cursor: pointer; }
 tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: rgba(216,207,188,0.04); }
-tbody tr.selected { background: rgba(216,207,188,0.07); }
+tbody tr:hover { background: rgba(136,144,99,0.06); }
+tbody tr.selected { background: rgba(136,144,99,0.1); }
 tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 
-.td-id {
-  font-family: 'Sora', sans-serif;
-  font-size: 11px; font-weight: 700; color: var(--bone); opacity: 0.75;
-}
+.td-id { font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; color: var(--moss-green); opacity: 0.9; }
 .td-name { font-weight: 600; font-size: 13px; }
 .td-sub { font-size: 10.5px; color: var(--text3); margin-top: 1px; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
-.td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--bone); cursor: pointer; }
+.td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
 
 /* BADGES */
 .badge {
   display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 20px;
   font-size: 10px; font-weight: 700; white-space: nowrap;
-  border: 1px solid transparent; letter-spacing: 0.3px;
-  text-transform: uppercase;
+  border: 1px solid transparent; letter-spacing: 0.3px; text-transform: uppercase;
 }
 .b-Active      { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
 .b-Floating    { background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
@@ -558,50 +582,39 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .pagination {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 16px; border-top: 1px solid var(--border);
-  background: rgba(86,84,73,0.05);
-  position: relative; z-index: 1;
+  background: rgba(53,64,36,0.05); position: relative; z-index: 1;
 }
 .pagination-info { font-size: 11.5px; color: var(--text3); }
 .pagination-controls { display: flex; align-items: center; gap: 4px; }
 .page-btn {
   width: 28px; height: 28px; border-radius: 7px;
-  border: 1px solid var(--border);
-  background: var(--bg-frosted);
+  border: 1px solid var(--border); background: var(--bg-frosted);
   color: var(--text2); cursor: pointer;
-  font-size: 11px; font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
+  font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
 }
-.page-btn:hover:not(:disabled) { border-color: var(--border2); color: var(--bone); }
+.page-btn:hover:not(:disabled) { border-color: var(--border2); color: var(--tan); }
 .page-btn:disabled { opacity: .25; cursor: default; }
-.page-btn.active {
-  background: var(--bone);
-  border-color: var(--border2);
-  color: var(--smoky-black);
-  font-weight: 800;
-}
+.page-btn.active { background: var(--moss-green); border-color: transparent; color: #fff; font-weight: 800; }
 .page-size-sel {
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: 7px; padding: 4px 8px;
   font-size: 11px; color: var(--text2);
-  font-family: 'DM Sans', sans-serif;
-  outline: none; cursor: pointer; margin-left: 8px;
+  font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer; margin-left: 8px;
 }
-.page-size-sel option { background: #1a1b16; }
+.page-size-sel option { background: var(--bg-mid); }
 
 /* ============================================================
    BULK BAR
    ============================================================ */
 .bulk-bar {
-  padding: 8px 16px;
-  background: rgba(216,207,188,0.05);
+  padding: 8px 16px; background: rgba(136,144,99,0.07);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   position: relative; z-index: 1;
 }
 .bulk-bar.hidden { display: none; }
-.bulk-count { font-size: 12px; font-weight: 700; color: var(--bone); }
+.bulk-count { font-size: 12px; font-weight: 700; color: var(--moss-green); }
 .bulk-sep { width: 1px; height: 16px; background: var(--border); }
 .bulk-label { font-size: 11px; color: var(--text3); }
 .bulk-status-sel {
@@ -610,7 +623,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   font-size: 12px; color: var(--text);
   font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
 }
-.bulk-status-sel option { background: #1a1b16; }
+.bulk-status-sel option { background: var(--bg-mid); }
 
 /* ============================================================
    DETAIL PANEL
@@ -618,31 +631,20 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .detail-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
   width: 420px; max-width: 94vw;
-  background: rgba(10, 10, 8, 0.96);
+  background: var(--bg-glass);
   backdrop-filter: blur(40px) saturate(1.4);
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border-left: 1px solid var(--border2);
-  box-shadow: -8px 0 60px rgba(0,0,0,.75);
+  box-shadow: -8px 0 60px rgba(0,0,0,.6);
   z-index: 90; display: flex; flex-direction: column;
-  transform: translateX(100%);
-  transition: transform .3s cubic-bezier(.4,0,.2,1);
-}
-.detail-panel::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
 }
 .detail-panel.open { transform: translateX(0); }
-
 .detail-panel-header {
   padding: 18px 20px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
 }
-.detail-panel-header h3 {
-  font-family: 'Sora', sans-serif;
-  font-size: 13px; font-weight: 700; flex: 1;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.detail-panel-header h3 { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-panel-close {
   width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
   background: var(--bg-frosted); cursor: pointer; font-size: 12px;
@@ -650,48 +652,43 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   color: var(--text2); transition: all .15s; flex-shrink: 0;
 }
 .detail-panel-close:hover { background: var(--danger-bg); border-color: rgba(196,122,122,0.3); color: var(--danger); }
-
 .detail-panel-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-.detail-panel-footer {
-  padding: 12px 20px; border-top: 1px solid var(--border);
-  display: flex; gap: 8px;
-}
+.detail-panel-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
 
 .detail-section { margin-bottom: 18px; }
 .detail-section-title {
   font-size: 8.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--bone); border-bottom: 1px solid var(--border);
-  padding-bottom: 7px; margin-bottom: 10px; opacity: 0.55;
+  color: var(--moss-green); border-bottom: 1px solid var(--border);
+  padding-bottom: 7px; margin-bottom: 10px; opacity: 0.7;
 }
-.detail-row {
-  display: flex; gap: 6px; padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  font-size: 12.5px;
-}
+.detail-row { display: flex; gap: 6px; padding: 6px 0; border-bottom: 1px solid rgba(136,144,99,0.06); font-size: 12.5px; }
 .detail-row:last-child { border-bottom: none; }
-.detail-label {
-  color: var(--text3); width: 130px; flex-shrink: 0;
-  font-size: 10px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .5px; padding-top: 1px;
-}
+.detail-label { color: var(--text3); width: 130px; flex-shrink: 0; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding-top: 1px; }
 .detail-val { color: var(--text); font-weight: 500; word-break: break-word; }
 
-.audit-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
-}
+.audit-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(136,144,99,0.06); }
 .audit-item:last-child { border-bottom: none; }
 .audit-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 .audit-meta { font-size: 11.5px; line-height: 1.5; flex: 1; }
 .audit-time { font-size: 10px; color: var(--text3); margin-top: 2px; }
 .audit-empty { font-size: 12px; color: var(--text3); padding: 16px 0; text-align: center; }
 
+/* Notes field */
+.notes-area {
+  width: 100%; min-height: 80px; padding: 8px 10px;
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 12px;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  resize: vertical; outline: none; transition: all .15s;
+}
+.notes-area:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
+.notes-save-btn { margin-top: 8px; }
+
 /* ============================================================
    MODAL
    ============================================================ */
 .overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.8);
+  position: fixed; inset: 0; background: rgba(0,0,0,.75);
   backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   z-index: 100; opacity: 0; pointer-events: none; transition: opacity .2s;
@@ -699,55 +696,41 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .overlay.open { opacity: 1; pointer-events: all; }
 
 .modal {
-  background: rgba(13, 13, 10, 0.97);
+  background: var(--bg-mid);
   backdrop-filter: blur(40px) saturate(1.4);
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border: 1px solid var(--border2);
   border-radius: 20px; width: 800px; max-width: 96vw; max-height: 92vh;
-  display: flex; flex-direction: column;
-  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; box-shadow: var(--shadow-lg);
   transform: translateY(16px) scale(.98); transition: transform .22s;
   position: relative; overflow: hidden;
-}
-.modal::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border2), transparent);
-  pointer-events: none;
 }
 .overlay.open .modal { transform: translateY(0) scale(1); }
 
 .modal-header {
-  padding: 16px 22px 14px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-  border-radius: 20px 20px 0 0;
+  padding: 16px 22px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; border-radius: 20px 20px 0 0;
 }
-.modal-header h2 {
-  font-family: 'Sora', sans-serif;
-  font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
-}
+.modal-header h2 { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2px; }
 .modal-close {
-  margin-left: auto; width: 28px; height: 28px;
-  border-radius: 7px; border: 1px solid var(--border);
-  background: var(--bg-frosted); cursor: pointer; font-size: 12px;
-  display: flex; align-items: center; justify-content: center;
+  margin-left: auto; width: 28px; height: 28px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--bg-frosted);
+  cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
   color: var(--text2); transition: all .15s;
 }
 .modal-close:hover { background: var(--danger-bg); border-color: rgba(196,122,122,0.3); color: var(--danger); }
 .modal-body { padding: 18px 22px; overflow-y: auto; flex: 1; }
 .modal-footer {
   padding: 12px 22px; border-top: 1px solid var(--border);
-  display: flex; justify-content: flex-end; gap: 8px;
-  border-radius: 0 0 20px 20px;
+  display: flex; justify-content: flex-end; gap: 8px; border-radius: 0 0 20px 20px;
 }
 
 /* FORM */
 .section-label {
   font-size: 8.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--bone); border-bottom: 1px solid var(--border);
+  color: var(--moss-green); border-bottom: 1px solid var(--border);
   padding-bottom: 7px; margin-bottom: 12px; margin-top: 20px;
-  display: flex; align-items: center; gap: 6px; opacity: 0.6;
+  display: flex; align-items: center; gap: 6px; opacity: 0.75;
 }
 .section-label:first-child { margin-top: 0; }
 .section-label.key-section { opacity: 1; }
@@ -756,38 +739,28 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
 .form-full { grid-column: 1 / -1; }
 
-.field label {
-  display: block; font-size: 10px; font-weight: 600;
-  color: var(--text3); margin-bottom: 5px; letter-spacing: .3px;
-  text-transform: uppercase;
-}
+.field label { display: block; font-size: 10px; font-weight: 600; color: var(--text3); margin-bottom: 5px; letter-spacing: .3px; text-transform: uppercase; }
 .field.req label::after { content: ' *'; color: var(--danger); }
 
 .field input, .field select, .field textarea {
   width: 100%; padding: 7px 11px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-size: 12.5px; font-family: 'DM Sans', sans-serif;
-  color: var(--text);
-  background: rgba(255,255,255,0.03);
+  color: var(--text); background: rgba(136,144,99,0.05);
   outline: none; transition: all .15s;
 }
 .field input:focus, .field select:focus, .field textarea:focus {
-  border-color: var(--border2);
-  background: rgba(216,207,188,0.04);
+  border-color: var(--border2); background: rgba(136,144,99,0.08);
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
 .field input.err, .field select.err { border-color: var(--danger) !important; }
-.field select option { background: #1a1b16; }
+.field select option { background: var(--bg-mid); }
 .field textarea { height: 60px; resize: vertical; }
 
 .fullname-preview {
-  background: rgba(216,207,188,0.06);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 11px;
-  font-size: 13px; font-weight: 700; color: var(--bone);
-  min-height: 34px;
+  background: rgba(136,144,99,0.1); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 7px 11px;
+  font-size: 13px; font-weight: 700; color: var(--tan); min-height: 34px;
 }
 .field-hint { font-size: 10.5px; color: var(--danger); margin-top: 3px; display: none; }
 .field-hint.visible { display: block; }
@@ -797,17 +770,44 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .store-lookup-status.notfound { color: var(--danger); }
 .store-lookup-status.searching { color: var(--warning); }
 
+/* Duplicate warning */
+.dup-warning {
+  background: rgba(201,184,122,0.08); border: 1px solid rgba(201,184,122,0.3);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  font-size: 11.5px; color: var(--warning); margin-top: 6px; display: none;
+}
+.dup-warning.visible { display: block; }
+
+/* ============================================================
+   DEPLOYMENT TRACKER
+   ============================================================ */
+.tracker-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.tracker-kf { padding: 18px 20px; }
+.tracker-region-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 16px; }
+.tracker-region-card { padding: 16px; }
+.tracker-region-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--moss-green); margin-bottom: 10px; opacity: 0.8; }
+.tracker-region-bar-wrap { height: 6px; background: rgba(136,144,99,0.12); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+.tracker-region-bar { height: 100%; background: var(--moss-green); border-radius: 3px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+.tracker-region-stats { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text3); }
+.tracker-store-table { margin-top: 16px; }
+.tracker-date-filters { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.tracker-date-filters input[type=date] {
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 5px 10px;
+  font-size: 11.5px; color: var(--text2);
+  font-family: 'DM Sans', sans-serif; outline: none;
+}
+.tracker-date-filters input[type=date]:focus { border-color: var(--border2); }
+
 /* ============================================================
    TOAST
    ============================================================ */
 .toast {
   position: fixed; bottom: 22px; right: 22px; z-index: 300;
-  background: rgba(13, 13, 10, 0.97);
-  backdrop-filter: blur(24px);
+  background: var(--bg-mid); backdrop-filter: blur(24px);
   color: var(--text); padding: 10px 16px;
   border: 1px solid var(--border2); border-radius: 10px;
-  font-size: 12.5px; font-weight: 600;
-  box-shadow: var(--shadow-lg);
+  font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow-lg);
   transform: translateY(80px); opacity: 0;
   transition: all .28s cubic-bezier(.4,0,.2,1); max-width: 340px;
 }
@@ -819,41 +819,26 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
    LOADING
    ============================================================ */
 .loading-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.85);
+  position: fixed; inset: 0; background: rgba(0,0,0,.8);
   backdrop-filter: blur(10px);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   z-index: 200; gap: 14px;
 }
-.spinner {
-  width: 32px; height: 32px;
-  border: 2px solid var(--border);
-  border-top-color: var(--bone);
-  border-radius: 50%; animation: spin .7s linear infinite;
-}
+.spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--moss-green); border-radius: 50%; animation: spin .7s linear infinite; }
 .loading-text { font-size: 12.5px; color: var(--text2); font-weight: 500; }
 
-/* CONFIRM */
 .confirm-modal { width: 380px; }
 .confirm-body { padding: 28px 24px 12px; text-align: center; }
 .confirm-body h3 { font-family: 'Sora', sans-serif; font-size: 15px; margin-bottom: 8px; }
 .confirm-body p { font-size: 12.5px; color: var(--text2); line-height: 1.7; }
 
-/* LOG */
-.log-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 11px 0; border-bottom: 1px solid var(--border);
-}
+.log-item { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
 .log-item:last-child { border-bottom: none; }
-.log-icon {
-  width: 30px; height: 30px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; border: 1px solid transparent;
-}
+.log-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid transparent; }
 .log-added { background: var(--success-bg); border-color: rgba(122,184,148,0.2); color: var(--success); }
 .log-changed { background: var(--warning-bg); border-color: rgba(201,184,122,0.2); color: var(--warning); }
 .log-deleted { background: var(--danger-bg); border-color: rgba(196,122,122,0.2); color: var(--danger); }
-.log-updated { background: var(--accent-dim); border-color: var(--border); color: var(--bone); }
+.log-updated { background: var(--accent-dim); border-color: var(--border); color: var(--moss-green); }
 .log-meta { font-size: 12px; line-height: 1.55; }
 .log-time { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
 
@@ -866,92 +851,59 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   z-index: 500; flex-direction: column;
 }
 .login-screen::before {
-  content: ''; position: fixed;
-  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  content: ''; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
   width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(86,84,73,0.2), transparent 60%);
+  background: radial-gradient(circle, rgba(53,64,36,0.25), transparent 60%);
   pointer-events: none;
 }
 .login-card {
-  background: rgba(13, 13, 10, 0.92);
-  backdrop-filter: blur(40px) saturate(1.4);
+  background: var(--bg-mid); backdrop-filter: blur(40px) saturate(1.4);
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
-  border: 1px solid var(--border2);
-  border-radius: 24px; padding: 48px 50px; text-align: center;
-  box-shadow: var(--shadow-lg);
-  width: 390px; max-width: 94vw;
-  animation: fadeUp .4s cubic-bezier(.4,0,.2,1);
-  position: relative;
+  border: 1px solid var(--border2); border-radius: 24px;
+  padding: 48px 50px; text-align: center; box-shadow: var(--shadow-lg);
+  width: 390px; max-width: 94vw; animation: fadeUp .4s cubic-bezier(.4,0,.2,1); position: relative;
 }
 .login-card::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2), transparent);
   border-radius: 24px 24px 0 0; pointer-events: none;
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-.login-logo {
-  height: 40px; margin: 0 auto 24px;
-  display: flex; align-items: center; justify-content: center;
-}
-.login-logo img {
-  height: 100%; width: auto; object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: 0.9;
-}
-.login-title {
-  font-family: 'Sora', sans-serif;
-  font-size: 13px; font-weight: 700; margin-bottom: 6px;
-  letter-spacing: 2px; text-transform: uppercase;
-  color: var(--bone); opacity: 0.6;
-}
+.login-logo { height: 40px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; }
+.login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
+[data-theme="light"] .login-logo img { filter: brightness(0); opacity: 0.8; }
+.login-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
 .login-sub { font-size: 12px; color: var(--text3); margin-bottom: 30px; line-height: 1.7; }
 .btn-google {
-  width: 100%; padding: 11px 20px; border-radius: 10px;
-  border: 1px solid var(--border2);
-  background: var(--bg-frosted);
-  backdrop-filter: blur(8px);
-  color: var(--text);
-  font-size: 13.5px; font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer; transition: all .2s;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 11px 20px; border-radius: 10px; border: 1px solid var(--border2);
+  background: var(--bg-frosted); backdrop-filter: blur(8px); color: var(--text);
+  font-size: 13.5px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 10px;
 }
-.btn-google:hover {
-  border-color: var(--border3);
-  background: rgba(216,207,188,0.07);
-}
+.btn-google:hover { border-color: var(--border3); background: rgba(136,144,99,0.1); }
 .btn-google:active { transform: scale(.98); }
 .btn-google.loading { opacity: .6; pointer-events: none; }
 .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .login-status { font-size: 12px; color: var(--text3); margin-top: 12px; min-height: 18px; transition: color .2s; }
 .login-status.error { color: var(--danger); }
-.login-status.info  { color: var(--bone); }
+.login-status.info  { color: var(--moss-green); }
 .login-note { font-size: 10px; color: var(--text3); margin-top: 16px; line-height: 1.7; opacity: 0.6; }
 .login-waiting { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0 4px; }
 .login-waiting .spinner { width: 24px; height: 24px; border-width: 2px; }
 .login-waiting p { font-size: 12px; color: var(--text2); }
 
-/* MISC */
 .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
 .empty-state .ei { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
 .empty-state p { font-size: 13px; }
 
 .view-tabs {
   display: flex; gap: 2px; margin-bottom: 16px;
-  background: var(--bg-frosted);
-  border: 1px solid var(--border);
+  background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 3px; width: fit-content;
 }
-.view-tab {
-  padding: 6px 14px; border-radius: 7px; cursor: pointer;
-  font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15s;
-}
-.view-tab.active {
-  background: var(--bone);
-  color: var(--smoky-black); font-weight: 800;
-}
+.view-tab { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15s; }
+.view-tab.active { background: var(--moss-green); color: #fff; font-weight: 800; }
 .view-tab:hover:not(.active) { color: var(--text); }
 </style>
 </head>
@@ -965,7 +917,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="login-card">
     <div class="login-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Sora',sans-serif;font-size:22px;font-weight:900;color:var(--bone);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Sora',sans-serif;font-size:22px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="login-title">HR System</div>
     <div class="login-sub">Employee Database<br>Sign in with your Google account to continue.</div>
@@ -974,12 +926,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
       <p>Checking session…</p>
     </div>
     <button class="btn-google" id="btn-google-signin" style="display:none" onclick="doLogin()">
-      <svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/>
-        <path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/>
-        <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/>
-      </svg>
+      <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/></svg>
       Sign in with Google
     </button>
     <div class="login-status" id="login-status"></div>
@@ -993,10 +940,9 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 <div class="sidebar">
   <div class="brand">
     <div class="brand-logo">
-      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png"
-           alt="Infinix"
+      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Sora',sans-serif;font-size:16px;font-weight:900;color:var(--bone);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Sora',sans-serif;font-size:16px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
   </div>
@@ -1004,43 +950,25 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="nav">
     <div class="nav-section">Main</div>
     <div class="nav-item active" onclick="showView('dashboard')" id="nav-dashboard">
-      <span class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-        </svg>
-      </span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
       Dashboard
     </div>
     <div class="nav-item" onclick="showView('active')" id="nav-active">
-      <span class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
       Active
       <span class="nav-badge" id="badge-active">0</span>
     </div>
     <div class="nav-item" onclick="showView('inactive')" id="nav-inactive">
-      <span class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-        </svg>
-      </span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
       Inactive
       <span class="nav-badge" id="badge-inactive">0</span>
     </div>
+    <div class="nav-item" onclick="showView('tracker')" id="nav-tracker">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      Deployment Tracker
+    </div>
     <div class="nav-item" onclick="showView('log')" id="nav-log">
-      <span class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
-        </svg>
-      </span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
       Activity Log
     </div>
 
@@ -1053,10 +981,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-name" id="user-name">Loading...</div>
       <button class="btn-signout" onclick="signOut()" title="Sign out">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
   </div>
@@ -1070,18 +995,18 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
       <div class="topbar-sub" id="topbar-sub">Overview</div>
     </div>
     <div class="topbar-right">
-      <div class="search-wrap">
+      <div class="search-wrap" id="topbar-search-wrap">
         <span class="search-icon">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input type="text" id="search-input" placeholder="Search name, ID, store…" oninput="onSearch()" style="display:none">
       </div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark">
+        <svg id="theme-icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-        </svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         <span>Refresh</span>
       </button>
       <button class="btn btn-primary" onclick="openAddModal()">+ Add Employee</button>
@@ -1157,14 +1082,26 @@ const STORE_DETAILS_SHEET = 'Store Details';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated'];
-const STATUS_COLORS = {
-  Active:'#7ab894', Floating:'#c9b87a',
-  Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4'
-};
+const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
-const HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated'];
+const HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'];
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
+
+// Column definitions for visibility toggle
+const TABLE_COLUMNS = [
+  { key:'fullName',        label:'Full Name',       always:true },
+  { key:'infinixId',       label:'Infinix ID',      always:true },
+  { key:'status',          label:'Status',          always:false },
+  { key:'deploymentDate',  label:'Deploy Date',     always:false },
+  { key:'deploymentStatus',label:'Deploy Status',   always:false },
+  { key:'qrStatus',        label:'QR Status',       always:false },
+  { key:'region',          label:'Region',          always:false },
+  { key:'storeAssignment', label:'Store',           always:false },
+  { key:'storeId',         label:'Store ID',        always:false },
+  { key:'rssName',         label:'RSS Name',        always:false },
+  { key:'contractStatus',  label:'Contract',        always:false },
+];
 
 // ============================================================
 // STATE
@@ -1180,52 +1117,70 @@ let detailEmpId=null;
 let logCache=null;
 let _charts={};
 let storeCache={}, storeCacheLoaded=false;
+let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key)); // all visible by default
+let colDropdownOpen=false;
+// Missing field filter for dashboard drill-down
+let missingFieldFilter=null;
+// Tracker filters
+let trackerDateFrom='', trackerDateTo='', trackerRegion='';
+
+// ============================================================
+// THEME
+// ============================================================
+function initTheme(){
+  const saved=localStorage.getItem('hr_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  updateThemeIcon(saved);
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')||'dark';
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('hr_theme',next);
+  updateThemeIcon(next);
+  // re-render charts if on dashboard
+  if(currentView==='dashboard') renderDashboard();
+}
+function updateThemeIcon(theme){
+  document.getElementById('theme-icon-dark').style.display=theme==='dark'?'':'none';
+  document.getElementById('theme-icon-light').style.display=theme==='light'?'':'none';
+}
+initTheme();
 
 // ============================================================
 // STORE LOOKUP
 // ============================================================
-async function loadStoreDetails() {
-  if (storeCacheLoaded) return;
-  try {
-    const r = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID, range: `${STORE_DETAILS_SHEET}!E:F`
-    });
-    const rows = r.result.values || [];
-    storeCache = {};
-    for (let i = 1; i < rows.length; i++) {
-      const storeName = (rows[i][0]||'').trim();
-      const shopId    = (rows[i][1]||'').trim();
-      if (shopId) storeCache[shopId.toUpperCase()] = storeName;
+async function loadStoreDetails(){
+  if(storeCacheLoaded)return;
+  try{
+    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!E:F`});
+    const rows=r.result.values||[];
+    storeCache={};
+    for(let i=1;i<rows.length;i++){
+      const storeName=(rows[i][0]||'').trim();
+      const shopId=(rows[i][1]||'').trim();
+      if(shopId)storeCache[shopId.toUpperCase()]=storeName;
     }
-    storeCacheLoaded = true;
-  } catch(e) { console.warn('Store Details load failed:', e); }
+    storeCacheLoaded=true;
+  }catch(e){console.warn('Store Details load failed:',e);}
 }
-
-function lookupStore(shopId) {
-  if (!shopId) return null;
-  return storeCache[shopId.trim().toUpperCase()] || null;
+function lookupStore(shopId){
+  if(!shopId)return null;
+  return storeCache[shopId.trim().toUpperCase()]||null;
 }
-
-function onStoreIdInput() {
-  const shopIdEl    = document.getElementById('f_storeId');
-  const storeNameEl = document.getElementById('f_storeAssignment');
-  const statusEl    = document.getElementById('store-lookup-status');
-  if (!shopIdEl||!storeNameEl||!statusEl) return;
-  const shopId = shopIdEl.value.trim();
-  if (!shopId) { statusEl.textContent=''; storeNameEl.readOnly=false; return; }
-  const found = lookupStore(shopId);
-  if (found) {
-    storeNameEl.value = found; storeNameEl.readOnly = true;
-    statusEl.textContent = `Store found: ${found}`;
-    statusEl.className = 'store-lookup-status found';
-  } else {
-    storeNameEl.readOnly = false;
-    statusEl.textContent = storeCacheLoaded ? 'Store ID not found — enter name manually' : 'Store list loading…';
-    statusEl.className = 'store-lookup-status ' + (storeCacheLoaded?'notfound':'searching');
-  }
-  const hint = document.getElementById('hint-storeId');
-  if (shopId && !shopId.startsWith('PH0')) { hint?.classList.add('visible'); shopIdEl.classList.add('err'); }
-  else { hint?.classList.remove('visible'); shopIdEl.classList.remove('err'); }
+function onStoreIdInput(){
+  const shopIdEl=document.getElementById('f_storeId');
+  const storeNameEl=document.getElementById('f_storeAssignment');
+  const statusEl=document.getElementById('store-lookup-status');
+  if(!shopIdEl||!storeNameEl||!statusEl)return;
+  const shopId=shopIdEl.value.trim();
+  if(!shopId){statusEl.textContent='';storeNameEl.readOnly=false;return;}
+  const found=lookupStore(shopId);
+  if(found){storeNameEl.value=found;storeNameEl.readOnly=true;statusEl.textContent=`Store found: ${found}`;statusEl.className='store-lookup-status found';}
+  else{storeNameEl.readOnly=false;statusEl.textContent=storeCacheLoaded?'Store ID not found — enter name manually':'Store list loading…';statusEl.className='store-lookup-status '+(storeCacheLoaded?'notfound':'searching');}
+  const hint=document.getElementById('hint-storeId');
+  if(shopId&&!shopId.startsWith('PH0')){hint?.classList.add('visible');shopIdEl.classList.add('err');}
+  else{hint?.classList.remove('visible');shopIdEl.classList.remove('err');}
 }
 
 // ============================================================
@@ -1234,7 +1189,6 @@ function onStoreIdInput() {
 function setLoginStatus(msg,type){const el=document.getElementById('login-status');if(!el)return;el.textContent=msg;el.className='login-status'+(type?' '+type:'');}
 function showGoogleButton(){document.getElementById('login-waiting').style.display='none';document.getElementById('btn-google-signin').style.display='flex';}
 function hideGoogleButton(){document.getElementById('login-waiting').style.display='flex';document.getElementById('btn-google-signin').style.display='none';}
-
 function doLogin(){
   if(!tokenClient){setLoginStatus('Auth not ready yet…','error');return;}
   const btn=document.getElementById('btn-google-signin');
@@ -1242,7 +1196,6 @@ function doLogin(){
   const storedUser=localStorage.getItem('hr_user');
   tokenClient.requestAccessToken({prompt:storedUser?'':'consent'});
 }
-
 let _silentAuthTimer=setTimeout(()=>{
   if(document.getElementById('login-screen').style.display!=='none'){
     document.getElementById('login-waiting').style.display='none';
@@ -1250,8 +1203,7 @@ let _silentAuthTimer=setTimeout(()=>{
     setLoginStatus('Session expired — please sign in again.','');
   }
 },5000);
-
-const GOOGLE_BTN_HTML=`<svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/></svg>Sign in with Google`;
+const GOOGLE_BTN_HTML=`<svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/></svg>Sign in with Google`;
 
 function _onAuthReady(resp){
   const btn=document.getElementById('btn-google-signin');
@@ -1269,24 +1221,18 @@ function _onAuthReady(resp){
   setLoginStatus('Signed in! Loading data…','info');
   (async()=>{
     const user=await fetchUserInfo(accessToken);
-    if(user){
-      currentUser=user;
-      localStorage.setItem('hr_user',JSON.stringify({name:user.name,email:user.email,given_name:user.given_name,family_name:user.family_name}));
-    } else {
-      const stored=localStorage.getItem('hr_user');
-      currentUser=stored?JSON.parse(stored):{name:'User',email:'',given_name:'U',family_name:'S'};
-    }
-    if(!gapi.client.sheets) await gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
+    if(user){currentUser=user;localStorage.setItem('hr_user',JSON.stringify({name:user.name,email:user.email,given_name:user.given_name,family_name:user.family_name}));}
+    else{const stored=localStorage.getItem('hr_user');currentUser=stored?JSON.parse(stored):{name:'User',email:'',given_name:'U',family_name:'S'};}
+    if(!gapi.client.sheets)await gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
     showApp();
     if(!window._headersChecked){window._headersChecked=true;await ensureHeaders();}
-    await Promise.all([loadData(), loadStoreDetails()]);
+    await Promise.all([loadData(),loadStoreDetails()]);
   })();
 }
-
 window.onload=()=>{
   gapi.load('client',async()=>{
     await gapi.client.init({discoveryDocs:[DISCOVERY]});
-    gapiInited=true; trySilentAuth();
+    gapiInited=true;trySilentAuth();
   });
 };
 window.onGoogleLibraryLoad=()=>{
@@ -1326,8 +1272,6 @@ function showApp(){
     document.getElementById('user-name').textContent=currentUser.name||currentUser.email;
   }
 }
-
-// OFFLINE
 function setOfflineBanner(visible,msg){
   const el=document.getElementById('offline-banner');
   if(visible){el.classList.add('visible');if(msg)el.innerHTML=`${msg} <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>`;}
@@ -1347,8 +1291,8 @@ async function ensureHeaders(){
       if(!vals||!vals[0]||vals[0].length<hdrs.length)
         await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1`,valueInputOption:'RAW',resource:{values:[hdrs]}});
     };
-    await chk(ACTIVE_SHEET,HEADERS,'A1:AC1');
-    await chk(INACTIVE_SHEET,HEADERS,'A1:AC1');
+    await chk(ACTIVE_SHEET,HEADERS,'A1:AD1');
+    await chk(INACTIVE_SHEET,HEADERS,'A1:AD1');
     await chk(LOG_SHEET,LOG_HEADERS,'A1:G1');
   }catch(e){console.warn('Header setup:',e);}
 }
@@ -1361,8 +1305,8 @@ async function loadData(){
   setOfflineBanner(false);
   try{
     const [aRes,iRes]=await Promise.all([
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AC`}),
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AC`})
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AD`}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AD`})
     ]);
     employees=[];
     (aRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
@@ -1375,12 +1319,11 @@ async function loadData(){
     toast('Failed to load data: '+e.message,'error');
   }finally{showLoading(false);}
 }
-
 async function refreshData(){
   const btn=document.getElementById('refresh-btn');
   btn.classList.add('spinning');
   storeCacheLoaded=false;
-  await Promise.all([loadData(), loadStoreDetails()]);
+  await Promise.all([loadData(),loadStoreDetails()]);
   setTimeout(()=>btn.classList.remove('spinning'),500);
 }
 
@@ -1400,7 +1343,8 @@ function rowToObj(r){
     sss:r[20]||'',philhealth:r[21]||'',pagibig:r[22]||'',
     basicWage:r[23]||'',bankName:r[24]||'',bankAccount:r[25]||'',
     contractStatus:r[26]||'NOT YET SENT',contractSentDate:r[27]||'',
-    lastUpdated:r[28]||''
+    lastUpdated:r[28]||'',
+    notes:r[29]||''
   };
 }
 function objToRow(d){
@@ -1416,7 +1360,8 @@ function objToRow(d){
     d.sss||'',d.philhealth||'',d.pagibig||'',
     d.basicWage||'',d.bankName||'',d.bankAccount||'',
     d.contractStatus||'NOT YET SENT',d.contractSentDate||'',
-    ts()
+    ts(),
+    d.notes||''
   ];
 }
 function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
@@ -1444,11 +1389,10 @@ async function apiAddEmployee(data){
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
-  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AC`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
   await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Added','—',data.status);
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
-
 async function apiUpdateEmployee(data){
   const emp=employees.find(e=>String(e.infinixId)===String(data.infinixId));
   if(!emp)return{ok:false,msg:'Employee not found.'};
@@ -1457,18 +1401,17 @@ async function apiUpdateEmployee(data){
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AC`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
     if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AC${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AD${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
 }
-
 async function apiDeleteEmployee(infinixId){
   const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
   if(!emp)return{ok:false,msg:'Employee not found.'};
@@ -1481,23 +1424,30 @@ async function apiDeleteEmployee(infinixId){
   await writeLog(infinixId,emp.fullName||`${emp.firstName} ${emp.lastName}`,'Deleted',emp.status,'—');
   return{ok:true,msg:`${emp.fullName||emp.firstName+' '+emp.lastName} deleted.`};
 }
-
 async function apiBulkUpdateStatus(ids,newStatus){
   showLoading(true,`Updating ${ids.length} employees...`);
   let ok=0,fail=0;
   for(const id of ids){
-    try{
-      const emp=employees.find(e=>String(e.infinixId)===String(id));
-      if(!emp)continue;
-      const res=await apiUpdateEmployee({...emp,status:newStatus});
-      if(res.ok)ok++;else fail++;
-    }catch(e){fail++;}
+    try{const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)continue;const res=await apiUpdateEmployee({...emp,status:newStatus});if(res.ok)ok++;else fail++;}
+    catch(e){fail++;}
   }
   showLoading(false);
   if(ok>0)toast(`Updated ${ok} employee(s) to ${newStatus}`,'success');
   if(fail>0)toast(`${fail} update(s) failed`,'error');
-  selectedIds.clear();
-  await loadData();
+  selectedIds.clear();await loadData();
+}
+
+// Notes save
+async function saveNotes(infinixId, notesVal){
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  showLoading(true,'Saving notes...');
+  try{
+    const res=await apiUpdateEmployee({...emp,notes:notesVal});
+    if(res.ok){toast('Notes saved','success');await loadData();}
+    else toast(res.msg||'Failed to save notes','error');
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{showLoading(false);}
 }
 
 // ============================================================
@@ -1529,6 +1479,15 @@ function filteredEmployees(type){
   let list=filterStatus
     ?employees.filter(e=>e.status===filterStatus)
     :employees.filter(e=>isActive?e.status==='Active':e.status!=='Active');
+
+  // Missing field filter (from dashboard pill clicks)
+  if(missingFieldFilter==='notDeployed')list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
+  else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
+  else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
+  else if(missingFieldFilter==='missingSSS')list=list.filter(e=>!e.sss||e.sss.trim()==='');
+  else if(missingFieldFilter==='missingBank')list=list.filter(e=>!e.bankAccount||e.bankAccount.trim()==='');
+  else if(missingFieldFilter==='missingMobile')list=list.filter(e=>!e.mobile||e.mobile.trim()==='');
+
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
   if(filterRegion)list=list.filter(e=>e.region===filterRegion);
@@ -1537,15 +1496,56 @@ function filteredEmployees(type){
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
 }
-
 function onSearch(){
+  if(currentView==='dashboard'){showView('active');return;}
   if(currentView!=='active'&&currentView!=='inactive'){showView('active');return;}
   currentPage=1;selectedIds.clear();
   renderTableRows(currentView==='inactive'?'inactive':'active');
 }
 function onFilterChange(){currentPage=1;selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
-function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');onFilterChange();}
-function activeFilterCount(){return [filterRegion,filterDeployStatus,filterQR,filterContractStatus].filter(Boolean).length;}
+function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');onFilterChange();}
+function activeFilterCount(){return [filterRegion,filterDeployStatus,filterQR,filterContractStatus,missingFieldFilter].filter(Boolean).length;}
+
+// ============================================================
+// COLUMN VISIBILITY
+// ============================================================
+function toggleColDropdown(){
+  colDropdownOpen=!colDropdownOpen;
+  const dd=document.getElementById('col-dropdown');
+  if(dd)dd.classList.toggle('open',colDropdownOpen);
+}
+function toggleColVisibility(key, checked){
+  if(checked)visibleCols.add(key);else visibleCols.delete(key);
+  renderTableRows(currentView==='inactive'?'inactive':'active');
+}
+document.addEventListener('click',e=>{
+  if(colDropdownOpen&&!e.target.closest('.col-toggle-wrap')){
+    colDropdownOpen=false;
+    const dd=document.getElementById('col-dropdown');
+    if(dd)dd.classList.remove('open');
+  }
+});
+
+// ============================================================
+// BIRTHDAYS
+// ============================================================
+function getBirthdaysThisMonth(){
+  const now=new Date();
+  const thisMonth=now.getMonth();
+  const today=now.getDate();
+  const result=[];
+  employees.forEach(emp=>{
+    if(!emp.dob)return;
+    const d=new Date(emp.dob);
+    if(isNaN(d))return;
+    if(d.getMonth()===thisMonth){
+      const daysUntil=d.getDate()-today;
+      result.push({emp,day:d.getDate(),daysUntil});
+    }
+  });
+  result.sort((a,b)=>a.day-b.day);
+  return result;
+}
 
 // ============================================================
 // RENDER
@@ -1555,7 +1555,6 @@ function getStats(){
   employees.forEach(e=>{if(s[e.status]!==undefined)s[e.status]++;});
   return s;
 }
-
 function renderSidebar(){
   const s=getStats();
   document.getElementById('badge-active').textContent=s.Active;
@@ -1566,9 +1565,9 @@ function renderSidebar(){
       <span class="sf-count">${s[st]||0}</span>
     </div>`).join('');
 }
-
 function filterByStatus(s){
   filterStatus=filterStatus===s?null:s;
+  missingFieldFilter=null;
   currentView=s==='Active'?'active':'inactive';
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
@@ -1576,30 +1575,51 @@ function filterByStatus(s){
   if(navEl)navEl.classList.add('active');
   renderSidebar();renderView();
 }
-
 function showView(v){
   currentView=v;
-  if(v!=='active'&&v!=='inactive')filterStatus=null;
+  if(v!=='active'&&v!=='inactive'){filterStatus=null;missingFieldFilter=null;}
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
   renderSidebar();renderView();
 }
-
 function renderView(){
+  const si=document.getElementById('search-input');
+  if(currentView==='dashboard'){si.style.display='none';}
+  else if(currentView==='active'||currentView==='inactive'){si.style.display='';}
+  else{si.style.display='none';}
+
   if(currentView==='dashboard')renderDashboard();
   else if(currentView==='active')renderEmployeeTable('active');
   else if(currentView==='inactive')renderEmployeeTable('inactive');
+  else if(currentView==='tracker')renderTracker();
   else if(currentView==='log')renderLog();
 }
 
+// Dashboard pill drill-down
+function drillDown(filterKey){
+  missingFieldFilter=filterKey;
+  filterStatus=null;
+  currentView='active';
+  currentPage=1;selectedIds.clear();
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('nav-active')?.classList.add('active');
+  renderSidebar();renderView();
+}
+
+// Dashboard search redirect
+function dashSearch(q){
+  if(!q.trim())return;
+  document.getElementById('search-input').value=q;
+  showView('active');
+}
+
 // ============================================================
-// DASHBOARD — CLEAN VERSION
+// DASHBOARD
 // ============================================================
 function renderDashboard(){
   document.getElementById('topbar-title').textContent='Dashboard';
   document.getElementById('topbar-sub').textContent='Overview';
-  document.getElementById('search-input').style.display='none';
 
   const s=getStats();
   const total=employees.length;
@@ -1612,11 +1632,20 @@ function renderDashboard(){
   const missingSSS=employees.filter(e=>!e.sss||e.sss.trim()==='').length;
   const missingBank=employees.filter(e=>!e.bankAccount||e.bankAccount.trim()==='').length;
   const missingMobile=employees.filter(e=>!e.mobile||e.mobile.trim()==='').length;
-
   const regions={};employees.forEach(e=>{if(e.region)regions[e.region]=(regions[e.region]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
+  const birthdays=getBirthdaysThisMonth().slice(0,5);
+  const now=new Date();
 
   document.getElementById('content').innerHTML=`
+    <!-- DASHBOARD SEARCH -->
+    <div class="dash-search-wrap">
+      <span class="dash-search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)" oninput="if(!this.value)return">
+    </div>
+
     <!-- KF CARDS -->
     <div class="dash-kf-grid">
       <div class="kf-card glass-card">
@@ -1647,34 +1676,29 @@ function renderDashboard(){
 
     <!-- STATUS ROW -->
     <div class="dash-status-grid">
-      ${STATUSES.map(st=>{
-        const pct=total?Math.round((s[st]||0)/total*100):0;
-        return`<div class="status-card glass-card" onclick="filterByStatus('${st}')">
-          <div class="status-card-dot" style="background:${STATUS_COLORS[st]}"></div>
-          <div class="status-num">${s[st]||0}</div>
-          <div class="status-lbl">${st}</div>
-          <div class="status-bar"><div class="status-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div>
-        </div>`;}).join('')}
+      ${STATUSES.map(st=>{const pct=total?Math.round((s[st]||0)/total*100):0;return`<div class="status-card glass-card" onclick="filterByStatus('${st}')">
+        <div class="status-card-dot" style="background:${STATUS_COLORS[st]}"></div>
+        <div class="status-num">${s[st]||0}</div>
+        <div class="status-lbl">${st}</div>
+        <div class="status-bar"><div class="status-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div>
+      </div>`;}).join('')}
     </div>
 
-    <!-- PENDING ITEMS ROW -->
-    <div class="section-heading">
-      <span>Pending Actions</span>
-      <div class="section-heading-line"></div>
-    </div>
+    <!-- PENDING ACTIONS -->
+    <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Click a pill to filter employees</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
-      ${notScanned>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
-      ${contractPending>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
-      ${missingSSS>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
-      ${missingBank>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
-      ${missingMobile>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
-      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">0</span><span>All records complete</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
+      ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
+      ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
+      ${missingSSS>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingSSS')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
+      ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
+      ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
+      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All records complete</span></div>`:''}
     </div>
 
-    <!-- CHARTS + RECENT -->
+    <!-- BOTTOM GRID -->
     <div class="dash-bottom">
-      <div class="charts-grid" style="grid-template-columns:1fr;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:12px">
         <div class="chart-card glass-card">
           <div class="chart-title">Status Breakdown</div>
           <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
@@ -1683,19 +1707,28 @@ function renderDashboard(){
           <div class="chart-title">By Region</div>
           <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
         </div>
+        <!-- BIRTHDAYS -->
+        <div class="birthday-widget glass-card">
+          <div class="chart-title">🎂 Birthdays This Month</div>
+          ${birthdays.length===0
+            ?`<div style="font-size:12px;color:var(--text3);padding:8px 0">No birthdays this month.</div>`
+            :`<div class="bday-list">${birthdays.map(({emp,day,daysUntil})=>{
+              const isToday=daysUntil===0;
+              return`<div class="bday-item ${isToday?'bday-today':'bday-soon'}" onclick="openDetailPanel('${emp.infinixId}')">
+                <span class="bday-icon">${isToday?'🎉':'🎂'}</span>
+                <div>
+                  <div class="bday-name">${emp.fullName||''}</div>
+                  <div class="bday-date">${isToday?'<b style="color:var(--warning)">Today!</b>':daysUntil>0?`in ${daysUntil} day${daysUntil!==1?'s':''}`:`${Math.abs(daysUntil)} day${Math.abs(daysUntil)!==1?'s':''} ago`} · ${emp.storeAssignment||emp.region||''}</div>
+                </div>
+              </div>`;
+            }).join('')}</div>`}
+        </div>
       </div>
       <div class="table-wrap">
         <div class="table-head"><h3>Recently Updated</h3><span class="rec">Latest 8</span></div>
         <div class="table-scroll">
           <table>
-            <thead>
-              <tr>
-                <th class="no-sort">Name</th>
-                <th class="no-sort">ID</th>
-                <th class="no-sort">Status</th>
-                <th class="no-sort">Deployment</th>
-              </tr>
-            </thead>
+            <thead><tr><th class="no-sort">Name</th><th class="no-sort">ID</th><th class="no-sort">Status</th><th class="no-sort">Deployment</th></tr></thead>
             <tbody>
               ${recent.map(e=>`<tr onclick="openDetailPanel('${e.infinixId}')">
                 <td><div class="td-name">${e.fullName||''}</div></td>
@@ -1710,60 +1743,161 @@ function renderDashboard(){
     </div>`;
 
   setTimeout(()=>{
-    Chart.defaults.color='rgba(255,251,244,0.35)';
-    Chart.defaults.font.family = 'DM Sans';
+    const isDark=document.documentElement.getAttribute('data-theme')!=='light';
+    Chart.defaults.color=isDark?'rgba(229,215,196,0.35)':'rgba(42,34,20,0.45)';
+    Chart.defaults.font.family='DM Sans';
 
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
-      _charts.status=new Chart(ctxS,{
-        type:'doughnut',
-        data:{
-          labels:STATUSES,
-          datasets:[{
-            data:STATUSES.map(st=>s[st]||0),
-            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),
-            borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
-            borderWidth:1.5,hoverOffset:5
-          }]
-        },
-        options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{
-            legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8,color:'rgba(255,251,244,0.45)'}},
-            tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}
-          }
-        }
-      });
+      _charts.status=new Chart(ctxS,{type:'doughnut',data:{labels:STATUSES,datasets:[{data:STATUSES.map(st=>s[st]||0),backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),borderColor:STATUSES.map(st=>STATUS_COLORS[st]),borderWidth:1.5,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}}}});
     }
-
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
       const rEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]).slice(0,7);
-      _charts.region=new Chart(ctxR,{
-        type:'bar',
-        data:{
-          labels:rEntries.map(([r])=>r),
-          datasets:[{
-            label:'Employees',
-            data:rEntries.map(([,c])=>c),
-            backgroundColor:'rgba(216,207,188,0.15)',
-            borderColor:'rgba(216,207,188,0.5)',
-            borderWidth:1,borderRadius:5
-          }]
-        },
-        options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false}},
-          scales:{
-            x:{grid:{color:'rgba(216,207,188,0.04)'},ticks:{font:{size:9},color:'rgba(255,251,244,0.3)'}},
-            y:{grid:{color:'rgba(216,207,188,0.04)'},ticks:{font:{size:9},stepSize:1,color:'rgba(255,251,244,0.3)'}}
-          }
-        }
-      });
+      _charts.region=new Chart(ctxR,{type:'bar',data:{labels:rEntries.map(([r])=>r),datasets:[{label:'Employees',data:rEntries.map(([,c])=>c),backgroundColor:'rgba(136,144,99,0.2)',borderColor:'rgba(136,144,99,0.6)',borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(136,144,99,0.07)'},ticks:{font:{size:9}}},y:{grid:{color:'rgba(136,144,99,0.07)'},ticks:{font:{size:9},stepSize:1}}}}});
     }
   },80);
+}
+
+// ============================================================
+// DEPLOYMENT TRACKER
+// ============================================================
+function renderTracker(){
+  document.getElementById('topbar-title').textContent='Deployment Tracker';
+  document.getElementById('topbar-sub').textContent='Track deployment progress by region and store';
+
+  // filter employees
+  let list=employees;
+  if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&e.deploymentDate>=trackerDateFrom);
+  if(trackerDateTo)list=list.filter(e=>e.deploymentDate&&e.deploymentDate<=trackerDateTo);
+  if(trackerRegion)list=list.filter(e=>e.region===trackerRegion);
+
+  const total=list.length;
+  const deployed=list.filter(e=>e.deploymentStatus==='DEPLOYED').length;
+  const notYet=list.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length;
+  const backout=list.filter(e=>e.deploymentStatus==='BACKOUT').length;
+  const pct=total?Math.round(deployed/total*100):0;
+
+  // by region
+  const byRegion={};
+  REGIONS.forEach(r=>{
+    const reg=list.filter(e=>e.region===r);
+    byRegion[r]={total:reg.length,deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length,backout:reg.filter(e=>e.deploymentStatus==='BACKOUT').length};
+  });
+
+  // by store (top 10)
+  const byStore={};
+  list.forEach(e=>{
+    const key=e.storeAssignment||e.storeId||'Unknown';
+    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:e.region,total:0,deployed:0,notYet:0,backout:0};
+    byStore[key].total++;
+    if(e.deploymentStatus==='DEPLOYED')byStore[key].deployed++;
+    else if(e.deploymentStatus==='BACKOUT')byStore[key].backout++;
+    else byStore[key].notYet++;
+  });
+  const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
+
+  document.getElementById('content').innerHTML=`
+    <!-- DATE / REGION FILTERS -->
+    <div class="tracker-date-filters glass-card" style="padding:12px 16px;margin-bottom:16px">
+      <span style="font-size:9.5px;color:var(--moss-green);font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.8">Filters</span>
+      <input type="date" value="${trackerDateFrom}" onchange="trackerDateFrom=this.value;renderTracker()" placeholder="From date">
+      <span style="font-size:11px;color:var(--text3)">to</span>
+      <input type="date" value="${trackerDateTo}" onchange="trackerDateTo=this.value;renderTracker()" placeholder="To date">
+      <select style="background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:11.5px;color:var(--text2);font-family:'DM Sans',sans-serif;outline:none;" onchange="trackerRegion=this.value;renderTracker()">
+        <option value="">All Regions</option>
+        ${REGIONS.map(r=>`<option value="${r}" ${trackerRegion===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+      ${(trackerDateFrom||trackerDateTo||trackerRegion)?`<button class="btn btn-ghost btn-sm" onclick="trackerDateFrom='';trackerDateTo='';trackerRegion='';renderTracker()">Reset</button>`:''}
+      <span style="margin-left:auto;font-size:11px;color:var(--text3)">${total} employees in view</span>
+    </div>
+
+    <!-- KF CARDS -->
+    <div class="tracker-grid">
+      <div class="tracker-kf glass-card">
+        <div class="kf-label-top">Total in View</div>
+        <div class="kf-num">${total}</div>
+        <div class="kf-sub">Filtered records</div>
+      </div>
+      <div class="tracker-kf glass-card">
+        <div class="kf-label-top">Deployed</div>
+        <div class="kf-num" style="color:var(--success)">${deployed}</div>
+        <div class="kf-sub">${pct}% deployment rate</div>
+        <div class="kf-bar" style="margin-top:10px"><div class="kf-bar-fill" style="width:${pct}%;background:var(--success)"></div></div>
+      </div>
+      <div class="tracker-kf glass-card" style="display:flex;flex-direction:column;gap:6px">
+        <div class="kf-label-top">Breakdown</div>
+        <div style="display:flex;gap:12px;font-size:12px">
+          <span><span style="color:var(--warning);font-weight:700">${notYet}</span> <span style="color:var(--text3)">Pending</span></span>
+          <span><span style="color:var(--danger);font-weight:700">${backout}</span> <span style="color:var(--text3)">Backout</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BY REGION -->
+    <div class="section-heading"><span>By Region</span><div class="section-heading-line"></div></div>
+    <div class="tracker-region-grid">
+      ${REGIONS.map(r=>{
+        const rd=byRegion[r];
+        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card"><div class="tracker-region-name">${r}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
+        const rpct=Math.round(rd.deployed/rd.total*100);
+        return`<div class="tracker-region-card glass-card">
+          <div class="tracker-region-name">${r}</div>
+          <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text)">${rd.deployed}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${rd.total}</span></div>
+          <div class="tracker-region-bar-wrap"><div class="tracker-region-bar" style="width:${rpct}%"></div></div>
+          <div class="tracker-region-stats">
+            <span style="color:var(--success)">${rpct}% deployed</span>
+            <span>${rd.notYet} pending · ${rd.backout} backout</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- BY STORE -->
+    <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount</span></div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="no-sort">Store</th>
+              <th class="no-sort">Store ID</th>
+              <th class="no-sort">Region</th>
+              <th class="no-sort">Total</th>
+              <th class="no-sort">Deployed</th>
+              <th class="no-sort">Pending</th>
+              <th class="no-sort">Backout</th>
+              <th class="no-sort">Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
+            :storeList.map(st=>{
+              const sp=st.total?Math.round(st.deployed/st.total*100):0;
+              return`<tr>
+                <td><div class="td-name">${st.name}</div></td>
+                <td><span class="td-id">${st.storeId||'—'}</span></td>
+                <td style="color:var(--text2)">${st.region||'—'}</td>
+                <td style="font-weight:700">${st.total}</td>
+                <td><span style="color:var(--success);font-weight:700">${st.deployed}</span></td>
+                <td><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td>
+                <td><span style="color:var(--danger);font-weight:700">${st.backout}</span></td>
+                <td style="min-width:120px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden">
+                      <div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 // ============================================================
@@ -1771,10 +1905,27 @@ function renderDashboard(){
 // ============================================================
 function renderEmployeeTable(type){
   const isActive=type==='active';
-  const label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
+  let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
+  if(missingFieldFilter){
+    const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    label=(labels[missingFieldFilter]||'Filtered')+' Employees';
+  }
   document.getElementById('topbar-title').textContent=label;
   document.getElementById('topbar-sub').textContent='Click a row to view details';
-  document.getElementById('search-input').style.display='';
+
+  const colDropHTML=`<div class="col-toggle-wrap">
+    <button class="col-toggle-btn" onclick="toggleColDropdown()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+      Columns
+    </button>
+    <div class="col-dropdown" id="col-dropdown">
+      ${TABLE_COLUMNS.filter(c=>!c.always).map(c=>`
+        <label class="col-check-item">
+          <input type="checkbox" ${visibleCols.has(c.key)?'checked':''} onchange="toggleColVisibility('${c.key}',this.checked)">
+          ${c.label}
+        </label>`).join('')}
+    </div>
+  </div>`;
 
   const afc=activeFilterCount();
   document.getElementById('content').innerHTML=`
@@ -1782,8 +1933,9 @@ function renderEmployeeTable(type){
       <div class="table-head">
         <h3>${label}</h3>
         <span class="rec" id="emp-count"></span>
-        <div style="margin-left:auto;display:flex;gap:6px">
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
           ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status</button>`:''}
+          ${missingFieldFilter?`<button class="btn btn-ghost btn-sm" onclick="missingFieldFilter=null;currentPage=1;renderView()">Clear Filter</button>`:''}
         </div>
       </div>
       <div class="filter-bar">
@@ -1807,6 +1959,7 @@ function renderEmployeeTable(type){
           <option value="NOT YET SENT" ${filterContractStatus==='NOT YET SENT'?'selected':''}>Not Yet Sent</option>
         </select>
         ${afc>0?`<span class="filter-active-count">${afc} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>`:''}
+        ${colDropHTML}
       </div>
       <div class="bulk-bar hidden" id="bulk-bar">
         <span class="bulk-count" id="bulk-count">0 selected</span>
@@ -1824,17 +1977,7 @@ function renderEmployeeTable(type){
           <thead>
             <tr>
               <th class="td-check no-sort"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
-              <th data-sort="fullName" onclick="toggleSort('fullName')">Full Name</th>
-              <th data-sort="infinixId" onclick="toggleSort('infinixId')">Infinix ID</th>
-              <th data-sort="status" onclick="toggleSort('status')">Status</th>
-              <th data-sort="deploymentDate" onclick="toggleSort('deploymentDate')">Deploy Date</th>
-              <th data-sort="deploymentStatus" onclick="toggleSort('deploymentStatus')">Deploy Status</th>
-              <th data-sort="qrStatus" onclick="toggleSort('qrStatus')">QR</th>
-              <th data-sort="region" onclick="toggleSort('region')">Region</th>
-              <th data-sort="storeAssignment" onclick="toggleSort('storeAssignment')">Store</th>
-              <th data-sort="storeId" onclick="toggleSort('storeId')">Store ID</th>
-              <th data-sort="rssName" onclick="toggleSort('rssName')">RSS Name</th>
-              <th data-sort="contractStatus" onclick="toggleSort('contractStatus')">Contract</th>
+              ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th data-sort="${c.key}" onclick="toggleSort('${c.key}')">${c.label}</th>`).join('')}
               <th class="no-sort">Actions</th>
             </tr>
           </thead>
@@ -1861,34 +2004,38 @@ function renderTableRows(type){
 
   const tbody=document.getElementById('emp-tbody');
   if(!tbody)return;
+
+  const colRender={
+    fullName:e=>`<td><div class="td-name">${e.fullName||''}</div><div class="td-sub">${e.email||''}</div></td>`,
+    infinixId:e=>`<td><span class="td-id">${e.infinixId}</span></td>`,
+    status:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
+    deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>`,
+    deploymentStatus:e=>`<td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>`,
+    qrStatus:e=>`<td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>`,
+    region:e=>`<td style="color:var(--text2)">${e.region||'—'}</td>`,
+    storeAssignment:e=>`<td style="color:var(--text2)">${e.storeAssignment||'—'}</td>`,
+    storeId:e=>`<td style="color:var(--text3);font-size:11px">${e.storeId||'—'}</td>`,
+    rssName:e=>`<td style="color:var(--text2)">${e.rssName||'—'}</td>`,
+    contractStatus:e=>`<td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>`,
+  };
+
   if(!page.length){
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-state"><div class="ei">—</div><p>No employees found</p></div></td></tr>`;
-  } else {
+    tbody.innerHTML=`<tr><td colspan="20"><div class="empty-state"><div class="ei">—</div><p>No employees found</p></div></td></tr>`;
+  }else{
+    const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
       <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${e.infinixId}')">
         <td class="td-check" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect('${e.infinixId}',this.checked)">
         </td>
-        <td><div class="td-name">${e.fullName||''}</div><div class="td-sub">${e.email||''}</div></td>
-        <td><span class="td-id">${e.infinixId}</span></td>
-        <td><span class="badge b-${e.status}">${e.status}</span></td>
-        <td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>
-        <td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>
-        <td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>
-        <td style="color:var(--text2)">${e.region||'—'}</td>
-        <td style="color:var(--text2)">${e.storeAssignment||'—'}</td>
-        <td style="color:var(--text3);font-size:11px">${e.storeId||'—'}</td>
-        <td style="color:var(--text2)">${e.rssName||'—'}</td>
-        <td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>
+        ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn btn-ghost btn-sm" onclick="openEditModal('${e.infinixId}')">Edit</button>
           <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||'').replace(/'/g,"\\'")}')">Delete</button>
         </td>
       </tr>`).join('');
   }
-
   renderPagination(total,totalPages);
-
   const chkAll=document.getElementById('chk-all');
   if(chkAll){
     const pageIds=page.map(e=>e.infinixId);
@@ -1900,19 +2047,12 @@ function renderTableRows(type){
 }
 
 function renderPagination(total,totalPages){
-  const pg=document.getElementById('pagination');
-  if(!pg)return;
+  const pg=document.getElementById('pagination');if(!pg)return;
   const start=(currentPage-1)*pageSize+1;
   const end=Math.min(currentPage*pageSize,total);
   let pages=[];
   if(totalPages<=7){for(let i=1;i<=totalPages;i++)pages.push(i);}
-  else{
-    pages=[1];
-    if(currentPage>3)pages.push('...');
-    for(let i=Math.max(2,currentPage-1);i<=Math.min(totalPages-1,currentPage+1);i++)pages.push(i);
-    if(currentPage<totalPages-2)pages.push('...');
-    pages.push(totalPages);
-  }
+  else{pages=[1];if(currentPage>3)pages.push('...');for(let i=Math.max(2,currentPage-1);i<=Math.min(totalPages-1,currentPage+1);i++)pages.push(i);if(currentPage<totalPages-2)pages.push('...');pages.push(totalPages);}
   pg.innerHTML=`
     <div class="pagination-info">${total===0?'No records':`${start}–${end} of ${total}`}</div>
     <div style="display:flex;align-items:center;gap:4px">
@@ -1937,14 +2077,10 @@ function changePageSize(s){pageSize=s;currentPage=1;renderTableRows(currentView=
 // ============================================================
 // SELECTION & BULK
 // ============================================================
-function handleRowClick(event,id){
-  if(event.target.type==='checkbox')return;
-  openDetailPanel(id);
-}
+function handleRowClick(event,id){if(event.target.type==='checkbox')return;openDetailPanel(id);}
 function toggleSelect(id,checked){
   if(checked)selectedIds.add(id);else selectedIds.delete(id);
-  const row=event.target.closest('tr');
-  if(row)row.classList.toggle('selected',checked);
+  const row=event.target.closest('tr');if(row)row.classList.toggle('selected',checked);
   updateBulkBar();
   const chkAll=document.getElementById('chk-all');
   if(chkAll){
@@ -1952,8 +2088,7 @@ function toggleSelect(id,checked){
     const page=list.slice((currentPage-1)*pageSize,currentPage*pageSize);
     const pageIds=page.map(e=>e.infinixId);
     const allSelected=pageIds.every(id=>selectedIds.has(id));
-    chkAll.checked=allSelected;
-    chkAll.indeterminate=!allSelected&&pageIds.some(id=>selectedIds.has(id));
+    chkAll.checked=allSelected;chkAll.indeterminate=!allSelected&&pageIds.some(id=>selectedIds.has(id));
   }
 }
 function toggleSelectAll(checked){
@@ -1964,15 +2099,11 @@ function toggleSelectAll(checked){
 }
 function clearSelection(){selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
 function updateBulkBar(){
-  const bar=document.getElementById('bulk-bar');
-  const cnt=document.getElementById('bulk-count');
-  if(!bar)return;
-  if(selectedIds.size>0){bar.classList.remove('hidden');if(cnt)cnt.textContent=`${selectedIds.size} selected`;}
-  else bar.classList.add('hidden');
+  const bar=document.getElementById('bulk-bar');const cnt=document.getElementById('bulk-count');if(!bar)return;
+  if(selectedIds.size>0){bar.classList.remove('hidden');if(cnt)cnt.textContent=`${selectedIds.size} selected`;}else bar.classList.add('hidden');
 }
 function doBulkStatusChange(){
-  const sel=document.getElementById('bulk-status-sel');
-  const newStatus=sel?.value;
+  const sel=document.getElementById('bulk-status-sel');const newStatus=sel?.value;
   if(!newStatus||selectedIds.size===0)return;
   const ids=[...selectedIds];
   document.getElementById('confirm-title').textContent='Bulk Status Update';
@@ -1982,8 +2113,7 @@ function doBulkStatusChange(){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
-  const ids=[...selectedIds];
-  if(ids.length===0)return;
+  const ids=[...selectedIds];if(ids.length===0)return;
   document.getElementById('confirm-title').textContent='Bulk Delete';
   document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
   document.getElementById('confirm-ok').textContent='Delete All';
@@ -2003,18 +2133,14 @@ function doBulkDelete(){
 // DETAIL PANEL
 // ============================================================
 function openDetailPanel(id){
-  const emp=employees.find(e=>String(e.infinixId)===String(id));
-  if(!emp)return;
+  const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   detailEmpId=id;
   document.getElementById('dp-title').textContent=emp.fullName||`${emp.firstName} ${emp.lastName}`;
   document.getElementById('dp-body').innerHTML=buildDetailHTML(emp);
   document.getElementById('detail-panel').classList.add('open');
   loadEmployeeAudit(id);
 }
-function closeDetailPanel(){
-  document.getElementById('detail-panel').classList.remove('open');
-  detailEmpId=null;
-}
+function closeDetailPanel(){document.getElementById('detail-panel').classList.remove('open');detailEmpId=null;}
 function dpEdit(){const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
   if(!detailEmpId)return;
@@ -2025,7 +2151,20 @@ function dpDelete(){
 function buildDetailHTML(e){
   const row=(label,val)=>`<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-val">${val||'—'}</div></div>`;
   const badge=(val,cls)=>val?`<span class="badge b-${cls||val.replace(/ /g,'-')}">${val}</span>`:'—';
+
+  // Birthday highlight
+  let bdayNote='';
+  if(e.dob){
+    const d=new Date(e.dob);const now=new Date();
+    if(!isNaN(d)&&d.getMonth()===now.getMonth()){
+      const diff=d.getDate()-now.getDate();
+      if(diff===0)bdayNote=`<div style="background:rgba(201,184,122,0.1);border:1px solid rgba(201,184,122,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:10px">🎉 Birthday today!</div>`;
+      else if(diff>0&&diff<=7)bdayNote=`<div style="background:rgba(136,144,99,0.08);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--moss-green);margin-bottom:10px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
+    }
+  }
+
   return `
+    ${bdayNote}
     <div class="detail-section">
       <div class="detail-section-title">Key Info</div>
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
@@ -2050,12 +2189,19 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Government</div>
-      ${row('SSS',e.sss)}${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}
+      ${row('SSS',e.sss||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
       ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
-      ${row('Bank',e.bankName)}${row('Account No.',e.bankAccount)}
+      ${row('Bank',e.bankName)}
+      ${row('Account No.',e.bankAccount||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Notes / Remarks</div>
+      <textarea class="notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${e.notes||''}</textarea>
+      <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${e.infinixId}',document.getElementById('dp-notes-area').value)">Save Notes</button>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Audit Trail</div>
@@ -2065,28 +2211,19 @@ function buildDetailHTML(e){
 
 async function loadEmployeeAudit(infinixId){
   try{
-    if(!logCache){
-      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});
-      logCache=r.result.values||[];
-    }
+    if(!logCache){const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});logCache=r.result.values||[];}
     const entries=logCache.filter(r=>String(r[1]||'').trim()===String(infinixId).trim()).reverse();
-    const el=document.getElementById('dp-audit-inner');
-    if(!el)return;
+    const el=document.getElementById('dp-audit-inner');if(!el)return;
     if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
-    const colorMap={Added:'#7ab894','Status Changed':'#c9b87a',Deleted:'#c47a7a',Updated:'#D8CFBC'};
-    el.innerHTML=entries.map(r=>`
-      <div class="audit-item">
-        <div class="audit-dot" style="background:${colorMap[r[3]]||'rgba(255,251,244,0.3)'}"></div>
-        <div class="audit-meta">
-          <b>${r[3]||'Updated'}</b>
-          ${r[4]&&r[4]!=='—'?`<span style="color:var(--text3)"> · ${r[4]} → <b style="color:var(--text)">${r[5]||''}</b></span>`:''}
-          <div class="audit-time">${r[0]||''} · by ${r[6]||''}</div>
-        </div>
-      </div>`).join('');
-  }catch(e){
-    const el=document.getElementById('dp-audit-inner');
-    if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;
-  }
+    const colorMap={Added:'#7ab894','Status Changed':'#c9b87a',Deleted:'#c47a7a',Updated:'var(--moss-green)'};
+    el.innerHTML=entries.map(r=>`<div class="audit-item">
+      <div class="audit-dot" style="background:${colorMap[r[3]]||'rgba(136,144,99,0.5)'}"></div>
+      <div class="audit-meta"><b>${r[3]||'Updated'}</b>
+        ${r[4]&&r[4]!=='—'?`<span style="color:var(--text3)"> · ${r[4]} → <b style="color:var(--text)">${r[5]||''}</b></span>`:''}
+        <div class="audit-time">${r[0]||''} · by ${r[6]||''}</div>
+      </div>
+    </div>`).join('');
+  }catch(e){const el=document.getElementById('dp-audit-inner');if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;}
 }
 
 // ============================================================
@@ -2095,12 +2232,7 @@ async function loadEmployeeAudit(infinixId){
 async function renderLog(){
   document.getElementById('topbar-title').textContent='Activity Log';
   document.getElementById('topbar-sub').textContent='All changes recorded automatically';
-  document.getElementById('search-input').style.display='none';
-  document.getElementById('content').innerHTML=`
-    <div class="table-wrap">
-      <div class="table-head"><h3>Activity Log</h3></div>
-      <div id="log-list" style="padding:6px 18px 16px">Loading...</div>
-    </div>`;
+  document.getElementById('content').innerHTML=`<div class="table-wrap"><div class="table-head"><h3>Activity Log</h3></div><div id="log-list" style="padding:6px 18px 16px">Loading...</div></div>`;
   showLoading(true,'Loading log...');
   try{
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});
@@ -2144,12 +2276,11 @@ function getFormHTML(emp){
       <div class="fullname-preview" id="fullname-preview">${fn||'— Enter First & Last Name —'}</div>
     </div>
     <div class="field req"><label>Infinix Employee ID</label>
-      ${inp('infinixId','text','1700XXXX',emp?'readonly style="opacity:.5"':'oninput="validateInfinixId()"')}
+      ${inp('infinixId','text','1700XXXX',emp?'readonly style="opacity:.5"':'oninput="validateInfinixId();checkDuplicate()"')}
       <div class="field-hint" id="hint-infinixId">Must start with 1700</div>
+      <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system. Check before saving.</div>
     </div>
-    <div class="field req"><label>Employment Status</label>
-      ${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}
-    </div>
+    <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
     <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',['NOT YET DEPLOYED','DEPLOYED','BACKOUT','-'])}</div>
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
@@ -2207,6 +2338,12 @@ function getFormHTML(emp){
   <div class="form-grid">
     <div class="field"><label>Contract Status</label>${sel('contractStatus',['NOT YET SENT','SENT'])}</div>
     <div class="field"><label>Contract Sent Date</label>${dateInp('contractSentDate')}</div>
+  </div>
+
+  <div class="section-label">Notes / Remarks</div>
+  <div class="field form-full">
+    <label>Notes</label>
+    <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${v('notes')}</textarea>
   </div>`;
 }
 
@@ -2223,6 +2360,17 @@ function validateInfinixId(){
   if(val&&!val.startsWith('1700')){hint?.classList.add('visible');el?.classList.add('err');}
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
+function checkDuplicate(){
+  if(editingId)return; // skip on edit
+  const val=document.getElementById('f_infinixId')?.value.trim()||'';
+  const warn=document.getElementById('dup-warning');
+  if(!warn)return;
+  if(val&&employees.some(e=>String(e.infinixId).trim()===val)){
+    warn.classList.add('visible');
+  } else {
+    warn.classList.remove('visible');
+  }
+}
 function validateRssId(){
   const val=document.getElementById('f_rssId')?.value.trim()||'';
   const hint=document.getElementById('hint-rssId');
@@ -2230,12 +2378,10 @@ function validateRssId(){
   if(val&&!val.startsWith('1700')){hint?.classList.add('visible');el?.classList.add('err');}
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
-
 function gatherForm(){
   const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
-  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate')};
+  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),notes:f('notes')};
 }
-
 function validate(data){
   let ok=true;
   ['firstName','lastName','infinixId','status'].forEach(k=>{
@@ -2255,46 +2401,33 @@ function validate(data){
   if(data.rssId&&!data.rssId.startsWith('1700'))ok=false;
   return ok;
 }
-
 function openAddModal(){
   editingId=null;
   document.getElementById('modal-title').textContent='Add New Employee';
   document.getElementById('modal-save-btn').textContent='Save Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(null);
   document.getElementById('modal-overlay').classList.add('open');
-  if(storeCacheLoaded){
-    const statusEl=document.getElementById('store-lookup-status');
-    if(statusEl)statusEl.textContent='Enter Store ID above to auto-fill store name';
-  }
 }
-
 function openEditModal(id){
-  const emp=employees.find(e=>String(e.infinixId)===String(id));
-  if(!emp)return;
+  const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   editingId=id;
   document.getElementById('modal-title').textContent=`Edit — ${emp.fullName||emp.firstName+' '+emp.lastName}`;
   document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
   document.getElementById('modal-overlay').classList.add('open');
-  if(emp.storeId && storeCacheLoaded){
+  if(emp.storeId&&storeCacheLoaded){
     const found=lookupStore(emp.storeId);
     const statusEl=document.getElementById('store-lookup-status');
-    if(statusEl){
-      statusEl.textContent = found ? `Store: ${found}` : 'Store ID not in lookup — name entered manually';
-      statusEl.className = 'store-lookup-status ' + (found?'found':'notfound');
-    }
+    if(statusEl){statusEl.textContent=found?`Store: ${found}`:'Store ID not in lookup — name entered manually';statusEl.className='store-lookup-status '+(found?'found':'notfound');}
     const storeEl=document.getElementById('f_storeAssignment');
-    if(storeEl && found) storeEl.readOnly = true;
+    if(storeEl&&found)storeEl.readOnly=true;
   }
 }
-
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
-
 async function saveEmployee(){
   const data=gatherForm();
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
-  closeModal();
-  showLoading(true,editingId?'Updating employee...':'Adding employee...');
+  closeModal();showLoading(true,editingId?'Updating employee...':'Adding employee...');
   try{
     const result=editingId?await apiUpdateEmployee(data):await apiAddEmployee(data);
     if(result.ok){toast(result.msg,'success');await loadData();}
@@ -2302,7 +2435,6 @@ async function saveEmployee(){
   }catch(e){toast('Error: '+e.message,'error');}
   finally{showLoading(false);}
 }
-
 function confirmDelete(id,name){
   document.getElementById('confirm-title').textContent='Delete Employee?';
   document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
@@ -2311,16 +2443,12 @@ function confirmDelete(id,name){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
-
 async function doDelete(id){
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
-    if(result.ok){
-      toast(result.msg,'success');
-      if(detailEmpId===id)closeDetailPanel();
-      await loadData();
-    } else toast(result.msg||'Delete failed','error');
+    if(result.ok){toast(result.msg,'success');if(detailEmpId===id)closeDetailPanel();await loadData();}
+    else toast(result.msg||'Delete failed','error');
   }catch(e){toast('Error: '+e.message,'error');}
   finally{showLoading(false);}
 }
@@ -2329,8 +2457,7 @@ async function doDelete(id){
 // UTILITIES
 // ============================================================
 function toast(msg,type=''){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.className='toast show '+type;
+  const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+type;
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 function showLoading(v,text='Loading...'){
