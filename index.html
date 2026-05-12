@@ -547,81 +547,98 @@ let employees = [], currentView = 'dashboard', filterStatus = null, editingId = 
 // ============================================================
 // GOOGLE AUTH
 // ============================================================
+// Strategy: store user info in localStorage (permanent).
+// On refresh, silently request a fresh token (no popup) using
+// prompt:'' — works as long as the user's Google session is active.
+// Only shows login screen if silent re-auth fails.
 
-// Step 1: Load GAPI client
 window.onload = () => {
   gapi.load('client', async () => {
     await gapi.client.init({ discoveryDocs: [DISCOVERY] });
     gapiInited = true;
-    maybeRestoreSession();
+    trySilentAuth();
   });
 };
 
-// Step 2: GIS loaded — set up token client
 window.onGoogleLibraryLoad = () => {
+  gisInited = true;
+  // Set up token client once
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
+    prompt: '',
     callback: async (resp) => {
       if (resp.error) {
-        toast('Sign-in failed: ' + resp.error, 'error');
-        console.error('Auth error:', resp);
+        // Silent auth failed — show login screen
+        showLoginScreen();
         return;
       }
       accessToken = resp.access_token;
       gapi.client.setToken({ access_token: accessToken });
-      localStorage.setItem('gtoken', accessToken);
-      await loadUserAndStart();
+
+      // Get + store user info
+      const user = await fetchUserInfo(accessToken);
+      if (user) {
+        currentUser = user;
+        localStorage.setItem('hr_user', JSON.stringify({
+          name: user.name, email: user.email,
+          given_name: user.given_name, family_name: user.family_name
+        }));
+      } else {
+        // Use stored user info as fallback
+        const stored = localStorage.getItem('hr_user');
+        currentUser = stored ? JSON.parse(stored) : { name: 'User', email: '', given_name: 'U', family_name: 'S' };
+      }
+
+      showApp();
+      if (!window._headersChecked) {
+        window._headersChecked = true;
+        await ensureHeaders();
+      }
+      await loadData();
     }
   });
-  gisInited = true;
+  trySilentAuth();
 };
 
-// Try to restore session from localStorage
-async function maybeRestoreSession() {
-  const stored = localStorage.getItem('gtoken');
-  if (!stored) return;
-  accessToken = stored;
-  gapi.client.setToken({ access_token: accessToken });
-  const user = await fetchUserInfo(accessToken);
-  if (user) {
-    currentUser = user;
-    showApp();
-    await loadData();
-  } else {
-    // Token expired, clear it
-    localStorage.removeItem('gtoken');
-    accessToken = null;
+function trySilentAuth() {
+  if (!gapiInited || !gisInited || !tokenClient) return;
+  // Only attempt silent auth if user has logged in before
+  const storedUser = localStorage.getItem('hr_user');
+  if (!storedUser) {
+    showLoginScreen();
+    return;
+  }
+  // Show a subtle loading state while silently re-authing
+  document.getElementById('login-screen').style.display = 'flex';
+  // hint: use stored email so Google knows which account to use silently
+  try {
+    const u = JSON.parse(storedUser);
+    tokenClient.requestAccessToken({ prompt: '', login_hint: u.email || '' });
+  } catch(e) {
+    tokenClient.requestAccessToken({ prompt: '' });
   }
 }
 
-async function loadUserAndStart() {
-  // Get user info using the token directly via fetch
-  const user = await fetchUserInfo(accessToken);
-  if (user) {
-    currentUser = user;
-  } else {
-    // Fallback: create minimal user object from token
-    currentUser = { name: 'User', email: 'user@google.com', given_name: 'U', family_name: 'S' };
-  }
-  showApp();
-  await ensureHeaders();
-  await loadData();
+function showLoginScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
 }
 
 function signIn() {
   if (!tokenClient) { toast('Auth not ready, please wait...', 'error'); return; }
-  tokenClient.requestAccessToken({ prompt: 'consent' });
+  // Explicit sign-in: show account picker
+  tokenClient.requestAccessToken({ prompt: 'select_account' });
 }
 
 function signOut() {
   if (accessToken) {
     try { google.accounts.oauth2.revoke(accessToken); } catch(e) {}
   }
-  localStorage.removeItem('gtoken');
+  localStorage.removeItem('hr_user');
   accessToken = null; currentUser = null;
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
+  window._headersChecked = false;
+  showLoginScreen();
 }
 
 async function fetchUserInfo(token) {
