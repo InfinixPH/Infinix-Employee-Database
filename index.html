@@ -8,55 +8,60 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  /* === WARM DARK GLASSMORPHISM PALETTE === */
-  /* Inspired by the reference image: deep brown-charcoal base, amber/orange accent */
-  --bg-base:        #0f0d0b;
-  --bg-deep:        #0a0907;
-  --bg-warm:        #1a1510;
-  --bg-card:        rgba(255, 255, 255, 0.04);
-  --bg-card-hover:  rgba(255, 255, 255, 0.07);
-  --bg-glass:       rgba(30, 22, 14, 0.6);
-  --bg-glass2:      rgba(40, 30, 18, 0.55);
-  --bg-frosted:     rgba(255, 245, 230, 0.05);
+  /* === PALETTE: Smoky Black / Olive Drab / Bone / Floral White === */
+  --smoky-black:    #11120D;
+  --olive-drab:     #565449;
+  --bone:           #D8CFBC;
+  --floral-white:   #FFFBF4;
 
-  --amber:          #e8a840;
-  --amber-bright:   #f5c060;
-  --amber-dim:      rgba(232, 168, 64, 0.15);
-  --amber-glow:     rgba(232, 168, 64, 0.3);
-  --amber-glow2:    rgba(232, 168, 64, 0.12);
-  --orange:         #d4622a;
-  --orange-dim:     rgba(212, 98, 42, 0.15);
+  /* Derived tokens */
+  --bg-base:        #11120D;
+  --bg-deep:        #0b0c09;
+  --bg-mid:         #1a1b16;
+  --bg-card:        rgba(86, 84, 73, 0.13);
+  --bg-card-hover:  rgba(86, 84, 73, 0.22);
+  --bg-glass:       rgba(17, 18, 13, 0.75);
+  --bg-frosted:     rgba(216, 207, 188, 0.06);
 
-  --border:         rgba(255, 200, 120, 0.1);
-  --border2:        rgba(255, 200, 120, 0.2);
-  --border3:        rgba(255, 200, 120, 0.35);
-  --border-white:   rgba(255, 255, 255, 0.07);
+  --accent:         #D8CFBC;
+  --accent-bright:  #FFFBF4;
+  --accent-dim:     rgba(216, 207, 188, 0.12);
+  --accent-glow:    rgba(216, 207, 188, 0.18);
 
-  --text:           #f5ede0;
-  --text2:          rgba(245, 237, 224, 0.6);
-  --text3:          rgba(245, 237, 224, 0.35);
-  --text4:          rgba(245, 237, 224, 0.2);
+  --border:         rgba(216, 207, 188, 0.1);
+  --border2:        rgba(216, 207, 188, 0.2);
+  --border3:        rgba(216, 207, 188, 0.35);
 
-  --success:        #5db97c;
-  --success-bg:     rgba(93, 185, 124, 0.12);
-  --warning:        #e8a840;
-  --warning-bg:     rgba(232, 168, 64, 0.12);
-  --danger:         #e05c5c;
-  --danger-bg:      rgba(224, 92, 92, 0.12);
-  --info:           #5ba8d4;
-  --info-bg:        rgba(91, 168, 212, 0.12);
-  --purple:         #a07ad4;
-  --purple-bg:      rgba(160, 122, 212, 0.12);
+  --text:           #FFFBF4;
+  --text2:          rgba(255, 251, 244, 0.6);
+  --text3:          rgba(255, 251, 244, 0.35);
+  --text4:          rgba(255, 251, 244, 0.18);
 
-  --radius:         16px;
-  --radius-sm:      10px;
-  --radius-lg:      22px;
-  --shadow:         0 4px 24px rgba(0,0,0,0.5);
-  --shadow-lg:      0 12px 60px rgba(0,0,0,0.7);
-  --shadow-amber:   0 0 40px rgba(232,168,64,0.15);
+  --success:        #7ab894;
+  --success-bg:     rgba(122, 184, 148, 0.12);
+  --warning:        #c9b87a;
+  --warning-bg:     rgba(201, 184, 122, 0.12);
+  --danger:         #c47a7a;
+  --danger-bg:      rgba(196, 122, 122, 0.12);
+  --info:           #7a9ec4;
+  --info-bg:        rgba(122, 158, 196, 0.12);
 
-  --sidebar-w:      230px;
-  --topbar-h:       60px;
+  --radius:         14px;
+  --radius-sm:      9px;
+  --radius-lg:      20px;
+  --shadow:         0 4px 24px rgba(0,0,0,0.55);
+  --shadow-lg:      0 12px 60px rgba(0,0,0,0.75);
+  --shadow-accent:  0 0 40px rgba(216,207,188,0.07);
+
+  --sidebar-w:      224px;
+  --topbar-h:       58px;
+
+  /* Status colors mapped to palette */
+  --c-active:       #7ab894;
+  --c-floating:     #c9b87a;
+  --c-resigned:     #c4a07a;
+  --c-awol:         #c47a7a;
+  --c-terminated:   #a07ac4;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,107 +75,94 @@ body {
   display: flex;
 }
 
-/* === GRAIN OVERLAY === */
+/* === SUBTLE GRAIN === */
 body::after {
   content: '';
   position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 9999;
-  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.35;
 }
 
-/* === AMBIENT GRADIENTS === */
+/* === AMBIENT === */
 .ambient-1 {
-  position: fixed; top: -200px; left: -100px;
+  position: fixed; top: -300px; left: -200px;
   width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(232,168,64,0.06) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(86,84,73,0.18) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
-  animation: pulse1 10s ease-in-out infinite;
+  animation: amb 14s ease-in-out infinite;
 }
 .ambient-2 {
-  position: fixed; bottom: -200px; right: -100px;
+  position: fixed; bottom: -250px; right: -150px;
   width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(212,98,42,0.07) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(216,207,188,0.05) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
-  animation: pulse1 12s ease-in-out infinite reverse;
+  animation: amb 18s ease-in-out infinite reverse;
 }
-@keyframes pulse1 {
-  0%,100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.15); opacity: 0.6; }
-}
+@keyframes amb { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.12);opacity:0.6} }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 /* ============================================================
+   SVG ICON SYSTEM
+   ============================================================ */
+.icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; flex-shrink: 0;
+  opacity: 0.65;
+}
+.icon svg { width: 100%; height: 100%; }
+.nav-item.active .icon { opacity: 1; }
+.icon-lg { width: 18px; height: 18px; }
+.icon-sm { width: 14px; height: 14px; }
+
+/* ============================================================
    SIDEBAR
    ============================================================ */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
-  background: rgba(10, 8, 5, 0.82);
-  backdrop-filter: blur(32px) saturate(1.6);
-  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  background: rgba(10, 10, 8, 0.88);
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column; overflow: hidden;
   position: relative; z-index: 10;
 }
 
 .brand {
-  padding: 22px 18px 16px;
+  padding: 20px 16px 15px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(232,168,64,0.05), transparent);
 }
-.brand-top { display: flex; align-items: center; gap: 11px; }
-.brand-icon {
-  width: 38px; height: 38px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
-  border: 1px solid var(--border2);
-  background: var(--bg-warm);
-  box-shadow: 0 0 20px var(--amber-glow2);
-  flex-shrink: 0;
+.brand-logo {
+  display: flex; align-items: center; gap: 10px;
 }
-
-/*
-  ============================================================
-  HOW TO USE YOUR INFINIX LOGO:
-  1. Replace the emoji inside .brand-icon with:
-     <img src="your-logo.png" style="width:100%;height:100%;object-fit:contain;padding:4px">
-  2. For the login screen logo, do the same inside .login-logo
-  3. To use a hosted image: <img src="https://yoursite.com/logo.png" ...>
-  4. To embed base64: <img src="data:image/png;base64,YOUR_BASE64_HERE" ...>
-  ============================================================
-*/
-
-.brand-icon-inner { font-size: 20px; }
-.brand-name {
-  font-family: 'Sora', sans-serif;
-  font-size: 13px; font-weight: 800;
-  color: var(--text); line-height: 1.25;
-  letter-spacing: 0.3px;
+.brand-logo img {
+  height: 28px; width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
 }
 .brand-sub {
-  font-size: 9px; color: var(--amber);
-  letter-spacing: 2px; text-transform: uppercase;
-  margin-top: 7px; font-weight: 600;
-  opacity: 0.7;
+  font-size: 9px; color: var(--bone);
+  letter-spacing: 2.5px; text-transform: uppercase;
+  margin-top: 8px; font-weight: 600;
+  opacity: 0.45;
 }
 
-.nav { flex: 1; padding: 10px 10px; overflow-y: auto; }
+.nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
 .nav-section {
-  font-size: 9px; color: var(--amber);
+  font-size: 8.5px; color: var(--bone);
   letter-spacing: 2.5px; text-transform: uppercase;
   padding: 0 8px; margin: 16px 0 5px;
-  font-weight: 700; opacity: 0.5;
+  font-weight: 700; opacity: 0.35;
 }
 
 .nav-item {
   display: flex; align-items: center; gap: 9px;
-  padding: 8px 11px; border-radius: var(--radius-sm);
+  padding: 8px 10px; border-radius: var(--radius-sm);
   cursor: pointer; font-size: 12.5px; font-weight: 500;
-  color: var(--text2); transition: all .2s;
+  color: var(--text2); transition: all .18s;
   margin-bottom: 2px; position: relative;
   border: 1px solid transparent;
 }
@@ -180,57 +172,50 @@ body::after {
   color: var(--text);
 }
 .nav-item.active {
-  background: linear-gradient(135deg, rgba(232,168,64,0.14), rgba(212,98,42,0.08));
+  background: rgba(216, 207, 188, 0.1);
   border-color: var(--border2);
-  color: var(--amber-bright);
+  color: var(--floral-white);
   font-weight: 600;
-  box-shadow: 0 0 12px var(--amber-glow2);
 }
 .nav-item.active::before {
   content: '';
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 3px; height: 55%;
-  background: linear-gradient(180deg, var(--amber-bright), var(--amber));
+  width: 2.5px; height: 50%;
+  background: var(--bone);
   border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 8px var(--amber-glow);
+  opacity: 0.8;
 }
-
-/* NAV ICONS — replace emoji with <img> tags for custom icons:
-   <img src="your-icon.svg" style="width:16px;height:16px;opacity:0.8">
-*/
-.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
 
 .nav-badge {
   margin-left: auto;
-  background: var(--bg-frosted);
+  background: rgba(216,207,188,0.08);
   border: 1px solid var(--border);
   color: var(--text3);
   font-size: 10px; font-weight: 700;
   padding: 1px 7px; border-radius: 20px;
 }
 .nav-item.active .nav-badge {
-  background: var(--amber-dim);
+  background: var(--accent-dim);
   border-color: var(--border2);
-  color: var(--amber-bright);
+  color: var(--bone);
 }
 
-.status-filters { padding: 0 10px 12px; }
+.status-filters { padding: 0 8px 12px; }
 .sf-item {
   display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px; border-radius: var(--radius-sm);
+  padding: 6px 10px; border-radius: var(--radius-sm);
   cursor: pointer; font-size: 12px;
   color: var(--text2); transition: all .15s; margin-bottom: 2px;
   border: 1px solid transparent;
 }
 .sf-item:hover { background: var(--bg-frosted); border-color: var(--border); color: var(--text); }
 .sf-item.active { background: var(--bg-frosted); border-color: var(--border2); color: var(--text); font-weight: 600; }
-.sf-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+.sf-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .sf-count { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 700; }
 
 .sidebar-footer {
-  padding: 12px 14px;
+  padding: 12px 12px;
   border-top: 1px solid var(--border);
-  background: rgba(232,168,64,0.03);
 }
 .user-pill {
   display: flex; align-items: center; gap: 9px;
@@ -238,20 +223,21 @@ body::after {
   background: var(--bg-frosted);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  backdrop-filter: blur(8px);
 }
 .user-avatar {
   width: 26px; height: 26px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--orange), var(--amber));
+  background: var(--olive-drab);
   border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: var(--bg-deep); flex-shrink: 0; font-weight: 800;
+  font-size: 10px; color: var(--bone); flex-shrink: 0; font-weight: 800;
+  font-family: 'Sora', sans-serif;
 }
-.user-name { font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-name { font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .btn-signout {
-  margin-left: auto; background: none; border: none;
-  cursor: pointer; color: var(--text3); font-size: 13px;
+  background: none; border: none;
+  cursor: pointer; color: var(--text3); font-size: 12px;
   padding: 2px 4px; border-radius: 4px; transition: color .15s;
+  display: flex; align-items: center;
 }
 .btn-signout:hover { color: var(--danger); }
 
@@ -261,7 +247,7 @@ body::after {
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; position: relative; z-index: 5; }
 
 .topbar {
-  background: rgba(10, 8, 5, 0.75);
+  background: rgba(10, 10, 8, 0.8);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
   border-bottom: 1px solid var(--border);
@@ -271,10 +257,10 @@ body::after {
 .topbar-left { display: flex; flex-direction: column; }
 .topbar-title {
   font-family: 'Sora', sans-serif;
-  font-size: 15px; font-weight: 700;
-  letter-spacing: 0.3px;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.2px;
 }
-.topbar-sub { font-size: 10.5px; color: var(--text3); margin-top: 1px; }
+.topbar-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
 .search-wrap { position: relative; }
@@ -284,38 +270,40 @@ body::after {
   backdrop-filter: blur(8px);
   border-radius: var(--radius-sm);
   padding: 7px 12px 7px 32px;
-  font-size: 12.5px; color: var(--text); width: 230px;
+  font-size: 12.5px; color: var(--text); width: 220px;
   font-family: 'DM Sans', sans-serif; outline: none;
   transition: all .2s;
 }
 .search-wrap input:focus {
   border-color: var(--border2);
-  box-shadow: 0 0 0 3px var(--amber-dim);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 .search-wrap input::placeholder { color: var(--text3); }
-.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--amber); font-size: 12px; pointer-events: none; opacity: 0.6; }
+.search-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; opacity: 0.4; display: flex; align-items: center;
+}
 
 /* BUTTONS */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 15px; border-radius: var(--radius-sm);
+  padding: 7px 14px; border-radius: var(--radius-sm);
   border: 1px solid transparent; cursor: pointer;
-  font-size: 12.5px; font-weight: 600;
+  font-size: 12px; font-weight: 600;
   font-family: 'DM Sans', sans-serif;
-  transition: all .2s; white-space: nowrap;
+  transition: all .18s; white-space: nowrap;
   letter-spacing: 0.2px;
 }
 .btn-primary {
-  background: linear-gradient(135deg, rgba(232,168,64,0.85), rgba(212,98,42,0.7));
-  color: var(--bg-deep);
-  border-color: var(--border2);
-  box-shadow: 0 0 20px var(--amber-glow2), inset 0 1px 0 rgba(255,255,255,0.15);
+  background: var(--bone);
+  color: var(--smoky-black);
+  border-color: rgba(216,207,188,0.3);
   font-weight: 700;
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--amber-bright), var(--orange));
-  box-shadow: 0 0 32px var(--amber-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+  background: var(--floral-white);
   transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(216,207,188,0.15);
 }
 .btn-ghost {
   background: var(--bg-frosted);
@@ -323,20 +311,20 @@ body::after {
   border-color: var(--border);
   backdrop-filter: blur(8px);
 }
-.btn-ghost:hover { border-color: var(--border2); color: var(--text); background: rgba(255,255,255,0.06); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); background: rgba(255,255,255,0.05); }
 .btn-danger {
   background: var(--danger-bg);
   color: var(--danger);
-  border-color: rgba(224,92,92,0.2);
+  border-color: rgba(196,122,122,0.2);
 }
-.btn-danger:hover { background: rgba(224,92,92,0.22); border-color: rgba(224,92,92,0.4); }
-.btn-sm { padding: 4px 10px; font-size: 11.5px; border-radius: 8px; }
+.btn-danger:hover { background: rgba(196,122,122,0.22); border-color: rgba(196,122,122,0.4); }
+.btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 7px; }
 .btn-refresh {
   background: var(--bg-frosted);
   color: var(--text2);
   border-color: var(--border);
 }
-.btn-refresh:hover { border-color: var(--border2); color: var(--amber); }
+.btn-refresh:hover { border-color: var(--border2); color: var(--bone); }
 .btn-refresh.spinning span { display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -346,8 +334,8 @@ body::after {
    OFFLINE BANNER
    ============================================================ */
 .offline-banner {
-  background: rgba(232,168,64,0.08);
-  border-bottom: 1px solid rgba(232,168,64,0.25);
+  background: rgba(201,184,122,0.07);
+  border-bottom: 1px solid rgba(201,184,122,0.2);
   padding: 8px 24px; font-size: 12px; color: var(--warning);
   display: none; align-items: center; gap: 8px; flex-shrink: 0;
 }
@@ -358,104 +346,97 @@ body::after {
    ============================================================ */
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   position: relative; overflow: hidden;
-  transition: all .25s cubic-bezier(.4,0,.2,1);
+  transition: all .22s cubic-bezier(.4,0,.2,1);
 }
 .glass-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border2);
-  box-shadow: var(--shadow-amber);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent);
 }
 .glass-card::before {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
   pointer-events: none;
 }
 .glass-card::after {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,200,120,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(216,207,188,0.18), transparent);
 }
 
 /* ============================================================
-   DASHBOARD KF CARDS
+   DASHBOARD
    ============================================================ */
-.kf-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 16px; }
-.kf-card {
-  padding: 20px 22px;
+.dash-kf-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+.kf-card { padding: 20px 22px; }
+.kf-label-top {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px;
 }
-.kf-icon { font-size: 22px; margin-bottom: 12px; }
 .kf-num {
   font-family: 'Sora', sans-serif;
-  font-size: 30px; font-weight: 800; line-height: 1;
-  background: linear-gradient(135deg, var(--text), var(--amber-bright));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 32px; font-weight: 800; line-height: 1;
+  color: var(--floral-white);
 }
-.kf-label { font-size: 11px; color: var(--text2); margin-top: 6px; font-weight: 500; }
-.kf-sub { font-size: 10px; color: var(--amber); margin-top: 3px; opacity: 0.7; }
+.kf-sub { font-size: 10.5px; color: var(--text3); margin-top: 6px; }
 .kf-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 14px; overflow: hidden; }
-.kf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--amber), var(--amber-bright)); transition: width 1s cubic-bezier(.4,0,.2,1); }
+.kf-bar-fill { height: 100%; border-radius: 2px; background: var(--bone); transition: width 1s cubic-bezier(.4,0,.2,1); opacity: 0.6; }
 
-/* ============================================================
-   COMPLETION / REQUIREMENTS SECTION
-   ============================================================ */
-.req-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
-.req-card { padding: 16px 18px; }
-.req-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.req-icon { font-size: 18px; }
-.req-title {
-  font-family: 'Sora', sans-serif;
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1.2px;
-  color: var(--text2);
-}
-.req-missing {
-  font-family: 'Sora', sans-serif;
-  font-size: 26px; font-weight: 800;
-  background: linear-gradient(135deg, var(--danger), #ff8a8a);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.req-total { font-size: 11px; color: var(--text3); margin-top: 3px; }
-.req-bar { height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; margin-top: 12px; overflow: hidden; }
-.req-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--danger), #ff8a8a); transition: width 1s cubic-bezier(.4,0,.2,1); }
-.req-bar-fill.good { background: linear-gradient(90deg, var(--success), #8de0a8); }
+/* Status row */
+.dash-status-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
+.status-card { padding: 14px 16px; cursor: pointer; }
+.status-card-dot { width: 6px; height: 6px; border-radius: 50%; margin-bottom: 10px; }
+.status-num { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 800; color: var(--floral-white); }
+.status-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+.status-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.status-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
 
-/* ============================================================
-   STATS ROW
-   ============================================================ */
-.stats-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
-.stat-card {
-  padding: 14px 16px; cursor: pointer;
-}
-.stat-num {
-  font-family: 'Sora', sans-serif;
-  font-size: 24px; font-weight: 800;
-}
-.stat-label { font-size: 10.5px; color: var(--text2); margin-top: 3px; font-weight: 500; }
-.stat-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 10px; overflow: hidden; }
-.stat-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+/* Dash 2-col bottom */
+.dash-bottom { display: grid; grid-template-columns: 1.1fr 1.6fr; gap: 14px; margin-top: 16px; }
 
-/* ============================================================
-   CHARTS
-   ============================================================ */
-.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+/* Charts */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }
 .chart-card { padding: 18px; }
 .chart-title {
-  font-family: 'Sora', sans-serif;
-  font-size: 10px; font-weight: 700;
-  margin-bottom: 14px; color: var(--amber);
-  text-transform: uppercase; letter-spacing: 1.5px;
-  opacity: 0.8;
+  font-size: 9px; font-weight: 700; margin-bottom: 14px;
+  color: var(--bone); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6;
 }
-.chart-wrap { position: relative; height: 170px; }
+.chart-wrap { position: relative; height: 160px; }
+
+/* Summary quick pills */
+.summary-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.summary-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 30px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 11.5px; color: var(--text2);
+  backdrop-filter: blur(12px);
+  transition: all .15s;
+}
+.summary-pill:hover { border-color: var(--border2); color: var(--text); cursor: pointer; }
+.summary-pill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.summary-pill-num { font-weight: 800; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--floral-white); }
+.summary-pill-warn { border-color: rgba(196,122,122,0.25); }
+.summary-pill-warn .summary-pill-dot { background: var(--danger); }
+.summary-pill-warn .summary-pill-num { color: var(--danger); }
+.summary-pill-ok .summary-pill-dot { background: var(--success); }
+.summary-pill-ok .summary-pill-num { color: var(--success); }
+
+/* Section heading */
+.section-heading {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+  color: var(--bone); opacity: 0.5; margin-bottom: 10px;
+}
+.section-heading-line { flex: 1; height: 1px; background: var(--border); }
 
 /* ============================================================
    FILTER BAR
@@ -463,7 +444,7 @@ body::after {
 .filter-bar {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   padding: 10px 16px;
-  background: rgba(10,8,5,0.5);
+  background: rgba(10,10,8,0.5);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(12px);
 }
@@ -477,13 +458,13 @@ body::after {
   outline: none; cursor: pointer; transition: all .15s;
 }
 .filter-bar select:focus { border-color: var(--border2); color: var(--text); }
-.filter-bar select option { background: #1a1510; }
-.filter-label { font-size: 10px; color: var(--amber); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+.filter-bar select option { background: #1a1b16; }
+.filter-label { font-size: 9.5px; color: var(--bone); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; }
 .filter-active-count {
   font-size: 11px;
-  background: var(--amber-dim);
+  background: var(--accent-dim);
   border: 1px solid var(--border2);
-  color: var(--amber-bright);
+  color: var(--bone);
   padding: 3px 9px; border-radius: 20px; font-weight: 700;
 }
 
@@ -493,86 +474,82 @@ body::after {
 .table-wrap {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius); overflow: hidden;
   position: relative;
-}
-.table-wrap::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
-  pointer-events: none; z-index: 0;
 }
 .table-wrap::after {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,200,120,0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(216,207,188,0.18), transparent);
+  pointer-events: none;
 }
 
 .table-head {
   padding: 13px 18px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  background: rgba(232,168,64,0.04);
+  background: rgba(86,84,73,0.1);
   position: relative; z-index: 1;
 }
 .table-head h3 {
   font-family: 'Sora', sans-serif;
-  font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.2px;
 }
 .table-head .rec { font-size: 11px; color: var(--text3); }
 .table-scroll { overflow-x: auto; position: relative; z-index: 1; }
 
 table { width: 100%; border-collapse: collapse; min-width: 900px; }
 thead th {
-  background: rgba(232,168,64,0.04);
-  padding: 9px 13px; font-size: 10px; font-weight: 700;
-  color: var(--amber); text-align: left;
+  background: rgba(86,84,73,0.08);
+  padding: 9px 13px; font-size: 9.5px; font-weight: 700;
+  color: var(--bone); text-align: left;
   letter-spacing: 1px; text-transform: uppercase;
   border-bottom: 1px solid var(--border); white-space: nowrap;
   cursor: pointer; user-select: none; transition: color .15s;
-  opacity: 0.8;
+  opacity: 0.65;
 }
-thead th:hover { color: var(--amber-bright); opacity: 1; }
-thead th.sort-asc::after { content: ' ↑'; color: var(--amber-bright); }
-thead th.sort-desc::after { content: ' ↓'; color: var(--amber-bright); }
+thead th:hover { color: var(--floral-white); opacity: 1; }
+thead th.sort-asc::after { content: ' ↑'; color: var(--bone); }
+thead th.sort-desc::after { content: ' ↓'; color: var(--bone); }
 thead th.no-sort { cursor: default; }
 
-tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; cursor: pointer; }
+tbody tr { border-bottom: 1px solid rgba(216,207,188,0.05); transition: background .15s; cursor: pointer; }
 tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: rgba(232,168,64,0.04); }
-tbody tr.selected { background: rgba(232,168,64,0.07); }
+tbody tr:hover { background: rgba(216,207,188,0.04); }
+tbody tr.selected { background: rgba(216,207,188,0.07); }
 tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 
 .td-id {
   font-family: 'Sora', sans-serif;
-  font-size: 11.5px; font-weight: 700; color: var(--amber);
+  font-size: 11px; font-weight: 700; color: var(--bone); opacity: 0.75;
 }
 .td-name { font-weight: 600; font-size: 13px; }
 .td-sub { font-size: 10.5px; color: var(--text3); margin-top: 1px; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
-.td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--amber); cursor: pointer; }
+.td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--bone); cursor: pointer; }
 
 /* BADGES */
 .badge {
   display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 20px;
-  font-size: 10.5px; font-weight: 700; white-space: nowrap;
+  font-size: 10px; font-weight: 700; white-space: nowrap;
   border: 1px solid transparent; letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
-.b-Active      { background: var(--success-bg); color: var(--success); border-color: rgba(93,185,124,0.25); }
-.b-Floating    { background: var(--warning-bg); color: var(--warning); border-color: rgba(232,168,64,0.25); }
-.b-Resigned    { background: rgba(255,150,50,0.1); color: #ff9a3c; border-color: rgba(255,150,50,0.2); }
-.b-AWOL        { background: var(--danger-bg); color: var(--danger); border-color: rgba(224,92,92,0.25); }
-.b-Terminated  { background: rgba(255,50,50,0.08); color: #ff3d5a; border-color: rgba(255,50,50,0.15); }
-.b-DEPLOYED    { background: var(--success-bg); color: var(--success); border-color: rgba(93,185,124,0.25); }
-.b-NOT-YET-DEPLOYED { background: var(--warning-bg); color: var(--warning); border-color: rgba(232,168,64,0.25); }
-.b-BACKOUT     { background: var(--danger-bg); color: var(--danger); border-color: rgba(224,92,92,0.25); }
-.b-SCANNED     { background: var(--info-bg); color: var(--info); border-color: rgba(91,168,212,0.2); }
+.b-Active      { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
+.b-Floating    { background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
+.b-Resigned    { background: rgba(196,160,122,0.1); color: #c4a07a; border-color: rgba(196,160,122,0.2); }
+.b-AWOL        { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
+.b-Terminated  { background: rgba(160,122,196,0.1); color: #a07ac4; border-color: rgba(160,122,196,0.2); }
+.b-DEPLOYED    { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
+.b-NOT-YET-DEPLOYED { background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
+.b-BACKOUT     { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
+.b-SCANNED     { background: var(--info-bg); color: var(--info); border-color: rgba(122,158,196,0.2); }
 .b-NOT-SCANNED { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
-.b-SENT        { background: var(--success-bg); color: var(--success); border-color: rgba(93,185,124,0.25); }
-.b-NOT-YET-SENT{ background: var(--warning-bg); color: var(--warning); border-color: rgba(232,168,64,0.25); }
+.b-SENT        { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
+.b-NOT-YET-SENT{ background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
 .b-dash        { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
 
 /* ============================================================
@@ -581,51 +558,50 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .pagination {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 16px; border-top: 1px solid var(--border);
-  background: rgba(232,168,64,0.03);
+  background: rgba(86,84,73,0.05);
   position: relative; z-index: 1;
 }
 .pagination-info { font-size: 11.5px; color: var(--text3); }
 .pagination-controls { display: flex; align-items: center; gap: 4px; }
 .page-btn {
-  width: 28px; height: 28px; border-radius: 8px;
+  width: 28px; height: 28px; border-radius: 7px;
   border: 1px solid var(--border);
   background: var(--bg-frosted);
   color: var(--text2); cursor: pointer;
-  font-size: 12px; font-weight: 600;
+  font-size: 11px; font-weight: 600;
   font-family: 'DM Sans', sans-serif;
   display: flex; align-items: center; justify-content: center;
   transition: all .15s;
 }
-.page-btn:hover:not(:disabled) { border-color: var(--border2); color: var(--amber); }
+.page-btn:hover:not(:disabled) { border-color: var(--border2); color: var(--bone); }
 .page-btn:disabled { opacity: .25; cursor: default; }
 .page-btn.active {
-  background: linear-gradient(135deg, rgba(232,168,64,0.7), rgba(212,98,42,0.5));
+  background: var(--bone);
   border-color: var(--border2);
-  color: var(--bg-deep);
+  color: var(--smoky-black);
   font-weight: 800;
-  box-shadow: 0 0 12px var(--amber-glow2);
 }
 .page-size-sel {
   background: var(--bg-frosted); border: 1px solid var(--border);
-  border-radius: 8px; padding: 4px 8px;
-  font-size: 11.5px; color: var(--text2);
+  border-radius: 7px; padding: 4px 8px;
+  font-size: 11px; color: var(--text2);
   font-family: 'DM Sans', sans-serif;
   outline: none; cursor: pointer; margin-left: 8px;
 }
-.page-size-sel option { background: #1a1510; }
+.page-size-sel option { background: #1a1b16; }
 
 /* ============================================================
    BULK BAR
    ============================================================ */
 .bulk-bar {
   padding: 8px 16px;
-  background: rgba(232,168,64,0.06);
+  background: rgba(216,207,188,0.05);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   position: relative; z-index: 1;
 }
 .bulk-bar.hidden { display: none; }
-.bulk-count { font-size: 12.5px; font-weight: 700; color: var(--amber-bright); }
+.bulk-count { font-size: 12px; font-weight: 700; color: var(--bone); }
 .bulk-sep { width: 1px; height: 16px; background: var(--border); }
 .bulk-label { font-size: 11px; color: var(--text3); }
 .bulk-status-sel {
@@ -634,22 +610,22 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   font-size: 12px; color: var(--text);
   font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
 }
-.bulk-status-sel option { background: #1a1510; }
+.bulk-status-sel option { background: #1a1b16; }
 
 /* ============================================================
-   DETAIL PANEL (SLIDE-IN)
+   DETAIL PANEL
    ============================================================ */
 .detail-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
-  width: 440px; max-width: 94vw;
-  background: rgba(10, 8, 5, 0.92);
-  backdrop-filter: blur(40px) saturate(1.6);
-  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  width: 420px; max-width: 94vw;
+  background: rgba(10, 10, 8, 0.96);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border-left: 1px solid var(--border2);
-  box-shadow: -8px 0 64px rgba(0,0,0,.7), -1px 0 0 rgba(232,168,64,0.05);
+  box-shadow: -8px 0 60px rgba(0,0,0,.75);
   z-index: 90; display: flex; flex-direction: column;
   transform: translateX(100%);
-  transition: transform .32s cubic-bezier(.4,0,.2,1);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
 }
 .detail-panel::after {
   content: '';
@@ -661,53 +637,51 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .detail-panel-header {
   padding: 18px 20px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-  background: linear-gradient(180deg, rgba(232,168,64,0.06), transparent);
 }
 .detail-panel-header h3 {
   font-family: 'Sora', sans-serif;
-  font-size: 14px; font-weight: 700; flex: 1;
+  font-size: 13px; font-weight: 700; flex: 1;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .detail-panel-close {
-  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
-  background: var(--bg-frosted); cursor: pointer; font-size: 13px;
+  width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--bg-frosted); cursor: pointer; font-size: 12px;
   display: flex; align-items: center; justify-content: center;
   color: var(--text2); transition: all .15s; flex-shrink: 0;
 }
-.detail-panel-close:hover { background: var(--danger-bg); border-color: rgba(224,92,92,0.3); color: var(--danger); }
+.detail-panel-close:hover { background: var(--danger-bg); border-color: rgba(196,122,122,0.3); color: var(--danger); }
 
 .detail-panel-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
 .detail-panel-footer {
-  padding: 13px 20px; border-top: 1px solid var(--border);
+  padding: 12px 20px; border-top: 1px solid var(--border);
   display: flex; gap: 8px;
-  background: rgba(232,168,64,0.03);
 }
 
 .detail-section { margin-bottom: 18px; }
 .detail-section-title {
-  font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--amber); border-bottom: 1px solid var(--border);
-  padding-bottom: 7px; margin-bottom: 10px; opacity: 0.8;
+  font-size: 8.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--bone); border-bottom: 1px solid var(--border);
+  padding-bottom: 7px; margin-bottom: 10px; opacity: 0.55;
 }
 .detail-row {
   display: flex; gap: 6px; padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
   font-size: 12.5px;
 }
 .detail-row:last-child { border-bottom: none; }
 .detail-label {
-  color: var(--text3); width: 135px; flex-shrink: 0;
-  font-size: 10.5px; font-weight: 600;
+  color: var(--text3); width: 130px; flex-shrink: 0;
+  font-size: 10px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .5px; padding-top: 1px;
 }
 .detail-val { color: var(--text); font-weight: 500; word-break: break-word; }
 
 .audit-item {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 .audit-item:last-child { border-bottom: none; }
-.audit-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.audit-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 .audit-meta { font-size: 11.5px; line-height: 1.5; flex: 1; }
 .audit-time { font-size: 10px; color: var(--text3); margin-top: 2px; }
 .audit-empty { font-size: 12px; color: var(--text3); padding: 16px 0; text-align: center; }
@@ -725,13 +699,13 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .overlay.open { opacity: 1; pointer-events: all; }
 
 .modal {
-  background: rgba(12, 10, 6, 0.95);
-  backdrop-filter: blur(40px) saturate(1.6);
-  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  background: rgba(13, 13, 10, 0.97);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border: 1px solid var(--border2);
-  border-radius: 22px; width: 800px; max-width: 96vw; max-height: 92vh;
+  border-radius: 20px; width: 800px; max-width: 96vw; max-height: 92vh;
   display: flex; flex-direction: column;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(232,168,64,0.05) inset;
+  box-shadow: var(--shadow-lg);
   transform: translateY(16px) scale(.98); transition: transform .22s;
   position: relative; overflow: hidden;
 }
@@ -739,53 +713,53 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  pointer-events: none;
 }
 .overlay.open .modal { transform: translateY(0) scale(1); }
 
 .modal-header {
-  padding: 18px 24px 15px;
+  padding: 16px 22px 14px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px;
-  background: linear-gradient(180deg, rgba(232,168,64,0.06), transparent);
-  border-radius: 22px 22px 0 0;
+  border-radius: 20px 20px 0 0;
 }
 .modal-header h2 {
   font-family: 'Sora', sans-serif;
-  font-size: 15px; font-weight: 700; letter-spacing: 0.3px;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
 }
 .modal-close {
-  margin-left: auto; width: 30px; height: 30px;
-  border-radius: 8px; border: 1px solid var(--border);
-  background: var(--bg-frosted); cursor: pointer; font-size: 13px;
+  margin-left: auto; width: 28px; height: 28px;
+  border-radius: 7px; border: 1px solid var(--border);
+  background: var(--bg-frosted); cursor: pointer; font-size: 12px;
   display: flex; align-items: center; justify-content: center;
   color: var(--text2); transition: all .15s;
 }
-.modal-close:hover { background: var(--danger-bg); border-color: rgba(224,92,92,0.3); color: var(--danger); }
-.modal-body { padding: 18px 24px; overflow-y: auto; flex: 1; }
+.modal-close:hover { background: var(--danger-bg); border-color: rgba(196,122,122,0.3); color: var(--danger); }
+.modal-body { padding: 18px 22px; overflow-y: auto; flex: 1; }
 .modal-footer {
-  padding: 13px 24px; border-top: 1px solid var(--border);
+  padding: 12px 22px; border-top: 1px solid var(--border);
   display: flex; justify-content: flex-end; gap: 8px;
-  background: rgba(232,168,64,0.03);
-  border-radius: 0 0 22px 22px;
+  border-radius: 0 0 20px 20px;
 }
 
 /* FORM */
 .section-label {
-  font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--amber); border-bottom: 1px solid var(--border);
+  font-size: 8.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--bone); border-bottom: 1px solid var(--border);
   padding-bottom: 7px; margin-bottom: 12px; margin-top: 20px;
-  display: flex; align-items: center; gap: 6px; opacity: 0.8;
+  display: flex; align-items: center; gap: 6px; opacity: 0.6;
 }
 .section-label:first-child { margin-top: 0; }
-.section-label.key-section { color: var(--amber-bright); opacity: 1; }
+.section-label.key-section { opacity: 1; }
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
 .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
 .form-full { grid-column: 1 / -1; }
 
 .field label {
-  display: block; font-size: 10.5px; font-weight: 600;
+  display: block; font-size: 10px; font-weight: 600;
   color: var(--text3); margin-bottom: 5px; letter-spacing: .3px;
+  text-transform: uppercase;
 }
 .field.req label::after { content: ' *'; color: var(--danger); }
 
@@ -795,54 +769,51 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   border-radius: var(--radius-sm);
   font-size: 12.5px; font-family: 'DM Sans', sans-serif;
   color: var(--text);
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
   outline: none; transition: all .15s;
 }
 .field input:focus, .field select:focus, .field textarea:focus {
   border-color: var(--border2);
-  background: rgba(232,168,64,0.05);
-  box-shadow: 0 0 0 3px var(--amber-dim);
+  background: rgba(216,207,188,0.04);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 .field input.err, .field select.err { border-color: var(--danger) !important; }
-.field select option { background: #1a1510; }
+.field select option { background: #1a1b16; }
 .field textarea { height: 60px; resize: vertical; }
 
 .fullname-preview {
-  background: rgba(232,168,64,0.07);
+  background: rgba(216,207,188,0.06);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 7px 11px;
-  font-size: 13px; font-weight: 700; color: var(--amber-bright);
+  font-size: 13px; font-weight: 700; color: var(--bone);
   min-height: 34px;
 }
 .field-hint { font-size: 10.5px; color: var(--danger); margin-top: 3px; display: none; }
 .field-hint.visible { display: block; }
 
-/* Store ID lookup indicator */
-.store-lookup-status {
-  font-size: 10.5px; margin-top: 3px; transition: all .2s;
-}
+.store-lookup-status { font-size: 10.5px; margin-top: 3px; transition: all .2s; }
 .store-lookup-status.found { color: var(--success); }
 .store-lookup-status.notfound { color: var(--danger); }
-.store-lookup-status.searching { color: var(--amber); }
+.store-lookup-status.searching { color: var(--warning); }
 
 /* ============================================================
    TOAST
    ============================================================ */
 .toast {
   position: fixed; bottom: 22px; right: 22px; z-index: 300;
-  background: rgba(12, 10, 6, 0.95);
+  background: rgba(13, 13, 10, 0.97);
   backdrop-filter: blur(24px);
-  color: var(--text); padding: 11px 18px;
-  border: 1px solid var(--border2); border-radius: 12px;
-  font-size: 13px; font-weight: 600;
+  color: var(--text); padding: 10px 16px;
+  border: 1px solid var(--border2); border-radius: 10px;
+  font-size: 12.5px; font-weight: 600;
   box-shadow: var(--shadow-lg);
   transform: translateY(80px); opacity: 0;
-  transition: all .28s cubic-bezier(.4,0,.2,1); max-width: 360px;
+  transition: all .28s cubic-bezier(.4,0,.2,1); max-width: 340px;
 }
 .toast.show { transform: translateY(0); opacity: 1; }
-.toast.success { border-color: rgba(93,185,124,0.5); color: var(--success); }
-.toast.error   { border-color: rgba(224,92,92,0.5); color: var(--danger); }
+.toast.success { border-color: rgba(122,184,148,0.4); color: var(--success); }
+.toast.error   { border-color: rgba(196,122,122,0.4); color: var(--danger); }
 
 /* ============================================================
    LOADING
@@ -855,21 +826,17 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   z-index: 200; gap: 14px;
 }
 .spinner {
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
   border: 2px solid var(--border);
-  border-top-color: var(--amber);
+  border-top-color: var(--bone);
   border-radius: 50%; animation: spin .7s linear infinite;
 }
-.loading-text { font-size: 13px; color: var(--text2); font-weight: 500; }
+.loading-text { font-size: 12.5px; color: var(--text2); font-weight: 500; }
 
 /* CONFIRM */
-.confirm-modal { width: 400px; }
-.confirm-body { padding: 30px 26px 12px; text-align: center; }
-.confirm-body .ci { font-size: 44px; margin-bottom: 12px; }
-.confirm-body h3 {
-  font-family: 'Sora', sans-serif;
-  font-size: 16px; margin-bottom: 8px;
-}
+.confirm-modal { width: 380px; }
+.confirm-body { padding: 28px 24px 12px; text-align: center; }
+.confirm-body h3 { font-family: 'Sora', sans-serif; font-size: 15px; margin-bottom: 8px; }
 .confirm-body p { font-size: 12.5px; color: var(--text2); line-height: 1.7; }
 
 /* LOG */
@@ -879,16 +846,15 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .log-item:last-child { border-bottom: none; }
 .log-icon {
-  width: 32px; height: 32px; border-radius: 9px;
+  width: 30px; height: 30px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
-  border: 1px solid transparent;
+  flex-shrink: 0; border: 1px solid transparent;
 }
-.log-added { background: var(--success-bg); border-color: rgba(93,185,124,0.2); }
-.log-changed { background: var(--warning-bg); border-color: rgba(232,168,64,0.2); }
-.log-deleted { background: var(--danger-bg); border-color: rgba(224,92,92,0.2); }
-.log-updated { background: var(--amber-dim); border-color: var(--border); }
-.log-meta { font-size: 12.5px; line-height: 1.55; }
+.log-added { background: var(--success-bg); border-color: rgba(122,184,148,0.2); color: var(--success); }
+.log-changed { background: var(--warning-bg); border-color: rgba(201,184,122,0.2); color: var(--warning); }
+.log-deleted { background: var(--danger-bg); border-color: rgba(196,122,122,0.2); color: var(--danger); }
+.log-updated { background: var(--accent-dim); border-color: var(--border); color: var(--bone); }
+.log-meta { font-size: 12px; line-height: 1.55; }
 .log-time { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
 
 /* ============================================================
@@ -903,17 +869,17 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   content: ''; position: fixed;
   top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(232,168,64,0.07), transparent 60%);
+  background: radial-gradient(circle, rgba(86,84,73,0.2), transparent 60%);
   pointer-events: none;
 }
 .login-card {
-  background: rgba(12, 10, 6, 0.88);
-  backdrop-filter: blur(40px) saturate(1.6);
-  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  background: rgba(13, 13, 10, 0.92);
+  backdrop-filter: blur(40px) saturate(1.4);
+  -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border: 1px solid var(--border2);
-  border-radius: 26px; padding: 48px 52px; text-align: center;
-  box-shadow: var(--shadow-lg), 0 0 80px rgba(232,168,64,0.08);
-  width: 400px; max-width: 94vw;
+  border-radius: 24px; padding: 48px 50px; text-align: center;
+  box-shadow: var(--shadow-lg);
+  width: 390px; max-width: 94vw;
   animation: fadeUp .4s cubic-bezier(.4,0,.2,1);
   position: relative;
 }
@@ -921,64 +887,55 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2), transparent);
-  border-radius: 26px 26px 0 0;
+  border-radius: 24px 24px 0 0; pointer-events: none;
 }
-@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
 .login-logo {
-  width: 66px; height: 66px;
-  background: linear-gradient(135deg, var(--orange), var(--amber));
-  border-radius: 20px; display: flex; align-items: center; justify-content: center;
-  font-size: 30px; margin: 0 auto 22px;
-  box-shadow: 0 0 40px rgba(232,168,64,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-  border: 1px solid var(--border2);
-  overflow: hidden;
+  height: 40px; margin: 0 auto 24px;
+  display: flex; align-items: center; justify-content: center;
 }
-/*
-  TO USE YOUR INFINIX LOGO IN THE LOGIN SCREEN:
-  Replace the emoji "📱" inside .login-logo with:
-  <img src="your-logo.png" style="width:80%;height:80%;object-fit:contain">
-*/
-
+.login-logo img {
+  height: 100%; width: auto; object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
 .login-title {
   font-family: 'Sora', sans-serif;
-  font-size: 26px; font-weight: 900; margin-bottom: 8px;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--text), var(--amber-bright));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 13px; font-weight: 700; margin-bottom: 6px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--bone); opacity: 0.6;
 }
-.login-sub { font-size: 12.5px; color: var(--text2); margin-bottom: 32px; line-height: 1.7; }
+.login-sub { font-size: 12px; color: var(--text3); margin-bottom: 30px; line-height: 1.7; }
 .btn-google {
-  width: 100%; padding: 12px 20px; border-radius: 12px;
+  width: 100%; padding: 11px 20px; border-radius: 10px;
   border: 1px solid var(--border2);
   background: var(--bg-frosted);
   backdrop-filter: blur(8px);
   color: var(--text);
-  font-size: 14px; font-weight: 600;
+  font-size: 13.5px; font-weight: 600;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer; transition: all .2s;
   display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 .btn-google:hover {
   border-color: var(--border3);
-  background: rgba(232,168,64,0.07);
-  box-shadow: 0 0 24px var(--amber-glow2);
+  background: rgba(216,207,188,0.07);
 }
 .btn-google:active { transform: scale(.98); }
 .btn-google.loading { opacity: .6; pointer-events: none; }
-.google-icon { width: 20px; height: 20px; flex-shrink: 0; }
-.login-status { font-size: 12px; color: var(--text3); margin-top: 14px; min-height: 20px; transition: color .2s; }
+.google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.login-status { font-size: 12px; color: var(--text3); margin-top: 12px; min-height: 18px; transition: color .2s; }
 .login-status.error { color: var(--danger); }
-.login-status.info  { color: var(--amber-bright); }
-.login-note { font-size: 10.5px; color: var(--text3); margin-top: 18px; line-height: 1.7; opacity: 0.7; }
+.login-status.info  { color: var(--bone); }
+.login-note { font-size: 10px; color: var(--text3); margin-top: 16px; line-height: 1.7; opacity: 0.6; }
 .login-waiting { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0 4px; }
-.login-waiting .spinner { width: 26px; height: 26px; border-width: 2px; }
+.login-waiting .spinner { width: 24px; height: 24px; border-width: 2px; }
 .login-waiting p { font-size: 12px; color: var(--text2); }
 
 /* MISC */
 .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
-.empty-state .ei { font-size: 36px; margin-bottom: 8px; }
+.empty-state .ei { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
 .empty-state p { font-size: 13px; }
 
 .view-tabs {
@@ -988,18 +945,14 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   border-radius: var(--radius-sm); padding: 3px; width: fit-content;
 }
 .view-tab {
-  padding: 6px 15px; border-radius: 7px; cursor: pointer;
+  padding: 6px 14px; border-radius: 7px; cursor: pointer;
   font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15s;
 }
 .view-tab.active {
-  background: linear-gradient(135deg, rgba(232,168,64,0.7), rgba(212,98,42,0.5));
-  color: var(--bg-deep); font-weight: 800;
-  box-shadow: 0 0 12px var(--amber-glow2);
+  background: var(--bone);
+  color: var(--smoky-black); font-weight: 800;
 }
 .view-tab:hover:not(.active) { color: var(--text); }
-
-/* dashboard bottom grid */
-.dash-bottom { display: grid; grid-template-columns: 1fr 1.6fr; gap: 14px; }
 </style>
 </head>
 <body>
@@ -1007,23 +960,15 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 <div class="ambient-1"></div>
 <div class="ambient-2"></div>
 
-<!-- ============================================================
-     LOGIN SCREEN
-     ============================================================ -->
+<!-- LOGIN SCREEN -->
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <!--
-        *** HOW TO USE YOUR INFINIX LOGO ***
-        Replace the 📱 emoji below with an <img> tag:
-        <img src="infinix-logo.png" style="width:80%;height:80%;object-fit:contain">
-        Or use a hosted URL:
-        <img src="https://example.com/infinix-logo.png" style="width:80%;height:80%;object-fit:contain">
-      -->
-      📱
+      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span style="display:none;font-family:'Sora',sans-serif;font-size:22px;font-weight:900;color:var(--bone);letter-spacing:2px">INFINIX</span>
     </div>
-    <div class="login-title">Infinix HR</div>
-    <div class="login-sub">Employee Database System<br>Sign in with your Google account to continue.</div>
+    <div class="login-title">HR System</div>
+    <div class="login-sub">Employee Database<br>Sign in with your Google account to continue.</div>
     <div class="login-waiting" id="login-waiting">
       <div class="spinner"></div>
       <p>Checking session…</p>
@@ -1042,60 +987,83 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   </div>
 </div>
 
-<!-- ============================================================
-     APP
-     ============================================================ -->
+<!-- APP -->
 <div id="app" style="display:none;width:100%;height:100vh;flex-direction:row">
 
 <div class="sidebar">
   <div class="brand">
-    <div class="brand-top">
-      <div class="brand-icon">
-        <!--
-          *** SIDEBAR LOGO ***
-          Replace with: <img src="infinix-logo.png" style="width:100%;height:100%;object-fit:contain;padding:5px">
-        -->
-        <div class="brand-icon-inner">📱</div>
-      </div>
-      <div class="brand-name">INFINIX<br>HR System</div>
+    <div class="brand-logo">
+      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png"
+           alt="Infinix"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span style="display:none;font-family:'Sora',sans-serif;font-size:16px;font-weight:900;color:var(--bone);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
   </div>
+
   <div class="nav">
     <div class="nav-section">Main</div>
-    <!--
-      *** NAV ICONS ***
-      Replace emoji with <img> tags for custom SVG icons:
-      <span class="nav-icon"><img src="dashboard-icon.svg" style="width:16px;height:16px;filter:brightness(0.8)"></span>
-    -->
     <div class="nav-item active" onclick="showView('dashboard')" id="nav-dashboard">
-      <span class="nav-icon">📊</span> Dashboard
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </span>
+      Dashboard
     </div>
     <div class="nav-item" onclick="showView('active')" id="nav-active">
-      <span class="nav-icon">✅</span> Active
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </span>
+      Active
       <span class="nav-badge" id="badge-active">0</span>
     </div>
     <div class="nav-item" onclick="showView('inactive')" id="nav-inactive">
-      <span class="nav-icon">📁</span> Inactive
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      </span>
+      Inactive
       <span class="nav-badge" id="badge-inactive">0</span>
     </div>
     <div class="nav-item" onclick="showView('log')" id="nav-log">
-      <span class="nav-icon">📋</span> Activity Log
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </span>
+      Activity Log
     </div>
+
     <div class="nav-section">Filter by Status</div>
   </div>
   <div class="status-filters" id="status-filters"></div>
+
   <div class="sidebar-footer">
     <div class="user-pill">
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-name" id="user-name">Loading...</div>
-      <button class="btn-signout" onclick="signOut()" title="Sign out">↩</button>
+      <button class="btn-signout" onclick="signOut()" title="Sign out">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
     </div>
   </div>
 </div>
 
 <div class="main">
-  <div class="offline-banner" id="offline-banner">⚠️ Connection issue — data may be stale. <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button></div>
+  <div class="offline-banner" id="offline-banner">Connection issue — data may be stale. <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button></div>
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
@@ -1103,11 +1071,20 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     </div>
     <div class="topbar-right">
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
         <input type="text" id="search-input" placeholder="Search name, ID, store…" oninput="onSearch()" style="display:none">
       </div>
-      <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()"><span>🔄</span> Refresh</button>
-      <button class="btn btn-primary" onclick="openAddModal()">＋ Add Employee</button>
+      <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        <span>Refresh</span>
+      </button>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Employee</button>
     </div>
   </div>
   <div class="content" id="content"></div>
@@ -1123,8 +1100,8 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   </div>
   <div class="detail-panel-body" id="dp-body"></div>
   <div class="detail-panel-footer">
-    <button class="btn btn-primary" style="flex:1" id="dp-edit-btn" onclick="dpEdit()">✏️ Edit</button>
-    <button class="btn btn-danger" id="dp-delete-btn" onclick="dpDelete()">🗑</button>
+    <button class="btn btn-primary" style="flex:1" id="dp-edit-btn" onclick="dpEdit()">Edit</button>
+    <button class="btn btn-danger" id="dp-delete-btn" onclick="dpDelete()">Delete</button>
   </div>
 </div>
 
@@ -1132,14 +1109,13 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 <div class="overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-header">
-      <span id="modal-icon">➕</span>
       <h2 id="modal-title">Add New Employee</h2>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="modal-save-btn" onclick="saveEmployee()">💾 Save</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveEmployee()">Save</button>
     </div>
   </div>
 </div>
@@ -1148,7 +1124,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 <div class="overlay" id="confirm-overlay">
   <div class="modal confirm-modal">
     <div class="confirm-body">
-      <div class="ci">⚠️</div>
       <h3 id="confirm-title">Confirm Action</h3>
       <p id="confirm-msg"></p>
     </div>
@@ -1175,14 +1150,17 @@ const CLIENT_ID   = '995259716921-k5m9g081spimdf6ph3gpermr4d7t0fr6.apps.googleus
 const SHEET_ID    = '1OJ8SMQFbC3iGxPvYRAqXwKYXIYyMuufEa_oQNcPWaMY';
 const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid';
 const DISCOVERY   = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
-const ACTIVE_SHEET      = 'Active';
-const INACTIVE_SHEET    = 'Inactive';
-const LOG_SHEET         = 'Log';
-const STORE_DETAILS_SHEET = 'Store Details'; // col E = Store Name, col F = Shop ID
-const PAGE_SIZE_DEFAULT = 50;
+const ACTIVE_SHEET        = 'Active';
+const INACTIVE_SHEET      = 'Inactive';
+const LOG_SHEET           = 'Log';
+const STORE_DETAILS_SHEET = 'Store Details';
+const PAGE_SIZE_DEFAULT   = 50;
 
-const STATUSES = ['Active', 'Floating', 'Resigned', 'AWOL', 'Terminated'];
-const STATUS_COLORS = { Active:'#5db97c', Floating:'#e8a840', Resigned:'#ff9a3c', AWOL:'#e05c5c', Terminated:'#ff3d5a' };
+const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated'];
+const STATUS_COLORS = {
+  Active:'#7ab894', Floating:'#c9b87a',
+  Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4'
+};
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
 const HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated'];
@@ -1201,33 +1179,26 @@ let filterRegion='', filterDeployStatus='', filterQR='', filterContractStatus=''
 let detailEmpId=null;
 let logCache=null;
 let _charts={};
-
-// Store lookup cache: { shopId -> storeName }
-let storeCache = {};
-let storeCacheLoaded = false;
+let storeCache={}, storeCacheLoaded=false;
 
 // ============================================================
-// STORE DETAILS LOOKUP
+// STORE LOOKUP
 // ============================================================
 async function loadStoreDetails() {
   if (storeCacheLoaded) return;
   try {
-    // Store Details sheet: col E = Store Name, col F = Shop ID (row 1 = header)
     const r = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: `${STORE_DETAILS_SHEET}!E:F`
+      spreadsheetId: SHEET_ID, range: `${STORE_DETAILS_SHEET}!E:F`
     });
     const rows = r.result.values || [];
     storeCache = {};
     for (let i = 1; i < rows.length; i++) {
-      const storeName = (rows[i][0] || '').trim();
-      const shopId    = (rows[i][1] || '').trim();
+      const storeName = (rows[i][0]||'').trim();
+      const shopId    = (rows[i][1]||'').trim();
       if (shopId) storeCache[shopId.toUpperCase()] = storeName;
     }
     storeCacheLoaded = true;
-  } catch(e) {
-    console.warn('Could not load Store Details:', e);
-  }
+  } catch(e) { console.warn('Store Details load failed:', e); }
 }
 
 function lookupStore(shopId) {
@@ -1235,37 +1206,26 @@ function lookupStore(shopId) {
   return storeCache[shopId.trim().toUpperCase()] || null;
 }
 
-// Called when user types a store ID in the form
 function onStoreIdInput() {
-  const shopIdEl = document.getElementById('f_storeId');
+  const shopIdEl    = document.getElementById('f_storeId');
   const storeNameEl = document.getElementById('f_storeAssignment');
-  const statusEl = document.getElementById('store-lookup-status');
-  if (!shopIdEl || !storeNameEl || !statusEl) return;
-
+  const statusEl    = document.getElementById('store-lookup-status');
+  if (!shopIdEl||!storeNameEl||!statusEl) return;
   const shopId = shopIdEl.value.trim();
-  if (!shopId) { statusEl.textContent = ''; storeNameEl.readOnly = false; return; }
-
+  if (!shopId) { statusEl.textContent=''; storeNameEl.readOnly=false; return; }
   const found = lookupStore(shopId);
   if (found) {
-    storeNameEl.value = found;
-    storeNameEl.readOnly = true;
-    statusEl.textContent = `✓ Store found: ${found}`;
+    storeNameEl.value = found; storeNameEl.readOnly = true;
+    statusEl.textContent = `Store found: ${found}`;
     statusEl.className = 'store-lookup-status found';
   } else {
     storeNameEl.readOnly = false;
-    statusEl.textContent = storeCacheLoaded ? '⚠ Store ID not found — enter name manually' : '⏳ Store list loading…';
-    statusEl.className = 'store-lookup-status ' + (storeCacheLoaded ? 'notfound' : 'searching');
+    statusEl.textContent = storeCacheLoaded ? 'Store ID not found — enter name manually' : 'Store list loading…';
+    statusEl.className = 'store-lookup-status ' + (storeCacheLoaded?'notfound':'searching');
   }
-
-  // Validate format (PH0...)
   const hint = document.getElementById('hint-storeId');
-  if (shopId && !shopId.startsWith('PH0')) {
-    hint?.classList.add('visible');
-    shopIdEl.classList.add('err');
-  } else {
-    hint?.classList.remove('visible');
-    shopIdEl.classList.remove('err');
-  }
+  if (shopId && !shopId.startsWith('PH0')) { hint?.classList.add('visible'); shopIdEl.classList.add('err'); }
+  else { hint?.classList.remove('visible'); shopIdEl.classList.remove('err'); }
 }
 
 // ============================================================
@@ -1291,7 +1251,7 @@ let _silentAuthTimer=setTimeout(()=>{
   }
 },5000);
 
-const GOOGLE_BTN_HTML=`<svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>Sign in with Google`;
+const GOOGLE_BTN_HTML=`<svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/></svg>Sign in with Google`;
 
 function _onAuthReady(resp){
   const btn=document.getElementById('btn-google-signin');
@@ -1370,7 +1330,7 @@ function showApp(){
 // OFFLINE
 function setOfflineBanner(visible,msg){
   const el=document.getElementById('offline-banner');
-  if(visible){el.classList.add('visible');if(msg)el.innerHTML=`⚠️ ${msg} <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>`;}
+  if(visible){el.classList.add('visible');if(msg)el.innerHTML=`${msg} <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>`;}
   else el.classList.remove('visible');
 }
 window.addEventListener('offline',()=>setOfflineBanner(true,'You are offline — data may be stale.'));
@@ -1394,7 +1354,7 @@ async function ensureHeaders(){
 }
 
 // ============================================================
-// DATA LOADING
+// DATA
 // ============================================================
 async function loadData(){
   showLoading(true,'Loading employees...');
@@ -1407,10 +1367,9 @@ async function loadData(){
     employees=[];
     (aRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
     (iRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:INACTIVE_SHEET,_row:i+2});});
-    logCache=null;
-    selectedIds.clear();
+    logCache=null;selectedIds.clear();
     renderSidebar();renderView();
-    toast(`✓ ${employees.length} employees loaded`,'success');
+    toast(`${employees.length} employees loaded`,'success');
   }catch(e){
     setOfflineBanner(true,'Failed to load data — '+e.message);
     toast('Failed to load data: '+e.message,'error');
@@ -1535,7 +1494,7 @@ async function apiBulkUpdateStatus(ids,newStatus){
     }catch(e){fail++;}
   }
   showLoading(false);
-  if(ok>0)toast(`✓ Updated ${ok} employee(s) to ${newStatus}`,'success');
+  if(ok>0)toast(`Updated ${ok} employee(s) to ${newStatus}`,'success');
   if(fail>0)toast(`${fail} update(s) failed`,'error');
   selectedIds.clear();
   await loadData();
@@ -1549,14 +1508,11 @@ function sortEmployees(list){
   return [...list].sort((a,b)=>{
     const av=String(a[sortCol]||'').toLowerCase();
     const bv=String(b[sortCol]||'').toLowerCase();
-    if(av<bv)return -1*sortDir;
-    if(av>bv)return 1*sortDir;
-    return 0;
+    if(av<bv)return -1*sortDir;if(av>bv)return 1*sortDir;return 0;
   });
 }
 function toggleSort(colKey){
-  if(sortCol===colKey)sortDir*=-1;
-  else{sortCol=colKey;sortDir=1;}
+  if(sortCol===colKey)sortDir*=-1;else{sortCol=colKey;sortDir=1;}
   currentPage=1;
   renderTableRows(currentView==='inactive'?'inactive':'active');
   updateSortHeaders();
@@ -1592,33 +1548,6 @@ function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filter
 function activeFilterCount(){return [filterRegion,filterDeployStatus,filterQR,filterContractStatus].filter(Boolean).length;}
 
 // ============================================================
-// COMPLETENESS HELPERS
-// ============================================================
-function getCompletenessStats() {
-  const total = employees.length;
-  if (!total) return {
-    missingId: 0, missingStore: 0,
-    missingQR: 0, missingContract: 0, missingDeployment: 0,
-    missingSSS: 0, missingPhilhealth: 0, missingPagibig: 0,
-    missingBank: 0, missingMobile: 0, total: 0
-  };
-
-  return {
-    total,
-    missingId:          employees.filter(e => !e.infinixId || e.infinixId.trim() === '').length,
-    missingStore:       employees.filter(e => !e.storeAssignment || e.storeAssignment.trim() === '').length,
-    missingQR:          employees.filter(e => !e.qrStatus || e.qrStatus === 'NOT SCANNED').length,
-    missingContract:    employees.filter(e => !e.contractStatus || e.contractStatus === 'NOT YET SENT').length,
-    missingDeployment:  employees.filter(e => !e.deploymentStatus || e.deploymentStatus === 'NOT YET DEPLOYED' || e.deploymentStatus === '-').length,
-    missingSSS:         employees.filter(e => !e.sss || e.sss.trim() === '').length,
-    missingPhilhealth:  employees.filter(e => !e.philhealth || e.philhealth.trim() === '').length,
-    missingPagibig:     employees.filter(e => !e.pagibig || e.pagibig.trim() === '').length,
-    missingBank:        employees.filter(e => !e.bankAccount || e.bankAccount.trim() === '').length,
-    missingMobile:      employees.filter(e => !e.mobile || e.mobile.trim() === '').length,
-  };
-}
-
-// ============================================================
 // RENDER
 // ============================================================
 function getStats(){
@@ -1633,7 +1562,7 @@ function renderSidebar(){
   document.getElementById('badge-inactive').textContent=employees.filter(e=>e.status!=='Active').length;
   document.getElementById('status-filters').innerHTML=STATUSES.map(st=>`
     <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${st}')">
-      <span class="sf-dot" style="background:${STATUS_COLORS[st]};box-shadow:0 0 6px ${STATUS_COLORS[st]}66"></span>${st}
+      <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span>${st}
       <span class="sf-count">${s[st]||0}</span>
     </div>`).join('');
 }
@@ -1665,129 +1594,125 @@ function renderView(){
 }
 
 // ============================================================
-// DASHBOARD
+// DASHBOARD — CLEAN VERSION
 // ============================================================
 function renderDashboard(){
   document.getElementById('topbar-title').textContent='Dashboard';
-  document.getElementById('topbar-sub').textContent='Infinix HR Overview';
+  document.getElementById('topbar-sub').textContent='Overview';
   document.getElementById('search-input').style.display='none';
 
   const s=getStats();
   const total=employees.length;
   const deployed=employees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
+  const notDeployed=employees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
   const scanned=employees.filter(e=>e.qrStatus==='SCANNED').length;
+  const notScanned=employees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=employees.filter(e=>e.contractStatus==='SENT').length;
+  const contractPending=employees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
+  const missingSSS=employees.filter(e=>!e.sss||e.sss.trim()==='').length;
+  const missingBank=employees.filter(e=>!e.bankAccount||e.bankAccount.trim()==='').length;
+  const missingMobile=employees.filter(e=>!e.mobile||e.mobile.trim()==='').length;
+
   const regions={};employees.forEach(e=>{if(e.region)regions[e.region]=(regions[e.region]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
-  const cs = getCompletenessStats();
 
   document.getElementById('content').innerHTML=`
     <!-- KF CARDS -->
-    <div class="kf-grid">
+    <div class="dash-kf-grid">
       <div class="kf-card glass-card">
-        <div class="kf-icon">👥</div>
+        <div class="kf-label-top">Total Employees</div>
         <div class="kf-num">${total}</div>
-        <div class="kf-label">Total Employees</div>
+        <div class="kf-sub">All records</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:100%"></div></div>
       </div>
       <div class="kf-card glass-card">
-        <div class="kf-icon">🏪</div>
+        <div class="kf-label-top">Deployed</div>
         <div class="kf-num">${deployed}</div>
-        <div class="kf-label">Deployed</div>
+        <div class="kf-sub">${total?Math.round(deployed/total*100):0}% of total</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?deployed/total*100:0}%"></div></div>
       </div>
       <div class="kf-card glass-card">
-        <div class="kf-icon">📱</div>
+        <div class="kf-label-top">QR Scanned</div>
         <div class="kf-num">${scanned}</div>
-        <div class="kf-label">QR Scanned</div>
+        <div class="kf-sub">${total?Math.round(scanned/total*100):0}% of total</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?scanned/total*100:0}%"></div></div>
       </div>
       <div class="kf-card glass-card">
-        <div class="kf-icon">📋</div>
+        <div class="kf-label-top">Contract Sent</div>
         <div class="kf-num">${contractSent}</div>
-        <div class="kf-label">Contract Sent</div>
+        <div class="kf-sub">${total?Math.round(contractSent/total*100):0}% of total</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?contractSent/total*100:0}%"></div></div>
       </div>
     </div>
 
     <!-- STATUS ROW -->
-    <div class="stats-grid">
-      ${STATUSES.map(st=>{const pct=total?Math.round((s[st]||0)/total*100):0;return`<div class="stat-card glass-card" onclick="filterByStatus('${st}')"><div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${STATUS_COLORS[st]};box-shadow:0 0 8px ${STATUS_COLORS[st]}66"></span><span style="font-size:9px;color:var(--amber);font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.7">${st}</span></div><div class="stat-num">${s[st]||0}</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div></div>`;}).join('')}
+    <div class="dash-status-grid">
+      ${STATUSES.map(st=>{
+        const pct=total?Math.round((s[st]||0)/total*100):0;
+        return`<div class="status-card glass-card" onclick="filterByStatus('${st}')">
+          <div class="status-card-dot" style="background:${STATUS_COLORS[st]}"></div>
+          <div class="status-num">${s[st]||0}</div>
+          <div class="status-lbl">${st}</div>
+          <div class="status-bar"><div class="status-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div>
+        </div>`;}).join('')}
     </div>
 
-    <!-- REQUIREMENTS / COMPLETENESS SECTION -->
-    <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px">
-      <span style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--amber);opacity:.7">📌 Incomplete Requirements</span>
-      <span style="font-size:10px;color:var(--text3)">— employees with missing data</span>
+    <!-- PENDING ITEMS ROW -->
+    <div class="section-heading">
+      <span>Pending Actions</span>
+      <div class="section-heading-line"></div>
     </div>
-    <div class="req-grid" style="margin-bottom:16px">
-      ${[
-        {icon:'🪪', label:'Missing Employee ID',    val:cs.missingId,         field:'infinixId'},
-        {icon:'🏬', label:'No Store Assignment',    val:cs.missingStore,      field:'storeAssignment'},
-        {icon:'📵', label:'QR Not Scanned',         val:cs.missingQR,         field:'qrStatus'},
-        {icon:'📄', label:'Contract Not Sent',      val:cs.missingContract,   field:'contractStatus'},
-        {icon:'🚚', label:'Not Yet Deployed',       val:cs.missingDeployment, field:'deploymentStatus'},
-        {icon:'🏦', label:'No Bank Account',        val:cs.missingBank,       field:'bankAccount'},
-        {icon:'🛡️', label:'No SSS Number',          val:cs.missingSSS,        field:'sss'},
-        {icon:'💊', label:'No PhilHealth',          val:cs.missingPhilhealth, field:'philhealth'},
-        {icon:'🏠', label:'No Pag-IBIG',            val:cs.missingPagibig,    field:'pagibig'},
-        {icon:'📞', label:'No Mobile Number',       val:cs.missingMobile,     field:'mobile'},
-        {icon:'📊', label:'Total Incomplete',
-          val: [cs.missingId,cs.missingStore,cs.missingQR,cs.missingContract,cs.missingDeployment,cs.missingBank,cs.missingSSS,cs.missingPhilhealth,cs.missingPagibig,cs.missingMobile].reduce((a,b)=>a+b,0),
-          isTotal: true},
-      ].map(r=>{
-        const pct = total ? Math.round(r.val/total*100) : 0;
-        const good = r.val === 0;
-        return `<div class="req-card glass-card" style="${r.isTotal?'border-color:var(--border2);background:rgba(232,168,64,0.06)':''}">
-          <div class="req-header">
-            <span class="req-icon">${r.icon}</span>
-            <span class="req-title">${r.label}</span>
-          </div>
-          <div class="req-missing" style="${good?'background:linear-gradient(135deg,var(--success),#8de0a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text':''}">
-            ${r.val}
-          </div>
-          <div class="req-total">${good?'✓ All complete':'out of '+total+' employees ('+pct+'%)'}</div>
-          <div class="req-bar"><div class="req-bar-fill ${good?'good':''}" style="width:${pct}%"></div></div>
-        </div>`;
-      }).join('')}
+    <div class="summary-pills">
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
+      ${notScanned>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
+      ${contractPending>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
+      ${missingSSS>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
+      ${missingBank>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
+      ${missingMobile>0?`<div class="summary-pill summary-pill-warn"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
+      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">0</span><span>All records complete</span></div>`:''}
     </div>
 
-    <!-- CHARTS -->
-    <div class="charts-grid">
-      <div class="chart-card glass-card">
-        <div class="chart-title">Employment Status</div>
-        <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
-      </div>
-      <div class="chart-card glass-card">
-        <div class="chart-title">Employees by Region</div>
-        <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
-      </div>
-    </div>
-
-    <!-- BOTTOM TABLES -->
+    <!-- CHARTS + RECENT -->
     <div class="dash-bottom">
-      <div class="table-wrap">
-        <div class="table-head"><h3>By Region</h3><span class="rec">${Object.keys(regions).length} regions</span></div>
-        <div class="table-scroll">
-          <table>
-            <thead><tr><th class="no-sort">Region</th><th class="no-sort" style="text-align:right">Count</th><th class="no-sort" style="text-align:right">%</th></tr></thead>
-            <tbody>${Object.entries(regions).sort((a,b)=>b[1]-a[1]).map(([r,c])=>`<tr><td class="td-name">${r}</td><td style="text-align:right;font-weight:700;font-family:'Sora',sans-serif">${c}</td><td style="text-align:right;color:var(--text3);font-size:11px">${Math.round(c/total*100)}%</td></tr>`).join('')||'<tr><td colspan="3"><div class="empty-state"><p>No data</p></div></td></tr>'}</tbody>
-          </table>
+      <div class="charts-grid" style="grid-template-columns:1fr;gap:12px">
+        <div class="chart-card glass-card">
+          <div class="chart-title">Status Breakdown</div>
+          <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+        </div>
+        <div class="chart-card glass-card">
+          <div class="chart-title">By Region</div>
+          <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
         </div>
       </div>
       <div class="table-wrap">
-        <div class="table-head"><h3>Recent Employees</h3><span class="rec">Latest 8</span></div>
+        <div class="table-head"><h3>Recently Updated</h3><span class="rec">Latest 8</span></div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th class="no-sort">Name</th><th class="no-sort">Infinix ID</th><th class="no-sort">Status</th><th class="no-sort">Deployment</th></tr></thead>
-            <tbody>${recent.map(e=>`<tr onclick="openDetailPanel('${e.infinixId}')"><td><div class="td-name">${e.fullName||''}</div></td><td><span class="td-id">${e.infinixId}</span></td><td><span class="badge b-${e.status}">${e.status}</span></td><td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td></tr>`).join('')||'<tr><td colspan="4"><div class="empty-state"><p>No data</p></div></td></tr>'}</tbody>
+            <thead>
+              <tr>
+                <th class="no-sort">Name</th>
+                <th class="no-sort">ID</th>
+                <th class="no-sort">Status</th>
+                <th class="no-sort">Deployment</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recent.map(e=>`<tr onclick="openDetailPanel('${e.infinixId}')">
+                <td><div class="td-name">${e.fullName||''}</div></td>
+                <td><span class="td-id">${e.infinixId}</span></td>
+                <td><span class="badge b-${e.status}">${e.status}</span></td>
+                <td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>
+              </tr>`).join('')||'<tr><td colspan="4"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>'}
+            </tbody>
           </table>
         </div>
       </div>
     </div>`;
 
   setTimeout(()=>{
-    Chart.defaults.color='rgba(245,237,224,0.4)';
+    Chart.defaults.color='rgba(255,251,244,0.35)';
+    Chart.defaults.font.family = 'DM Sans';
+
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
@@ -1795,11 +1720,23 @@ function renderDashboard(){
         type:'doughnut',
         data:{
           labels:STATUSES,
-          datasets:[{data:STATUSES.map(st=>s[st]||0),backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'44'),borderColor:STATUSES.map(st=>STATUS_COLORS[st]),borderWidth:2,hoverOffset:6}]
+          datasets:[{
+            data:STATUSES.map(st=>s[st]||0),
+            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),
+            borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
+            borderWidth:1.5,hoverOffset:5
+          }]
         },
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11,family:'DM Sans'},boxWidth:10,padding:10,color:'rgba(245,237,224,0.55)'}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} (${total?Math.round(ctx.raw/total*100):0}%)`}}}},
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{
+            legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8,color:'rgba(255,251,244,0.45)'}},
+            tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}
+          }
+        }
       });
     }
+
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
@@ -1808,12 +1745,25 @@ function renderDashboard(){
         type:'bar',
         data:{
           labels:rEntries.map(([r])=>r),
-          datasets:[{label:'Employees',data:rEntries.map(([,c])=>c),backgroundColor:'rgba(232,168,64,0.3)',borderColor:'#e8a840',borderWidth:1.5,borderRadius:6}]
+          datasets:[{
+            label:'Employees',
+            data:rEntries.map(([,c])=>c),
+            backgroundColor:'rgba(216,207,188,0.15)',
+            borderColor:'rgba(216,207,188,0.5)',
+            borderWidth:1,borderRadius:5
+          }]
         },
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,200,120,0.05)'},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(245,237,224,0.35)'}},y:{grid:{color:'rgba(255,200,120,0.05)'},ticks:{font:{size:10,family:'DM Sans'},stepSize:1,color:'rgba(245,237,224,0.35)'}}}}
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{color:'rgba(216,207,188,0.04)'},ticks:{font:{size:9},color:'rgba(255,251,244,0.3)'}},
+            y:{grid:{color:'rgba(216,207,188,0.04)'},ticks:{font:{size:9},stepSize:1,color:'rgba(255,251,244,0.3)'}}
+          }
+        }
       });
     }
-  },100);
+  },80);
 }
 
 // ============================================================
@@ -1833,11 +1783,11 @@ function renderEmployeeTable(type){
         <h3>${label}</h3>
         <span class="rec" id="emp-count"></span>
         <div style="margin-left:auto;display:flex;gap:6px">
-          ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">✕ Clear Status</button>`:''}
+          ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status</button>`:''}
         </div>
       </div>
       <div class="filter-bar">
-        <span class="filter-label">Filters:</span>
+        <span class="filter-label">Filter</span>
         <select onchange="filterRegion=this.value;onFilterChange()">
           <option value="">All Regions</option>
           ${REGIONS.map(r=>`<option value="${r}" ${filterRegion===r?'selected':''}>${r}</option>`).join('')}
@@ -1856,7 +1806,7 @@ function renderEmployeeTable(type){
           <option value="SENT" ${filterContractStatus==='SENT'?'selected':''}>Sent</option>
           <option value="NOT YET SENT" ${filterContractStatus==='NOT YET SENT'?'selected':''}>Not Yet Sent</option>
         </select>
-        ${afc>0?`<span class="filter-active-count">${afc} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">✕ Reset</button>`:''}
+        ${afc>0?`<span class="filter-active-count">${afc} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>`:''}
       </div>
       <div class="bulk-bar hidden" id="bulk-bar">
         <span class="bulk-count" id="bulk-count">0 selected</span>
@@ -1866,8 +1816,8 @@ function renderEmployeeTable(type){
           ${STATUSES.map(st=>`<option value="${st}">${st}</option>`).join('')}
         </select>
         <button class="btn btn-primary btn-sm" onclick="doBulkStatusChange()">Apply</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearSelection()">✕ Deselect All</button>
-        <button class="btn btn-danger btn-sm" onclick="doBulkDelete()">🗑 Delete Selected</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Deselect All</button>
+        <button class="btn btn-danger btn-sm" onclick="doBulkDelete()">Delete Selected</button>
       </div>
       <div class="table-scroll">
         <table>
@@ -1912,7 +1862,7 @@ function renderTableRows(type){
   const tbody=document.getElementById('emp-tbody');
   if(!tbody)return;
   if(!page.length){
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-state"><div class="ei">🔎</div><p>No employees found</p></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="13"><div class="empty-state"><div class="ei">—</div><p>No employees found</p></div></td></tr>`;
   } else {
     tbody.innerHTML=page.map(e=>`
       <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${e.infinixId}')">
@@ -1927,12 +1877,12 @@ function renderTableRows(type){
         <td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>
         <td style="color:var(--text2)">${e.region||'—'}</td>
         <td style="color:var(--text2)">${e.storeAssignment||'—'}</td>
-        <td style="color:var(--text3);font-size:11.5px">${e.storeId||'—'}</td>
+        <td style="color:var(--text3);font-size:11px">${e.storeId||'—'}</td>
         <td style="color:var(--text2)">${e.rssName||'—'}</td>
         <td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-ghost btn-sm" onclick="openEditModal('${e.infinixId}')">✏️</button>
-          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||'').replace(/'/g,"\\'")}')">🗑</button>
+          <button class="btn btn-ghost btn-sm" onclick="openEditModal('${e.infinixId}')">Edit</button>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||'').replace(/'/g,"\\'")}')">Delete</button>
         </td>
       </tr>`).join('');
   }
@@ -2042,7 +1992,7 @@ function doBulkDelete(){
     let ok=0,fail=0;
     for(const id of ids){try{const r=await apiDeleteEmployee(id);if(r.ok)ok++;else fail++;}catch(e){fail++;}}
     showLoading(false);
-    if(ok>0)toast(`✓ Deleted ${ok} employee(s)`,'success');
+    if(ok>0)toast(`Deleted ${ok} employee(s)`,'success');
     if(fail>0)toast(`${fail} deletion(s) failed`,'error');
     selectedIds.clear();await loadData();
   };
@@ -2065,12 +2015,7 @@ function closeDetailPanel(){
   document.getElementById('detail-panel').classList.remove('open');
   detailEmpId=null;
 }
-function dpEdit(){
-  const id=detailEmpId;
-  if(!id)return;
-  closeDetailPanel();
-  openEditModal(id);
-}
+function dpEdit(){const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
@@ -2082,7 +2027,7 @@ function buildDetailHTML(e){
   const badge=(val,cls)=>val?`<span class="badge b-${cls||val.replace(/ /g,'-')}">${val}</span>`:'—';
   return `
     <div class="detail-section">
-      <div class="detail-section-title">⭐ Key Info</div>
+      <div class="detail-section-title">Key Info</div>
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
       ${row('Full Name',`<b>${e.fullName||''}</b>`)}
       ${row('Status',badge(e.status))}
@@ -2092,28 +2037,28 @@ function buildDetailHTML(e){
       ${row('Contract',badge(e.contractStatus,(e.contractStatus||'').replace(/ /g,'-')))}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">👤 Personal</div>
+      <div class="detail-section-title">Personal</div>
       ${row('First Name',e.firstName)}${row('Last Name',e.lastName)}
       ${row('Middle Name',e.middleName)}${row('Date of Birth',e.dob)}
       ${row('Gender',e.gender)}${row('Marital Status',e.maritalStatus)}
       ${row('Mobile',e.mobile)}${row('Email',e.email)}${row('Address',e.address)}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">🏢 Assignment</div>
+      <div class="detail-section-title">Assignment</div>
       ${row('Region',e.region)}${row('Store',e.storeAssignment)}
       ${row('Store ID',e.storeId)}${row('RSS Name',e.rssName)}${row('RSS ID',e.rssId)}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">🏛️ Government</div>
+      <div class="detail-section-title">Government</div>
       ${row('SSS',e.sss)}${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">💳 Payroll</div>
+      <div class="detail-section-title">Payroll</div>
       ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',e.bankName)}${row('Account No.',e.bankAccount)}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">🕐 Audit Trail</div>
+      <div class="detail-section-title">Audit Trail</div>
       <div id="dp-audit-inner" style="padding:6px 0;font-size:12px;color:var(--text3)">Loading…</div>
     </div>`;
 }
@@ -2128,10 +2073,10 @@ async function loadEmployeeAudit(infinixId){
     const el=document.getElementById('dp-audit-inner');
     if(!el)return;
     if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
-    const colorMap={Added:'#5db97c','Status Changed':'#e8a840',Deleted:'#e05c5c',Updated:'#f5c060'};
+    const colorMap={Added:'#7ab894','Status Changed':'#c9b87a',Deleted:'#c47a7a',Updated:'#D8CFBC'};
     el.innerHTML=entries.map(r=>`
       <div class="audit-item">
-        <div class="audit-dot" style="background:${colorMap[r[3]]||'rgba(245,237,224,0.4)'};box-shadow:0 0 6px ${colorMap[r[3]]||'transparent'}66"></div>
+        <div class="audit-dot" style="background:${colorMap[r[3]]||'rgba(255,251,244,0.3)'}"></div>
         <div class="audit-meta">
           <b>${r[3]||'Updated'}</b>
           ${r[4]&&r[4]!=='—'?`<span style="color:var(--text3)"> · ${r[4]} → <b style="color:var(--text)">${r[5]||''}</b></span>`:''}
@@ -2162,11 +2107,16 @@ async function renderLog(){
     logCache=r.result.values||[];
     const rows=[...logCache].reverse();
     const el=document.getElementById('log-list');
-    if(!rows.length){el.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>No activity yet</p></div>';return;}
+    if(!rows.length){el.innerHTML='<div class="empty-state"><div class="ei">—</div><p>No activity yet</p></div>';return;}
     const iconMap={Added:'log-added','Status Changed':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
-    const emojiMap={Added:'➕','Status Changed':'🔄',Deleted:'🗑️',Updated:'✏️'};
+    const svgMap={
+      Added:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+      'Status Changed':`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
+      Deleted:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
+      Updated:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
+    };
     el.innerHTML=rows.map(r=>`<div class="log-item">
-      <div class="log-icon ${iconMap[r[3]]||'log-updated'}">${emojiMap[r[3]]||'📝'}</div>
+      <div class="log-icon ${iconMap[r[3]]||'log-updated'}">${svgMap[r[3]]||svgMap['Updated']}</div>
       <div class="log-meta"><b>${r[2]||''}</b> (${r[1]||''}) — ${r[3]||''}
         ${r[4]&&r[4]!=='—'?` · <span style="color:var(--text3)">${r[4]}</span> → <b>${r[5]||''}</b>`:''}
         <div class="log-time">${r[0]||''} · by ${r[6]||''}</div>
@@ -2188,7 +2138,7 @@ function getFormHTML(emp){
   const fn=emp?`${emp.firstName||''} ${emp.lastName||''}`.trim():'';
 
   return `
-  <div class="section-label key-section">⭐ Key Fields</div>
+  <div class="section-label key-section">Key Fields</div>
   <div class="form-grid">
     <div class="field req"><label>Full Name (Auto)</label>
       <div class="fullname-preview" id="fullname-preview">${fn||'— Enter First & Last Name —'}</div>
@@ -2205,7 +2155,7 @@ function getFormHTML(emp){
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
   </div>
 
-  <div class="section-label">👤 Personal Information</div>
+  <div class="section-label">Personal Information</div>
   <div class="form-grid cols3">
     <div class="field req"><label>First Name</label>${inp('firstName','text','Juan','oninput="updateFullName()"')}</div>
     <div class="field req"><label>Last Name</label>${inp('lastName','text','Dela Cruz','oninput="updateFullName()"')}</div>
@@ -2220,18 +2170,18 @@ function getFormHTML(emp){
     <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
-  <div class="section-label">🏢 Store & Deployment</div>
+  <div class="section-label">Store & Deployment</div>
   <div class="form-grid">
     <div class="field"><label>Region</label>${sel('region',['',...REGIONS])}</div>
     <div class="field">
       <label>Store ID</label>
       ${inp('storeId','text','PH0XXXX','oninput="onStoreIdInput()"')}
       <div class="field-hint" id="hint-storeId">Must start with PH0</div>
-      <div class="store-lookup-status" id="store-lookup-status">${storeCacheLoaded?'':'⏳ Loading store list…'}</div>
+      <div class="store-lookup-status" id="store-lookup-status">${storeCacheLoaded?'Enter Store ID to auto-fill name':'Loading store list…'}</div>
     </div>
     <div class="field form-full">
       <label>Store Assignment <span style="color:var(--text3);font-weight:400;font-size:10px">(auto-filled from Store ID)</span></label>
-      ${inp('storeAssignment','text','Auto-filled or enter manually',`id="f_storeAssignment" ${v('storeId')&&lookupStore(v('storeId'))?'readonly':''}`)}
+      <input id="f_storeAssignment" type="text" value="${v('storeAssignment').replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?'readonly':''}>
     </div>
     <div class="field"><label>RSS Name</label>${inp('rssName','text','RSS Name')}</div>
     <div class="field"><label>RSS ID</label>${inp('rssId','text','1700XXXX','oninput="validateRssId()"')}
@@ -2239,21 +2189,21 @@ function getFormHTML(emp){
     </div>
   </div>
 
-  <div class="section-label">🏛️ Government Numbers</div>
+  <div class="section-label">Government Numbers</div>
   <div class="form-grid cols3">
     <div class="field"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
     <div class="field"><label>PhilHealth Number</label>${inp('philhealth','text','XXXX-XXXX-XXXX')}</div>
     <div class="field"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
   </div>
 
-  <div class="section-label">💳 Payroll & Banking</div>
+  <div class="section-label">Payroll & Banking</div>
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
     <div class="field"><label>Bank Name</label>${sel('bankName',['','CTBC Bank (Philippines)','Union Bank of the Philippines','BDO','BPI','Metrobank','Security Bank','Landbank','PNB','Eastwest Bank','RCBC'])}</div>
     <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number')}</div>
   </div>
 
-  <div class="section-label">📋 Contract</div>
+  <div class="section-label">Contract</div>
   <div class="form-grid">
     <div class="field"><label>Contract Status</label>${sel('contractStatus',['NOT YET SENT','SENT'])}</div>
     <div class="field"><label>Contract Sent Date</label>${dateInp('contractSentDate')}</div>
@@ -2271,13 +2221,6 @@ function validateInfinixId(){
   const hint=document.getElementById('hint-infinixId');
   const el=document.getElementById('f_infinixId');
   if(val&&!val.startsWith('1700')){hint?.classList.add('visible');el?.classList.add('err');}
-  else{hint?.classList.remove('visible');el?.classList.remove('err');}
-}
-function validateStoreId(){
-  const val=document.getElementById('f_storeId')?.value.trim()||'';
-  const hint=document.getElementById('hint-storeId');
-  const el=document.getElementById('f_storeId');
-  if(val&&!val.startsWith('PH0')){hint?.classList.add('visible');el?.classList.add('err');}
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
 function validateRssId(){
@@ -2316,11 +2259,9 @@ function validate(data){
 function openAddModal(){
   editingId=null;
   document.getElementById('modal-title').textContent='Add New Employee';
-  document.getElementById('modal-icon').textContent='➕';
-  document.getElementById('modal-save-btn').textContent='💾 Save Employee';
+  document.getElementById('modal-save-btn').textContent='Save Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(null);
   document.getElementById('modal-overlay').classList.add('open');
-  // Pre-trigger store lookup if store cache loaded
   if(storeCacheLoaded){
     const statusEl=document.getElementById('store-lookup-status');
     if(statusEl)statusEl.textContent='Enter Store ID above to auto-fill store name';
@@ -2332,16 +2273,14 @@ function openEditModal(id){
   if(!emp)return;
   editingId=id;
   document.getElementById('modal-title').textContent=`Edit — ${emp.fullName||emp.firstName+' '+emp.lastName}`;
-  document.getElementById('modal-icon').textContent='✏️';
-  document.getElementById('modal-save-btn').textContent='💾 Update Employee';
+  document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
   document.getElementById('modal-overlay').classList.add('open');
-  // Initialize store lookup status for existing employee
   if(emp.storeId && storeCacheLoaded){
     const found=lookupStore(emp.storeId);
     const statusEl=document.getElementById('store-lookup-status');
     if(statusEl){
-      statusEl.textContent = found ? `✓ Store: ${found}` : '⚠ Store ID not in lookup — name entered manually';
+      statusEl.textContent = found ? `Store: ${found}` : 'Store ID not in lookup — name entered manually';
       statusEl.className = 'store-lookup-status ' + (found?'found':'notfound');
     }
     const storeEl=document.getElementById('f_storeAssignment');
