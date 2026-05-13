@@ -528,16 +528,19 @@ body::after {
 }
 .table-head h3 { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2px; }
 .table-head .rec { font-size: 11px; color: var(--text3); }
-.table-scroll { overflow-x: auto; position: relative; z-index: 1; }
+.table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); position: relative; z-index: 1; }
 
 table { width: 100%; border-collapse: collapse; min-width: 900px; }
 thead th {
-  background: rgba(53,64,36,0.1); padding: 9px 13px; font-size: 9.5px; font-weight: 700;
+  background: rgba(30,31,24,0.97); padding: 9px 13px; font-size: 9.5px; font-weight: 700;
   color: var(--moss-green); text-align: left;
   letter-spacing: 1px; text-transform: uppercase;
   border-bottom: 1px solid var(--border); white-space: nowrap;
-  cursor: pointer; user-select: none; transition: color .15s; opacity: 0.75;
+  cursor: pointer; user-select: none; transition: color .15s; opacity: 0.85;
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(12px);
 }
+[data-theme="light"] thead th { background: rgba(237,230,216,0.97); }
 thead th:hover { opacity: 1; }
 thead th.sort-asc::after { content: ' ↑'; color: var(--moss-green); }
 thead th.sort-desc::after { content: ' ↓'; color: var(--moss-green); }
@@ -980,6 +983,10 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     <div class="user-pill">
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-name" id="user-name">Loading...</div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark" style="width:26px;height:26px;border-radius:6px;flex-shrink:0">
+        <svg id="theme-icon-dark" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-light" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <button class="btn-signout" onclick="signOut()" title="Sign out">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
@@ -996,15 +1003,11 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     </div>
     <div class="topbar-right">
       <div class="search-wrap" id="topbar-search-wrap">
-        <span class="search-icon">
+        <span class="search-icon" id="topbar-search-icon">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input type="text" id="search-input" placeholder="Search name, ID, store…" oninput="onSearch()" style="display:none">
       </div>
-      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark">
-        <svg id="theme-icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg id="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
       <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         <span>Refresh</span>
@@ -1585,9 +1588,10 @@ function showView(v){
 }
 function renderView(){
   const si=document.getElementById('search-input');
-  if(currentView==='dashboard'){si.style.display='none';}
-  else if(currentView==='active'||currentView==='inactive'){si.style.display='';}
-  else{si.style.display='none';}
+  const sicon=document.getElementById('topbar-search-icon');
+  if(currentView==='dashboard'){si.style.display='none';if(sicon)sicon.style.display='none';}
+  else if(currentView==='active'||currentView==='inactive'){si.style.display='';if(sicon)sicon.style.display='';}
+  else{si.style.display='none';if(sicon)sicon.style.display='none';}
 
   if(currentView==='dashboard')renderDashboard();
   else if(currentView==='active')renderEmployeeTable('active');
@@ -2163,8 +2167,45 @@ function buildDetailHTML(e){
     }
   }
 
+  // Onboarding completion checklist
+  const checks = [
+    { label: 'Employment Status',  done: !!e.status },
+    { label: 'Deployment Status',  done: e.deploymentStatus === 'DEPLOYED' },
+    { label: 'QR Scanned',         done: e.qrStatus === 'SCANNED' },
+    { label: 'Contract Sent',      done: e.contractStatus === 'SENT' },
+    { label: 'Mobile Number',      done: !!e.mobile && e.mobile.trim() !== '' },
+    { label: 'Email Address',      done: !!e.email && e.email.trim() !== '' },
+    { label: 'SSS Number',         done: !!e.sss && e.sss.trim() !== '' },
+    { label: 'PhilHealth',         done: !!e.philhealth && e.philhealth.trim() !== '' },
+    { label: 'Pag-IBIG',           done: !!e.pagibig && e.pagibig.trim() !== '' },
+    { label: 'Bank Account',       done: !!e.bankAccount && e.bankAccount.trim() !== '' },
+    { label: 'Date of Birth',      done: !!e.dob && e.dob.trim() !== '' },
+    { label: 'Region Assigned',    done: !!e.region && e.region.trim() !== '' },
+  ];
+  const doneCount = checks.filter(c => c.done).length;
+  const pct = Math.round(doneCount / checks.length * 100);
+  const barColor = pct === 100 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+  const onboardingHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">Profile Completion</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="flex:1;height:7px;background:rgba(136,144,99,0.12);border-radius:4px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${barColor};border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+        </div>
+        <span style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:${barColor};min-width:36px;text-align:right">${pct}%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px">
+        ${checks.map(c=>`
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:${c.done?'var(--text2)':'var(--danger)'}">
+            <span style="width:14px;height:14px;border-radius:50%;background:${c.done?'var(--success-bg)':'var(--danger-bg)'};border:1px solid ${c.done?'rgba(122,184,148,0.3)':'rgba(196,122,122,0.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px">${c.done?'✓':'!'}</span>
+            ${c.label}
+          </div>`).join('')}
+      </div>
+    </div>`;
+
   return `
     ${bdayNote}
+    ${onboardingHTML}
     <div class="detail-section">
       <div class="detail-section-title">Key Info</div>
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
