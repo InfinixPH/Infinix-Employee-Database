@@ -8,8 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ============================================================
-   THEME TOKENS — DARK (default)
-   Palette: Café Noir / Kombu Green / Moss Green / Tan / Bone
+   THEME TOKENS
    ============================================================ */
 :root,
 [data-theme="dark"] {
@@ -113,7 +112,7 @@
   --radius:    14px;
   --radius-sm: 9px;
   --radius-lg: 20px;
-  --sidebar-w: 224px;
+  --sidebar-w: 240px;
   --topbar-h:  58px;
 }
 
@@ -169,21 +168,28 @@ body::after {
 }
 
 .brand {
-  padding: 22px 16px 16px;
+  padding: 20px 16px 16px;
   border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0;
 }
 .brand-logo {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  width: 100%;
 }
+/* LARGER LOGO */
 .brand-logo img {
-  height: 52px; width: auto; object-fit: contain;
-  filter: brightness(0) invert(1); opacity: 0.92;
+  height: 72px; width: auto; object-fit: contain;
+  filter: brightness(0) invert(1); opacity: 0.95;
+  transition: opacity .2s;
 }
 [data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.85; }
+.brand-logo:hover img { opacity: 1; }
 .brand-sub {
   font-size: 9px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
   margin-top: 10px; font-weight: 700; opacity: 0.7;
+  text-align: center;
 }
 
 .nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
@@ -290,7 +296,6 @@ body::after {
 .topbar-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-/* Theme toggle */
 .theme-toggle {
   width: 32px; height: 32px; border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -397,19 +402,17 @@ body::after {
 .status-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
 
 .dash-bottom { display: grid; grid-template-columns: 1.1fr 1.6fr; gap: 14px; margin-top: 16px; }
-.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }
 .chart-card { padding: 18px; }
 .chart-title { font-size: 9px; font-weight: 700; margin-bottom: 14px; color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; }
 .chart-wrap { position: relative; height: 160px; }
 
-/* Birthday widget */
 .birthday-widget { padding: 16px; }
 .bday-list { display: flex; flex-direction: column; gap: 8px; }
 .bday-item {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 10px; border-radius: var(--radius-sm);
   background: var(--bg-frosted); border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 12px; cursor: pointer;
 }
 .bday-icon { font-size: 16px; flex-shrink: 0; }
 .bday-name { font-weight: 600; flex: 1; }
@@ -417,7 +420,6 @@ body::after {
 .bday-today { border-color: rgba(201,184,122,0.3); background: rgba(201,184,122,0.06); }
 .bday-soon { border-color: rgba(136,144,99,0.2); }
 
-/* Summary quick pills */
 .summary-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .summary-pill {
   display: flex; align-items: center; gap: 7px;
@@ -435,7 +437,6 @@ body::after {
 .summary-pill-ok .summary-pill-dot { background: var(--success); }
 .summary-pill-ok .summary-pill-num { color: var(--success); }
 
-/* Section heading */
 .section-heading {
   display: flex; align-items: center; gap: 8px;
   font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
@@ -443,7 +444,6 @@ body::after {
 }
 .section-heading-line { flex: 1; height: 1px; background: var(--border); }
 
-/* Dashboard search */
 .dash-search-wrap {
   position: relative; margin-bottom: 16px;
 }
@@ -480,7 +480,6 @@ body::after {
   padding: 3px 9px; border-radius: 20px; font-weight: 700;
 }
 
-/* Column visibility toggle */
 .col-toggle-wrap { position: relative; margin-left: auto; }
 .col-toggle-btn {
   display: flex; align-items: center; gap: 5px;
@@ -633,7 +632,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
    ============================================================ */
 .detail-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
-  width: 420px; max-width: 94vw;
+  width: 440px; max-width: 94vw;
   background: var(--bg-glass);
   backdrop-filter: blur(40px) saturate(1.4);
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
@@ -666,7 +665,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .detail-row { display: flex; gap: 6px; padding: 6px 0; border-bottom: 1px solid rgba(136,144,99,0.06); font-size: 12.5px; }
 .detail-row:last-child { border-bottom: none; }
-.detail-label { color: var(--text3); width: 130px; flex-shrink: 0; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding-top: 1px; }
+.detail-label { color: var(--text3); width: 140px; flex-shrink: 0; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding-top: 1px; }
 .detail-val { color: var(--text); font-weight: 500; word-break: break-word; }
 
 .audit-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(136,144,99,0.06); }
@@ -676,7 +675,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .audit-time { font-size: 10px; color: var(--text3); margin-top: 2px; }
 .audit-empty { font-size: 12px; color: var(--text3); padding: 16px 0; text-align: center; }
 
-/* Notes field */
 .notes-area {
   width: 100%; min-height: 80px; padding: 8px 10px;
   background: var(--bg-frosted); border: 1px solid var(--border);
@@ -686,6 +684,41 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .notes-area:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
 .notes-save-btn { margin-top: 8px; }
+
+/* ============================================================
+   REQUIREMENTS CHECKLIST
+   ============================================================ */
+.req-checklist { display: flex; flex-direction: column; gap: 6px; }
+.req-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.req-item:hover { border-color: var(--border2); }
+.req-item.done { background: var(--success-bg); border-color: rgba(122,184,148,0.25); }
+.req-item.done .req-label { color: var(--text2); text-decoration: line-through; opacity: 0.7; }
+.req-checkbox {
+  width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
+  border: 1.5px solid var(--border2); background: var(--bg-frosted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.req-item.done .req-checkbox {
+  background: var(--success); border-color: var(--success);
+}
+.req-check-icon { display: none; }
+.req-item.done .req-check-icon { display: block; }
+.req-label { font-size: 11.5px; color: var(--text); line-height: 1.5; flex: 1; }
+.req-progress {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px; padding: 10px 12px;
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.req-progress-bar-wrap { flex: 1; height: 5px; background: rgba(136,144,99,0.12); border-radius: 3px; overflow: hidden; }
+.req-progress-bar { height: 100%; background: var(--success); border-radius: 3px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.req-progress-text { font-size: 11px; font-weight: 700; color: var(--success); font-family: 'Sora', sans-serif; min-width: 36px; text-align: right; }
 
 /* ============================================================
    MODAL
@@ -703,7 +736,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   backdrop-filter: blur(40px) saturate(1.4);
   -webkit-backdrop-filter: blur(40px) saturate(1.4);
   border: 1px solid var(--border2);
-  border-radius: 20px; width: 800px; max-width: 96vw; max-height: 92vh;
+  border-radius: 20px; width: 820px; max-width: 96vw; max-height: 92vh;
   display: flex; flex-direction: column; box-shadow: var(--shadow-lg);
   transform: translateY(16px) scale(.98); transition: transform .22s;
   position: relative; overflow: hidden;
@@ -773,13 +806,22 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .store-lookup-status.notfound { color: var(--danger); }
 .store-lookup-status.searching { color: var(--warning); }
 
-/* Duplicate warning */
 .dup-warning {
   background: rgba(201,184,122,0.08); border: 1px solid rgba(201,184,122,0.3);
   border-radius: var(--radius-sm); padding: 8px 12px;
   font-size: 11.5px; color: var(--warning); margin-top: 6px; display: none;
 }
 .dup-warning.visible { display: block; }
+
+/* Date of status change inline field */
+.status-date-field {
+  display: none; margin-top: 8px;
+  padding: 8px 10px; background: rgba(201,184,122,0.06);
+  border: 1px solid rgba(201,184,122,0.2); border-radius: var(--radius-sm);
+}
+.status-date-field.visible { display: block; }
+.status-date-field label { font-size: 10px; font-weight: 600; color: var(--warning); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; display: block; }
+.status-date-field input { width: 100%; padding: 5px 8px; border: 1px solid var(--border2); border-radius: 6px; background: var(--bg-frosted); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; outline: none; }
 
 /* ============================================================
    DEPLOYMENT TRACKER
@@ -792,7 +834,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .tracker-region-bar-wrap { height: 6px; background: rgba(136,144,99,0.12); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
 .tracker-region-bar { height: 100%; background: var(--moss-green); border-radius: 3px; transition: width .8s cubic-bezier(.4,0,.2,1); }
 .tracker-region-stats { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text3); }
-.tracker-store-table { margin-top: 16px; }
 .tracker-date-filters { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .tracker-date-filters input[type=date] {
   background: var(--bg-frosted); border: 1px solid var(--border);
@@ -873,8 +914,9 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-.login-logo { height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
-.login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.92; }
+/* LARGER LOGIN LOGO */
+.login-logo { height: 110px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+.login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.95; }
 [data-theme="light"] .login-logo img { filter: brightness(0) sepia(1) hue-rotate(60deg) saturate(0.6); opacity: 0.85; }
 .login-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
 .login-sub { font-size: 12px; color: var(--text3); margin-bottom: 30px; line-height: 1.7; }
@@ -920,7 +962,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="login-card">
     <div class="login-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Sora',sans-serif;font-size:36px;font-weight:900;color:var(--tan);letter-spacing:3px">INFINIX</span>
+      <span style="display:none;font-family:'Sora',sans-serif;font-size:42px;font-weight:900;color:var(--tan);letter-spacing:3px">INFINIX</span>
     </div>
     <div class="login-title">HR System</div>
     <div class="login-sub">Employee Database<br>Sign in with your Google account to continue.</div>
@@ -945,7 +987,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Sora',sans-serif;font-size:22px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Sora',sans-serif;font-size:28px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
   </div>
@@ -1085,11 +1127,73 @@ const STORE_DETAILS_SHEET = 'Store Details';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated'];
+const INACTIVE_STATUSES = ['Floating','Resigned','AWOL','Terminated']; // Statuses that need a date
 const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
-const HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'];
+// ============================================================
+// NEW COLUMN ORDER (matches new Google Sheet format)
+// ============================================================
+// Col 0:  Region
+// Col 1:  Infinix Employee ID
+// Col 2:  Full Name
+// Col 3:  First Name
+// Col 4:  Last Name
+// Col 5:  Middle Name
+// Col 6:  Store Assignment
+// Col 7:  Store ID
+// Col 8:  QR Scan Status
+// Col 9:  Deployment Date
+// Col 10: Deployment Status
+// Col 11: RSS Name
+// Col 12: RSS ID
+// Col 13: Basic Wage Rate
+// Col 14: [PERSONAL INFO OF PS header — skip]
+// Col 15: Address  (row index 15 → stored as address)
+// Col 16: Mobile No.
+// Col 17: Email Address
+// Col 18: Date of Birth
+// Col 19: Gender
+// Col 20: Marital Status
+// Col 21: SSS Number
+// Col 22: PhilHealth Number
+// Col 23: Pag-IBIG Number
+// Col 24: Bank Name
+// Col 25: Bank Account Number
+// Col 26: Contract Status
+// Col 27: Contract Sent Date
+// Col 28: Last Updated
+// Col 29: Notes
+// Col 30: Employment Status
+// Col 31: Pre-Employment Forms (checkbox JSON or comma list)
+// Col 32: Job Offer Sent (boolean)
+// Col 33: Status Change Date (date when became Resigned/AWOL/Terminated/Floating)
+
+const HEADERS = [
+  'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name',
+  'Store Assignment','Store ID','QR Scan Status','Deployment Date','Deployment Status',
+  'RSS Name','RSS ID','Basic Wage Rate','PERSONAL INFO OF PS','Address','Mobile No.',
+  'Email Address','Date of Birth','Gender','Marital Status',
+  'SSS Number','PhilHealth Number','Pag-IBIG Number',
+  'Bank Name','Bank Account Number',
+  'Contract Status','Contract Sent Date',
+  'Last Updated','Notes','Employment Status',
+  'Pre-Employment Requirements','Job Offer',
+  'Status Change Date'
+];
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
+
+// Requirements list
+const REQUIREMENTS = [
+  'Medical Certificate (CBC, X-ray, Fecalysis, Urinalysis, Drug Test, PT)',
+  'SSS, Pag-ibig, PhilHealth and TIN (Number/ID or Government forms)',
+  'NBI or Police Clearance or Barangay Cert',
+  '2x2 ID Picture with White Background, wearing formal attire',
+  'Clear scanned copy of ALL Valid ID',
+  'Birth Certificate',
+  'Diploma or TOR (College)',
+  'Certificate of Employment from previous employer (if any)'
+];
 
 // Column definitions for visibility toggle
 const TABLE_COLUMNS = [
@@ -1120,11 +1224,9 @@ let detailEmpId=null;
 let logCache=null;
 let _charts={};
 let storeCache={}, storeCacheLoaded=false;
-let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key)); // all visible by default
+let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
 let colDropdownOpen=false;
-// Missing field filter for dashboard drill-down
 let missingFieldFilter=null;
-// Tracker filters
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
 
 // ============================================================
@@ -1141,7 +1243,6 @@ function toggleTheme(){
   document.documentElement.setAttribute('data-theme',next);
   localStorage.setItem('hr_theme',next);
   updateThemeIcon(next);
-  // re-render charts if on dashboard
   if(currentView==='dashboard') renderDashboard();
 }
 function updateThemeIcon(theme){
@@ -1156,16 +1257,14 @@ initTheme();
 async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
-    // B=RSS Name, C=RSS ID, D=skip, E=Store Name, F=Store ID
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!B:F`});
     const rows=r.result.values||[];
     storeCache={};
     for(let i=1;i<rows.length;i++){
-      const rssName  =(rows[i][0]||'').trim(); // col B
-      const rssId    =(rows[i][1]||'').trim(); // col C
-      // col D = index 2, skipped
-      const storeName=(rows[i][3]||'').trim(); // col E
-      const shopId   =(rows[i][4]||'').trim(); // col F
+      const rssName  =(rows[i][0]||'').trim();
+      const rssId    =(rows[i][1]||'').trim();
+      const storeName=(rows[i][3]||'').trim();
+      const shopId   =(rows[i][4]||'').trim();
       if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId};
     }
     storeCacheLoaded=true;
@@ -1220,7 +1319,6 @@ function doLogin(){
   if(!tokenClient){setLoginStatus('Auth not ready yet — please refresh the page.','error');return;}
   const btn=document.getElementById('btn-google-signin');
   if(btn){btn.classList.add('loading');btn.innerHTML='<span style="font-size:13px">Signing in…</span>';}
-  // Always use 'select_account' so users can pick their account without a popup dependency
   tokenClient.requestAccessToken({prompt:'select_account'});
 }
 
@@ -1239,7 +1337,6 @@ function _onAuthReady(resp){
   if(btn){btn.classList.remove('loading');btn.innerHTML=GOOGLE_BTN_HTML;}
   if(resp.error){
     clearTimeout(_silentAuthTimer);
-    // These are expected non-errors (user closed popup, session expired, etc.)
     const silent=['user_closed_modal','interaction_required','immediate_failed','access_denied'];
     if(silent.includes(resp.error)){
       showGoogleButton();setLoginStatus('','');
@@ -1247,10 +1344,10 @@ function _onAuthReady(resp){
       showGoogleButton();setLoginStatus('Sign-in window closed — please try again.','');
     } else if(resp.error==='popup_blocked_by_browser'){
       showGoogleButton();
-      setLoginStatus('Pop-up was blocked. Please allow pop-ups for this site, or try a different browser.','error');
+      setLoginStatus('Pop-up was blocked. Please allow pop-ups for this site.','error');
     } else {
       showGoogleButton();
-      setLoginStatus('Sign-in failed: '+resp.error+'. Please try again.','error');
+      setLoginStatus('Sign-in failed: '+resp.error,'error');
     }
     return;
   }
@@ -1288,12 +1385,11 @@ window.onGoogleLibraryLoad=()=>{
     prompt:'',
     callback:_onAuthReady,
     error_callback:(err)=>{
-      // Handles popup blocked at the browser level before OAuth even starts
       if(err.type==='popup_failed_to_open'||err.type==='popup_closed'){
         const btn=document.getElementById('btn-google-signin');
         if(btn){btn.classList.remove('loading');btn.innerHTML=GOOGLE_BTN_HTML;}
         showGoogleButton();
-        setLoginStatus('Sign-in window could not open. Allow pop-ups for this site and try again.','error');
+        setLoginStatus('Sign-in window could not open. Allow pop-ups for this site.','error');
       }
     }
   });
@@ -1303,9 +1399,7 @@ window.onGoogleLibraryLoad=()=>{
 function trySilentAuth(){
   if(!gapiInited||!gisInited||!tokenClient)return;
   const storedUser=localStorage.getItem('hr_user');
-  // No stored session — go straight to login screen
   if(!storedUser){clearTimeout(_silentAuthTimer);showLoginScreen(false);return;}
-  // Stored session exists — try silent token refresh (no prompt)
   try{
     const u=JSON.parse(storedUser);
     tokenClient.requestAccessToken({prompt:'',login_hint:u.email||''});
@@ -1351,60 +1445,48 @@ window.addEventListener('online',()=>{setOfflineBanner(false);toast('Back online
 // ============================================================
 async function ensureHeaders(){
   try{
-    const chk=async(sheet,hdrs,range)=>{
-      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheet}!${range}`});
+    const chk=async(sheet,hdrs)=>{
+      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheet}!A1:AH1`});
       const vals=r.result.values;
       if(!vals||!vals[0]||vals[0].length<hdrs.length)
         await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1`,valueInputOption:'RAW',resource:{values:[hdrs]}});
     };
-    await chk(ACTIVE_SHEET,HEADERS,'A1:AD1');
-    await chk(INACTIVE_SHEET,HEADERS,'A1:AD1');
-    await chk(LOG_SHEET,LOG_HEADERS,'A1:G1');
+    await chk(ACTIVE_SHEET,HEADERS);
+    await chk(INACTIVE_SHEET,HEADERS);
+    await chk(LOG_SHEET,LOG_HEADERS);
   }catch(e){console.warn('Header setup:',e);}
 }
 
 // ============================================================
-// DATA
+// DATA — NEW COLUMN ORDER
 // ============================================================
 async function loadData(){
   showLoading(true,'Loading employees...');
   setOfflineBanner(false);
   try{
     const [aRes,iRes]=await Promise.all([
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AD`}),
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AD`})
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AH`}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AH`})
     ]);
     employees=[];
-    (aRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
-    (iRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:INACTIVE_SHEET,_row:i+2});});
+    (aRes.result.values||[]).forEach((r,i)=>{if(r[1])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
+    (iRes.result.values||[]).forEach((r,i)=>{if(r[1])employees.push({...rowToObj(r),_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
   }catch(e){
-    const status = e?.result?.error?.code || e?.status;
-    let msg = 'Failed to load data.';
-    if(status===403){
-      msg = 'Access denied (403) — your Google account does not have permission to view this Sheet. Ask the admin to share the Sheet with your email.';
-    } else if(status===401){
-      msg = 'Session expired — please sign out and sign in again.';
-    } else if(e?.message){
-      msg = 'Failed to load data: ' + e.message;
-    }
-    setOfflineBanner(true, msg);
-    toast(msg, 'error');
-    // Show the error clearly on the screen too
+    const status=e?.result?.error?.code||e?.status;
+    let msg='Failed to load data.';
+    if(status===403)msg='Access denied (403) — your account does not have permission to view this Sheet.';
+    else if(status===401)msg='Session expired — please sign out and sign in again.';
+    else if(e?.message)msg='Failed to load data: '+e.message;
+    setOfflineBanner(true,msg);
+    toast(msg,'error');
     document.getElementById('content').innerHTML=`
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;text-align:center;padding:24px">
         <div style="font-size:32px;opacity:0.4">⚠️</div>
         <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Could Not Load Data</div>
         <div style="font-size:13px;color:var(--text2);max-width:440px;line-height:1.7">${msg}</div>
-        ${status===403?`<div style="font-size:12px;color:var(--text3);background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;max-width:440px;line-height:1.7">
-          <b style="color:var(--moss-green)">How to fix:</b><br>
-          1. Open the Google Sheet<br>
-          2. Click <b>Share</b> in the top right<br>
-          3. Add your email with <b>Editor</b> access<br>
-          4. Come back and click <b>Refresh</b>
-        </div>`:''}
         <button class="btn btn-primary" onclick="refreshData()">Try Again</button>
         <button class="btn btn-ghost" onclick="signOut()">Sign Out & Switch Account</button>
       </div>`;
@@ -1419,42 +1501,92 @@ async function refreshData(){
 }
 
 // ============================================================
-// DATA HELPERS
+// DATA HELPERS — NEW COLUMN ORDER
 // ============================================================
 function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+
 function rowToObj(r){
+  // Parse requirements from col 31 (JSON array of done indices, or comma string)
+  let requirements=[];
+  try{ requirements=JSON.parse(r[31]||'[]'); }catch(e){ requirements=[]; }
+
   return {
-    firstName:r[0]||'',lastName:r[1]||'',middleName:r[2]||'',fullName:r[3]||'',
-    infinixId:String(r[4]||''),qrStatus:r[5]||'NOT SCANNED',status:r[6]||'',
-    deploymentDate:r[7]||'',deploymentStatus:r[8]||'-',
-    region:r[9]||'',storeAssignment:r[10]||'',storeId:r[11]||'',
-    rssName:r[12]||'',rssId:String(r[13]||''),address:r[14]||'',
-    mobile:r[15]||'',dob:r[16]||'',email:r[17]||'',
-    gender:r[18]||'',maritalStatus:r[19]||'',
-    sss:r[20]||'',philhealth:r[21]||'',pagibig:r[22]||'',
-    basicWage:r[23]||'',bankName:r[24]||'',bankAccount:r[25]||'',
-    contractStatus:r[26]||'NOT YET SENT',contractSentDate:r[27]||'',
+    region:r[0]||'',
+    infinixId:String(r[1]||''),
+    fullName:r[2]||'',
+    firstName:r[3]||'',
+    lastName:r[4]||'',
+    middleName:r[5]||'',
+    storeAssignment:r[6]||'',
+    storeId:r[7]||'',
+    qrStatus:r[8]||'NOT SCANNED',
+    deploymentDate:r[9]||'',
+    deploymentStatus:r[10]||'-',
+    rssName:r[11]||'',
+    rssId:String(r[12]||''),
+    basicWage:r[13]||'',
+    // r[14] = 'PERSONAL INFO OF PS' (header row marker, skip)
+    address:r[15]||'',
+    mobile:r[16]||'',
+    email:r[17]||'',
+    dob:r[18]||'',
+    gender:r[19]||'',
+    maritalStatus:r[20]||'',
+    sss:r[21]||'',
+    philhealth:r[22]||'',
+    pagibig:r[23]||'',
+    bankName:r[24]||'',
+    bankAccount:r[25]||'',
+    contractStatus:r[26]||'NOT YET SENT',
+    contractSentDate:r[27]||'',
     lastUpdated:r[28]||'',
-    notes:r[29]||''
+    notes:r[29]||'',
+    status:r[30]||'Active',
+    requirements:requirements,
+    jobOffer:r[32]==='TRUE'||r[32]==='true'||r[32]==='1',
+    statusChangeDate:r[33]||''
   };
 }
+
 function objToRow(d){
   return [
-    d.firstName||'',d.lastName||'',d.middleName||'',
-    `${d.firstName||''} ${d.lastName||''}`.trim(),
-    d.infinixId||'',d.qrStatus||'NOT SCANNED',d.status||'Active',
-    d.deploymentDate||'',d.deploymentStatus||'-',
-    d.region||'',d.storeAssignment||'',d.storeId||'',
-    d.rssName||'',d.rssId||'',d.address||'',
-    d.mobile||'',d.dob||'',d.email||'',
-    d.gender||'',d.maritalStatus||'',
-    d.sss||'',d.philhealth||'',d.pagibig||'',
-    d.basicWage||'',d.bankName||'',d.bankAccount||'',
-    d.contractStatus||'NOT YET SENT',d.contractSentDate||'',
-    ts(),
-    d.notes||''
+    d.region||'',                                          // 0
+    d.infinixId||'',                                       // 1
+    `${d.firstName||''} ${d.lastName||''}`.trim(),         // 2 Full Name
+    d.firstName||'',                                       // 3
+    d.lastName||'',                                        // 4
+    d.middleName||'',                                      // 5
+    d.storeAssignment||'',                                 // 6
+    d.storeId||'',                                         // 7
+    d.qrStatus||'NOT SCANNED',                             // 8
+    d.deploymentDate||'',                                  // 9
+    d.deploymentStatus||'-',                               // 10
+    d.rssName||'',                                         // 11
+    d.rssId||'',                                           // 12
+    d.basicWage||'',                                       // 13
+    'PERSONAL INFO OF PS',                                 // 14
+    d.address||'',                                         // 15
+    d.mobile||'',                                          // 16
+    d.email||'',                                           // 17
+    d.dob||'',                                             // 18
+    d.gender||'',                                          // 19
+    d.maritalStatus||'',                                   // 20
+    d.sss||'',                                             // 21
+    d.philhealth||'',                                      // 22
+    d.pagibig||'',                                         // 23
+    d.bankName||'',                                        // 24
+    d.bankAccount||'',                                     // 25
+    d.contractStatus||'NOT YET SENT',                      // 26
+    d.contractSentDate||'',                                // 27
+    ts(),                                                  // 28
+    d.notes||'',                                           // 29
+    d.status||'Active',                                    // 30
+    JSON.stringify(d.requirements||[]),                    // 31
+    d.jobOffer?'TRUE':'FALSE',                             // 32
+    d.statusChangeDate||''                                 // 33
   ];
 }
+
 function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
 async function writeLog(empId,name,action,from,to){
   try{
@@ -1467,7 +1599,7 @@ async function writeLog(empId,name,action,from,to){
   }catch(e){console.warn('Log write failed:',e);}
 }
 async function findEmployeeRowInSheet(infinixId,sheetName){
-  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!E:E`});
+  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!B:B`});
   const vals=r.result.values||[];
   for(let i=1;i<vals.length;i++){if(String(vals[i][0]||'').trim()===String(infinixId).trim())return i+1;}
   return -1;
@@ -1480,7 +1612,7 @@ async function apiAddEmployee(data){
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
-  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AH`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
   await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Added','—',data.status);
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
@@ -1492,13 +1624,13 @@ async function apiUpdateEmployee(data){
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AH`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
     if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AD${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AH${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
@@ -1519,7 +1651,10 @@ async function apiBulkUpdateStatus(ids,newStatus){
   showLoading(true,`Updating ${ids.length} employees...`);
   let ok=0,fail=0;
   for(const id of ids){
-    try{const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)continue;const res=await apiUpdateEmployee({...emp,status:newStatus});if(res.ok)ok++;else fail++;}
+    try{const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)continue;
+      // Auto-set status change date for inactive statuses
+      const statusChangeDate=INACTIVE_STATUSES.includes(newStatus)?new Date().toISOString().split('T')[0]:(emp.statusChangeDate||'');
+      const res=await apiUpdateEmployee({...emp,status:newStatus,statusChangeDate});if(res.ok)ok++;else fail++;}
     catch(e){fail++;}
   }
   showLoading(false);
@@ -1528,8 +1663,7 @@ async function apiBulkUpdateStatus(ids,newStatus){
   selectedIds.clear();await loadData();
 }
 
-// Notes save
-async function saveNotes(infinixId, notesVal){
+async function saveNotes(infinixId,notesVal){
   const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
   if(!emp)return;
   showLoading(true,'Saving notes...');
@@ -1537,6 +1671,19 @@ async function saveNotes(infinixId, notesVal){
     const res=await apiUpdateEmployee({...emp,notes:notesVal});
     if(res.ok){toast('Notes saved','success');await loadData();}
     else toast(res.msg||'Failed to save notes','error');
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{showLoading(false);}
+}
+
+// Save requirements
+async function saveRequirements(infinixId,reqArr,jobOffer){
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  showLoading(true,'Saving requirements...');
+  try{
+    const res=await apiUpdateEmployee({...emp,requirements:reqArr,jobOffer});
+    if(res.ok){toast('Requirements saved','success');await loadData();openDetailPanel(infinixId);}
+    else toast(res.msg||'Failed to save','error');
   }catch(e){toast('Error: '+e.message,'error');}
   finally{showLoading(false);}
 }
@@ -1571,7 +1718,6 @@ function filteredEmployees(type){
     ?employees.filter(e=>e.status===filterStatus)
     :employees.filter(e=>isActive?e.status==='Active':e.status!=='Active');
 
-  // Missing field filter (from dashboard pill clicks)
   if(missingFieldFilter==='notDeployed')list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
@@ -1605,7 +1751,7 @@ function toggleColDropdown(){
   const dd=document.getElementById('col-dropdown');
   if(dd)dd.classList.toggle('open',colDropdownOpen);
 }
-function toggleColVisibility(key, checked){
+function toggleColVisibility(key,checked){
   if(checked)visibleCols.add(key);else visibleCols.delete(key);
   renderTableRows(currentView==='inactive'?'inactive':'active');
 }
@@ -1687,19 +1833,13 @@ function renderView(){
   else if(currentView==='tracker')renderTracker();
   else if(currentView==='log')renderLog();
 }
-
-// Dashboard pill drill-down
 function drillDown(filterKey){
-  missingFieldFilter=filterKey;
-  filterStatus=null;
-  currentView='active';
-  currentPage=1;selectedIds.clear();
+  missingFieldFilter=filterKey;filterStatus=null;
+  currentView='active';currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('nav-active')?.classList.add('active');
   renderSidebar();renderView();
 }
-
-// Dashboard search redirect
 function dashSearch(q){
   if(!q.trim())return;
   document.getElementById('search-input').value=q;
@@ -1730,15 +1870,13 @@ function renderDashboard(){
   const now=new Date();
 
   document.getElementById('content').innerHTML=`
-    <!-- DASHBOARD SEARCH -->
     <div class="dash-search-wrap">
       <span class="dash-search-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </span>
-      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)" oninput="if(!this.value)return">
+      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)">
     </div>
 
-    <!-- KF CARDS -->
     <div class="dash-kf-grid">
       <div class="kf-card glass-card">
         <div class="kf-label-top">Total Employees</div>
@@ -1766,7 +1904,6 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- STATUS ROW -->
     <div class="dash-status-grid">
       ${STATUSES.map(st=>{const pct=total?Math.round((s[st]||0)/total*100):0;return`<div class="status-card glass-card" onclick="filterByStatus('${st}')">
         <div class="status-card-dot" style="background:${STATUS_COLORS[st]}"></div>
@@ -1776,19 +1913,17 @@ function renderDashboard(){
       </div>`;}).join('')}
     </div>
 
-    <!-- PENDING ACTIONS -->
     <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Click a pill to filter employees</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
-      ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
-      ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
-      ${missingSSS>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingSSS')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
-      ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
-      ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
+      ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
+      ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
+      ${missingSSS>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingSSS')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
+      ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank</span></div>`:''}
+      ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
       ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All records complete</span></div>`:''}
     </div>
 
-    <!-- BOTTOM GRID -->
     <div class="dash-bottom">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="chart-card glass-card">
@@ -1799,7 +1934,6 @@ function renderDashboard(){
           <div class="chart-title">By Region</div>
           <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
         </div>
-        <!-- BIRTHDAYS -->
         <div class="birthday-widget glass-card">
           <div class="chart-title">🎂 Birthdays This Month</div>
           ${birthdays.length===0
@@ -1838,7 +1972,6 @@ function renderDashboard(){
     const isDark=document.documentElement.getAttribute('data-theme')!=='light';
     Chart.defaults.color=isDark?'rgba(229,215,196,0.35)':'rgba(42,34,20,0.45)';
     Chart.defaults.font.family='DM Sans';
-
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
@@ -1860,7 +1993,6 @@ function renderTracker(){
   document.getElementById('topbar-title').textContent='Deployment Tracker';
   document.getElementById('topbar-sub').textContent='Track deployment progress by region and store';
 
-  // filter employees
   let list=employees;
   if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&e.deploymentDate>=trackerDateFrom);
   if(trackerDateTo)list=list.filter(e=>e.deploymentDate&&e.deploymentDate<=trackerDateTo);
@@ -1872,14 +2004,12 @@ function renderTracker(){
   const backout=list.filter(e=>e.deploymentStatus==='BACKOUT').length;
   const pct=total?Math.round(deployed/total*100):0;
 
-  // by region
   const byRegion={};
   REGIONS.forEach(r=>{
     const reg=list.filter(e=>e.region===r);
     byRegion[r]={total:reg.length,deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length,backout:reg.filter(e=>e.deploymentStatus==='BACKOUT').length};
   });
 
-  // by store (top 10)
   const byStore={};
   list.forEach(e=>{
     const key=e.storeAssignment||e.storeId||'Unknown';
@@ -1892,12 +2022,11 @@ function renderTracker(){
   const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
 
   document.getElementById('content').innerHTML=`
-    <!-- DATE / REGION FILTERS -->
     <div class="tracker-date-filters glass-card" style="padding:12px 16px;margin-bottom:16px">
       <span style="font-size:9.5px;color:var(--moss-green);font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.8">Filters</span>
-      <input type="date" value="${trackerDateFrom}" onchange="trackerDateFrom=this.value;renderTracker()" placeholder="From date">
+      <input type="date" value="${trackerDateFrom}" onchange="trackerDateFrom=this.value;renderTracker()">
       <span style="font-size:11px;color:var(--text3)">to</span>
-      <input type="date" value="${trackerDateTo}" onchange="trackerDateTo=this.value;renderTracker()" placeholder="To date">
+      <input type="date" value="${trackerDateTo}" onchange="trackerDateTo=this.value;renderTracker()">
       <select style="background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:11.5px;color:var(--text2);font-family:'DM Sans',sans-serif;outline:none;" onchange="trackerRegion=this.value;renderTracker()">
         <option value="">All Regions</option>
         ${REGIONS.map(r=>`<option value="${r}" ${trackerRegion===r?'selected':''}>${r}</option>`).join('')}
@@ -1906,7 +2035,6 @@ function renderTracker(){
       <span style="margin-left:auto;font-size:11px;color:var(--text3)">${total} employees in view</span>
     </div>
 
-    <!-- KF CARDS -->
     <div class="tracker-grid">
       <div class="tracker-kf glass-card">
         <div class="kf-label-top">Total in View</div>
@@ -1928,7 +2056,6 @@ function renderTracker(){
       </div>
     </div>
 
-    <!-- BY REGION -->
     <div class="section-heading"><span>By Region</span><div class="section-heading-line"></div></div>
     <div class="tracker-region-grid">
       ${REGIONS.map(r=>{
@@ -1947,23 +2074,14 @@ function renderTracker(){
       }).join('')}
     </div>
 
-    <!-- BY STORE -->
     <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount</span></div>
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
-          <thead>
-            <tr>
-              <th class="no-sort">Store</th>
-              <th class="no-sort">Store ID</th>
-              <th class="no-sort">Region</th>
-              <th class="no-sort">Total</th>
-              <th class="no-sort">Deployed</th>
-              <th class="no-sort">Pending</th>
-              <th class="no-sort">Backout</th>
-              <th class="no-sort">Progress</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th class="no-sort">Store</th><th class="no-sort">Store ID</th><th class="no-sort">Region</th>
+            <th class="no-sort">Total</th><th class="no-sort">Deployed</th><th class="no-sort">Pending</th><th class="no-sort">Backout</th><th class="no-sort">Progress</th>
+          </tr></thead>
           <tbody>
             ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
             :storeList.map(st=>{
@@ -2120,7 +2238,7 @@ function renderTableRows(type){
         <td class="td-check" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect('${e.infinixId}',this.checked)">
         </td>
-        ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
+        ${visibleColKeys.map(k=>(colRender[k]||(()=>`<td>—</td>`))(e)).join('')}
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn btn-ghost btn-sm" onclick="openEditModal('${e.infinixId}')">Edit</button>
           <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||'').replace(/'/g,"\\'")}')">Delete</button>
@@ -2255,25 +2373,37 @@ function buildDetailHTML(e){
     }
   }
 
-  // Onboarding completion checklist
-  const checks = [
-    { label: 'Employment Status',  done: !!e.status },
-    { label: 'Deployment Status',  done: e.deploymentStatus === 'DEPLOYED' },
-    { label: 'QR Scanned',         done: e.qrStatus === 'SCANNED' },
-    { label: 'Contract Sent',      done: e.contractStatus === 'SENT' },
-    { label: 'Mobile Number',      done: !!e.mobile && e.mobile.trim() !== '' },
-    { label: 'Email Address',      done: !!e.email && e.email.trim() !== '' },
-    { label: 'SSS Number',         done: !!e.sss && e.sss.trim() !== '' },
-    { label: 'PhilHealth',         done: !!e.philhealth && e.philhealth.trim() !== '' },
-    { label: 'Pag-IBIG',           done: !!e.pagibig && e.pagibig.trim() !== '' },
-    { label: 'Bank Account',       done: !!e.bankAccount && e.bankAccount.trim() !== '' },
-    { label: 'Date of Birth',      done: !!e.dob && e.dob.trim() !== '' },
-    { label: 'Region Assigned',    done: !!e.region && e.region.trim() !== '' },
+  // Profile completion checklist
+  const checks=[
+    {label:'Employment Status',done:!!e.status},
+    {label:'Deployment Status',done:e.deploymentStatus==='DEPLOYED'},
+    {label:'QR Scanned',done:e.qrStatus==='SCANNED'},
+    {label:'Contract Sent',done:e.contractStatus==='SENT'},
+    {label:'Job Offer',done:!!e.jobOffer},
+    {label:'Mobile Number',done:!!e.mobile&&e.mobile.trim()!==''},
+    {label:'Email Address',done:!!e.email&&e.email.trim()!==''},
+    {label:'SSS Number',done:!!e.sss&&e.sss.trim()!==''},
+    {label:'PhilHealth',done:!!e.philhealth&&e.philhealth.trim()!==''},
+    {label:'Pag-IBIG',done:!!e.pagibig&&e.pagibig.trim()!==''},
+    {label:'Bank Account',done:!!e.bankAccount&&e.bankAccount.trim()!==''},
+    {label:'Date of Birth',done:!!e.dob&&e.dob.trim()!==''},
   ];
-  const doneCount = checks.filter(c => c.done).length;
-  const pct = Math.round(doneCount / checks.length * 100);
-  const barColor = pct === 100 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
-  const onboardingHTML = `
+  const doneCount=checks.filter(c=>c.done).length;
+  const pct=Math.round(doneCount/checks.length*100);
+  const barColor=pct===100?'var(--success)':pct>=60?'var(--warning)':'var(--danger)';
+
+  // Requirements list
+  const reqDone=Array.isArray(e.requirements)?e.requirements:[];
+  const reqDoneCount=reqDone.length;
+  const reqPct=Math.round(reqDoneCount/REQUIREMENTS.length*100);
+
+  const statusChangeDateRow=INACTIVE_STATUSES.includes(e.status)&&e.statusChangeDate
+    ?row(`Date ${e.status}`,`<b style="color:var(--warning)">${e.statusChangeDate}</b>`):'';
+
+  return `
+    ${bdayNote}
+
+    <!-- PROFILE COMPLETION -->
     <div class="detail-section">
       <div class="detail-section-title">Profile Completion</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -2289,21 +2419,24 @@ function buildDetailHTML(e){
             ${c.label}
           </div>`).join('')}
       </div>
-    </div>`;
+    </div>
 
-  return `
-    ${bdayNote}
-    ${onboardingHTML}
+    <!-- KEY INFO -->
     <div class="detail-section">
       <div class="detail-section-title">Key Info</div>
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
       ${row('Full Name',`<b>${e.fullName||''}</b>`)}
       ${row('Status',badge(e.status))}
+      ${statusChangeDateRow}
       ${row('QR Status',badge(e.qrStatus,(e.qrStatus||'').replace(/ /g,'-')))}
       ${row('Deploy Status',badge(e.deploymentStatus,(e.deploymentStatus||'-').replace(/ /g,'-')))}
       ${row('Deploy Date',e.deploymentDate)}
       ${row('Contract',badge(e.contractStatus,(e.contractStatus||'').replace(/ /g,'-')))}
+      ${row('Job Offer',e.jobOffer?'<span style="color:var(--success);font-weight:700">✓ Sent</span>':'<span style="color:var(--text3)">Not yet sent</span>')}
+      ${row('Pre-Emp Forms',reqDoneCount>0?`<span style="color:var(--success)">${reqDoneCount}/${REQUIREMENTS.length} submitted</span>`:`<span style="color:var(--danger)">0/${REQUIREMENTS.length} submitted</span>`)}
     </div>
+
+    <!-- PERSONAL -->
     <div class="detail-section">
       <div class="detail-section-title">Personal</div>
       ${row('First Name',e.firstName)}${row('Last Name',e.lastName)}
@@ -2311,31 +2444,119 @@ function buildDetailHTML(e){
       ${row('Gender',e.gender)}${row('Marital Status',e.maritalStatus)}
       ${row('Mobile',e.mobile)}${row('Email',e.email)}${row('Address',e.address)}
     </div>
+
+    <!-- ASSIGNMENT -->
     <div class="detail-section">
       <div class="detail-section-title">Assignment</div>
       ${row('Region',e.region)}${row('Store',e.storeAssignment)}
       ${row('Store ID',e.storeId)}${row('RSS Name',e.rssName)}${row('RSS ID',e.rssId)}
     </div>
+
+    <!-- GOVERNMENT -->
     <div class="detail-section">
-      <div class="detail-section-title">Government</div>
+      <div class="detail-section-title">Government Numbers</div>
       ${row('SSS',e.sss||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
       ${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}
     </div>
+
+    <!-- PAYROLL -->
     <div class="detail-section">
-      <div class="detail-section-title">Payroll</div>
+      <div class="detail-section-title">Payroll & Banking</div>
       ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',e.bankName)}
       ${row('Account No.',e.bankAccount||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
+
+    <!-- PRE-EMPLOYMENT REQUIREMENTS -->
+    <div class="detail-section">
+      <div class="detail-section-title">Pre-Employment Requirements</div>
+      <div class="req-progress">
+        <div class="req-progress-bar-wrap">
+          <div class="req-progress-bar" id="dp-req-bar" style="width:${reqPct}%"></div>
+        </div>
+        <span class="req-progress-text" id="dp-req-txt">${reqDoneCount}/${REQUIREMENTS.length}</span>
+      </div>
+      <div class="req-checklist" id="dp-req-list">
+        ${REQUIREMENTS.map((req,i)=>{
+          const done=reqDone.includes(i);
+          return`<div class="req-item ${done?'done':''}" onclick="toggleRequirement('${e.infinixId}',${i})" id="req-item-${i}">
+            <div class="req-checkbox">
+              <svg class="req-check-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="req-label">${req}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- CONTRACT & JOB OFFER -->
+    <div class="detail-section">
+      <div class="detail-section-title">Contract & Job Offer</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <span style="font-size:12px;color:var(--text2)">Contract Status</span>
+          ${badge(e.contractStatus,(e.contractStatus||'').replace(/ /g,'-'))}
+        </div>
+        ${e.contractSentDate?`<div style="padding:6px 10px;font-size:11.5px;color:var(--text3)">Contract sent: <b style="color:var(--text2)">${e.contractSentDate}</b></div>`:''}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <span style="font-size:12px;color:var(--text2)">Job Offer</span>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text2)">
+            <input type="checkbox" id="dp-joboffer-chk" ${e.jobOffer?'checked':''} onchange="toggleJobOffer('${e.infinixId}',this.checked)" style="width:14px;height:14px;accent-color:var(--moss-green)">
+            ${e.jobOffer?'<span style="color:var(--success)">Sent</span>':'Not yet sent'}
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <span style="font-size:12px;color:var(--text2)">Pre-Employment Forms</span>
+          <span style="font-size:11px;font-weight:700;color:${reqPct===100?'var(--success)':'var(--warning)'}">
+            ${reqPct===100?'✓ Complete':`${reqDoneCount}/${REQUIREMENTS.length} done`}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
     <div class="detail-section">
       <div class="detail-section-title">Notes / Remarks</div>
-      <textarea class="notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${e.notes||''}</textarea>
+      <textarea class="notes-area" id="dp-notes-area" placeholder="Add notes or remarks…">${e.notes||''}</textarea>
       <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${e.infinixId}',document.getElementById('dp-notes-area').value)">Save Notes</button>
     </div>
+
+    <!-- AUDIT -->
     <div class="detail-section">
       <div class="detail-section-title">Audit Trail</div>
       <div id="dp-audit-inner" style="padding:6px 0;font-size:12px;color:var(--text3)">Loading…</div>
     </div>`;
+}
+
+// Toggle individual requirement checkbox in detail panel
+function toggleRequirement(infinixId, idx){
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  let reqDone=Array.isArray(emp.requirements)?[...emp.requirements]:[];
+  if(reqDone.includes(idx)){
+    reqDone=reqDone.filter(i=>i!==idx);
+  }else{
+    reqDone.push(idx);
+    reqDone.sort((a,b)=>a-b);
+  }
+  // Optimistic UI update
+  const item=document.getElementById(`req-item-${idx}`);
+  if(item)item.classList.toggle('done',reqDone.includes(idx));
+  const pct=Math.round(reqDone.length/REQUIREMENTS.length*100);
+  const bar=document.getElementById('dp-req-bar');if(bar)bar.style.width=pct+'%';
+  const txt=document.getElementById('dp-req-txt');if(txt)txt.textContent=`${reqDone.length}/${REQUIREMENTS.length}`;
+  saveRequirements(infinixId,reqDone,emp.jobOffer);
+}
+
+function toggleJobOffer(infinixId,checked){
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  showLoading(true,'Saving...');
+  apiUpdateEmployee({...emp,jobOffer:checked}).then(res=>{
+    showLoading(false);
+    if(res.ok){toast('Job offer status updated','success');loadData().then(()=>openDetailPanel(infinixId));}
+    else toast(res.msg||'Failed','error');
+  }).catch(e=>{showLoading(false);toast('Error: '+e.message,'error');});
 }
 
 async function loadEmployeeAudit(infinixId){
@@ -2388,17 +2609,21 @@ async function renderLog(){
 }
 
 // ============================================================
-// FORM
+// FORM — updated with new column order + new fields
 // ============================================================
 function getFormHTML(emp){
   const v=k=>emp?(emp[k]||''):'';
   const toDateInput=val=>{if(!val)return'';const d=new Date(val);if(isNaN(d))return'';return d.toISOString().split('T')[0];};
-  const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${v(k).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
+  const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${String(v(k)).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
   const dateInp=k=>`<input id="f_${k}" type="date" value="${toDateInput(v(k))}">`;
   const sel=(k,opts)=>`<select id="f_${k}">${opts.map(o=>`<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
   const fn=emp?`${emp.firstName||''} ${emp.lastName||''}`.trim():'';
 
+  // Determine if status change date should show
+  const showStatusDate=emp&&INACTIVE_STATUSES.includes(emp.status||'');
+
   return `
+  <!-- ══ KEY FIELDS ══ -->
   <div class="section-label key-section">Key Fields</div>
   <div class="form-grid">
     <div class="field req"><label>Full Name (Auto)</label>
@@ -2407,14 +2632,22 @@ function getFormHTML(emp){
     <div class="field req"><label>Infinix Employee ID</label>
       ${inp('infinixId','text','1700XXXX',emp?'readonly style="opacity:.5"':'oninput="validateInfinixId();checkDuplicate()"')}
       <div class="field-hint" id="hint-infinixId">Must start with 1700</div>
-      <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system. Check before saving.</div>
+      <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system.</div>
     </div>
-    <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}</div>
+    <div class="field req"><label>Employment Status</label>
+      ${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}
+      <div class="status-date-field ${showStatusDate?'visible':''}" id="status-date-wrap">
+        <label>Date of Status Change</label>
+        ${dateInp('statusChangeDate')}
+      </div>
+    </div>
+    <div class="field"><label>Region</label>${sel('region',['',...REGIONS])}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
     <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',['NOT YET DEPLOYED','DEPLOYED','BACKOUT','-'])}</div>
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
   </div>
 
+  <!-- ══ PERSONAL INFORMATION ══ -->
   <div class="section-label">Personal Information</div>
   <div class="form-grid cols3">
     <div class="field req"><label>First Name</label>${inp('firstName','text','Juan','oninput="updateFullName()"')}</div>
@@ -2430,18 +2663,18 @@ function getFormHTML(emp){
     <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
+  <!-- ══ STORE & DEPLOYMENT ══ -->
   <div class="section-label">Store & Deployment</div>
   <div class="form-grid">
-    <div class="field"><label>Region</label>${sel('region',['',...REGIONS])}</div>
     <div class="field">
       <label>Store ID</label>
       ${inp('storeId','text','PH0XXXX','oninput="onStoreIdInput()"')}
       <div class="field-hint" id="hint-storeId">Must start with PH0</div>
-      <div class="store-lookup-status" id="store-lookup-status">${storeCacheLoaded?'Enter Store ID to auto-fill name':'Loading store list…'}</div>
+      <div class="store-lookup-status" id="store-lookup-status">${storeCacheLoaded?'Enter Store ID to auto-fill':'Loading store list…'}</div>
     </div>
     <div class="field form-full">
       <label>Store Assignment <span style="color:var(--text3);font-weight:400;font-size:10px">(auto-filled from Store ID)</span></label>
-      <input id="f_storeAssignment" type="text" value="${v('storeAssignment').replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
+      <input id="f_storeAssignment" type="text" value="${String(v('storeAssignment')).replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
     </div>
     <div class="field"><label>RSS Name</label>${inp('rssName','text','RSS Name')}</div>
     <div class="field"><label>RSS ID</label>${inp('rssId','text','1700XXXX','oninput="validateRssId()"')}
@@ -2449,6 +2682,7 @@ function getFormHTML(emp){
     </div>
   </div>
 
+  <!-- ══ GOVERNMENT NUMBERS ══ -->
   <div class="section-label">Government Numbers</div>
   <div class="form-grid cols3">
     <div class="field"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
@@ -2456,24 +2690,61 @@ function getFormHTML(emp){
     <div class="field"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
   </div>
 
+  <!-- ══ PAYROLL & BANKING ══ -->
   <div class="section-label">Payroll & Banking</div>
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
-    <div class="field"><label>Bank Name</label>${sel('bankName',['','CTBC Bank (Philippines)','Union Bank of the Philippines','BDO','BPI','Metrobank','Security Bank','Landbank','PNB','Eastwest Bank','RCBC'])}</div>
+    <div class="field"><label>Bank Name</label>
+      <select id="f_bankName">
+        <option value="" ${v('bankName')===''?'selected':''}>— Select Bank —</option>
+        <option value="CTBC Bank (Philippines)" ${v('bankName')==='CTBC Bank (Philippines)'?'selected':''}>CTBC Bank (Philippines)</option>
+        <option value="Union Bank of the Philippines" ${v('bankName')==='Union Bank of the Philippines'?'selected':''}>Union Bank of the Philippines</option>
+      </select>
+    </div>
     <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number')}</div>
   </div>
 
-  <div class="section-label">Contract</div>
+  <!-- ══ CONTRACT & JOB OFFER ══ -->
+  <div class="section-label">Contract & Job Offer</div>
   <div class="form-grid">
     <div class="field"><label>Contract Status</label>${sel('contractStatus',['NOT YET SENT','SENT'])}</div>
     <div class="field"><label>Contract Sent Date</label>${dateInp('contractSentDate')}</div>
+    <div class="field"><label>Pre-Employment Forms</label>
+      <select id="f_preEmpForms">
+        <option value="NOT YET" ${!emp||!emp.requirements||emp.requirements.length===0?'selected':''}>Not Yet Submitted</option>
+        <option value="PARTIAL" ${emp&&emp.requirements&&emp.requirements.length>0&&emp.requirements.length<REQUIREMENTS.length?'selected':''}>Partial (${emp&&emp.requirements?emp.requirements.length:0}/${REQUIREMENTS.length})</option>
+        <option value="COMPLETE" ${emp&&emp.requirements&&emp.requirements.length===REQUIREMENTS.length?'selected':''}>Complete</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Job Offer</label>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);background:rgba(136,144,99,0.05)">
+        <input type="checkbox" id="f_jobOffer" ${emp&&emp.jobOffer?'checked':''} style="width:14px;height:14px;accent-color:var(--moss-green)">
+        <label for="f_jobOffer" style="font-size:12px;color:var(--text2);cursor:pointer;text-transform:none;letter-spacing:0">Job offer has been sent</label>
+      </div>
+    </div>
   </div>
 
+  <!-- ══ NOTES ══ -->
   <div class="section-label">Notes / Remarks</div>
   <div class="field form-full">
     <label>Notes</label>
     <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${v('notes')}</textarea>
-  </div>`;
+  </div>
+
+  <script>
+    // Show/hide status change date based on status selection
+    document.getElementById('f_status')?.addEventListener('change',function(){
+      const wrap=document.getElementById('status-date-wrap');
+      const inactive=['Floating','Resigned','AWOL','Terminated'];
+      if(wrap)wrap.classList.toggle('visible',inactive.includes(this.value));
+      // Auto-set today's date if switching to inactive and no date set
+      if(inactive.includes(this.value)){
+        const dateEl=document.getElementById('f_statusChangeDate');
+        if(dateEl&&!dateEl.value)dateEl.value=new Date().toISOString().split('T')[0];
+      }
+    });
+  </sc` + `ript>`;
 }
 
 function updateFullName(){
@@ -2490,15 +2761,11 @@ function validateInfinixId(){
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
 function checkDuplicate(){
-  if(editingId)return; // skip on edit
+  if(editingId)return;
   const val=document.getElementById('f_infinixId')?.value.trim()||'';
-  const warn=document.getElementById('dup-warning');
-  if(!warn)return;
-  if(val&&employees.some(e=>String(e.infinixId).trim()===val)){
-    warn.classList.add('visible');
-  } else {
-    warn.classList.remove('visible');
-  }
+  const warn=document.getElementById('dup-warning');if(!warn)return;
+  if(val&&employees.some(e=>String(e.infinixId).trim()===val))warn.classList.add('visible');
+  else warn.classList.remove('visible');
 }
 function validateRssId(){
   const val=document.getElementById('f_rssId')?.value.trim()||'';
@@ -2509,7 +2776,24 @@ function validateRssId(){
 }
 function gatherForm(){
   const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
-  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),notes:f('notes')};
+  const fchk=k=>document.getElementById('f_'+k)?.checked||false;
+  const emp=editingId?employees.find(e=>String(e.infinixId)===String(editingId)):null;
+  return{
+    firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),
+    infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),
+    statusChangeDate:f('statusChangeDate'),
+    deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),
+    region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),
+    rssName:f('rssName'),rssId:f('rssId'),address:f('address'),
+    mobile:f('mobile'),dob:f('dob'),email:f('email'),
+    gender:f('gender'),maritalStatus:f('maritalStatus'),
+    sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),
+    basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),
+    contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),
+    jobOffer:fchk('jobOffer'),
+    requirements:emp?emp.requirements:[],
+    notes:f('notes')
+  };
 }
 function validate(data){
   let ok=true;
@@ -2548,7 +2832,7 @@ function openEditModal(id){
     const found=lookupStore(emp.storeId);
     const statusEl=document.getElementById('store-lookup-status');
     if(statusEl){
-      statusEl.textContent=found?`Store: ${found.storeName}${found.rssName?' · RSS: '+found.rssName:''}`:'Store ID not in lookup — fields entered manually';
+      statusEl.textContent=found?`Store: ${found.storeName}${found.rssName?' · RSS: '+found.rssName:''}`:'Store ID not in lookup';
       statusEl.className='store-lookup-status '+(found?'found':'notfound');
     }
     const storeEl=document.getElementById('f_storeAssignment');
