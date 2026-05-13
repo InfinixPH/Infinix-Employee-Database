@@ -1156,13 +1156,17 @@ initTheme();
 async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
-    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!E:F`});
+    // B=RSS Name, C=RSS ID, D=skip, E=Store Name, F=Store ID
+    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!B:F`});
     const rows=r.result.values||[];
     storeCache={};
     for(let i=1;i<rows.length;i++){
-      const storeName=(rows[i][0]||'').trim();
-      const shopId=(rows[i][1]||'').trim();
-      if(shopId)storeCache[shopId.toUpperCase()]=storeName;
+      const rssName  =(rows[i][0]||'').trim(); // col B
+      const rssId    =(rows[i][1]||'').trim(); // col C
+      // col D = index 2, skipped
+      const storeName=(rows[i][3]||'').trim(); // col E
+      const shopId   =(rows[i][4]||'').trim(); // col F
+      if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId};
     }
     storeCacheLoaded=true;
   }catch(e){console.warn('Store Details load failed:',e);}
@@ -1172,15 +1176,34 @@ function lookupStore(shopId){
   return storeCache[shopId.trim().toUpperCase()]||null;
 }
 function onStoreIdInput(){
-  const shopIdEl=document.getElementById('f_storeId');
+  const shopIdEl   =document.getElementById('f_storeId');
   const storeNameEl=document.getElementById('f_storeAssignment');
-  const statusEl=document.getElementById('store-lookup-status');
+  const rssNameEl  =document.getElementById('f_rssName');
+  const rssIdEl    =document.getElementById('f_rssId');
+  const statusEl   =document.getElementById('store-lookup-status');
   if(!shopIdEl||!storeNameEl||!statusEl)return;
   const shopId=shopIdEl.value.trim();
-  if(!shopId){statusEl.textContent='';storeNameEl.readOnly=false;return;}
+  if(!shopId){
+    statusEl.textContent='';
+    storeNameEl.readOnly=false;
+    if(rssNameEl)rssNameEl.readOnly=false;
+    if(rssIdEl)rssIdEl.readOnly=false;
+    return;
+  }
   const found=lookupStore(shopId);
-  if(found){storeNameEl.value=found;storeNameEl.readOnly=true;statusEl.textContent=`Store found: ${found}`;statusEl.className='store-lookup-status found';}
-  else{storeNameEl.readOnly=false;statusEl.textContent=storeCacheLoaded?'Store ID not found — enter name manually':'Store list loading…';statusEl.className='store-lookup-status '+(storeCacheLoaded?'notfound':'searching');}
+  if(found){
+    storeNameEl.value=found.storeName; storeNameEl.readOnly=true;
+    if(rssNameEl){rssNameEl.value=found.rssName; rssNameEl.readOnly=!!found.rssName;}
+    if(rssIdEl) {rssIdEl.value=found.rssId;   rssIdEl.readOnly=!!found.rssId;}
+    statusEl.textContent=`Store found: ${found.storeName}${found.rssName?' · RSS: '+found.rssName:''}`;
+    statusEl.className='store-lookup-status found';
+  } else {
+    storeNameEl.readOnly=false;
+    if(rssNameEl)rssNameEl.readOnly=false;
+    if(rssIdEl)rssIdEl.readOnly=false;
+    statusEl.textContent=storeCacheLoaded?'Store ID not found — enter fields manually':'Store list loading…';
+    statusEl.className='store-lookup-status '+(storeCacheLoaded?'notfound':'searching');
+  }
   const hint=document.getElementById('hint-storeId');
   if(shopId&&!shopId.startsWith('PH0')){hint?.classList.add('visible');shopIdEl.classList.add('err');}
   else{hint?.classList.remove('visible');shopIdEl.classList.remove('err');}
@@ -2353,7 +2376,7 @@ function getFormHTML(emp){
     </div>
     <div class="field form-full">
       <label>Store Assignment <span style="color:var(--text3);font-weight:400;font-size:10px">(auto-filled from Store ID)</span></label>
-      <input id="f_storeAssignment" type="text" value="${v('storeAssignment').replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?'readonly':''}>
+      <input id="f_storeAssignment" type="text" value="${v('storeAssignment').replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
     </div>
     <div class="field"><label>RSS Name</label>${inp('rssName','text','RSS Name')}</div>
     <div class="field"><label>RSS ID</label>${inp('rssId','text','1700XXXX','oninput="validateRssId()"')}
@@ -2459,9 +2482,18 @@ function openEditModal(id){
   if(emp.storeId&&storeCacheLoaded){
     const found=lookupStore(emp.storeId);
     const statusEl=document.getElementById('store-lookup-status');
-    if(statusEl){statusEl.textContent=found?`Store: ${found}`:'Store ID not in lookup — name entered manually';statusEl.className='store-lookup-status '+(found?'found':'notfound');}
+    if(statusEl){
+      statusEl.textContent=found?`Store: ${found.storeName}${found.rssName?' · RSS: '+found.rssName:''}`:'Store ID not in lookup — fields entered manually';
+      statusEl.className='store-lookup-status '+(found?'found':'notfound');
+    }
     const storeEl=document.getElementById('f_storeAssignment');
-    if(storeEl&&found)storeEl.readOnly=true;
+    if(storeEl&&found&&found.storeName)storeEl.readOnly=true;
+    const rssNameEl=document.getElementById('f_rssName');
+    const rssIdEl=document.getElementById('f_rssId');
+    if(found){
+      if(rssNameEl&&found.rssName){rssNameEl.value=found.rssName;rssNameEl.readOnly=true;}
+      if(rssIdEl&&found.rssId){rssIdEl.value=found.rssId;rssIdEl.readOnly=true;}
+    }
   }
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
