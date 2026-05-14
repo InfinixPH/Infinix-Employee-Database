@@ -1398,18 +1398,102 @@ async function ensureHeaders(){
 // ============================================================
 // DATA
 // ============================================================
+async function getSheetIdMap(){
+  const meta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
+  const map={};
+  (meta.result.sheets||[]).forEach(s=>{map[s.properties.title]=s.properties.sheetId;});
+  return map;
+}
+function normalizeStatus(status){
+  const s=String(status||'Active').trim().toUpperCase();
+  if(s==='ACTIVE')return 'Active';
+  if(s==='FLOATING')return 'Floating';
+  if(s==='RESIGNED')return 'Resigned';
+  if(s==='AWOL')return 'AWOL';
+  if(s==='TERMINATED')return 'Terminated';
+  return 'Active';
+}
+function rowIsBlank(row){
+  return !row || row.every(c=>String(c||'').trim()==='');
+}
+function rowHasEmployeeId(row){
+  return String((row||[])[1]||'').trim()!==''; // Column B = Infinix Employee ID
+}
+async function deleteSheetRows(sheetName,rowNumbers,sheetIdMap){
+  if(!rowNumbers.length)return;
+  const sheetId=sheetIdMap[sheetName];
+  if(sheetId===undefined)return;
+  const requests=[...new Set(rowNumbers)].sort((a,b)=>b-a).map(rowNum=>({
+    deleteDimension:{range:{sheetId,dimension:'ROWS',startIndex:rowNum-1,endIndex:rowNum}}
+  }));
+  await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests}});
+}
+async function appendSheetRows(sheetName,rows){
+  if(!rows.length)return;
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId:SHEET_ID,
+    range:`${sheetName}!A:${SHEET_LAST_COL}`,
+    valueInputOption:'RAW',
+    insertDataOption:'INSERT_ROWS',
+    resource:{values:rows.map(r=>{const copy=[...r];while(copy.length<HEADERS.length)copy.push('');return copy.slice(0,HEADERS.length);})}
+  });
+}
+async function autoFixSheetPlacement(activeRows,inactiveRows){
+  const toInactive=[],toActive=[],deleteActive=[],deleteInactive=[];
+
+  (activeRows||[]).forEach((row,i)=>{
+    const rowNum=i+2;
+    if(rowIsBlank(row)){deleteActive.push(rowNum);return;}
+    if(!rowHasEmployeeId(row))return;
+    const status=normalizeStatus(row[6]); // Column G = Employment Status
+    row[6]=status;
+    if(status!=='Active'){toInactive.push(row);deleteActive.push(rowNum);}
+  });
+
+  (inactiveRows||[]).forEach((row,i)=>{
+    const rowNum=i+2;
+    if(rowIsBlank(row)){deleteInactive.push(rowNum);return;}
+    if(!rowHasEmployeeId(row))return;
+    const status=normalizeStatus(row[6]); // Column G = Employment Status
+    row[6]=status;
+    if(status==='Active'){toActive.push(row);deleteInactive.push(rowNum);}
+  });
+
+  const changeCount=toInactive.length+toActive.length+deleteActive.length+deleteInactive.length;
+  if(!changeCount)return {changed:false,moved:0,deleted:0};
+
+  const sheetIdMap=await getSheetIdMap();
+  // Append first so no employee data is lost, then delete old/misplaced/blank rows bottom-up.
+  await appendSheetRows(INACTIVE_SHEET,toInactive);
+  await appendSheetRows(ACTIVE_SHEET,toActive);
+  await deleteSheetRows(ACTIVE_SHEET,deleteActive,sheetIdMap);
+  await deleteSheetRows(INACTIVE_SHEET,deleteInactive,sheetIdMap);
+
+  return {changed:true,moved:toInactive.length+toActive.length,deleted:(deleteActive.length+deleteInactive.length)-(toInactive.length+toActive.length)};
+}
+
 async function loadData(){
   showLoading(true,'Loading employees...');
   setOfflineBanner(false);
   try{
-    const [aRes,iRes]=await Promise.all([
+    let [aRes,iRes]=await Promise.all([
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
     ]);
+
+    const fixResult=await autoFixSheetPlacement(aRes.result.values||[],iRes.result.values||[]);
+    if(fixResult.changed){
+      [aRes,iRes]=await Promise.all([
+        gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
+        gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
+      ]);
+      toast(`Sheet fixed: moved ${fixResult.moved} row(s), deleted ${fixResult.deleted} blank row(s)`,'success');
+    }
+
     employees=[];
     // NEW FORMAT: Infinix Employee ID is Column B, index 1. Do not filter by old Column E.
-    (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
-    (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
+    (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);obj.status=normalizeStatus(obj.status);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
+    (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);obj.status=normalizeStatus(obj.status);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
@@ -1550,7 +1634,7 @@ function objToRow(d){
     yn(d.previousCoe)
   ];
 }
-function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
+function getTargetSheet(status){return normalizeStatus(status)==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
 async function writeLog(empId,name,action,from,to){
   try{
     await gapi.client.sheets.spreadsheets.values.append({
@@ -1572,6 +1656,7 @@ async function findEmployeeRowInSheet(infinixId,sheetName){
 // CRUD
 // ============================================================
 async function apiAddEmployee(data){
+  data.status=normalizeStatus(data.status);
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
@@ -1584,6 +1669,7 @@ async function apiUpdateEmployee(data){
   if(!emp)return{ok:false,msg:'Employee not found.'};
 
   const oldStatus=emp.status||'Active';
+  data.status=normalizeStatus(data.status);
   const newStatus=data.status||'Active';
 
   // IMPORTANT: use the employee's ACTUAL current sheet, not guessed from status.
