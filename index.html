@@ -2131,10 +2131,11 @@ function renderDashboard(){
 // ============================================================
 function renderTracker(){
   document.getElementById('topbar-title').textContent='Deployment Tracker';
-  document.getElementById('topbar-sub').textContent='Track deployment progress by region and store';
+  document.getElementById('topbar-sub').textContent='Track deployment progress by region and store — Active promoters only';
 
-  // filter employees
-  let list=employees;
+  // Deployment tracker must count ACTIVE promoters only.
+  // Inactive statuses (Floating, Resigned, AWOL, Terminated, Backout) are excluded from totals, regions, and store breakdown.
+  let list=employees.filter(e=>normalizeStatus(e.status)==='Active');
   if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&e.deploymentDate>=trackerDateFrom);
   if(trackerDateTo)list=list.filter(e=>e.deploymentDate&&e.deploymentDate<=trackerDateTo);
   if(trackerRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(trackerRegion));
