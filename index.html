@@ -381,8 +381,8 @@ body::after {
    DASHBOARD
    ============================================================ */
 .dash-kf-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 16px; }
-@media (max-width: 1280px){ .dash-kf-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 760px){ .dash-kf-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 1280px) { .dash-kf-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2,1fr); } }
 .kf-card { padding: 20px 22px; }
 .kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
 .kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
@@ -1842,11 +1842,8 @@ function filteredEmployees(type){
     :employees.filter(e=>isActive?(normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT'):(normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT'));
 
   // Missing field filter (from dashboard pill clicks)
-  // Most dashboard pending actions drill down Active promoters only.
-  // Not Yet Deployed KPI is GLOBAL regardless of Employment Status.
-  if(missingFieldFilter==='notDeployedAll'){
-    list=employees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
-  } else if(missingFieldFilter){
+  // Dashboard pending actions must only drill down Active promoters.
+  if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
   if(missingFieldFilter==='notDeployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
@@ -1861,7 +1858,7 @@ function filteredEmployees(type){
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
   if(filterRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(filterRegion));
-  if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
+  if(filterDeployStatus)list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)===normalizeDeployStatus(filterDeployStatus));
   if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
@@ -2012,8 +2009,9 @@ function renderDashboard(){
   // Pending actions and completion cards count ACTIVE promoters only.
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
   const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
-  // Global count: Not Yet Deployed regardless of Employment Status / sheet.
-  const notYetDeployedAll=employees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
+  // Dashboard top KPI: NOT YET DEPLOYED must count ALL records, regardless of Employment Status / sheet.
+  const notDeployedGlobal=employees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
+  // Pending Actions still use active promoters only.
   const notDeployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
@@ -2053,11 +2051,11 @@ function renderDashboard(){
         <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('notDeployedAll')" title="Not Yet Deployed across Active and Inactive records" style="cursor:pointer;border-color:rgba(201,184,122,0.22)">
+      <div class="kf-card glass-card" title="Counts all records, active and inactive">
         <div class="kf-label-top">Not Yet Deployed</div>
-        <div class="kf-num" style="color:var(--warning)">${notYetDeployedAll}</div>
-        <div class="kf-sub">All records · regardless of status</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?notYetDeployedAll/total*100:0}%;background:var(--warning)"></div></div>
+        <div class="kf-num">${notDeployedGlobal}</div>
+        <div class="kf-sub">All records</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?notDeployedGlobal/total*100:0}%;background:var(--warning)"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">QR Scanned</div>
@@ -2308,7 +2306,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployedAll:'Not Yet Deployed',notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
