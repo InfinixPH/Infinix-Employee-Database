@@ -495,10 +495,11 @@ body::after {
 }
 .col-toggle-btn:hover { border-color: var(--border2); color: var(--text); }
 .col-dropdown {
-  position: absolute; right: 0; top: calc(100% + 6px);
+  position: absolute; right: 0; top: calc(100% + 8px);
   background: var(--bg-mid); border: 1px solid var(--border2);
-  border-radius: var(--radius-sm); padding: 8px;
-  min-width: 180px; z-index: 50; box-shadow: var(--shadow-lg);
+  border-radius: var(--radius); padding: 10px;
+  min-width: 220px; max-height: 360px; overflow-y: auto;
+  z-index: 500; box-shadow: var(--shadow-lg);
   display: none;
 }
 .col-dropdown.open { display: block; }
@@ -1182,6 +1183,8 @@ tbody tr:hover{background:rgba(215,254,250,.06);}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
 <script>
+window.addEventListener('error', e => console.error('SITE ERROR:', e.message, e.filename, e.lineno, e.colno));
+window.addEventListener('unhandledrejection', e => console.error('SITE PROMISE ERROR:', e.reason));
 // ============================================================
 // CONFIG
 // ============================================================
@@ -1687,15 +1690,35 @@ function normalizeRegion(region){
   return raw.toUpperCase();
 }
 function normalizeDeployStatus(status){
-  const raw=String(status||'').trim();
-  const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
+  // BULLETPROOF DEPLOYMENT NORMALIZER
+  // IMPORTANT: Dashboard + tracker use Active sheet COLUMN L only (r[11]).
+  // This handles hidden spaces, NBSP, weird dashes, underscores, lowercase,
+  // and values like "Not yet deployed", "NOT-YET-DEPLOYED", "not_deployed".
+  const raw=String(status ?? '')
+    .replace(/\u00A0/g,' ')
+    .replace(/[‐‑‒–—−]/g,'-')
+    .trim();
+  const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ').trim();
   if(!s)return '';
   if(s==='-')return '-';
-  if(s==='DEPLOYED')return 'DEPLOYED';
-  if(s==='BACKOUT'||s==='BACK OUT'||s==='BACKOUT PROMOTER')return 'BACKOUT';
-  if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED')return 'NOT YET DEPLOYED';
+  if(s.includes('BACK') && s.includes('OUT'))return 'BACKOUT';
+  if(s.includes('NOT') && s.includes('DEPLOY'))return 'NOT YET DEPLOYED';
+  if(s.includes('PENDING') && s.includes('DEPLOY'))return 'NOT YET DEPLOYED';
+  if(s==='DEPLOYED' || (s.includes('DEPLOYED') && !s.includes('NOT')))return 'DEPLOYED';
   return s;
 }
+function getDeployStatusFromColumnL(e){
+  return normalizeDeployStatus(e?._raw?.[11] ?? e?.deploymentStatusColL ?? e?.deploymentStatus ?? '');
+}
+function debugDeploymentColumnL(){
+  const rows=employees.filter(e=>e._sheet===ACTIVE_SHEET);
+  const sample=rows.slice(0,25).map(e=>({id:e.infinixId,name:e.fullName,columnL:e._raw?.[11],normalized:getDeployStatusFromColumnL(e)}));
+  const counts=rows.reduce((acc,e)=>{const k=getDeployStatusFromColumnL(e)||'(blank)';acc[k]=(acc[k]||0)+1;return acc;},{});
+  console.table(sample);
+  console.log('Active sheet Column L counts:', counts);
+  return {counts,sample};
+}
+window.debugDeploymentColumnL=debugDeploymentColumnL;
 function isNotYetDeployedColL(value){
   return normalizeDeployStatus(value)==='NOT YET DEPLOYED';
 }
@@ -1865,14 +1888,14 @@ function filteredEmployees(type){
   const isActive=type==='active';
   let list=filterStatus
     ?employees.filter(e=>e.status===filterStatus)
-    :employees.filter(e=>isActive?(normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT'):(normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT'));
+    :employees.filter(e=>isActive?(normalizeStatus(e.status)==='Active' && getDeployStatusFromColumnL(e)!=='BACKOUT'):(normalizeStatus(e.status)!=='Active' || getDeployStatusFromColumnL(e)==='BACKOUT'));
 
   // Missing field filter (from dashboard pill clicks)
   // Dashboard pending actions must only drill down Active promoters.
   if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
-  if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && isNotYetDeployedColL(e.deploymentStatusColL));
+  if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED');
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
   else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
@@ -1884,7 +1907,7 @@ function filteredEmployees(type){
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
   if(filterRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(filterRegion));
-  if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
+  if(filterDeployStatus)list=list.filter(e=>getDeployStatusFromColumnL(e)===normalizeDeployStatus(filterDeployStatus));
   if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
@@ -1951,12 +1974,12 @@ function requirementsComplete(e){
   const required=['medicalCert','govForms','clearance','idPicture','validIdCopy','birthCert','diplomaTor','preEmploymentForms','jobOffer'];
   return required.every(k=>isYesField(e[k]));
 }
-function activePromotersOnly(){return employees.filter(e=>normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT');}
+function activePromotersOnly(){return employees.filter(e=>normalizeStatus(e.status)==='Active' && getDeployStatusFromColumnL(e)!=='BACKOUT');}
 
 function getStats(){
   const s={Active:0,Floating:0,Resigned:0,AWOL:0,Terminated:0,Backout:0};
   employees.forEach(e=>{
-    const st=normalizeDeployStatus(e.deploymentStatus)==='BACKOUT' ? 'Backout' : normalizeStatus(e.status);
+    const st=getDeployStatusFromColumnL(e)==='BACKOUT' ? 'Backout' : normalizeStatus(e.status);
     if(s[st]!==undefined)s[st]++;
   });
   return s;
@@ -1964,7 +1987,7 @@ function getStats(){
 function renderSidebar(){
   const s=getStats();
   document.getElementById('badge-active').textContent=s.Active;
-  document.getElementById('badge-inactive').textContent=employees.filter(e=>e.status!=='Active').length;
+  document.getElementById('badge-inactive').textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || getDeployStatusFromColumnL(e)==='BACKOUT').length;
   document.getElementById('status-filters').innerHTML=STATUSES.map(st=>`
     <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${st}')">
       <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span>${st}
@@ -2036,8 +2059,9 @@ function renderDashboard(){
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
   // Deployment counts read the Active sheet only and use Column L: Deployment Status.
   const activeSheetRows=employees.filter(e=>e._sheet===ACTIVE_SHEET);
-  const deployed=activeSheetRows.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='DEPLOYED').length;
-  const notDeployed=activeSheetRows.filter(e=>isNotYetDeployedColL(e.deploymentStatusColL)).length;
+  const deployed=activeSheetRows.filter(e=>getDeployStatusFromColumnL(e)==='DEPLOYED').length;
+  const notDeployed=activeSheetRows.filter(e=>getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED').length;
+  console.log('COLUMN L DEPLOYMENT COUNTS',{activeSheetRows:activeSheetRows.length,deployed,notDeployed,sampleColumnL:activeSheetRows.slice(0,10).map(e=>e._raw?.[11])});
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
@@ -2157,7 +2181,7 @@ function renderDashboard(){
                 <td><div class="td-name">${e.fullName||''}</div></td>
                 <td><span class="td-id">${e.infinixId}</span></td>
                 <td><span class="badge b-${e.status}">${e.status}</span></td>
-                <td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>
+                <td><span class="badge b-${(getDeployStatusFromColumnL(e)||'-').replace(/ /g,'-')}">${getDeployStatusFromColumnL(e)||'-'}</span></td>
               </tr>`).join('')||'<tr><td colspan="4"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>'}
             </tbody>
           </table>
@@ -2199,16 +2223,16 @@ function renderTracker(){
   if(trackerRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(trackerRegion));
 
   const total=list.length;
-  const deployed=list.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='DEPLOYED').length;
-  const notYet=list.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='NOT YET DEPLOYED').length;
-  const backout=list.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='BACKOUT').length;
+  const deployed=list.filter(e=>getDeployStatusFromColumnL(e)==='DEPLOYED').length;
+  const notYet=list.filter(e=>getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED').length;
+  const backout=list.filter(e=>getDeployStatusFromColumnL(e)==='BACKOUT').length;
   const pct=total?Math.round(deployed/total*100):0;
 
   // by region
   const byRegion={};
   REGIONS.forEach(r=>{
     const reg=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(r));
-    byRegion[r]={total:reg.length,deployed:reg.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='DEPLOYED').length,notYet:reg.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='NOT YET DEPLOYED').length,backout:reg.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='BACKOUT').length};
+    byRegion[r]={total:reg.length,deployed:reg.filter(e=>getDeployStatusFromColumnL(e)==='DEPLOYED').length,notYet:reg.filter(e=>getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED').length,backout:reg.filter(e=>getDeployStatusFromColumnL(e)==='BACKOUT').length};
   });
 
   // by store (top 10)
@@ -2217,8 +2241,8 @@ function renderTracker(){
     const key=e.storeAssignment||e.storeId||'Unknown';
     if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:normalizeRegion(e.region),total:0,deployed:0,notYet:0,backout:0};
     byStore[key].total++;
-    if(normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED')byStore[key].deployed++;
-    else if(normalizeDeployStatus(e.deploymentStatus)==='BACKOUT')byStore[key].backout++;
+    if(getDeployStatusFromColumnL(e)==='DEPLOYED')byStore[key].deployed++;
+    else if(getDeployStatusFromColumnL(e)==='BACKOUT')byStore[key].backout++;
     else byStore[key].notYet++;
   });
   const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
@@ -2441,7 +2465,7 @@ function renderTableRows(type){
     status:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
     statusDate:e=>`<td style="color:var(--text2);font-size:12px">${e.statusDate||'—'}</td>`,
     deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>`,
-    deploymentStatus:e=>`<td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>`,
+    deploymentStatus:e=>`<td><span class="badge b-${(getDeployStatusFromColumnL(e)||'-').replace(/ /g,'-')}">${getDeployStatusFromColumnL(e)||'-'}</span></td>`,
     requirements:e=>`<td>${reqProgressHTML(e)}</td>`,
     qrStatus:e=>`<td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>`,
     region:e=>`<td style="color:var(--text2)">${e.region||'—'}</td>`,
