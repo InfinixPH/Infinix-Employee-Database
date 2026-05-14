@@ -257,6 +257,8 @@ body::after {
 .btn-ghost:hover { border-color: var(--border2); color: var(--text); background: rgba(136,144,99,0.08); }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.2); }
 .btn-danger:hover { background: rgba(196,122,122,0.22); border-color: rgba(196,122,122,0.4); }
+.btn-warn { background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.2); }
+.btn-warn:hover { background: rgba(201,184,122,0.22); border-color: rgba(201,184,122,0.4); }
 .btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 7px; }
 .btn-refresh { background: var(--bg-frosted); color: var(--text2); border-color: var(--border); }
 .btn-refresh:hover { border-color: var(--border2); color: var(--tan); }
@@ -265,7 +267,7 @@ body::after {
 .content { flex: 1; overflow-y: auto; padding: 20px 24px; }
 
 /* ============================================================
-   OFFLINE BANNER
+   OFFLINE / SYNC BANNERS
    ============================================================ */
 .offline-banner {
   background: rgba(201,184,122,0.07); border-bottom: 1px solid rgba(201,184,122,0.2);
@@ -273,6 +275,12 @@ body::after {
   display: none; align-items: center; gap: 8px; flex-shrink: 0;
 }
 .offline-banner.visible { display: flex; }
+.sync-banner {
+  background: rgba(196,122,122,0.07); border-bottom: 1px solid rgba(196,122,122,0.22);
+  padding: 8px 24px; font-size: 12px; color: var(--danger);
+  display: none; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.sync-banner.visible { display: flex; }
 
 /* ============================================================
    GLASS CARDS
@@ -322,8 +330,9 @@ body::after {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 10px; border-radius: var(--radius-sm);
   background: var(--bg-frosted); border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 12px; cursor: pointer; transition: border-color .15s;
 }
+.bday-item:hover { border-color: var(--border2); }
 .bday-icon { font-size: 16px; flex-shrink: 0; }
 .bday-name { font-weight: 600; flex: 1; }
 .bday-date { font-size: 10.5px; color: var(--text3); }
@@ -696,6 +705,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { border-color: rgba(122,184,148,0.4); color: var(--success); }
 .toast.error   { border-color: rgba(196,122,122,0.4); color: var(--danger); }
+.toast.warning { border-color: rgba(201,184,122,0.4); color: var(--warning); }
 
 /* ============================================================
    LOADING
@@ -708,7 +718,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--moss-green); border-radius: 50%; animation: spin .7s linear infinite; }
 .loading-text { font-size: 12.5px; color: var(--text2); font-weight: 500; }
-.confirm-modal { width: 380px; }
+.confirm-modal { width: 420px; }
 .confirm-body { padding: 28px 24px 12px; text-align: center; }
 .confirm-body h3 { font-family: 'Sora', sans-serif; font-size: 15px; margin-bottom: 8px; }
 .confirm-body p { font-size: 12.5px; color: var(--text2); line-height: 1.7; }
@@ -721,6 +731,12 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .log-updated { background: var(--accent-dim); border-color: var(--border); color: var(--moss-green); }
 .log-meta { font-size: 12px; line-height: 1.55; }
 .log-time { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+
+/* Reconcile preview table */
+.reconcile-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+.reconcile-table th { background: rgba(136,144,99,0.1); padding: 7px 10px; text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--moss-green); border-bottom: 1px solid var(--border); }
+.reconcile-table td { padding: 7px 10px; border-bottom: 1px solid rgba(136,144,99,0.06); }
+.reconcile-table tr:last-child td { border-bottom: none; }
 
 /* ============================================================
    LOGIN
@@ -779,7 +795,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 3px; width: fit-content;
 }
-.view-tab { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15px; }
+.view-tab { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15s; }
 .view-tab.active { background: var(--moss-green); color: #fff; font-weight: 800; }
 .view-tab:hover:not(.active) { color: var(--text); }
 </style>
@@ -868,7 +884,17 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 </div>
 
 <div class="main">
-  <div class="offline-banner" id="offline-banner">Connection issue — data may be stale. <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button></div>
+  <div class="offline-banner" id="offline-banner">
+    Connection issue — data may be stale.
+    <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>
+  </div>
+  <!-- FIX 1: New sync banner warns when misplaced rows are detected after load -->
+  <div class="sync-banner" id="sync-banner">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="sync-banner-msg"></span>
+    <button class="btn btn-warn btn-sm" style="margin-left:8px" onclick="openReconcileModal()">Fix Now</button>
+    <button class="btn btn-ghost btn-sm" onclick="dismissSyncBanner()">Dismiss</button>
+  </div>
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
@@ -876,11 +902,16 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     </div>
     <div class="topbar-right">
       <div class="search-wrap" id="topbar-search-wrap">
-        <span class="search-icon" id="topbar-search-icon">
+        <span class="search-icon" id="topbar-search-icon" style="display:none">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input type="text" id="search-input" placeholder="Search name, ID, store…" oninput="onSearch()" style="display:none">
       </div>
+      <!-- FIX 2: Reconcile button always available in topbar -->
+      <button class="btn btn-warn" id="reconcile-btn" onclick="openReconcileModal()" title="Move pasted employees to correct sheet based on their Employment Status" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Reconcile
+      </button>
       <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         <span>Refresh</span>
@@ -935,6 +966,27 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   </div>
 </div>
 
+<!-- RECONCILE MODAL -->
+<div class="overlay" id="reconcile-overlay">
+  <div class="modal" style="width:680px">
+    <div class="modal-header">
+      <h2>Reconcile Sheets</h2>
+      <button class="modal-close" onclick="closeReconcile()">✕</button>
+    </div>
+    <div class="modal-body" id="reconcile-body">
+      <p style="font-size:12.5px;color:var(--text2);line-height:1.8;margin-bottom:12px">
+        This tool scans both sheets and moves employees to the correct sheet based on their <b>Employment Status</b> column (col AD).<br>
+        <span style="color:var(--moss-green);font-weight:600">Active → Active sheet &nbsp;|&nbsp; Floating/Resigned/AWOL/Terminated → Inactive sheet</span>
+      </p>
+      <div id="reconcile-preview">Scanning…</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeReconcile()">Cancel</button>
+      <button class="btn btn-primary" id="reconcile-run-btn" onclick="runReconcile()" disabled>Move Employees</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="loading-overlay" id="loading" style="display:none">
   <div class="spinner"></div>
@@ -958,21 +1010,12 @@ const STORE_DETAILS_SHEET = 'Store Details';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated'];
+const ACTIVE_STATUSES   = new Set(['Active']);
+const INACTIVE_STATUSES = new Set(['Floating','Resigned','AWOL','Terminated']);
 const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
-// ============================================================
-// NEW COLUMN ORDER (30 cols A–AD)
-// A=Region, B=Infinix Employee ID, C=Full Name, D=First Name,
-// E=Last Name, F=Middle Name, G=Store Assignment, H=Store ID,
-// I=QR Scan Status, J=Deployment Date, K=Deployment Status,
-// L=RSS Name, M=RSS ID, N=Basic Wage Rate, O=Address,
-// P=Mobile No., Q=Email Address, R=Date of Birth, S=Gender,
-// T=Marital Status, U=SSS Number, V=PhilHealth Number,
-// W=Pag-IBIG Number, X=Bank Name, Y=Bank Account Number,
-// Z=Contract Status, AA=Contract Sent Date, AB=Last Updated,
-// AC=Notes, AD=Employment Status
-// ============================================================
+// Column map: A=Region … AD=Employment Status (30 cols, index 0–29)
 const HEADERS = [
   'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name',
   'Store Assignment','Store ID','QR Scan Status','Deployment Date','Deployment Status',
@@ -1015,6 +1058,9 @@ let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
 let colDropdownOpen=false;
 let missingFieldFilter=null;
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
+// Reconcile state
+let _reconcilePending=[];
+let _syncBannerDismissed=false;
 
 // ============================================================
 // THEME
@@ -1070,17 +1116,18 @@ function onStoreIdInput(){
   if(!shopIdEl||!storeNameEl||!statusEl)return;
   const shopId=shopIdEl.value.trim();
   if(!shopId){
-    statusEl.textContent='';
-    storeNameEl.readOnly=false;
-    if(rssNameEl)rssNameEl.readOnly=false;
-    if(rssIdEl)rssIdEl.readOnly=false;
+    statusEl.textContent=''; statusEl.className='store-lookup-status';
+    // FIX 3: Reset readOnly when Store ID is cleared
+    storeNameEl.readOnly=false; storeNameEl.value='';
+    if(rssNameEl){rssNameEl.readOnly=false;}
+    if(rssIdEl)  {rssIdEl.readOnly=false;}
     return;
   }
   const found=lookupStore(shopId);
   if(found){
     storeNameEl.value=found.storeName; storeNameEl.readOnly=true;
-    if(rssNameEl){rssNameEl.value=found.rssName; rssNameEl.readOnly=!!found.rssName;}
-    if(rssIdEl) {rssIdEl.value=found.rssId;   rssIdEl.readOnly=!!found.rssId;}
+    if(rssNameEl){rssNameEl.value=found.rssName||rssNameEl.value; rssNameEl.readOnly=!!found.rssName;}
+    if(rssIdEl) {rssIdEl.value=found.rssId||rssIdEl.value;   rssIdEl.readOnly=!!found.rssId;}
     statusEl.textContent=`Store found: ${found.storeName}${found.rssName?' · RSS: '+found.rssName:''}`;
     statusEl.className='store-lookup-status found';
   }else{
@@ -1091,7 +1138,7 @@ function onStoreIdInput(){
     statusEl.className='store-lookup-status '+(storeCacheLoaded?'notfound':'searching');
   }
   const hint=document.getElementById('hint-storeId');
-  if(shopId&&!shopId.startsWith('PH0')){hint?.classList.add('visible');shopIdEl.classList.add('err');}
+  if(shopId&&!shopId.toUpperCase().startsWith('PH0')){hint?.classList.add('visible');shopIdEl.classList.add('err');}
   else{hint?.classList.remove('visible');shopIdEl.classList.remove('err');}
 }
 
@@ -1142,7 +1189,8 @@ function _onAuthReady(resp){
     }
     if(!gapi.client.sheets) await gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
     showApp();
-    if(!window._headersChecked){window._headersChecked=true;await ensureHeaders();}
+    // FIX 4: Only write Log headers if missing; never overwrite Active/Inactive headers on every load
+    if(!window._headersChecked){window._headersChecked=true;await ensureLogHeaders();}
     await Promise.all([loadData(),loadStoreDetails()]);
   })();
 }
@@ -1210,27 +1258,15 @@ window.addEventListener('offline',()=>setOfflineBanner(true,'You are offline —
 window.addEventListener('online',()=>{setOfflineBanner(false);toast('Back online','success');});
 
 // ============================================================
-// SHEET SETUP — FORCE NEW HEADER ORDER
+// FIX 4: Only ensure Log sheet headers, never touch data sheets
 // ============================================================
-async function ensureHeaders(){
+async function ensureLogHeaders(){
   try{
-    const forceHeaders=async(sheet,hdrs)=>{
-      // Always write headers to enforce the new column order
-      await gapi.client.sheets.spreadsheets.values.update({
-        spreadsheetId:SHEET_ID,
-        range:`${sheet}!A1`,
-        valueInputOption:'RAW',
-        resource:{values:[hdrs]}
-      });
-    };
-    await forceHeaders(ACTIVE_SHEET,HEADERS);
-    await forceHeaders(INACTIVE_SHEET,HEADERS);
-    // Log sheet: only write if missing
     const chkLog=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A1:G1`});
     if(!chkLog.result.values||!chkLog.result.values[0]||chkLog.result.values[0].length<LOG_HEADERS.length){
       await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A1`,valueInputOption:'RAW',resource:{values:[LOG_HEADERS]}});
     }
-  }catch(e){console.warn('Header setup:',e);}
+  }catch(e){console.warn('Log header setup:',e);}
 }
 
 // ============================================================
@@ -1245,14 +1281,15 @@ async function loadData(){
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AD`})
     ]);
     employees=[];
-    // For Active sheet, status col AD (r[29]) should be 'Active' — use r[29] if present, else default
     (aRes.result.values||[]).forEach((r,i)=>{
-      if(r[1])employees.push({...rowToObj(r,true),_sheet:ACTIVE_SHEET,_row:i+2});
+      if(r[1])employees.push({...rowToObj(r,ACTIVE_SHEET),_sheet:ACTIVE_SHEET,_row:i+2});
     });
     (iRes.result.values||[]).forEach((r,i)=>{
-      if(r[1])employees.push({...rowToObj(r,false),_sheet:INACTIVE_SHEET,_row:i+2});
+      if(r[1])employees.push({...rowToObj(r,INACTIVE_SHEET),_row:i+2});
     });
     logCache=null;selectedIds.clear();
+    // FIX 5: After load, detect misplaced employees and show sync banner
+    detectMisplacedEmployees();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
   }catch(e){
@@ -1276,98 +1313,226 @@ async function loadData(){
 async function refreshData(){
   const btn=document.getElementById('refresh-btn');
   btn.classList.add('spinning');
-  storeCacheLoaded=false;
+  storeCacheLoaded=false; _syncBannerDismissed=false;
   await Promise.all([loadData(),loadStoreDetails()]);
   setTimeout(()=>btn.classList.remove('spinning'),500);
 }
 
 // ============================================================
-// DATA HELPERS — NEW COLUMN MAP
+// FIX 1 CORE: Detect misplaced employees after load
 // ============================================================
-// New order: r[0]=Region, r[1]=Infinix Employee ID, r[2]=Full Name,
-// r[3]=First Name, r[4]=Last Name, r[5]=Middle Name,
-// r[6]=Store Assignment, r[7]=Store ID, r[8]=QR Scan Status,
-// r[9]=Deployment Date, r[10]=Deployment Status,
-// r[11]=RSS Name, r[12]=RSS ID, r[13]=Basic Wage Rate,
-// r[14]=Address, r[15]=Mobile No., r[16]=Email Address,
-// r[17]=Date of Birth, r[18]=Gender, r[19]=Marital Status,
-// r[20]=SSS Number, r[21]=PhilHealth Number, r[22]=Pag-IBIG Number,
-// r[23]=Bank Name, r[24]=Bank Account Number,
-// r[25]=Contract Status, r[26]=Contract Sent Date,
-// r[27]=Last Updated, r[28]=Notes, r[29]=Employment Status
+function detectMisplacedEmployees(){
+  _reconcilePending=[];
+  employees.forEach(emp=>{
+    const isInActiveSheet = emp._sheet===ACTIVE_SHEET;
+    const statusIsActive  = emp.status==='Active';
+    // In Active sheet but status is NOT Active → needs to move to Inactive
+    if(isInActiveSheet && !statusIsActive){
+      _reconcilePending.push({emp, fromSheet:ACTIVE_SHEET, toSheet:INACTIVE_SHEET});
+    }
+    // In Inactive sheet but status IS Active → needs to move to Active
+    if(!isInActiveSheet && statusIsActive){
+      _reconcilePending.push({emp, fromSheet:INACTIVE_SHEET, toSheet:ACTIVE_SHEET});
+    }
+  });
+  const btn=document.getElementById('reconcile-btn');
+  if(_reconcilePending.length>0){
+    if(btn)btn.style.display='';
+    if(!_syncBannerDismissed){
+      const msg=document.getElementById('sync-banner-msg');
+      if(msg)msg.textContent=`${_reconcilePending.length} employee(s) are in the wrong sheet based on their Employment Status.`;
+      document.getElementById('sync-banner').classList.add('visible');
+    }
+  }else{
+    if(btn)btn.style.display='none';
+    document.getElementById('sync-banner').classList.remove('visible');
+  }
+}
+function dismissSyncBanner(){
+  _syncBannerDismissed=true;
+  document.getElementById('sync-banner').classList.remove('visible');
+}
+
+// ============================================================
+// RECONCILE MODAL
+// ============================================================
+function openReconcileModal(){
+  document.getElementById('reconcile-overlay').classList.add('open');
+  buildReconcilePreview();
+}
+function closeReconcile(){
+  document.getElementById('reconcile-overlay').classList.remove('open');
+}
+function buildReconcilePreview(){
+  const body=document.getElementById('reconcile-preview');
+  const btn=document.getElementById('reconcile-run-btn');
+  if(_reconcilePending.length===0){
+    body.innerHTML='<div style="text-align:center;padding:24px;color:var(--success);font-weight:600">✓ All employees are in the correct sheet. Nothing to move.</div>';
+    btn.disabled=true; return;
+  }
+  btn.disabled=false;
+  body.innerHTML=`
+    <div style="font-size:11.5px;color:var(--text2);margin-bottom:10px">${_reconcilePending.length} employee(s) will be moved:</div>
+    <table class="reconcile-table">
+      <thead><tr><th>Name</th><th>ID</th><th>Status</th><th>From</th><th>To</th></tr></thead>
+      <tbody>
+        ${_reconcilePending.map(({emp,fromSheet,toSheet})=>`
+          <tr>
+            <td><b>${emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim()||'—'}</b></td>
+            <td style="color:var(--moss-green);font-family:'Sora',sans-serif;font-size:11px">${emp.infinixId}</td>
+            <td><span class="badge b-${emp.status}">${emp.status}</span></td>
+            <td style="color:var(--danger);font-size:11px">${fromSheet}</td>
+            <td style="color:var(--success);font-size:11px">${toSheet}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function runReconcile(){
+  if(_reconcilePending.length===0){closeReconcile();return;}
+  closeReconcile();
+  showLoading(true,`Moving ${_reconcilePending.length} employee(s) to correct sheets…`);
+  let moved=0, failed=0;
+  // Get sheet metadata once for delete operations
+  let sheetMeta;
+  try{ sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID}); }
+  catch(e){ toast('Could not fetch sheet metadata: '+e.message,'error'); showLoading(false); return; }
+
+  for(const {emp,fromSheet,toSheet} of _reconcilePending){
+    try{
+      // 1. Append to destination sheet
+      await gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId:SHEET_ID,
+        range:`${toSheet}!A:AD`,
+        valueInputOption:'RAW',
+        insertDataOption:'INSERT_ROWS',
+        resource:{values:[objToRow(emp)]}
+      });
+      // 2. Find and delete source row
+      const srcRow=await findEmployeeRowInSheet(emp.infinixId,fromSheet);
+      if(srcRow>0){
+        const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===fromSheet);
+        if(sheetObj){
+          await gapi.client.sheets.spreadsheets.batchUpdate({
+            spreadsheetId:SHEET_ID,
+            resource:{requests:[{deleteDimension:{range:{
+              sheetId:sheetObj.properties.sheetId,
+              dimension:'ROWS',
+              startIndex:srcRow-1,
+              endIndex:srcRow
+            }}}]}
+          });
+        }
+      }
+      await writeLog(emp.infinixId, emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim(),
+        'Reconciled (Sheet Move)', fromSheet, toSheet);
+      moved++;
+    }catch(e){
+      console.warn('Reconcile failed for',emp.infinixId,e);
+      failed++;
+    }
+  }
+  showLoading(false);
+  if(moved>0) toast(`Moved ${moved} employee(s) to correct sheet`,'success');
+  if(failed>0) toast(`${failed} move(s) failed — check console`,'error');
+  _syncBannerDismissed=false;
+  await loadData();
+}
+
+// ============================================================
+// DATA HELPERS — Column map r[0]–r[29]
+// ============================================================
 function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
-function rowToObj(r, isActiveSheet){
-  // r[29] = Employment Status (new col AD). If blank, infer from sheet.
-  const empStatus = r[29]||'';
+
+// FIX 5: rowToObj reads Employment Status (r[29]) first.
+// Only falls back to sheet-based inference when col AD is completely blank.
+function rowToObj(r, sheetName){
+  // r[29] = Employment Status (col AD)
+  let empStatus=(r[29]||'').trim();
+  // If col AD is blank, infer from which sheet the row came from
+  if(!empStatus){
+    empStatus = (sheetName===ACTIVE_SHEET) ? 'Active' : 'Resigned';
+  }
+  // Compute fullName: prefer col C, then first+last
+  const storedFullName=(r[2]||'').trim();
+  const computedFullName=((r[3]||'')+' '+(r[4]||'')).trim();
+  const fullName = storedFullName || computedFullName;
   return {
-    region:          r[0]||'',
+    region:          (r[0]||''),
     infinixId:       String(r[1]||''),
-    fullName:        r[2]||'',
-    firstName:       r[3]||'',
-    lastName:        r[4]||'',
-    middleName:      r[5]||'',
-    storeAssignment: r[6]||'',
-    storeId:         r[7]||'',
-    qrStatus:        r[8]||'NOT SCANNED',
-    deploymentDate:  r[9]||'',
-    deploymentStatus:r[10]||'-',
-    rssName:         r[11]||'',
+    fullName,
+    firstName:       (r[3]||''),
+    lastName:        (r[4]||''),
+    middleName:      (r[5]||''),
+    storeAssignment: (r[6]||''),
+    storeId:         (r[7]||''),
+    qrStatus:        (r[8]||'NOT SCANNED'),
+    deploymentDate:  (r[9]||''),
+    deploymentStatus:(r[10]||'-'),
+    rssName:         (r[11]||''),
     rssId:           String(r[12]||''),
-    basicWage:       r[13]||'',
-    address:         r[14]||'',
-    mobile:          r[15]||'',
-    email:           r[16]||'',
-    dob:             r[17]||'',
-    gender:          r[18]||'',
-    maritalStatus:   r[19]||'',
-    sss:             r[20]||'',
-    philhealth:      r[21]||'',
-    pagibig:         r[22]||'',
-    bankName:        r[23]||'',
-    bankAccount:     r[24]||'',
-    contractStatus:  r[25]||'NOT YET SENT',
-    contractSentDate:r[26]||'',
-    lastUpdated:     r[27]||'',
-    notes:           r[28]||'',
-    // Employment status: use stored value, fall back to sheet inference
-    status: empStatus || (isActiveSheet ? 'Active' : 'Resigned'),
+    basicWage:       (r[13]||''),
+    address:         (r[14]||''),
+    mobile:          (r[15]||''),
+    email:           (r[16]||''),
+    dob:             (r[17]||''),
+    gender:          (r[18]||''),
+    maritalStatus:   (r[19]||''),
+    sss:             (r[20]||''),
+    philhealth:      (r[21]||''),
+    pagibig:         (r[22]||''),
+    bankName:        (r[23]||''),
+    bankAccount:     (r[24]||''),
+    contractStatus:  (r[25]||'NOT YET SENT'),
+    contractSentDate:(r[26]||''),
+    lastUpdated:     (r[27]||''),
+    notes:           (r[28]||''),
+    status:          empStatus,
+    _sheet:          sheetName,
   };
 }
+
 function objToRow(d){
+  const fullName=((d.firstName||'')+' '+(d.lastName||'')).trim()||d.fullName||'';
   return [
-    d.region||'',                                    // A  r[0]
-    d.infinixId||'',                                 // B  r[1]
-    `${d.firstName||''} ${d.lastName||''}`.trim(),   // C  r[2] Full Name (auto)
-    d.firstName||'',                                 // D  r[3]
-    d.lastName||'',                                  // E  r[4]
-    d.middleName||'',                                // F  r[5]
-    d.storeAssignment||'',                           // G  r[6]
-    d.storeId||'',                                   // H  r[7]
-    d.qrStatus||'NOT SCANNED',                       // I  r[8]
-    d.deploymentDate||'',                            // J  r[9]
-    d.deploymentStatus||'-',                         // K  r[10]
-    d.rssName||'',                                   // L  r[11]
-    d.rssId||'',                                     // M  r[12]
-    d.basicWage||'',                                 // N  r[13]
-    d.address||'',                                   // O  r[14]
-    d.mobile||'',                                    // P  r[15]
-    d.email||'',                                     // Q  r[16]
-    d.dob||'',                                       // R  r[17]
-    d.gender||'',                                    // S  r[18]
-    d.maritalStatus||'',                             // T  r[19]
-    d.sss||'',                                       // U  r[20]
-    d.philhealth||'',                                // V  r[21]
-    d.pagibig||'',                                   // W  r[22]
-    d.bankName||'',                                  // X  r[23]
-    d.bankAccount||'',                               // Y  r[24]
-    d.contractStatus||'NOT YET SENT',               // Z  r[25]
-    d.contractSentDate||'',                          // AA r[26]
-    ts(),                                            // AB r[27] Last Updated
-    d.notes||'',                                     // AC r[28]
-    d.status||'Active',                              // AD r[29] Employment Status
+    d.region||'',           // A r[0]
+    d.infinixId||'',        // B r[1]
+    fullName,               // C r[2] Full Name
+    d.firstName||'',        // D r[3]
+    d.lastName||'',         // E r[4]
+    d.middleName||'',       // F r[5]
+    d.storeAssignment||'',  // G r[6]
+    d.storeId||'',          // H r[7]
+    d.qrStatus||'NOT SCANNED', // I r[8]
+    d.deploymentDate||'',   // J r[9]
+    d.deploymentStatus||'-',// K r[10]
+    d.rssName||'',          // L r[11]
+    d.rssId||'',            // M r[12]
+    d.basicWage||'',        // N r[13]
+    d.address||'',          // O r[14]
+    d.mobile||'',           // P r[15]
+    d.email||'',            // Q r[16]
+    d.dob||'',              // R r[17]
+    d.gender||'',           // S r[18]
+    d.maritalStatus||'',    // T r[19]
+    d.sss||'',              // U r[20]
+    d.philhealth||'',       // V r[21]
+    d.pagibig||'',          // W r[22]
+    d.bankName||'',         // X r[23]
+    d.bankAccount||'',      // Y r[24]
+    d.contractStatus||'NOT YET SENT', // Z r[25]
+    d.contractSentDate||'', // AA r[26]
+    ts(),                   // AB r[27] Last Updated
+    d.notes||'',            // AC r[28]
+    d.status||'Active',     // AD r[29] Employment Status
   ];
 }
-function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
+
+// FIX 6: getTargetSheet uses consistent set membership
+function getTargetSheet(status){
+  return ACTIVE_STATUSES.has(status) ? ACTIVE_SHEET : INACTIVE_SHEET;
+}
+
 async function writeLog(empId,name,action,from,to){
   try{
     await gapi.client.sheets.spreadsheets.values.append({
@@ -1379,10 +1544,11 @@ async function writeLog(empId,name,action,from,to){
   }catch(e){console.warn('Log write failed:',e);}
 }
 async function findEmployeeRowInSheet(infinixId,sheetName){
-  // Infinix Employee ID is now column B (index 2 in 1-based = col B)
   const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!B:B`});
   const vals=r.result.values||[];
-  for(let i=1;i<vals.length;i++){if(String(vals[i][0]||'').trim()===String(infinixId).trim())return i+1;}
+  for(let i=1;i<vals.length;i++){
+    if(String(vals[i][0]||'').trim()===String(infinixId).trim()) return i+1;
+  }
   return -1;
 }
 
@@ -1393,29 +1559,58 @@ async function apiAddEmployee(data){
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
-  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId:SHEET_ID,range:`${sheet}!A:AD`,
+    valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',
+    resource:{values:[objToRow(data)]}
+  });
   await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Added','—',data.status);
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
+
 async function apiUpdateEmployee(data){
   const emp=employees.find(e=>String(e.infinixId)===String(data.infinixId));
   if(!emp)return{ok:false,msg:'Employee not found.'};
-  const oldStatus=emp.status,newStatus=data.status;
-  const oldSheet=getTargetSheet(oldStatus),newSheet=getTargetSheet(newStatus);
+  const oldStatus=emp.status, newStatus=data.status;
+  const oldSheet=getTargetSheet(oldStatus), newSheet=getTargetSheet(newStatus);
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+    // Status changed category → move between sheets
+    await gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,
+      valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',
+      resource:{values:[objToRow(data)]}
+    });
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
-    if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
+    if(sheetObj){
+      await gapi.client.sheets.spreadsheets.batchUpdate({
+        spreadsheetId:SHEET_ID,
+        resource:{requests:[{deleteDimension:{range:{
+          sheetId:sheetObj.properties.sheetId,
+          dimension:'ROWS',startIndex:row-1,endIndex:row
+        }}}]}
+      });
+    }
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AD${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
-    await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
+    // Same sheet, just update
+    await gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId:SHEET_ID,
+      range:`${oldSheet}!A${row}:AD${row}`,
+      valueInputOption:'RAW',
+      resource:{values:[objToRow(data)]}
+    });
+    if(oldStatus!==newStatus){
+      await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
+    }else{
+      await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
+    }
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
 }
+
 async function apiDeleteEmployee(infinixId){
   const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
   if(!emp)return{ok:false,msg:'Employee not found.'};
@@ -1424,22 +1619,37 @@ async function apiDeleteEmployee(infinixId){
   if(row<0)return{ok:false,msg:'Could not find employee row.'};
   const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
   const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===sheet);
-  if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
-  await writeLog(infinixId,emp.fullName||`${emp.firstName} ${emp.lastName}`,'Deleted',emp.status,'—');
-  return{ok:true,msg:`${emp.fullName||emp.firstName+' '+emp.lastName} deleted.`};
+  if(sheetObj){
+    await gapi.client.sheets.spreadsheets.batchUpdate({
+      spreadsheetId:SHEET_ID,
+      resource:{requests:[{deleteDimension:{range:{
+        sheetId:sheetObj.properties.sheetId,
+        dimension:'ROWS',startIndex:row-1,endIndex:row
+      }}}]}
+    });
+  }
+  const displayName=emp.fullName||`${emp.firstName||''} ${emp.lastName||''}`.trim();
+  await writeLog(infinixId,displayName,'Deleted',emp.status,'—');
+  return{ok:true,msg:`${displayName} deleted.`};
 }
+
 async function apiBulkUpdateStatus(ids,newStatus){
   showLoading(true,`Updating ${ids.length} employees...`);
   let ok=0,fail=0;
   for(const id of ids){
-    try{const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)continue;const res=await apiUpdateEmployee({...emp,status:newStatus});if(res.ok)ok++;else fail++;}
-    catch(e){fail++;}
+    try{
+      const emp=employees.find(e=>String(e.infinixId)===String(id));
+      if(!emp)continue;
+      const res=await apiUpdateEmployee({...emp,status:newStatus});
+      if(res.ok)ok++;else fail++;
+    }catch(e){fail++;}
   }
   showLoading(false);
   if(ok>0)toast(`Updated ${ok} employee(s) to ${newStatus}`,'success');
   if(fail>0)toast(`${fail} update(s) failed`,'error');
   selectedIds.clear();await loadData();
 }
+
 async function saveNotes(infinixId, notesVal){
   const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
   if(!emp)return;
@@ -1465,8 +1675,7 @@ function sortEmployees(list){
 }
 function toggleSort(colKey){
   if(sortCol===colKey)sortDir*=-1;else{sortCol=colKey;sortDir=1;}
-  currentPage=1;
-  renderTableRows(currentView==='inactive'?'inactive':'active');
+  currentPage=1;renderTableRows(currentView==='inactive'?'inactive':'active');
   updateSortHeaders();
 }
 function updateSortHeaders(){
@@ -1475,25 +1684,49 @@ function updateSortHeaders(){
     if(th.dataset.sort===sortCol)th.classList.add(sortDir===1?'sort-asc':'sort-desc');
   });
 }
+
+// FIX 7: filteredEmployees — when filterStatus is set, show from ALL employees
+// filtered by that status. When no filterStatus, respect the active/inactive split.
 function filteredEmployees(type){
-  const isActive=type==='active';
-  let list=filterStatus
-    ?employees.filter(e=>e.status===filterStatus)
-    :employees.filter(e=>isActive?e.status==='Active':e.status!=='Active');
-  if(missingFieldFilter==='notDeployed')list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
-  else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
-  else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
-  else if(missingFieldFilter==='missingSSS')list=list.filter(e=>!e.sss||e.sss.trim()==='');
-  else if(missingFieldFilter==='missingBank')list=list.filter(e=>!e.bankAccount||e.bankAccount.trim()==='');
-  else if(missingFieldFilter==='missingMobile')list=list.filter(e=>!e.mobile||e.mobile.trim()==='');
+  let list;
+  if(filterStatus){
+    list=employees.filter(e=>e.status===filterStatus);
+  } else {
+    const isActive=type==='active';
+    list=employees.filter(e=>isActive ? ACTIVE_STATUSES.has(e.status) : INACTIVE_STATUSES.has(e.status));
+  }
+
+  // Missing field sub-filters
+  if(missingFieldFilter==='notDeployed')
+    list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
+  else if(missingFieldFilter==='notScanned')
+    list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
+  else if(missingFieldFilter==='contractPending')
+    list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
+  else if(missingFieldFilter==='missingSSS')
+    list=list.filter(e=>!e.sss||e.sss.trim()==='');
+  else if(missingFieldFilter==='missingBank')
+    list=list.filter(e=>!e.bankAccount||e.bankAccount.trim()==='');
+  else if(missingFieldFilter==='missingMobile')
+    list=list.filter(e=>!e.mobile||e.mobile.trim()==='');
+
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
-  if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
-  if(filterRegion)list=list.filter(e=>e.region===filterRegion);
-  if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
-  if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
-  if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
+  if(q) list=list.filter(e=>
+    (e.fullName||'').toLowerCase().includes(q)||
+    String(e.infinixId).toLowerCase().includes(q)||
+    (e.storeAssignment||'').toLowerCase().includes(q)||
+    (e.storeId||'').toLowerCase().includes(q)||
+    (e.region||'').toLowerCase().includes(q)||
+    (e.rssName||'').toLowerCase().includes(q)||
+    (e.email||'').toLowerCase().includes(q)
+  );
+  if(filterRegion)       list=list.filter(e=>e.region===filterRegion);
+  if(filterDeployStatus) list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
+  if(filterQR)           list=list.filter(e=>e.qrStatus===filterQR);
+  if(filterContractStatus) list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
 }
+
 function onSearch(){
   if(currentView==='dashboard'){showView('active');return;}
   if(currentView!=='active'&&currentView!=='inactive'){showView('active');return;}
@@ -1501,8 +1734,14 @@ function onSearch(){
   renderTableRows(currentView==='inactive'?'inactive':'active');
 }
 function onFilterChange(){currentPage=1;selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
-function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');onFilterChange();}
-function activeFilterCount(){return [filterRegion,filterDeployStatus,filterQR,filterContractStatus,missingFieldFilter].filter(Boolean).length;}
+function resetFilters(){
+  filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;
+  document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');
+  onFilterChange();
+}
+function activeFilterCount(){
+  return [filterRegion,filterDeployStatus,filterQR,filterContractStatus,missingFieldFilter].filter(Boolean).length;
+}
 
 // ============================================================
 // COLUMN VISIBILITY
@@ -1537,8 +1776,7 @@ function getBirthdaysThisMonth(){
     const d=new Date(emp.dob);
     if(isNaN(d))return;
     if(d.getMonth()===thisMonth){
-      const daysUntil=d.getDate()-today;
-      result.push({emp,day:d.getDate(),daysUntil});
+      result.push({emp,day:d.getDate(),daysUntil:d.getDate()-today});
     }
   });
   result.sort((a,b)=>a.day-b.day);
@@ -1556,7 +1794,8 @@ function getStats(){
 function renderSidebar(){
   const s=getStats();
   document.getElementById('badge-active').textContent=s.Active;
-  document.getElementById('badge-inactive').textContent=employees.filter(e=>e.status!=='Active').length;
+  document.getElementById('badge-inactive').textContent=
+    employees.filter(e=>INACTIVE_STATUSES.has(e.status)).length;
   document.getElementById('status-filters').innerHTML=STATUSES.map(st=>`
     <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${st}')">
       <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span>${st}
@@ -1566,11 +1805,19 @@ function renderSidebar(){
 function filterByStatus(s){
   filterStatus=filterStatus===s?null:s;
   missingFieldFilter=null;
-  currentView=s==='Active'?'active':'inactive';
+  // FIX 8: Route to correct view based on status category
+  if(filterStatus===null){
+    // Toggle off — stay in current view
+  } else if(ACTIVE_STATUSES.has(filterStatus)){
+    currentView='active';
+  } else {
+    currentView='inactive';
+  }
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const navEl=document.getElementById('nav-'+(s==='Active'?'active':'inactive'));
+  const navEl=document.getElementById('nav-'+(ACTIVE_STATUSES.has(filterStatus||'')?'active':'inactive'));
   if(navEl)navEl.classList.add('active');
+  else document.getElementById('nav-dashboard')?.classList.add('active');
   renderSidebar();renderView();
 }
 function showView(v){
@@ -1584,14 +1831,16 @@ function showView(v){
 function renderView(){
   const si=document.getElementById('search-input');
   const sicon=document.getElementById('topbar-search-icon');
-  if(currentView==='dashboard'){si.style.display='none';if(sicon)sicon.style.display='none';}
-  else if(currentView==='active'||currentView==='inactive'){si.style.display='';if(sicon)sicon.style.display='';}
-  else{si.style.display='none';if(sicon)sicon.style.display='none';}
-  if(currentView==='dashboard')renderDashboard();
-  else if(currentView==='active')renderEmployeeTable('active');
-  else if(currentView==='inactive')renderEmployeeTable('inactive');
-  else if(currentView==='tracker')renderTracker();
-  else if(currentView==='log')renderLog();
+  if(currentView==='active'||currentView==='inactive'){
+    si.style.display=''; if(sicon)sicon.style.display='';
+  }else{
+    si.style.display='none'; if(sicon)sicon.style.display='none';
+  }
+  if(currentView==='dashboard')       renderDashboard();
+  else if(currentView==='active')     renderEmployeeTable('active');
+  else if(currentView==='inactive')   renderEmployeeTable('inactive');
+  else if(currentView==='tracker')    renderTracker();
+  else if(currentView==='log')        renderLog();
 }
 function drillDown(filterKey){
   missingFieldFilter=filterKey;filterStatus=null;
@@ -1615,10 +1864,10 @@ function renderDashboard(){
   const s=getStats();
   const total=employees.length;
   const deployed=employees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
-  const notDeployed=employees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
   const scanned=employees.filter(e=>e.qrStatus==='SCANNED').length;
-  const notScanned=employees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=employees.filter(e=>e.contractStatus==='SENT').length;
+  const notDeployed=employees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
+  const notScanned=employees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractPending=employees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
   const missingSSS=employees.filter(e=>!e.sss||e.sss.trim()==='').length;
   const missingBank=employees.filter(e=>!e.bankAccount||e.bankAccount.trim()==='').length;
@@ -1626,9 +1875,17 @@ function renderDashboard(){
   const regions={};employees.forEach(e=>{if(e.region)regions[e.region]=(regions[e.region]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
   const birthdays=getBirthdaysThisMonth().slice(0,5);
-  const now=new Date();
+
+  // Misplaced warning for dashboard
+  const misplacedHTML=_reconcilePending.length>0
+    ?`<div style="background:rgba(196,122,122,0.07);border:1px solid rgba(196,122,122,0.22);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;gap:10px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><b>${_reconcilePending.length} employee(s)</b> are in the wrong sheet (pasted with wrong status). </span>
+        <button class="btn btn-warn btn-sm" style="margin-left:auto" onclick="openReconcileModal()">Fix Now</button>
+      </div>`:'';
 
   document.getElementById('content').innerHTML=`
+    ${misplacedHTML}
     <div class="dash-search-wrap">
       <span class="dash-search-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1677,7 +1934,8 @@ function renderDashboard(){
       ${missingSSS>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingSSS')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
       ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
       ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
-      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All records complete</span></div>`:''}
+      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0
+        ?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All records complete</span></div>`:''}
     </div>
     <div class="dash-bottom">
       <div style="display:flex;flex-direction:column;gap:12px">
@@ -1825,10 +2083,14 @@ function renderTracker(){
 // ============================================================
 function renderEmployeeTable(type){
   const isActive=type==='active';
-  let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
-  if(missingFieldFilter){
+  let label;
+  if(filterStatus){
+    label=filterStatus+' Employees';
+  } else if(missingFieldFilter){
     const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
+  } else {
+    label=isActive?'Active Employees':'Inactive Employees';
   }
   document.getElementById('topbar-title').textContent=label;
   document.getElementById('topbar-sub').textContent='Click a row to view details';
@@ -1852,7 +2114,7 @@ function renderEmployeeTable(type){
         <h3>${label}</h3>
         <span class="rec" id="emp-count"></span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-          ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status</button>`:''}
+          ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status Filter</button>`:''}
           ${missingFieldFilter?`<button class="btn btn-ghost btn-sm" onclick="missingFieldFilter=null;currentPage=1;renderView()">Clear Filter</button>`:''}
         </div>
       </div>
@@ -1921,7 +2183,7 @@ function renderTableRows(type){
   const tbody=document.getElementById('emp-tbody');
   if(!tbody)return;
   const colRender={
-    fullName:e=>`<td><div class="td-name">${e.fullName||''}</div><div class="td-sub">${e.email||''}</div></td>`,
+    fullName:e=>`<td><div class="td-name">${e.fullName||((e.firstName||'')+' '+(e.lastName||'')).trim()||'—'}</div><div class="td-sub">${e.email||''}</div></td>`,
     infinixId:e=>`<td><span class="td-id">${e.infinixId}</span></td>`,
     status:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
     deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>`,
@@ -1945,7 +2207,7 @@ function renderTableRows(type){
         ${visibleColKeys.map(k=>(colRender[k]||(()=>`<td>—</td>`))(e)).join('')}
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn btn-ghost btn-sm" onclick="openEditModal('${e.infinixId}')">Edit</button>
-          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||'').replace(/'/g,"\\'")}')">Delete</button>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||((e.firstName||'')+' '+(e.lastName||'')).trim()||'').replace(/'/g,"\\'")}')">Delete</button>
         </td>
       </tr>`).join('');
   }
@@ -2012,14 +2274,15 @@ function toggleSelectAll(checked){
 function clearSelection(){selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
 function updateBulkBar(){
   const bar=document.getElementById('bulk-bar');const cnt=document.getElementById('bulk-count');if(!bar)return;
-  if(selectedIds.size>0){bar.classList.remove('hidden');if(cnt)cnt.textContent=`${selectedIds.size} selected`;}else bar.classList.add('hidden');
+  if(selectedIds.size>0){bar.classList.remove('hidden');if(cnt)cnt.textContent=`${selectedIds.size} selected`;}
+  else bar.classList.add('hidden');
 }
 function doBulkStatusChange(){
   const sel=document.getElementById('bulk-status-sel');const newStatus=sel?.value;
   if(!newStatus||selectedIds.size===0)return;
   const ids=[...selectedIds];
   document.getElementById('confirm-title').textContent='Bulk Status Update';
-  document.getElementById('confirm-msg').textContent=`Change ${ids.length} employee(s) status to "${newStatus}"?`;
+  document.getElementById('confirm-msg').textContent=`Change ${ids.length} employee(s) status to "${newStatus}"? Employees will be automatically moved to the correct sheet.`;
   document.getElementById('confirm-ok').textContent='Update';
   document.getElementById('confirm-ok').onclick=()=>{closeConfirm();apiBulkUpdateStatus(ids,newStatus);};
   document.getElementById('confirm-overlay').classList.add('open');
@@ -2032,10 +2295,15 @@ function doBulkDelete(){
   document.getElementById('confirm-ok').onclick=async()=>{
     closeConfirm();showLoading(true,`Deleting ${ids.length} employees...`);
     let ok=0,fail=0;
-    for(const id of ids){try{const r=await apiDeleteEmployee(id);if(r.ok)ok++;else fail++;}catch(e){fail++;}}
+    for(const id of ids){
+      try{const r=await apiDeleteEmployee(id);if(r.ok)ok++;else fail++;}
+      catch(e){fail++;}
+    }
     showLoading(false);
     if(ok>0)toast(`Deleted ${ok} employee(s)`,'success');
     if(fail>0)toast(`${fail} deletion(s) failed`,'error');
+    // FIX 9: Close detail panel if the viewed employee was deleted
+    if(detailEmpId&&ids.includes(detailEmpId))closeDetailPanel();
     selectedIds.clear();await loadData();
   };
   document.getElementById('confirm-overlay').classList.add('open');
@@ -2047,21 +2315,30 @@ function doBulkDelete(){
 function openDetailPanel(id){
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   detailEmpId=id;
-  document.getElementById('dp-title').textContent=emp.fullName||`${emp.firstName} ${emp.lastName}`;
+  // FIX 10: Robust fullName display
+  const displayName=emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim()||emp.infinixId;
+  document.getElementById('dp-title').textContent=displayName;
   document.getElementById('dp-body').innerHTML=buildDetailHTML(emp);
   document.getElementById('detail-panel').classList.add('open');
   loadEmployeeAudit(id);
 }
-function closeDetailPanel(){document.getElementById('detail-panel').classList.remove('open');detailEmpId=null;}
+function closeDetailPanel(){
+  document.getElementById('detail-panel').classList.remove('open');
+  detailEmpId=null;
+}
 function dpEdit(){const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
-  if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
+  if(emp){
+    const name=emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim();
+    confirmDelete(detailEmpId,name);
+  }
 }
 function buildDetailHTML(e){
   const row=(label,val)=>`<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-val">${val||'—'}</div></div>`;
   const badge=(val,cls)=>val?`<span class="badge b-${cls||val.replace(/ /g,'-')}">${val}</span>`:'—';
+  const displayName=e.fullName||((e.firstName||'')+' '+(e.lastName||'')).trim()||'—';
   let bdayNote='';
   if(e.dob){
     const d=new Date(e.dob);const now=new Date();
@@ -2071,6 +2348,11 @@ function buildDetailHTML(e){
       else if(diff>0&&diff<=7)bdayNote=`<div style="background:rgba(136,144,99,0.08);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--moss-green);margin-bottom:10px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
     }
   }
+  // Sheet placement warning
+  const isWrongSheet=_reconcilePending.some(p=>p.emp.infinixId===e.infinixId);
+  const sheetWarn=isWrongSheet?`<div style="background:rgba(196,122,122,0.07);border:1px solid rgba(196,122,122,0.22);border-radius:8px;padding:8px 12px;font-size:11.5px;color:var(--danger);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+    ⚠ This employee is in the wrong sheet. <button class="btn btn-warn btn-sm" style="margin-left:auto" onclick="openReconcileModal()">Fix</button>
+  </div>`:'';
   const checks=[
     {label:'Employment Status',done:!!e.status},
     {label:'Deployment Status',done:e.deploymentStatus==='DEPLOYED'},
@@ -2088,7 +2370,8 @@ function buildDetailHTML(e){
   const doneCount=checks.filter(c=>c.done).length;
   const pct=Math.round(doneCount/checks.length*100);
   const barColor=pct===100?'var(--success)':pct>=60?'var(--warning)':'var(--danger)';
-  const onboardingHTML=`
+  return `
+    ${sheetWarn}${bdayNote}
     <div class="detail-section">
       <div class="detail-section-title">Profile Completion</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -2104,15 +2387,13 @@ function buildDetailHTML(e){
             ${c.label}
           </div>`).join('')}
       </div>
-    </div>`;
-  return `
-    ${bdayNote}
-    ${onboardingHTML}
+    </div>
     <div class="detail-section">
       <div class="detail-section-title">Key Info</div>
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
-      ${row('Full Name',`<b>${e.fullName||''}</b>`)}
+      ${row('Full Name',`<b>${displayName}</b>`)}
       ${row('Status',badge(e.status))}
+      ${row('Sheet',`<span style="font-size:11px;color:var(--text3)">${e._sheet||'—'}</span>`)}
       ${row('QR Status',badge(e.qrStatus,(e.qrStatus||'').replace(/ /g,'-')))}
       ${row('Deploy Status',badge(e.deploymentStatus,(e.deploymentStatus||'-').replace(/ /g,'-')))}
       ${row('Deploy Date',e.deploymentDate)}
@@ -2153,11 +2434,14 @@ function buildDetailHTML(e){
 }
 async function loadEmployeeAudit(infinixId){
   try{
-    if(!logCache){const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});logCache=r.result.values||[];}
+    if(!logCache){
+      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});
+      logCache=r.result.values||[];
+    }
     const entries=logCache.filter(r=>String(r[1]||'').trim()===String(infinixId).trim()).reverse();
     const el=document.getElementById('dp-audit-inner');if(!el)return;
     if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
-    const colorMap={Added:'#7ab894','Status Changed':'#c9b87a',Deleted:'#c47a7a',Updated:'var(--moss-green)'};
+    const colorMap={Added:'#7ab894','Status Changed':'#c9b87a',Deleted:'#c47a7a',Updated:'var(--moss-green)','Reconciled (Sheet Move)':'var(--info)'};
     el.innerHTML=entries.map(r=>`<div class="audit-item">
       <div class="audit-dot" style="background:${colorMap[r[3]]||'rgba(136,144,99,0.5)'}"></div>
       <div class="audit-meta"><b>${r[3]||'Updated'}</b>
@@ -2165,7 +2449,10 @@ async function loadEmployeeAudit(infinixId){
         <div class="audit-time">${r[0]||''} · by ${r[6]||''}</div>
       </div>
     </div>`).join('');
-  }catch(e){const el=document.getElementById('dp-audit-inner');if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;}
+  }catch(e){
+    const el=document.getElementById('dp-audit-inner');
+    if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;
+  }
 }
 
 // ============================================================
@@ -2182,12 +2469,13 @@ async function renderLog(){
     const rows=[...logCache].reverse();
     const el=document.getElementById('log-list');
     if(!rows.length){el.innerHTML='<div class="empty-state"><div class="ei">—</div><p>No activity yet</p></div>';return;}
-    const iconMap={Added:'log-added','Status Changed':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
+    const iconMap={Added:'log-added','Status Changed':'log-changed',Deleted:'log-deleted',Updated:'log-updated','Reconciled (Sheet Move)':'log-changed'};
     const svgMap={
       Added:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
       'Status Changed':`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
       Deleted:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
-      Updated:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
+      Updated:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+      'Reconciled (Sheet Move)':`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`
     };
     el.innerHTML=rows.map(r=>`<div class="log-item">
       <div class="log-icon ${iconMap[r[3]]||'log-updated'}">${svgMap[r[3]]||svgMap['Updated']}</div>
@@ -2206,15 +2494,15 @@ async function renderLog(){
 function getFormHTML(emp){
   const v=k=>emp?(emp[k]||''):'';
   const toDateInput=val=>{if(!val)return'';const d=new Date(val);if(isNaN(d))return'';return d.toISOString().split('T')[0];};
-  const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${v(k).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
+  const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${String(v(k)).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
   const dateInp=k=>`<input id="f_${k}" type="date" value="${toDateInput(v(k))}">`;
   const sel=(k,opts)=>`<select id="f_${k}">${opts.map(o=>`<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
-  const fn=emp?`${emp.firstName||''} ${emp.lastName||''}`.trim():'';
+  const displayName=emp?(emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim()||''):'';
   return `
   <div class="section-label key-section">Key Fields</div>
   <div class="form-grid">
     <div class="field req"><label>Full Name (Auto)</label>
-      <div class="fullname-preview" id="fullname-preview">${fn||'— Enter First & Last Name —'}</div>
+      <div class="fullname-preview" id="fullname-preview">${displayName||'— Enter First & Last Name —'}</div>
     </div>
     <div class="field req"><label>Infinix Employee ID</label>
       ${inp('infinixId','text','1700XXXX',emp?'readonly style="opacity:.5"':'oninput="validateInfinixId();checkDuplicate()"')}
@@ -2253,7 +2541,7 @@ function getFormHTML(emp){
     </div>
     <div class="field form-full">
       <label>Store Assignment <span style="color:var(--text3);font-weight:400;font-size:10px">(auto-filled from Store ID)</span></label>
-      <input id="f_storeAssignment" type="text" value="${v('storeAssignment').replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
+      <input id="f_storeAssignment" type="text" value="${String(v('storeAssignment')).replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
     </div>
     <div class="field"><label>RSS Name</label>${inp('rssName','text','RSS Name')}</div>
     <div class="field"><label>RSS ID</label>${inp('rssId','text','1700XXXX','oninput="validateRssId()"')}
@@ -2287,14 +2575,15 @@ function getFormHTML(emp){
     <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${v('notes')}</textarea>
   </div>`;
 }
+
 function updateFullName(){
-  const fn=document.getElementById('f_firstName')?.value.trim()||'';
-  const ln=document.getElementById('f_lastName')?.value.trim()||'';
+  const fn=(document.getElementById('f_firstName')?.value||'').trim();
+  const ln=(document.getElementById('f_lastName')?.value||'').trim();
   const p=document.getElementById('fullname-preview');
   if(p)p.textContent=(fn+' '+ln).trim()||'— Enter First & Last Name —';
 }
 function validateInfinixId(){
-  const val=document.getElementById('f_infinixId')?.value.trim()||'';
+  const val=(document.getElementById('f_infinixId')?.value||'').trim();
   const hint=document.getElementById('hint-infinixId');
   const el=document.getElementById('f_infinixId');
   if(val&&!val.startsWith('1700')){hint?.classList.add('visible');el?.classList.add('err');}
@@ -2302,21 +2591,31 @@ function validateInfinixId(){
 }
 function checkDuplicate(){
   if(editingId)return;
-  const val=document.getElementById('f_infinixId')?.value.trim()||'';
+  const val=(document.getElementById('f_infinixId')?.value||'').trim();
   const warn=document.getElementById('dup-warning');if(!warn)return;
   if(val&&employees.some(e=>String(e.infinixId).trim()===val))warn.classList.add('visible');
   else warn.classList.remove('visible');
 }
 function validateRssId(){
-  const val=document.getElementById('f_rssId')?.value.trim()||'';
+  const val=(document.getElementById('f_rssId')?.value||'').trim();
   const hint=document.getElementById('hint-rssId');
   const el=document.getElementById('f_rssId');
   if(val&&!val.startsWith('1700')){hint?.classList.add('visible');el?.classList.add('err');}
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
 function gatherForm(){
-  const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
-  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),notes:f('notes')};
+  const f=k=>(document.getElementById('f_'+k)?.value||'').trim();
+  return{
+    firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),
+    infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),
+    deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),
+    region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),
+    rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),
+    dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),
+    sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),
+    basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),
+    contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),notes:f('notes')
+  };
 }
 function validate(data){
   let ok=true;
@@ -2333,7 +2632,7 @@ function validate(data){
     }
   }
   if(data.infinixId&&!data.infinixId.startsWith('1700'))ok=false;
-  if(data.storeId&&!data.storeId.startsWith('PH0'))ok=false;
+  if(data.storeId&&!data.storeId.toUpperCase().startsWith('PH0'))ok=false;
   if(data.rssId&&!data.rssId.startsWith('1700'))ok=false;
   return ok;
 }
@@ -2347,7 +2646,8 @@ function openAddModal(){
 function openEditModal(id){
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   editingId=id;
-  document.getElementById('modal-title').textContent=`Edit — ${emp.fullName||emp.firstName+' '+emp.lastName}`;
+  const displayName=emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim();
+  document.getElementById('modal-title').textContent=`Edit — ${displayName}`;
   document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
   document.getElementById('modal-overlay').classList.add('open');
@@ -2359,7 +2659,7 @@ function openEditModal(id){
       statusEl.className='store-lookup-status '+(found?'found':'notfound');
     }
     const storeEl=document.getElementById('f_storeAssignment');
-    if(storeEl&&found&&found.storeName)storeEl.readOnly=true;
+    if(storeEl&&found?.storeName) storeEl.readOnly=true;
     const rssNameEl=document.getElementById('f_rssName');
     const rssIdEl=document.getElementById('f_rssId');
     if(found){
@@ -2392,8 +2692,11 @@ async function doDelete(id){
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
-    if(result.ok){toast(result.msg,'success');if(detailEmpId===id)closeDetailPanel();await loadData();}
-    else toast(result.msg||'Delete failed','error');
+    if(result.ok){
+      toast(result.msg,'success');
+      if(detailEmpId===id)closeDetailPanel();
+      await loadData();
+    }else toast(result.msg||'Delete failed','error');
   }catch(e){toast('Error: '+e.message,'error');}
   finally{showLoading(false);}
 }
@@ -2402,14 +2705,15 @@ async function doDelete(id){
 // UTILITIES
 // ============================================================
 function toast(msg,type=''){
-  const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+type;
+  const el=document.getElementById('toast');el.textContent=msg;
+  el.className='toast show'+(type?' '+type:'');
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 function showLoading(v,text='Loading...'){
   const el=document.getElementById('loading');el.style.display=v?'flex':'none';
   const t=document.getElementById('loading-text');if(t)t.textContent=text;
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetailPanel();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetailPanel();closeModal();closeConfirm();closeReconcile();}});
 </script>
 </body>
 </html>
