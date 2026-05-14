@@ -381,14 +381,14 @@ body::after {
    DASHBOARD
    ============================================================ */
 .dash-kf-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 16px; }
-@media (max-width: 1280px) { .dash-kf-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2,1fr); } }
 .kf-card { padding: 20px 22px; }
 .kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
 .kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
 .kf-sub { font-size: 10.5px; color: var(--text3); margin-top: 6px; }
 .kf-bar { height: 2px; background: rgba(136,144,99,0.12); border-radius: 2px; margin-top: 14px; overflow: hidden; }
 .kf-bar-fill { height: 100%; border-radius: 2px; background: var(--moss-green); transition: width 1s cubic-bezier(.4,0,.2,1); opacity: 0.7; }
+@media (max-width: 1280px) { .dash-kf-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2,1fr); } }
 
 .dash-status-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
 .status-card { padding: 10px 12px; cursor: pointer; min-height: 86px; }
@@ -1846,7 +1846,7 @@ function filteredEmployees(type){
   if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
-  if(missingFieldFilter==='notDeployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
+  if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
   else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
@@ -1858,7 +1858,7 @@ function filteredEmployees(type){
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
   if(filterRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(filterRegion));
-  if(filterDeployStatus)list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)===normalizeDeployStatus(filterDeployStatus));
+  if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
   if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
@@ -2006,13 +2006,14 @@ function renderDashboard(){
   const total=employees.length;
   const activeEmployees=activePromotersOnly();
   const activeTotal=activeEmployees.length;
-  // Pending actions and completion cards count ACTIVE promoters only.
+  // Not Yet Deployed KPI must count ONLY rows physically in the Active sheet.
+  // Do not include any row from the Inactive sheet, even if Deployment Status is NOT YET DEPLOYED.
+  const activeSheetEmployees=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT');
+  const activeSheetTotal=activeSheetEmployees.length;
+  // Pending actions and completion cards count ACTIVE promoters only unless noted above.
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
   const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
-  // Dashboard top KPI: NOT YET DEPLOYED must count ALL records, regardless of Employment Status / sheet.
-  const notDeployedGlobal=employees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
-  // Pending Actions still use active promoters only.
-  const notDeployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
+  const notDeployed=activeSheetEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
@@ -2051,11 +2052,11 @@ function renderDashboard(){
         <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
-      <div class="kf-card glass-card" title="Counts all records, active and inactive">
+      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" title="Rows in Active sheet with Deployment Status = NOT YET DEPLOYED">
         <div class="kf-label-top">Not Yet Deployed</div>
-        <div class="kf-num">${notDeployedGlobal}</div>
-        <div class="kf-sub">All records</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?notDeployedGlobal/total*100:0}%;background:var(--warning)"></div></div>
+        <div class="kf-num">${notDeployed}</div>
+        <div class="kf-sub">${activeSheetTotal?Math.round(notDeployed/activeSheetTotal*100):0}% of active sheet</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeSheetTotal?notDeployed/activeSheetTotal*100:0}%;background:var(--warning)"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">QR Scanned</div>
@@ -2084,7 +2085,7 @@ function renderDashboard(){
     <!-- PENDING ACTIONS -->
     <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Active promoters only · click a pill to filter</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Active sheet rows with Deployment Status = NOT YET DEPLOYED"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Yet Deployed</span></div>`:''}
       ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
       ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Active promoters with contract not yet sent"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
       ${missingRequirements>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingRequirements')" title="Active promoters with incomplete requirements checklist"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingRequirements}</span><span>Requirements Incomplete</span></div>`:''}
