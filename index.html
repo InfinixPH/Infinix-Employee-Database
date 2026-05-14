@@ -1348,6 +1348,7 @@ let storeCache={}, storeCacheLoaded=false;
 let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
 let colDropdownOpen=false;
 let missingFieldFilter=null;
+let bulkMode=false;
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
 
 // ============================================================
@@ -1920,7 +1921,7 @@ function filteredEmployees(type){
     else if(missingFieldFilter==='missingMobile')list=list.filter(e=>isMissing(e.mobile));
     else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
     else if(missingFieldFilter==='missingInfinixId')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim());
-    else if(missingFieldFilter==='missingStore')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment) && isMissing(e.storeId));
+    else if(missingFieldFilter==='missingStore')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment));
   }
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
@@ -2040,6 +2041,8 @@ function filterByStatus(s){
 
 function showView(v){
   currentView=v;
+  bulkMode=false;
+  selectedIds.clear();
   if(v!=='active'&&v!=='inactive'){filterStatus=null;missingFieldFilter=null;}
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
@@ -2064,6 +2067,8 @@ function renderView(){
 function drillDown(filterKey){
   missingFieldFilter=filterKey;
   filterStatus=null;
+  bulkMode=false;
+  selectedIds.clear();
   currentView='active';
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
@@ -2117,7 +2122,7 @@ function renderDashboard(){
   const missingRequirements=activeEmployees.filter(e=>!requirementsComplete(e)).length;
   const reqComplete=activeTotal-missingRequirements;
   const missingInfinixId=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim()).length;
-  const missingStore=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment) && isMissing(e.storeId)).length;
+  const missingStore=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment)).length;
 
   const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region);if(rr)regions[rr]=(regions[rr]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,6);
@@ -2466,7 +2471,12 @@ function renderEmployeeTable(type){
           <option value="NOT YET SENT" ${filterContractStatus==='NOT YET SENT'?'selected':''}>Not Yet Sent</option>
         </select>
         ${afc>0?`<span class="filter-active-count">${afc} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>`:''}
-        ${colDropHTML}
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <button class="btn btn-ghost btn-sm" id="bulk-toggle-btn" onclick="toggleBulkMode()" style="display:flex;align-items:center;gap:5px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/><line x1="10" y1="13" x2="21" y2="13"/><line x1="10" y1="19" x2="21" y2="19"/></svg>
+            Select
+          </button>
+        </div>
       </div>
       <div class="bulk-bar hidden" id="bulk-bar">
         <span class="bulk-count" id="bulk-count">0 selected</span>
@@ -2478,12 +2488,13 @@ function renderEmployeeTable(type){
         <button class="btn btn-primary btn-sm" onclick="doBulkStatusChange()">Apply</button>
         <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Deselect All</button>
         <button class="btn btn-danger btn-sm" onclick="doBulkDelete()">Delete Selected</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toggleBulkMode()">✕ Cancel</button>
       </div>
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th class="td-check no-sort"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
+              <th class="td-check no-sort" id="col-check-header" style="display:none"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
               ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
               <th class="no-sort">Actions</th>
             </tr>
@@ -2535,7 +2546,7 @@ function renderTableRows(type){
     const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
       <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${esc(e.infinixId)}')">
-        <td class="td-check" onclick="event.stopPropagation()">
+        <td class="td-check" style="display:${bulkMode?'':'none'}" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect('${esc(e.infinixId)}',this.checked)">
         </td>
         ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
@@ -2583,6 +2594,31 @@ function renderPagination(total,totalPages){
 
 function goPage(p){currentPage=p;renderTableRows(currentView==='inactive'?'inactive':'active');}
 function changePageSize(s){pageSize=s;currentPage=1;renderTableRows(currentView==='inactive'?'inactive':'active');}
+
+// ============================================================
+// BULK MODE TOGGLE
+// ============================================================
+function toggleBulkMode(){
+  bulkMode=!bulkMode;
+  if(!bulkMode){selectedIds.clear();}
+  // Show/hide checkbox header column
+  const chkHeader=document.getElementById('col-check-header');
+  if(chkHeader)chkHeader.style.display=bulkMode?'':'none';
+  // Show/hide checkbox cells in rows
+  document.querySelectorAll('.td-check').forEach(td=>td.style.display=bulkMode?'':'none');
+  // Toggle Select button active state
+  const btn=document.getElementById('bulk-toggle-btn');
+  if(btn){
+    btn.style.background=bulkMode?'var(--accent-dim)':'';
+    btn.style.borderColor=bulkMode?'var(--border2)':'';
+    btn.style.color=bulkMode?'var(--text)':'';
+  }
+  if(!bulkMode){
+    const bar=document.getElementById('bulk-bar');
+    if(bar)bar.classList.add('hidden');
+  }
+  updateBulkBar();
+}
 
 // ============================================================
 // SELECTION & BULK
