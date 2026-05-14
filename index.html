@@ -1419,8 +1419,9 @@ async function loadData(){
     };
     pushRows(aRes.result.values||[],ACTIVE_SHEET);
     pushRows(iRes.result.values||[],INACTIVE_SHEET);
-    const moved=await reconcileEmployeeSheets();
-    if(moved){await loadData();return;}
+    // Do NOT auto-move rows on page load.
+    // Auto-reconciling many existing rows can spam Google Sheets append requests and trigger 429 quota errors.
+    // Employees are now placed in the correct sheet when adding/editing/saving only.
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
