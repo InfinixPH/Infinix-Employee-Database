@@ -122,6 +122,84 @@
 }
 
 /* ============================================================
+   ROLE-BASED BLUR
+   ============================================================ */
+.sensitive {
+  transition: filter .25s;
+}
+body.role-viewer .sensitive,
+body.role-supervisor .sensitive {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ROLE MODAL */
+.role-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(10,13,13,0.85);
+  backdrop-filter: blur(16px);
+  display: flex; align-items: center; justify-content: center;
+}
+.role-overlay.hidden { display: none; }
+.role-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  width: 360px;
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.role-modal h2 {
+  font-size: 16px; font-weight: 800;
+  letter-spacing: .3px; margin-bottom: 4px;
+}
+.role-modal p { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+.role-btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.role-btn {
+  padding: 12px 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-frosted);
+  cursor: pointer; font-family: 'Poppins', sans-serif;
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  transition: all .18s;
+}
+.role-btn:hover { border-color: var(--border2); color: var(--text); background: var(--bg-mid); }
+.role-btn.selected {
+  border-color: var(--teal-deep); background: var(--accent-dim);
+  color: var(--text);
+}
+.role-btn .role-icon { font-size: 22px; }
+.role-pin-wrap { display: none; flex-direction: column; gap: 8px; }
+.role-pin-wrap.show { display: flex; }
+.role-pin-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .5px; text-transform: uppercase; }
+.role-pin-input {
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 13px;
+  font-size: 14px; color: var(--text); font-family: 'Poppins', sans-serif;
+  outline: none; letter-spacing: 4px; width: 100%;
+  transition: border-color .2s;
+}
+.role-pin-input:focus { border-color: var(--border2); }
+.role-pin-error { font-size: 11px; color: var(--danger); min-height: 16px; }
+.role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700;
+  background: var(--accent-dim); border: 1px solid var(--border2);
+  color: var(--moss-green); cursor: pointer;
+}
+.role-badge:hover { border-color: var(--border3); }
+.role-reveal-btn {
+  font-size: 10px; font-weight: 600; color: var(--text3);
+  background: none; border: none; cursor: pointer;
+  text-decoration: underline; text-align: left;
+  font-family: 'Poppins', sans-serif; padding: 0;
+}
+.role-reveal-btn:hover { color: var(--text2); }
+
+/* ============================================================
    BASE
    ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1112,6 +1190,35 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   </div>
 </div>
 
+<!-- ROLE SELECT MODAL -->
+<div class="role-overlay hidden" id="role-overlay">
+  <div class="role-modal">
+    <h2>🔐 Select Your Role</h2>
+    <p>Your role controls what sensitive data is visible. This clears when you close this tab.</p>
+    <div class="role-btn-grid">
+      <button class="role-btn" id="role-btn-hr" onclick="selectRole('hr')">
+        <span class="role-icon">👔</span>HR
+      </button>
+      <button class="role-btn" id="role-btn-supervisor" onclick="selectRole('supervisor')">
+        <span class="role-icon">🧑‍💼</span>Supervisor
+      </button>
+      <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
+        <span class="role-icon">👁️</span>Viewer
+      </button>
+    </div>
+    <div class="role-pin-wrap" id="role-pin-wrap">
+      <div class="role-pin-label" id="role-pin-label">Enter HR PIN</div>
+      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="8" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
+      <div class="role-pin-error" id="role-pin-error"></div>
+      <button class="btn btn-primary" onclick="confirmRolePin()" style="width:100%;margin-top:2px">Confirm</button>
+      <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
+    </div>
+    <div style="font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.6">
+      <b style="color:var(--warning)">Note:</b> Role blur is UI-only. HR role unlocks full data visibility including government IDs, bank accounts, and personal contact info.
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app" style="display:none;width:100%;height:100vh;flex-direction:row">
 
@@ -1155,6 +1262,13 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="status-filters" id="status-filters"></div>
 
   <div class="sidebar-footer">
+    <div id="role-indicator" style="margin-bottom:6px;display:none">
+      <span class="role-badge" onclick="openRoleModal()" title="Click to change role">
+        <span id="role-indicator-icon">👔</span>
+        <span id="role-indicator-label">HR</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </span>
+    </div>
     <div class="user-pill">
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-name" id="user-name">Loading...</div>
@@ -1321,7 +1435,6 @@ let logCache=null;
 let _charts={};
 let storeCache={}, storeCacheLoaded=false;
 let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
-let colDropdownOpen=false;
 let missingFieldFilter=null;
 let bulkMode=false;
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
@@ -1354,6 +1467,97 @@ function updateThemeIcon(theme){
   document.getElementById('theme-icon-light').style.display=theme==='light'?'':'none';
 }
 initTheme();
+
+// ============================================================
+// ROLE SYSTEM
+// ============================================================
+// PINs — change these to whatever your HR team decides
+const ROLE_PINS = { hr: '1234', supervisor: '5678' };
+// viewer has no PIN — open access but with blur
+
+let currentRole = null; // 'hr' | 'supervisor' | 'viewer'
+let _pendingRole = null;
+
+function openRoleModal(){
+  _pendingRole = null;
+  document.getElementById('role-overlay').classList.remove('hidden');
+  document.getElementById('role-pin-wrap').classList.remove('show');
+  ['hr','supervisor','viewer'].forEach(r=>document.getElementById('role-btn-'+r).classList.remove('selected'));
+}
+function closeRoleModal(){ document.getElementById('role-overlay').classList.add('hidden'); }
+
+function selectRole(role){
+  _pendingRole = role;
+  ['hr','supervisor','viewer'].forEach(r=>document.getElementById('role-btn-'+r).classList.remove('selected'));
+  if(role){
+    document.getElementById('role-btn-'+role)?.classList.add('selected');
+    if(role==='viewer'){
+      applyRole('viewer');
+      closeRoleModal();
+    } else {
+      const pinWrap = document.getElementById('role-pin-wrap');
+      const pinLabel = document.getElementById('role-pin-label');
+      pinLabel.textContent = `Enter ${role==='hr'?'HR':'Supervisor'} PIN`;
+      document.getElementById('role-pin-input').value='';
+      document.getElementById('role-pin-error').textContent='';
+      pinWrap.classList.add('show');
+      setTimeout(()=>document.getElementById('role-pin-input').focus(),80);
+    }
+  } else {
+    document.getElementById('role-pin-wrap').classList.remove('show');
+  }
+}
+
+function onPinInput(){
+  document.getElementById('role-pin-error').textContent='';
+}
+
+function confirmRolePin(){
+  const pin = document.getElementById('role-pin-input').value;
+  const correct = ROLE_PINS[_pendingRole];
+  if(pin === correct){
+    applyRole(_pendingRole);
+    closeRoleModal();
+  } else {
+    document.getElementById('role-pin-error').textContent = '❌ Incorrect PIN — try again';
+    document.getElementById('role-pin-input').value='';
+    document.getElementById('role-pin-input').focus();
+  }
+}
+
+const ROLE_META = {
+  hr:         { label:'HR',         icon:'👔', bodyClass:'' },
+  supervisor: { label:'Supervisor', icon:'🧑‍💼', bodyClass:'role-supervisor' },
+  viewer:     { label:'Viewer',     icon:'👁️', bodyClass:'role-viewer' },
+};
+
+function applyRole(role){
+  currentRole = role;
+  sessionStorage.setItem('hr_role', role);
+  // Apply body class for CSS blur
+  document.body.classList.remove('role-viewer','role-supervisor');
+  const meta = ROLE_META[role];
+  if(meta.bodyClass) document.body.classList.add(meta.bodyClass);
+  // Update sidebar indicator
+  const indicator = document.getElementById('role-indicator');
+  if(indicator){
+    indicator.style.display='block';
+    document.getElementById('role-indicator-icon').textContent=meta.icon;
+    document.getElementById('role-indicator-label').textContent=meta.label;
+  }
+  // Re-render detail panel if open
+  if(detailEmpId) openDetailPanel(detailEmpId);
+}
+
+function initRole(){
+  const saved = sessionStorage.getItem('hr_role');
+  if(saved && ROLE_META[saved]){
+    applyRole(saved);
+  } else {
+    // Show role modal after app loads
+    setTimeout(()=>openRoleModal(), 400);
+  }
+}
 
 // ============================================================
 // STORE LOOKUP
@@ -1520,7 +1724,11 @@ function signIn(){doLogin();}
 function signOut(){
   if(accessToken){try{google.accounts.oauth2.revoke(accessToken);}catch(e){}}
   localStorage.removeItem('hr_user');
+  sessionStorage.removeItem('hr_role');
   accessToken=null;currentUser=null;window._headersChecked=false;
+  currentRole=null;
+  document.body.classList.remove('role-viewer','role-supervisor');
+  document.getElementById('role-indicator').style.display='none';
   showLoginScreen(false);
 }
 async function fetchUserInfo(token){
@@ -1535,6 +1743,7 @@ function showApp(){
     document.getElementById('user-avatar').textContent=initials;
     document.getElementById('user-name').textContent=currentUser.name||currentUser.email;
   }
+  initRole();
 }
 function setOfflineBanner(visible,msg){
   const el=document.getElementById('offline-banner');
@@ -1739,25 +1948,6 @@ async function getSheetIdByName(sheetName){
   const sheet=meta.result.sheets.find(s=>s.properties.title===sheetName);
   return sheet ? sheet.properties.sheetId : null;
 }
-async function deleteRowsByNumber(sheetName,rowNumbers){
-  const nums=[...new Set(rowNumbers)].filter(n=>Number.isFinite(n)&&n>1).sort((a,b)=>b-a);
-  if(!nums.length)return 0;
-  const sheetId=await getSheetIdByName(sheetName);
-  if(sheetId===null)return 0;
-  const requests=nums.map(row=>({deleteDimension:{range:{sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}));
-  await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests}});
-  return nums.length;
-}
-async function appendRowsToSheet(sheetName,rows){
-  if(!rows.length)return;
-  await gapi.client.sheets.spreadsheets.values.append({
-    spreadsheetId:SHEET_ID,
-    range:`${sheetName}!A:${SHEET_LAST_COL}`,
-    valueInputOption:'RAW',
-    insertDataOption:'INSERT_ROWS',
-    resource:{values:rows.map(r=>HEADERS.map((_,i)=>r[i]||''))}
-  });
-}
 async function writeLog(empId,name,action,from,to){
   try{
     await gapi.client.sheets.spreadsheets.values.append({
@@ -1921,6 +2111,7 @@ function activeFilterCount(){return [filterRegion,filterDeployStatus,filterQR,fi
 // ============================================================
 // COLUMN VISIBILITY
 // ============================================================
+let colDropdownOpen=false;
 function toggleColDropdown(){
   colDropdownOpen=!colDropdownOpen;
   const dd=document.getElementById('col-dropdown');
@@ -2060,18 +2251,6 @@ function dashSearch(q){
 // ============================================================
 // RING SVG HELPER
 // ============================================================
-function ringHTML(pct, color, size=48, sw=5){
-  const r=(size-sw)/2;
-  const circ=2*Math.PI*r;
-  const offset=circ - (pct/100)*circ;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg)">
-    <circle class="cc-ring-track" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${sw}"/>
-    <circle class="cc-ring-fill" cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}"
-      stroke-width="${sw}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
-      fill="none" stroke-linecap="round"/>
-  </svg>`;
-}
-
 // ============================================================
 // DASHBOARD
 // ============================================================
@@ -2763,6 +2942,7 @@ function dpDelete(){
 
 function buildDetailHTML(e){
   const row=(label,val)=>`<div class="detail-row"><div class="detail-label">${esc(label)}</div><div class="detail-val">${val||'—'}</div></div>`;
+  const rowSensitive=(label,val)=>`<div class="detail-row"><div class="detail-label">${esc(label)}</div><div class="detail-val sensitive">${val||'—'}</div></div>`;
 
   let bdayNote='';
   if(e.dob){
@@ -2827,9 +3007,9 @@ function buildDetailHTML(e){
     <div class="detail-section">
       <div class="detail-section-title">Personal</div>
       ${row('First Name',esc(e.firstName))}${row('Last Name',esc(e.lastName))}
-      ${row('Middle Name',esc(e.middleName))}${row('Date of Birth',esc(e.dob))}
+      ${row('Middle Name',esc(e.middleName))}${rowSensitive('Date of Birth',esc(e.dob))}
       ${row('Gender',esc(e.gender))}${row('Marital Status',esc(e.maritalStatus))}
-      ${row('Mobile',esc(e.mobile))}${row('Email',esc(e.email))}${row('Address',esc(e.address))}
+      ${rowSensitive('Mobile',esc(e.mobile))}${rowSensitive('Email',esc(e.email))}${rowSensitive('Address',esc(e.address))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Assignment</div>
@@ -2838,15 +3018,15 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Government IDs</div>
-      ${row('SSS',e.sss?esc(e.sss):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-      ${row('PhilHealth',e.philhealth?esc(e.philhealth):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-      ${row('Pag-IBIG',esc(e.pagibig))}${row('TIN',esc(e.tin))}
+      ${rowSensitive('SSS',e.sss?esc(e.sss):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${rowSensitive('PhilHealth',e.philhealth?esc(e.philhealth):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${rowSensitive('Pag-IBIG',esc(e.pagibig))}${rowSensitive('TIN',esc(e.tin))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
       ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',esc(e.bankName))}
-      ${row('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${rowSensitive('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Requirements</div>
@@ -2955,8 +3135,12 @@ function getFormHTML(emp){
     <div class="field"><label>Date of Birth</label>${dateInp('dob')}</div>
     <div class="field"><label>Gender</label>${sel('gender',['','Male','Female','N/A'])}</div>
     <div class="field"><label>Marital Status</label>${sel('maritalStatus',['','Single','Married'])}</div>
-    <div class="field"><label>Mobile No.</label>${inp('mobile','text','+63')}</div>
-    <div class="field form-full"><label>Email Address</label>${inp('email','email','juan@email.com')}</div>
+    <div class="field"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDupMobile()"')}
+      <div class="dup-warning" id="dup-warning-mobile">⚠ This mobile number is already used by another employee.</div>
+    </div>
+    <div class="field form-full"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDupEmail()"')}
+      <div class="dup-warning" id="dup-warning-email">⚠ This email is already used by another employee.</div>
+    </div>
     <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
@@ -2991,7 +3175,9 @@ function getFormHTML(emp){
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
     <div class="field"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
-    <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number')}</div>
+    <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number','oninput="checkDupBank()"')}
+      <div class="dup-warning" id="dup-warning-bank">⚠ This bank account number is already used by another employee.</div>
+    </div>
   </div>
 
   <div class="section-label">Contract</div>
@@ -3035,6 +3221,27 @@ function checkDuplicate(){
   } else {
     warn.classList.remove('visible');
   }
+}
+function checkDupMobile(){
+  const val=document.getElementById('f_mobile')?.value.trim()||'';
+  const warn=document.getElementById('dup-warning-mobile');
+  if(!warn||!val)return;
+  const isDup=employees.some(e=>String(e.mobile||'').trim()===val&&String(e.infinixId)!==(editingId||''));
+  warn.classList.toggle('visible',isDup);
+}
+function checkDupEmail(){
+  const val=document.getElementById('f_email')?.value.trim()||'';
+  const warn=document.getElementById('dup-warning-email');
+  if(!warn||!val)return;
+  const isDup=employees.some(e=>String(e.email||'').trim().toLowerCase()===val.toLowerCase()&&String(e.infinixId)!==(editingId||''));
+  warn.classList.toggle('visible',isDup);
+}
+function checkDupBank(){
+  const val=document.getElementById('f_bankAccount')?.value.trim()||'';
+  const warn=document.getElementById('dup-warning-bank');
+  if(!warn||!val)return;
+  const isDup=employees.some(e=>String(e.bankAccount||'').trim()===val&&String(e.infinixId)!==(editingId||''));
+  warn.classList.toggle('visible',isDup);
 }
 function validateRssId(){
   const val=document.getElementById('f_rssId')?.value.trim()||'';
@@ -3130,6 +3337,27 @@ function closeModal(){document.getElementById('modal-overlay').classList.remove(
 async function saveEmployee(){
   const data=gatherForm();
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
+
+  // Extra confirmation for high-impact statuses
+  const highImpact=['Terminated','AWOL'];
+  if(highImpact.includes(data.status)){
+    const oldEmp=editingId?employees.find(e=>String(e.infinixId)===String(editingId)):null;
+    const oldStatus=oldEmp?.status||'Active';
+    if(data.status!==oldStatus){
+      const proceed=await new Promise(resolve=>{
+        document.getElementById('confirm-title').textContent=`⚠ Confirm: Set to ${data.status}?`;
+        document.getElementById('confirm-msg').textContent=`You are about to mark ${data.firstName} ${data.lastName} as "${data.status}". This is a significant status change. Are you sure?`;
+        document.getElementById('confirm-ok').textContent=`Yes, set to ${data.status}`;
+        document.getElementById('confirm-ok').onclick=()=>{closeConfirm();resolve(true);};
+        const cancelBtn=document.getElementById('confirm-overlay').querySelector('.btn-ghost');
+        const origOnClick=cancelBtn.onclick;
+        cancelBtn.onclick=()=>{closeConfirm();cancelBtn.onclick=origOnClick;resolve(false);};
+        document.getElementById('confirm-overlay').classList.add('open');
+      });
+      if(!proceed)return;
+    }
+  }
+
   closeModal();showLoading(true,editingId?'Updating employee...':'Adding employee...');
   try{
     const result=editingId?await apiUpdateEmployee(data):await apiAddEmployee(data);
