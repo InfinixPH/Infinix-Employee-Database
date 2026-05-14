@@ -380,9 +380,9 @@ body::after {
 /* ============================================================
    DASHBOARD
    ============================================================ */
-.dash-kf-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
-@media (max-width: 1280px) { .dash-kf-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.dash-kf-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width:1280px){.dash-kf-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media (max-width:760px){.dash-kf-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .kf-card { padding: 20px 22px; }
 .kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
 .kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
@@ -1406,10 +1406,6 @@ async function loadData(){
   showLoading(true,'Loading employees...');
   setOfflineBanner(false);
   try{
-    const fixed=await reconcileActiveInactiveSheets();
-    if(fixed.movedToInactive||fixed.movedToActive||fixed.deletedBlankRows){
-      toast(`Auto-fixed: ${fixed.movedToInactive} moved to Inactive, ${fixed.movedToActive} moved to Active, ${fixed.deletedBlankRows} blank row(s) deleted.`,'success');
-    }
     const [aRes,iRes]=await Promise.all([
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
@@ -1479,7 +1475,8 @@ function rowToObj(r){
     storeId:r[8]||'',
     qrStatus:r[9]||'NOT SCANNED',
     deploymentDate:r[10]||'',
-    deploymentStatus:normalizeDeployStatus(r[11]||'-'),
+    deploymentStatus:normalizeDeployStatus(r[11]||''),
+    deploymentStatusColL:String(r[11]||''),
     rssName:r[12]||'',
     rssId:String(r[13]||''),
     basicWage:r[14]||'',
@@ -1592,21 +1589,17 @@ function normalizeRegion(region){
   return raw.toUpperCase();
 }
 function normalizeDeployStatus(status){
-  const s=String(status||'').trim().toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
+  const raw=String(status||'').trim();
+  const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
+  if(!s)return '';
+  if(s==='-')return '-';
   if(s==='DEPLOYED')return 'DEPLOYED';
   if(s==='BACKOUT'||s==='BACK OUT'||s==='BACKOUT PROMOTER')return 'BACKOUT';
-  if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED'||s==='PENDING'||s==='-'||!s)return 'NOT YET DEPLOYED';
+  if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED')return 'NOT YET DEPLOYED';
   return s;
 }
-
-// Dashboard fix: Deployment Status is visually in Column N in the live sheet.
-// Column N = zero-based index 13. This is used only for the Not Yet Deployed dashboard card/filter.
-function rawDeploymentStatusColumnN(e){
-  return String((e && e._raw && e._raw[13]) || '').trim();
-}
-function isNotYetDeployedColumnN(e){
-  const s=rawDeploymentStatusColumnN(e).toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
-  return s==='NOT YET DEPLOYED';
+function isNotYetDeployedColL(value){
+  return normalizeDeployStatus(value)==='NOT YET DEPLOYED';
 }
 
 function isInactiveStatus(status){return ['Floating','Resigned','AWOL','Terminated','Backout'].includes(normalizeStatus(status));}
@@ -1644,84 +1637,9 @@ async function appendRowsToSheet(sheetName,rows){
   });
 }
 async function reconcileActiveInactiveSheets(){
-  // SAFE AUTO-SORT ON REFRESH.
-  // This fixes sheet placement without dropping nonblank rows.
-  // It only removes completely blank rows. It does NOT de-duplicate and does NOT delete rows just because Column B is empty.
-  const [aRes,iRes]=await Promise.all([
-    gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
-    gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
-  ]);
-
-  const oldActive=(aRes.result.values||[]);
-  const oldInactive=(iRes.result.values||[]);
-  const activeRows=[];
-  const inactiveRows=[];
-  let movedToInactive=0;
-  let movedToActive=0;
-  let deletedBlankRows=0;
-
-  function cleanRow(row){
-    const out=HEADERS.map((_,i)=>String((row&&row[i])||'').trim());
-    // If deployment is BACKOUT, force Employment Status to '-' and keep it in Inactive.
-    if(normalizeDeployStatus(out[11])==='BACKOUT'){
-      out[6]='-';
-      out[11]='BACKOUT';
-    }
-    return out;
-  }
-  function hasAnyValue(row){ return row && row.some(v=>String(v||'').trim()!==''); }
-
-  function keepRow(row,sourceSheet){
-    if(!hasAnyValue(row)){ deletedBlankRows++; return; }
-    const cleaned=cleanRow(row);
-    const st=normalizeStatus(cleaned[6]);
-    const dep=normalizeDeployStatus(cleaned[11]);
-
-    if(st==='Active' && dep!=='BACKOUT'){
-      cleaned[6]='Active';
-      activeRows.push(cleaned);
-      if(sourceSheet!==ACTIVE_SHEET) movedToActive++;
-      return;
-    }
-
-    if(dep==='BACKOUT'){
-      cleaned[6]='-';
-      cleaned[11]='BACKOUT';
-      inactiveRows.push(cleaned);
-      if(sourceSheet!==INACTIVE_SHEET) movedToInactive++;
-      return;
-    }
-
-    if(['Floating','Resigned','AWOL','Terminated','Backout','-'].includes(st)){
-      cleaned[6]=st;
-      inactiveRows.push(cleaned);
-      if(sourceSheet!==INACTIVE_SHEET) movedToInactive++;
-      return;
-    }
-
-    // Unknown/blank status: preserve original sheet to avoid accidental data loss.
-    if(sourceSheet===INACTIVE_SHEET) inactiveRows.push(cleaned);
-    else activeRows.push(cleaned);
-  }
-
-  oldActive.forEach(r=>keepRow(r,ACTIVE_SHEET));
-  oldInactive.forEach(r=>keepRow(r,INACTIVE_SHEET));
-
-  async function rewriteSheet(sheetName,rows){
-    await gapi.client.sheets.spreadsheets.values.clear({spreadsheetId:SHEET_ID,range:`${sheetName}!A2:${SHEET_LAST_COL}10000`});
-    if(rows.length){
-      await gapi.client.sheets.spreadsheets.values.update({
-        spreadsheetId:SHEET_ID,
-        range:`${sheetName}!A2:${SHEET_LAST_COL}${rows.length+1}`,
-        valueInputOption:'RAW',
-        resource:{values:rows}
-      });
-    }
-  }
-
-  await rewriteSheet(ACTIVE_SHEET,activeRows);
-  await rewriteSheet(INACTIVE_SHEET,inactiveRows);
-  return {movedToInactive,movedToActive,deletedBlankRows};
+  // Disabled on-load sheet clearing to prevent Google Sheets API 400 errors.
+  // Row movement still happens when saving/editing an employee.
+  return {movedToInactive:0,movedToActive:0,deletedBlankRows:0};
 }
 async function writeLog(empId,name,action,from,to){
   try{
@@ -1852,12 +1770,11 @@ function filteredEmployees(type){
     :employees.filter(e=>isActive?(normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT'):(normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT'));
 
   // Missing field filter (from dashboard pill clicks)
-  // Not Yet Deployed is based on Active sheet + Column N, not Employment Status.
-  if(missingFieldFilter==='notDeployed'){
-    list=employees.filter(e=>e._sheet===ACTIVE_SHEET && isNotYetDeployedColumnN(e));
-  } else if(missingFieldFilter){
+  // Dashboard pending actions must only drill down Active promoters.
+  if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
+  if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && isNotYetDeployedColL(e.deploymentStatusColL));
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
   else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
@@ -2020,8 +1937,9 @@ function renderDashboard(){
   // Pending actions and completion cards count ACTIVE promoters only.
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
   const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
-  // Not Yet Deployed: count ONLY rows physically in the Active sheet, using Deployment Status in Column N.
-  const notDeployed=employees.filter(e=>e._sheet===ACTIVE_SHEET && isNotYetDeployedColumnN(e)).length;
+  // Not Yet Deployed: Active sheet only, Deployment Status Column L only.
+  const activeSheetRows=employees.filter(e=>e._sheet===ACTIVE_SHEET);
+  const notDeployed=activeSheetRows.filter(e=>isNotYetDeployedColL(e.deploymentStatusColL)).length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
@@ -2060,11 +1978,11 @@ function renderDashboard(){
         <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" title="Active sheet rows where Column N Deployment Status is NOT YET DEPLOYED" style="cursor:pointer;border-color:rgba(201,184,122,0.25)">
+      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" title="Active sheet rows where Column L = NOT YET DEPLOYED" style="cursor:pointer;border-color:rgba(201,184,122,0.25)">
         <div class="kf-label-top">Not Yet Deployed</div>
         <div class="kf-num" style="color:var(--warning)">${notDeployed}</div>
-        <div class="kf-sub">Active sheet · Column N</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${employees.filter(e=>e._sheet===ACTIVE_SHEET).length?notDeployed/employees.filter(e=>e._sheet===ACTIVE_SHEET).length*100:0}%;background:var(--warning)"></div></div>
+        <div class="kf-sub">Column L · Active sheet only</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeSheetRows.length?notDeployed/activeSheetRows.length*100:0}%;background:var(--warning)"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">QR Scanned</div>
@@ -2093,7 +2011,7 @@ function renderDashboard(){
     <!-- PENDING ACTIONS -->
     <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Active promoters only · click a pill to filter</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Yet Deployed</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Active sheet rows where Column L = NOT YET DEPLOYED"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Yet Deployed</span></div>`:''}
       ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
       ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Active promoters with contract not yet sent"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
       ${missingRequirements>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingRequirements')" title="Active promoters with incomplete requirements checklist"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingRequirements}</span><span>Requirements Incomplete</span></div>`:''}
