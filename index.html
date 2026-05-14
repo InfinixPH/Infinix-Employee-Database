@@ -476,8 +476,11 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .b-Resigned    { background: rgba(196,160,122,0.1); color: #c4a07a; border-color: rgba(196,160,122,0.2); }
 .b-AWOL        { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
 .b-Terminated  { background: rgba(160,122,196,0.1); color: #a07ac4; border-color: rgba(160,122,196,0.2); }
-.b-DEPLOYED    { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
+/* FIX: Deployment Status — only 3 valid: DEPLOYED, NOT YET DEPLOYED, - (dash) */
+.b-DEPLOYED         { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
 .b-NOT-YET-DEPLOYED { background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
+.b--                { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
+/* Legacy BACKOUT badge kept for any historical data already in sheets */
 .b-BACKOUT     { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
 .b-SCANNED     { background: var(--info-bg); color: var(--info); border-color: rgba(122,158,196,0.2); }
 .b-NOT-SCANNED { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
@@ -670,6 +673,19 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 .dup-warning.visible { display: block; }
 
+/* Employment Status field highlight in form */
+.emp-status-field {
+  background: rgba(136,144,99,0.07);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 4px;
+}
+.emp-status-field label {
+  color: var(--moss-green) !important;
+  font-weight: 700 !important;
+}
+
 /* ============================================================
    DEPLOYMENT TRACKER
    ============================================================ */
@@ -795,7 +811,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 3px; width: fit-content;
 }
-.view-tab { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15s; }
+.view-tab { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15px; }
 .view-tab.active { background: var(--moss-green); color: #fff; font-weight: 800; }
 .view-tab:hover:not(.active) { color: var(--text); }
 </style>
@@ -888,7 +904,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     Connection issue — data may be stale.
     <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>
   </div>
-  <!-- FIX 1: New sync banner warns when misplaced rows are detected after load -->
   <div class="sync-banner" id="sync-banner">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <span id="sync-banner-msg"></span>
@@ -907,7 +922,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
         </span>
         <input type="text" id="search-input" placeholder="Search name, ID, store…" oninput="onSearch()" style="display:none">
       </div>
-      <!-- FIX 2: Reconcile button always available in topbar -->
       <button class="btn btn-warn" id="reconcile-btn" onclick="openReconcileModal()" title="Move pasted employees to correct sheet based on their Employment Status" style="display:none">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         Reconcile
@@ -1015,29 +1029,37 @@ const INACTIVE_STATUSES = new Set(['Floating','Resigned','AWOL','Terminated']);
 const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
+// FIX 1: Deployment Status — only 3 valid values
+// DEPLOYED = active/deployed to store
+// NOT YET DEPLOYED = still pending deployment
+// - (dash) = no longer active (resigned/awol/terminated/floating) — not applicable
+const DEPLOY_STATUSES = ['NOT YET DEPLOYED','DEPLOYED','-'];
+
 // Column map: A=Region … AD=Employment Status (30 cols, index 0–29)
 const HEADERS = [
   'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name',
+  'Employment Status',  // FIX: col G (index 6) — inserted between Middle Name and Store Assignment
   'Store Assignment','Store ID','QR Scan Status','Deployment Date','Deployment Status',
   'RSS Name','RSS ID','Basic Wage Rate','Address','Mobile No.','Email Address',
   'Date of Birth','Gender','Marital Status','SSS Number','PhilHealth Number',
   'Pag-IBIG Number','Bank Name','Bank Account Number','Contract Status',
-  'Contract Sent Date','Last Updated','Notes','Employment Status'
+  'Contract Sent Date','Last Updated','Notes','Employment Status (col AD)'
 ];
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
 
+// FIX 2: Added 'employmentStatus' column between middleName and storeAssignment
 const TABLE_COLUMNS = [
-  { key:'fullName',         label:'Full Name',      always:true  },
-  { key:'infinixId',        label:'Infinix ID',     always:true  },
-  { key:'status',           label:'Status',         always:false },
-  { key:'deploymentDate',   label:'Deploy Date',    always:false },
-  { key:'deploymentStatus', label:'Deploy Status',  always:false },
-  { key:'qrStatus',         label:'QR Status',      always:false },
-  { key:'region',           label:'Region',         always:false },
-  { key:'storeAssignment',  label:'Store',          always:false },
-  { key:'storeId',          label:'Store ID',       always:false },
-  { key:'rssName',          label:'RSS Name',       always:false },
-  { key:'contractStatus',   label:'Contract',       always:false },
+  { key:'fullName',           label:'Full Name',         always:true  },
+  { key:'infinixId',          label:'Infinix ID',        always:true  },
+  { key:'employmentStatus',   label:'Employment Status', always:false },  // NEW — between name cols and store
+  { key:'deploymentDate',     label:'Deploy Date',       always:false },
+  { key:'deploymentStatus',   label:'Deploy Status',     always:false },
+  { key:'qrStatus',           label:'QR Status',         always:false },
+  { key:'region',             label:'Region',            always:false },
+  { key:'storeAssignment',    label:'Store',             always:false },
+  { key:'storeId',            label:'Store ID',          always:false },
+  { key:'rssName',            label:'RSS Name',          always:false },
+  { key:'contractStatus',     label:'Contract',          always:false },
 ];
 
 // ============================================================
@@ -1049,7 +1071,7 @@ let employees=[], currentView='dashboard', filterStatus=null, editingId=null;
 let currentPage=1, pageSize=PAGE_SIZE_DEFAULT;
 let sortCol=null, sortDir=1;
 let selectedIds=new Set();
-let filterRegion='', filterDeployStatus='', filterQR='', filterContractStatus='';
+let filterRegion='', filterDeployStatus='', filterQR='', filterContractStatus='', filterEmpStatus='';
 let detailEmpId=null;
 let logCache=null;
 let _charts={};
@@ -1058,7 +1080,6 @@ let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
 let colDropdownOpen=false;
 let missingFieldFilter=null;
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
-// Reconcile state
 let _reconcilePending=[];
 let _syncBannerDismissed=false;
 
@@ -1117,7 +1138,6 @@ function onStoreIdInput(){
   const shopId=shopIdEl.value.trim();
   if(!shopId){
     statusEl.textContent=''; statusEl.className='store-lookup-status';
-    // FIX 3: Reset readOnly when Store ID is cleared
     storeNameEl.readOnly=false; storeNameEl.value='';
     if(rssNameEl){rssNameEl.readOnly=false;}
     if(rssIdEl)  {rssIdEl.readOnly=false;}
@@ -1140,6 +1160,25 @@ function onStoreIdInput(){
   const hint=document.getElementById('hint-storeId');
   if(shopId&&!shopId.toUpperCase().startsWith('PH0')){hint?.classList.add('visible');shopIdEl.classList.add('err');}
   else{hint?.classList.remove('visible');shopIdEl.classList.remove('err');}
+}
+
+// ============================================================
+// FIX 3: Auto-set Deployment Status based on Employment Status
+// When Employment Status changes to non-active, deployment status → "-"
+// When set to Active, if deployment status was "-", keep it (user can change)
+// ============================================================
+function onEmpStatusChange(){
+  const empStatusEl = document.getElementById('f_status');
+  const deployStatusEl = document.getElementById('f_deploymentStatus');
+  if(!empStatusEl||!deployStatusEl)return;
+  const empStatus = empStatusEl.value;
+  // If employee is no longer active, auto-set deployment status to "-"
+  if(INACTIVE_STATUSES.has(empStatus)){
+    deployStatusEl.value = '-';
+    deployStatusEl.style.opacity = '0.6';
+  } else {
+    deployStatusEl.style.opacity = '1';
+  }
 }
 
 // ============================================================
@@ -1189,7 +1228,6 @@ function _onAuthReady(resp){
     }
     if(!gapi.client.sheets) await gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
     showApp();
-    // FIX 4: Only write Log headers if missing; never overwrite Active/Inactive headers on every load
     if(!window._headersChecked){window._headersChecked=true;await ensureLogHeaders();}
     await Promise.all([loadData(),loadStoreDetails()]);
   })();
@@ -1258,7 +1296,7 @@ window.addEventListener('offline',()=>setOfflineBanner(true,'You are offline —
 window.addEventListener('online',()=>{setOfflineBanner(false);toast('Back online','success');});
 
 // ============================================================
-// FIX 4: Only ensure Log sheet headers, never touch data sheets
+// ENSURE LOG HEADERS
 // ============================================================
 async function ensureLogHeaders(){
   try{
@@ -1288,7 +1326,6 @@ async function loadData(){
       if(r[1])employees.push({...rowToObj(r,INACTIVE_SHEET),_row:i+2});
     });
     logCache=null;selectedIds.clear();
-    // FIX 5: After load, detect misplaced employees and show sync banner
     detectMisplacedEmployees();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
@@ -1319,18 +1356,16 @@ async function refreshData(){
 }
 
 // ============================================================
-// FIX 1 CORE: Detect misplaced employees after load
+// DETECT MISPLACED EMPLOYEES
 // ============================================================
 function detectMisplacedEmployees(){
   _reconcilePending=[];
   employees.forEach(emp=>{
     const isInActiveSheet = emp._sheet===ACTIVE_SHEET;
     const statusIsActive  = emp.status==='Active';
-    // In Active sheet but status is NOT Active → needs to move to Inactive
     if(isInActiveSheet && !statusIsActive){
       _reconcilePending.push({emp, fromSheet:ACTIVE_SHEET, toSheet:INACTIVE_SHEET});
     }
-    // In Inactive sheet but status IS Active → needs to move to Active
     if(!isInActiveSheet && statusIsActive){
       _reconcilePending.push({emp, fromSheet:INACTIVE_SHEET, toSheet:ACTIVE_SHEET});
     }
@@ -1374,7 +1409,7 @@ function buildReconcilePreview(){
   body.innerHTML=`
     <div style="font-size:11.5px;color:var(--text2);margin-bottom:10px">${_reconcilePending.length} employee(s) will be moved:</div>
     <table class="reconcile-table">
-      <thead><tr><th>Name</th><th>ID</th><th>Status</th><th>From</th><th>To</th></tr></thead>
+      <thead><tr><th>Name</th><th>ID</th><th>Emp. Status</th><th>From</th><th>To</th></tr></thead>
       <tbody>
         ${_reconcilePending.map(({emp,fromSheet,toSheet})=>`
           <tr>
@@ -1393,14 +1428,12 @@ async function runReconcile(){
   closeReconcile();
   showLoading(true,`Moving ${_reconcilePending.length} employee(s) to correct sheets…`);
   let moved=0, failed=0;
-  // Get sheet metadata once for delete operations
   let sheetMeta;
   try{ sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID}); }
   catch(e){ toast('Could not fetch sheet metadata: '+e.message,'error'); showLoading(false); return; }
 
   for(const {emp,fromSheet,toSheet} of _reconcilePending){
     try{
-      // 1. Append to destination sheet
       await gapi.client.sheets.spreadsheets.values.append({
         spreadsheetId:SHEET_ID,
         range:`${toSheet}!A:AD`,
@@ -1408,7 +1441,6 @@ async function runReconcile(){
         insertDataOption:'INSERT_ROWS',
         resource:{values:[objToRow(emp)]}
       });
-      // 2. Find and delete source row
       const srcRow=await findEmployeeRowInSheet(emp.infinixId,fromSheet);
       if(srcRow>0){
         const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===fromSheet);
@@ -1444,19 +1476,26 @@ async function runReconcile(){
 // ============================================================
 function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 
-// FIX 5: rowToObj reads Employment Status (r[29]) first.
-// Only falls back to sheet-based inference when col AD is completely blank.
 function rowToObj(r, sheetName){
   // r[29] = Employment Status (col AD)
   let empStatus=(r[29]||'').trim();
-  // If col AD is blank, infer from which sheet the row came from
   if(!empStatus){
     empStatus = (sheetName===ACTIVE_SHEET) ? 'Active' : 'Resigned';
   }
-  // Compute fullName: prefer col C, then first+last
   const storedFullName=(r[2]||'').trim();
   const computedFullName=((r[3]||'')+' '+(r[4]||'')).trim();
   const fullName = storedFullName || computedFullName;
+  // FIX 4: Normalize deployment status — only allow 3 valid values
+  // Any legacy BACKOUT or unknown value maps to '-' for inactive employees
+  let deployStatus=(r[10]||'-').trim();
+  if(!DEPLOY_STATUSES.includes(deployStatus)){
+    // BACKOUT and any unknown → treat as '-' for inactive, 'NOT YET DEPLOYED' for active
+    if(INACTIVE_STATUSES.has(empStatus)){
+      deployStatus='-';
+    }else{
+      deployStatus='NOT YET DEPLOYED';
+    }
+  }
   return {
     region:          (r[0]||''),
     infinixId:       String(r[1]||''),
@@ -1468,7 +1507,7 @@ function rowToObj(r, sheetName){
     storeId:         (r[7]||''),
     qrStatus:        (r[8]||'NOT SCANNED'),
     deploymentDate:  (r[9]||''),
-    deploymentStatus:(r[10]||'-'),
+    deploymentStatus: deployStatus,
     rssName:         (r[11]||''),
     rssId:           String(r[12]||''),
     basicWage:       (r[13]||''),
@@ -1488,12 +1527,17 @@ function rowToObj(r, sheetName){
     lastUpdated:     (r[27]||''),
     notes:           (r[28]||''),
     status:          empStatus,
+    // employmentStatus is an alias for status — used as the explicit table column key
+    employmentStatus: empStatus,
     _sheet:          sheetName,
   };
 }
 
 function objToRow(d){
   const fullName=((d.firstName||'')+' '+(d.lastName||'')).trim()||d.fullName||'';
+  // FIX 5: Enforce valid deployment status on save
+  let deployStatus = d.deploymentStatus||'-';
+  if(!DEPLOY_STATUSES.includes(deployStatus)) deployStatus='-';
   return [
     d.region||'',           // A r[0]
     d.infinixId||'',        // B r[1]
@@ -1505,7 +1549,7 @@ function objToRow(d){
     d.storeId||'',          // H r[7]
     d.qrStatus||'NOT SCANNED', // I r[8]
     d.deploymentDate||'',   // J r[9]
-    d.deploymentStatus||'-',// K r[10]
+    deployStatus,           // K r[10] — only DEPLOYED / NOT YET DEPLOYED / -
     d.rssName||'',          // L r[11]
     d.rssId||'',            // M r[12]
     d.basicWage||'',        // N r[13]
@@ -1528,7 +1572,6 @@ function objToRow(d){
   ];
 }
 
-// FIX 6: getTargetSheet uses consistent set membership
 function getTargetSheet(status){
   return ACTIVE_STATUSES.has(status) ? ACTIVE_SHEET : INACTIVE_SHEET;
 }
@@ -1576,7 +1619,6 @@ async function apiUpdateEmployee(data){
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    // Status changed category → move between sheets
     await gapi.client.sheets.spreadsheets.values.append({
       spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,
       valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',
@@ -1595,7 +1637,6 @@ async function apiUpdateEmployee(data){
     }
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    // Same sheet, just update
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId:SHEET_ID,
       range:`${oldSheet}!A${row}:AD${row}`,
@@ -1640,7 +1681,9 @@ async function apiBulkUpdateStatus(ids,newStatus){
     try{
       const emp=employees.find(e=>String(e.infinixId)===String(id));
       if(!emp)continue;
-      const res=await apiUpdateEmployee({...emp,status:newStatus});
+      // FIX: When bulk-changing to inactive status, auto-set deployment status to "-"
+      const newDeployStatus = INACTIVE_STATUSES.has(newStatus) ? '-' : emp.deploymentStatus;
+      const res=await apiUpdateEmployee({...emp,status:newStatus,deploymentStatus:newDeployStatus});
       if(res.ok)ok++;else fail++;
     }catch(e){fail++;}
   }
@@ -1685,8 +1728,6 @@ function updateSortHeaders(){
   });
 }
 
-// FIX 7: filteredEmployees — when filterStatus is set, show from ALL employees
-// filtered by that status. When no filterStatus, respect the active/inactive split.
 function filteredEmployees(type){
   let list;
   if(filterStatus){
@@ -1696,7 +1737,6 @@ function filteredEmployees(type){
     list=employees.filter(e=>isActive ? ACTIVE_STATUSES.has(e.status) : INACTIVE_STATUSES.has(e.status));
   }
 
-  // Missing field sub-filters
   if(missingFieldFilter==='notDeployed')
     list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
   else if(missingFieldFilter==='notScanned')
@@ -1720,10 +1760,12 @@ function filteredEmployees(type){
     (e.rssName||'').toLowerCase().includes(q)||
     (e.email||'').toLowerCase().includes(q)
   );
-  if(filterRegion)       list=list.filter(e=>e.region===filterRegion);
-  if(filterDeployStatus) list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
-  if(filterQR)           list=list.filter(e=>e.qrStatus===filterQR);
-  if(filterContractStatus) list=list.filter(e=>e.contractStatus===filterContractStatus);
+  if(filterRegion)        list=list.filter(e=>e.region===filterRegion);
+  // FIX 6: Filter by employment status (separate from sidebar filterStatus)
+  if(filterEmpStatus)     list=list.filter(e=>e.status===filterEmpStatus);
+  if(filterDeployStatus)  list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
+  if(filterQR)            list=list.filter(e=>e.qrStatus===filterQR);
+  if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
 }
 
@@ -1735,12 +1777,12 @@ function onSearch(){
 }
 function onFilterChange(){currentPage=1;selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
 function resetFilters(){
-  filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;
+  filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';filterEmpStatus='';missingFieldFilter=null;
   document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');
   onFilterChange();
 }
 function activeFilterCount(){
-  return [filterRegion,filterDeployStatus,filterQR,filterContractStatus,missingFieldFilter].filter(Boolean).length;
+  return [filterRegion,filterDeployStatus,filterQR,filterContractStatus,filterEmpStatus,missingFieldFilter].filter(Boolean).length;
 }
 
 // ============================================================
@@ -1805,9 +1847,8 @@ function renderSidebar(){
 function filterByStatus(s){
   filterStatus=filterStatus===s?null:s;
   missingFieldFilter=null;
-  // FIX 8: Route to correct view based on status category
   if(filterStatus===null){
-    // Toggle off — stay in current view
+    // stay in current view
   } else if(ACTIVE_STATUSES.has(filterStatus)){
     currentView='active';
   } else {
@@ -1866,7 +1907,8 @@ function renderDashboard(){
   const deployed=employees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
   const scanned=employees.filter(e=>e.qrStatus==='SCANNED').length;
   const contractSent=employees.filter(e=>e.contractStatus==='SENT').length;
-  const notDeployed=employees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
+  // FIX 7: notDeployed = NOT YET DEPLOYED only (not "-" which is inactive)
+  const notDeployed=employees.filter(e=>e.status==='Active'&&e.deploymentStatus==='NOT YET DEPLOYED').length;
   const notScanned=employees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractPending=employees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
   const missingSSS=employees.filter(e=>!e.sss||e.sss.trim()==='').length;
@@ -1876,7 +1918,6 @@ function renderDashboard(){
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
   const birthdays=getBirthdaysThisMonth().slice(0,5);
 
-  // Misplaced warning for dashboard
   const misplacedHTML=_reconcilePending.length>0
     ?`<div style="background:rgba(196,122,122,0.07);border:1px solid rgba(196,122,122,0.22);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;gap:10px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1928,7 +1969,7 @@ function renderDashboard(){
     </div>
     <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Click a pill to filter employees</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed (Active)</span></div>`:''}
       ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
       ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
       ${missingSSS>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingSSS')"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
@@ -1940,7 +1981,7 @@ function renderDashboard(){
     <div class="dash-bottom">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="chart-card glass-card">
-          <div class="chart-title">Status Breakdown</div>
+          <div class="chart-title">Employment Status Breakdown</div>
           <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
         </div>
         <div class="chart-card glass-card">
@@ -1967,7 +2008,7 @@ function renderDashboard(){
         <div class="table-head"><h3>Recently Updated</h3><span class="rec">Latest 8</span></div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th class="no-sort">Name</th><th class="no-sort">ID</th><th class="no-sort">Status</th><th class="no-sort">Deployment</th></tr></thead>
+            <thead><tr><th class="no-sort">Name</th><th class="no-sort">ID</th><th class="no-sort">Emp. Status</th><th class="no-sort">Deploy Status</th></tr></thead>
             <tbody>
               ${recent.map(e=>`<tr onclick="openDetailPanel('${e.infinixId}')">
                 <td><div class="td-name">${e.fullName||''}</div></td>
@@ -2000,7 +2041,7 @@ function renderDashboard(){
 }
 
 // ============================================================
-// DEPLOYMENT TRACKER
+// DEPLOYMENT TRACKER — FIX 8: Removed BACKOUT, only 3 valid deploy statuses
 // ============================================================
 function renderTracker(){
   document.getElementById('topbar-title').textContent='Deployment Tracker';
@@ -2011,21 +2052,26 @@ function renderTracker(){
   if(trackerRegion)list=list.filter(e=>e.region===trackerRegion);
   const total=list.length;
   const deployed=list.filter(e=>e.deploymentStatus==='DEPLOYED').length;
-  const notYet=list.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length;
-  const backout=list.filter(e=>e.deploymentStatus==='BACKOUT').length;
+  const notYet=list.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED').length;
+  const inactive=list.filter(e=>e.deploymentStatus==='-').length;  // Inactive employees
   const pct=total?Math.round(deployed/total*100):0;
   const byRegion={};
   REGIONS.forEach(r=>{
     const reg=list.filter(e=>e.region===r);
-    byRegion[r]={total:reg.length,deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length,backout:reg.filter(e=>e.deploymentStatus==='BACKOUT').length};
+    byRegion[r]={
+      total:reg.length,
+      deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,
+      notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED').length,
+      inactive:reg.filter(e=>e.deploymentStatus==='-').length
+    };
   });
   const byStore={};
   list.forEach(e=>{
     const key=e.storeAssignment||e.storeId||'Unknown';
-    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:e.region,total:0,deployed:0,notYet:0,backout:0};
+    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:e.region,total:0,deployed:0,notYet:0,inactive:0};
     byStore[key].total++;
     if(e.deploymentStatus==='DEPLOYED')byStore[key].deployed++;
-    else if(e.deploymentStatus==='BACKOUT')byStore[key].backout++;
+    else if(e.deploymentStatus==='-')byStore[key].inactive++;
     else byStore[key].notYet++;
   });
   const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
@@ -2045,19 +2091,20 @@ function renderTracker(){
     <div class="tracker-grid">
       <div class="tracker-kf glass-card"><div class="kf-label-top">Total in View</div><div class="kf-num">${total}</div><div class="kf-sub">Filtered records</div></div>
       <div class="tracker-kf glass-card"><div class="kf-label-top">Deployed</div><div class="kf-num" style="color:var(--success)">${deployed}</div><div class="kf-sub">${pct}% deployment rate</div><div class="kf-bar" style="margin-top:10px"><div class="kf-bar-fill" style="width:${pct}%;background:var(--success)"></div></div></div>
-      <div class="tracker-kf glass-card" style="display:flex;flex-direction:column;gap:6px"><div class="kf-label-top">Breakdown</div><div style="display:flex;gap:12px;font-size:12px"><span><span style="color:var(--warning);font-weight:700">${notYet}</span> <span style="color:var(--text3)">Pending</span></span><span><span style="color:var(--danger);font-weight:700">${backout}</span> <span style="color:var(--text3)">Backout</span></span></div></div>
+      <div class="tracker-kf glass-card" style="display:flex;flex-direction:column;gap:6px"><div class="kf-label-top">Breakdown</div><div style="display:flex;gap:12px;font-size:12px"><span><span style="color:var(--warning);font-weight:700">${notYet}</span> <span style="color:var(--text3)">Pending</span></span><span><span style="color:var(--text3);font-weight:700">${inactive}</span> <span style="color:var(--text3)">Inactive (—)</span></span></div></div>
     </div>
     <div class="section-heading"><span>By Region</span><div class="section-heading-line"></div></div>
     <div class="tracker-region-grid">
       ${REGIONS.map(r=>{
         const rd=byRegion[r];
         if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card"><div class="tracker-region-name">${r}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
-        const rpct=Math.round(rd.deployed/rd.total*100);
+        const activeTotal=rd.deployed+rd.notYet;
+        const rpct=activeTotal?Math.round(rd.deployed/activeTotal*100):0;
         return`<div class="tracker-region-card glass-card">
           <div class="tracker-region-name">${r}</div>
           <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text)">${rd.deployed}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${rd.total}</span></div>
           <div class="tracker-region-bar-wrap"><div class="tracker-region-bar" style="width:${rpct}%"></div></div>
-          <div class="tracker-region-stats"><span style="color:var(--success)">${rpct}% deployed</span><span>${rd.notYet} pending · ${rd.backout} backout</span></div>
+          <div class="tracker-region-stats"><span style="color:var(--success)">${rpct}% deployed</span><span>${rd.notYet} pending · ${rd.inactive} inactive</span></div>
         </div>`;
       }).join('')}
     </div>
@@ -2065,12 +2112,13 @@ function renderTracker(){
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
-          <thead><tr><th class="no-sort">Store</th><th class="no-sort">Store ID</th><th class="no-sort">Region</th><th class="no-sort">Total</th><th class="no-sort">Deployed</th><th class="no-sort">Pending</th><th class="no-sort">Backout</th><th class="no-sort">Progress</th></tr></thead>
+          <thead><tr><th class="no-sort">Store</th><th class="no-sort">Store ID</th><th class="no-sort">Region</th><th class="no-sort">Total</th><th class="no-sort">Deployed</th><th class="no-sort">Pending</th><th class="no-sort">Inactive</th><th class="no-sort">Progress</th></tr></thead>
           <tbody>
             ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
             :storeList.map(st=>{
-              const sp=st.total?Math.round(st.deployed/st.total*100):0;
-              return`<tr><td><div class="td-name">${st.name}</div></td><td><span class="td-id">${st.storeId||'—'}</span></td><td style="color:var(--text2)">${st.region||'—'}</td><td style="font-weight:700">${st.total}</td><td><span style="color:var(--success);font-weight:700">${st.deployed}</span></td><td><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td><td><span style="color:var(--danger);font-weight:700">${st.backout}</span></td><td style="min-width:120px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td></tr>`;
+              const activeTotal=st.deployed+st.notYet;
+              const sp=activeTotal?Math.round(st.deployed/activeTotal*100):0;
+              return`<tr><td><div class="td-name">${st.name}</div></td><td><span class="td-id">${st.storeId||'—'}</span></td><td style="color:var(--text2)">${st.region||'—'}</td><td style="font-weight:700">${st.total}</td><td><span style="color:var(--success);font-weight:700">${st.deployed}</span></td><td><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td><td><span style="color:var(--text3);font-weight:700">${st.inactive}</span></td><td style="min-width:120px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td></tr>`;
             }).join('')}
           </tbody>
         </table>
@@ -2087,7 +2135,7 @@ function renderEmployeeTable(type){
   if(filterStatus){
     label=filterStatus+' Employees';
   } else if(missingFieldFilter){
-    const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    const labels={notDeployed:'Not Deployed (Active)',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   } else {
     label=isActive?'Active Employees':'Inactive Employees';
@@ -2124,9 +2172,17 @@ function renderEmployeeTable(type){
           <option value="">All Regions</option>
           ${REGIONS.map(r=>`<option value="${r}" ${filterRegion===r?'selected':''}>${r}</option>`).join('')}
         </select>
+        <!-- FIX 9: Employment Status filter in table filter bar -->
+        <select onchange="filterEmpStatus=this.value;onFilterChange()">
+          <option value="">All Emp. Status</option>
+          ${STATUSES.map(st=>`<option value="${st}" ${filterEmpStatus===st?'selected':''}>${st}</option>`).join('')}
+        </select>
+        <!-- FIX 10: Deployment Status filter — only 3 valid options -->
         <select onchange="filterDeployStatus=this.value;onFilterChange()">
           <option value="">All Deploy Status</option>
-          ${['DEPLOYED','NOT YET DEPLOYED','BACKOUT','-'].map(s=>`<option value="${s}" ${filterDeployStatus===s?'selected':''}>${s}</option>`).join('')}
+          <option value="DEPLOYED" ${filterDeployStatus==='DEPLOYED'?'selected':''}>Deployed</option>
+          <option value="NOT YET DEPLOYED" ${filterDeployStatus==='NOT YET DEPLOYED'?'selected':''}>Not Yet Deployed</option>
+          <option value="-" ${filterDeployStatus==='-'?'selected':''}>— (Inactive)</option>
         </select>
         <select onchange="filterQR=this.value;onFilterChange()">
           <option value="">All QR</option>
@@ -2182,10 +2238,12 @@ function renderTableRows(type){
   if(cnt)cnt.textContent=total+' records';
   const tbody=document.getElementById('emp-tbody');
   if(!tbody)return;
+
+  // FIX 11: Added employmentStatus renderer — shows styled badge same as status
   const colRender={
     fullName:e=>`<td><div class="td-name">${e.fullName||((e.firstName||'')+' '+(e.lastName||'')).trim()||'—'}</div><div class="td-sub">${e.email||''}</div></td>`,
     infinixId:e=>`<td><span class="td-id">${e.infinixId}</span></td>`,
-    status:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
+    employmentStatus:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
     deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>`,
     deploymentStatus:e=>`<td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>`,
     qrStatus:e=>`<td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>`,
@@ -2195,6 +2253,7 @@ function renderTableRows(type){
     rssName:e=>`<td style="color:var(--text2)">${e.rssName||'—'}</td>`,
     contractStatus:e=>`<td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>`,
   };
+
   if(!page.length){
     tbody.innerHTML=`<tr><td colspan="20"><div class="empty-state"><div class="ei">—</div><p>No employees found</p></div></td></tr>`;
   }else{
@@ -2282,7 +2341,7 @@ function doBulkStatusChange(){
   if(!newStatus||selectedIds.size===0)return;
   const ids=[...selectedIds];
   document.getElementById('confirm-title').textContent='Bulk Status Update';
-  document.getElementById('confirm-msg').textContent=`Change ${ids.length} employee(s) status to "${newStatus}"? Employees will be automatically moved to the correct sheet.`;
+  document.getElementById('confirm-msg').textContent=`Change ${ids.length} employee(s) status to "${newStatus}"? Employees will be automatically moved to the correct sheet.${INACTIVE_STATUSES.has(newStatus)?' Deployment Status will be set to "—" for inactive employees.':''}`;
   document.getElementById('confirm-ok').textContent='Update';
   document.getElementById('confirm-ok').onclick=()=>{closeConfirm();apiBulkUpdateStatus(ids,newStatus);};
   document.getElementById('confirm-overlay').classList.add('open');
@@ -2302,7 +2361,6 @@ function doBulkDelete(){
     showLoading(false);
     if(ok>0)toast(`Deleted ${ok} employee(s)`,'success');
     if(fail>0)toast(`${fail} deletion(s) failed`,'error');
-    // FIX 9: Close detail panel if the viewed employee was deleted
     if(detailEmpId&&ids.includes(detailEmpId))closeDetailPanel();
     selectedIds.clear();await loadData();
   };
@@ -2315,7 +2373,6 @@ function doBulkDelete(){
 function openDetailPanel(id){
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   detailEmpId=id;
-  // FIX 10: Robust fullName display
   const displayName=emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim()||emp.infinixId;
   document.getElementById('dp-title').textContent=displayName;
   document.getElementById('dp-body').innerHTML=buildDetailHTML(emp);
@@ -2348,7 +2405,6 @@ function buildDetailHTML(e){
       else if(diff>0&&diff<=7)bdayNote=`<div style="background:rgba(136,144,99,0.08);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--moss-green);margin-bottom:10px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
     }
   }
-  // Sheet placement warning
   const isWrongSheet=_reconcilePending.some(p=>p.emp.infinixId===e.infinixId);
   const sheetWarn=isWrongSheet?`<div style="background:rgba(196,122,122,0.07);border:1px solid rgba(196,122,122,0.22);border-radius:8px;padding:8px 12px;font-size:11.5px;color:var(--danger);margin-bottom:10px;display:flex;align-items:center;gap:8px">
     ⚠ This employee is in the wrong sheet. <button class="btn btn-warn btn-sm" style="margin-left:auto" onclick="openReconcileModal()">Fix</button>
@@ -2392,7 +2448,7 @@ function buildDetailHTML(e){
       <div class="detail-section-title">Key Info</div>
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
       ${row('Full Name',`<b>${displayName}</b>`)}
-      ${row('Status',badge(e.status))}
+      ${row('Employment Status',badge(e.status))}
       ${row('Sheet',`<span style="font-size:11px;color:var(--text3)">${e._sheet||'—'}</span>`)}
       ${row('QR Status',badge(e.qrStatus,(e.qrStatus||'').replace(/ /g,'-')))}
       ${row('Deploy Status',badge(e.deploymentStatus,(e.deploymentStatus||'-').replace(/ /g,'-')))}
@@ -2489,29 +2545,34 @@ async function renderLog(){
 }
 
 // ============================================================
-// FORM
+// FORM — FIX 12: Employment Status moved to between Personal and Store sections
+// FIX 13: Deployment Status — only 3 valid options, auto-sets on emp status change
 // ============================================================
 function getFormHTML(emp){
   const v=k=>emp?(emp[k]||''):'';
   const toDateInput=val=>{if(!val)return'';const d=new Date(val);if(isNaN(d))return'';return d.toISOString().split('T')[0];};
   const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${String(v(k)).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
   const dateInp=k=>`<input id="f_${k}" type="date" value="${toDateInput(v(k))}">`;
-  const sel=(k,opts)=>`<select id="f_${k}">${opts.map(o=>`<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
+  const sel=(k,opts,extra)=>`<select id="f_${k}" ${extra||''}>${opts.map(o=>typeof o==='object'?`<option value="${o.v}" ${v(k)===o.v?'selected':''}>${o.l}</option>`:`<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
   const displayName=emp?(emp.fullName||((emp.firstName||'')+' '+(emp.lastName||'')).trim()||''):'';
+
+  // Determine if deploy status should be locked (inactive employee)
+  const currentStatus=v('status')||'Active';
+  const isInactiveStatus=INACTIVE_STATUSES.has(currentStatus);
+  const currentDeployStatus=isInactiveStatus?'-':(v('deploymentStatus')||'NOT YET DEPLOYED');
+
   return `
   <div class="section-label key-section">Key Fields</div>
   <div class="form-grid">
-    <div class="field req"><label>Full Name (Auto)</label>
-      <div class="fullname-preview" id="fullname-preview">${displayName||'— Enter First & Last Name —'}</div>
+    <div class="field req"><label>Full Name (Auto-generated)</label>
+      <div class="fullname-preview" id="fullname-preview">${displayName||'— Enter First & Last Name below —'}</div>
     </div>
     <div class="field req"><label>Infinix Employee ID</label>
       ${inp('infinixId','text','1700XXXX',emp?'readonly style="opacity:.5"':'oninput="validateInfinixId();checkDuplicate()"')}
       <div class="field-hint" id="hint-infinixId">Must start with 1700</div>
       <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system. Check before saving.</div>
     </div>
-    <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
-    <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',['NOT YET DEPLOYED','DEPLOYED','BACKOUT','-'])}</div>
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
   </div>
 
@@ -2521,6 +2582,26 @@ function getFormHTML(emp){
     <div class="field req"><label>Last Name</label>${inp('lastName','text','Dela Cruz','oninput="updateFullName()"')}</div>
     <div class="field"><label>Middle Name</label>${inp('middleName','text','Santos')}</div>
   </div>
+
+  <!-- FIX: Employment Status placed between Middle Name and Store Assignment -->
+  <div class="section-label" style="margin-top:14px">Employment Status <span style="font-size:8px;color:var(--danger);opacity:0.9;font-style:italic">Required — controls which sheet this employee is stored in</span></div>
+  <div class="form-grid" style="margin-bottom:4px">
+    <div class="field req emp-status-field">
+      <label>Employment Status</label>
+      ${sel('status', STATUSES, 'onchange="onEmpStatusChange()"')}
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">Active → Active sheet &nbsp;|&nbsp; Others → Inactive sheet</div>
+    </div>
+    <div class="field">
+      <label>Deployment Status <span style="font-size:9px;color:var(--text3);text-transform:none;letter-spacing:0">(auto-sets to "—" for inactive)</span></label>
+      <select id="f_deploymentStatus" style="${isInactiveStatus?'opacity:0.6':''}" ${isInactiveStatus?'':''}onchange="">
+        <option value="NOT YET DEPLOYED" ${currentDeployStatus==='NOT YET DEPLOYED'?'selected':''}>Not Yet Deployed</option>
+        <option value="DEPLOYED" ${currentDeployStatus==='DEPLOYED'?'selected':''}>Deployed</option>
+        <option value="-" ${currentDeployStatus==='-'?'selected':''}>— (Inactive / Not Applicable)</option>
+      </select>
+      ${isInactiveStatus?`<div style="font-size:10px;color:var(--text3);margin-top:3px">Locked to "—" because employee is inactive</div>`:''}
+    </div>
+  </div>
+
   <div class="form-grid">
     <div class="field"><label>Date of Birth</label>${dateInp('dob')}</div>
     <div class="field"><label>Gender</label>${sel('gender',['','Male','Female','N/A'])}</div>
@@ -2530,7 +2611,7 @@ function getFormHTML(emp){
     <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
-  <div class="section-label">Store & Deployment</div>
+  <div class="section-label">Store & Assignment</div>
   <div class="form-grid">
     <div class="field"><label>Region</label>${sel('region',['',...REGIONS])}</div>
     <div class="field">
@@ -2580,7 +2661,7 @@ function updateFullName(){
   const fn=(document.getElementById('f_firstName')?.value||'').trim();
   const ln=(document.getElementById('f_lastName')?.value||'').trim();
   const p=document.getElementById('fullname-preview');
-  if(p)p.textContent=(fn+' '+ln).trim()||'— Enter First & Last Name —';
+  if(p)p.textContent=(fn+' '+ln).trim()||'— Enter First & Last Name below —';
 }
 function validateInfinixId(){
   const val=(document.getElementById('f_infinixId')?.value||'').trim();
@@ -2605,10 +2686,15 @@ function validateRssId(){
 }
 function gatherForm(){
   const f=k=>(document.getElementById('f_'+k)?.value||'').trim();
+  const empStatus=f('status');
+  // FIX: Enforce deployment status rule — inactive employees always get "-"
+  let deployStatus=f('deploymentStatus');
+  if(INACTIVE_STATUSES.has(empStatus))deployStatus='-';
+  if(!DEPLOY_STATUSES.includes(deployStatus))deployStatus='-';
   return{
     firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),
-    infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),
-    deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),
+    infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:empStatus,
+    deploymentDate:f('deploymentDate'),deploymentStatus:deployStatus,
     region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),
     rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),
     dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),
