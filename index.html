@@ -1158,7 +1158,6 @@ let colDropdownOpen=false;
 let missingFieldFilter=null;
 // Tracker filters
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
-let _autoSortingSheets=false;
 
 // ============================================================
 // THEME
@@ -1407,23 +1406,10 @@ async function loadData(){
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
     ]);
-    const activeRows=aRes.result.values||[];
-    const inactiveRows=iRes.result.values||[];
-
-    // Auto-sort rows into the correct sheet.
-    // Active sheet should contain Active only. Floating/Resigned/AWOL/Terminated belong in Inactive.
-    if(!_autoSortingSheets){
-      const moved=await autoSortSheetPlacement(activeRows,inactiveRows);
-      if(moved>0){
-        toast(`Moved ${moved} row(s) to the correct sheet`,'success');
-        return await loadData();
-      }
-    }
-
     employees=[];
     // NEW FORMAT: Infinix Employee ID is Column B, index 1. Do not filter by old Column E.
-    activeRows.forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
-    inactiveRows.forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
+    (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
+    (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
@@ -1463,68 +1449,6 @@ async function refreshData(){
   storeCacheLoaded=false;
   await Promise.all([loadData(),loadStoreDetails()]);
   setTimeout(()=>btn.classList.remove('spinning'),500);
-}
-
-
-async function autoSortSheetPlacement(activeRows,inactiveRows){
-  const moves=[];
-
-  activeRows.forEach((row,i)=>{
-    const obj=rowToObj(row);
-    const id=String(obj.infinixId||'').trim();
-    const status=String(obj.status||'').trim();
-    if(id && status && status!=='Active'){
-      moves.push({from:ACTIVE_SHEET,to:INACTIVE_SHEET,rowNumber:i+2,row:normalizeSheetRow(row)});
-    }
-  });
-
-  inactiveRows.forEach((row,i)=>{
-    const obj=rowToObj(row);
-    const id=String(obj.infinixId||'').trim();
-    const status=String(obj.status||'').trim();
-    if(id && status==='Active'){
-      moves.push({from:INACTIVE_SHEET,to:ACTIVE_SHEET,rowNumber:i+2,row:normalizeSheetRow(row)});
-    }
-  });
-
-  if(!moves.length)return 0;
-  _autoSortingSheets=true;
-  try{
-    const byTarget=moves.reduce((acc,m)=>{(acc[m.to] ||= []).push(m.row);return acc;},{});
-    for(const [sheet,rows] of Object.entries(byTarget)){
-      await gapi.client.sheets.spreadsheets.values.append({
-        spreadsheetId:SHEET_ID,
-        range:`${sheet}!A:${SHEET_LAST_COL}`,
-        valueInputOption:'RAW',
-        insertDataOption:'INSERT_ROWS',
-        resource:{values:rows}
-      });
-    }
-
-    const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
-    const sheetIds={};
-    (sheetMeta.result.sheets||[]).forEach(s=>{sheetIds[s.properties.title]=s.properties.sheetId;});
-    const deleteRequests=[];
-    for(const sheet of [ACTIVE_SHEET,INACTIVE_SHEET]){
-      const rows=moves.filter(m=>m.from===sheet).map(m=>m.rowNumber).sort((a,b)=>b-a);
-      rows.forEach(rowNumber=>{
-        if(sheetIds[sheet]!==undefined){
-          deleteRequests.push({deleteDimension:{range:{sheetId:sheetIds[sheet],dimension:'ROWS',startIndex:rowNumber-1,endIndex:rowNumber}}});
-        }
-      });
-    }
-    if(deleteRequests.length){
-      await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:deleteRequests}});
-    }
-    return moves.length;
-  }finally{
-    _autoSortingSheets=false;
-  }
-}
-function normalizeSheetRow(row){
-  const out=[...row];
-  while(out.length<HEADERS.length)out.push('');
-  return out.slice(0,HEADERS.length);
 }
 
 // ============================================================
@@ -1656,30 +1580,42 @@ async function apiAddEmployee(data){
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
 async function apiUpdateEmployee(data){
-  const emp=employees.find(e=>String(e.infinixId)===String(data.infinixId));
+  const emp=employees.find(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(!emp)return{ok:false,msg:'Employee not found.'};
-  const oldStatus=emp.status,newStatus=data.status;
-  const oldSheet=emp._sheet||getTargetSheet(oldStatus),newSheet=getTargetSheet(newStatus);
+
+  const oldStatus=emp.status||'Active';
+  const newStatus=data.status||'Active';
+
+  // IMPORTANT: use the employee's ACTUAL current sheet, not guessed from status.
+  // This fixes old rows that are still in Active even if their status is Resigned/AWOL/etc.
+  const oldSheet=emp._sheet||getTargetSheet(oldStatus);
+  const newSheet=getTargetSheet(newStatus);
+
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
-  if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
+  if(row<0)return{ok:false,msg:`Could not find employee row in ${oldSheet} sheet.`};
+
   if(oldSheet!==newSheet){
+    // Move ONE employee only when you manually save/update their status.
+    // Active => Active sheet. Floating/Resigned/AWOL/Terminated => Inactive sheet.
     await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:${SHEET_LAST_COL}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
     if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
-    await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
+    await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed / Moved',oldStatus,newStatus);
   }else{
     await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:${SHEET_LAST_COL}${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
-    await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
+    await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,newStatus);
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
 }
 async function apiDeleteEmployee(infinixId){
-  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  const emp=employees.find(e=>String(e.infinixId).trim()===String(infinixId).trim());
   if(!emp)return{ok:false,msg:'Employee not found.'};
+
+  // Delete from the employee's ACTUAL current sheet, not guessed from status.
   const sheet=emp._sheet||getTargetSheet(emp.status);
   const row=await findEmployeeRowInSheet(infinixId,sheet);
-  if(row<0)return{ok:false,msg:'Could not find employee row.'};
+  if(row<0)return{ok:false,msg:`Could not find employee row in ${sheet} sheet.`};
   const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
   const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===sheet);
   if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
