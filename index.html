@@ -381,8 +381,8 @@ body::after {
    DASHBOARD
    ============================================================ */
 .dash-kf-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
-@media (max-width: 1380px) { .dash-kf-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(1, minmax(0,1fr)); } }
+@media (max-width: 1280px) { .dash-kf-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 .kf-card { padding: 20px 22px; }
 .kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
 .kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
@@ -1846,7 +1846,8 @@ function filteredEmployees(type){
   if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
-  if(missingFieldFilter==='notDeployed')list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
+  if(missingFieldFilter==='deployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED');
+  if(missingFieldFilter==='notDeployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
   else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
@@ -2008,8 +2009,8 @@ function renderDashboard(){
   const activeTotal=activeEmployees.length;
   // Pending actions and completion cards count ACTIVE promoters only.
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
-  const deployed=activeEmployees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
-  const notDeployed=activeEmployees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
+  const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
+  const notDeployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
@@ -2042,13 +2043,13 @@ function renderDashboard(){
         <div class="kf-sub">Active records only</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:100%"></div></div>
       </div>
-      <div class="kf-card glass-card">
+      <div class="kf-card glass-card" onclick="drillDown('deployed')" title="Click to see deployed active promoters" style="cursor:pointer">
         <div class="kf-label-top">Deployed</div>
         <div class="kf-num">${deployed}</div>
         <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
+      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" title="Click to see not yet deployed active promoters" style="cursor:pointer">
         <div class="kf-label-top">Not Yet Deployed</div>
         <div class="kf-num">${notDeployed}</div>
         <div class="kf-sub">${activeTotal?Math.round(notDeployed/activeTotal*100):0}% of active</div>
@@ -2081,7 +2082,7 @@ function renderDashboard(){
     <!-- PENDING ACTIONS -->
     <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Active promoters only · click a pill to filter</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Yet Deployed</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
       ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
       ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Active promoters with contract not yet sent"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
       ${missingRequirements>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingRequirements')" title="Active promoters with incomplete requirements checklist"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingRequirements}</span><span>Requirements Incomplete</span></div>`:''}
@@ -2303,7 +2304,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    const labels={deployed:'Deployed',notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
