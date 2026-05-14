@@ -63,7 +63,6 @@
 
   --moss-green:     #D7FEFA;
 
-  /* FIX 1: Add missing CSS variables --tan, --bone, --kombu-green */
   --tan:            #c9b87a;
   --bone:           #e5d7c4;
   --kombu-green:    #354024;
@@ -113,7 +112,6 @@
 
   --moss-green:     #0a8a85;
 
-  /* FIX 1: Add missing CSS variables --tan, --bone, --kombu-green (light variants) */
   --tan:            #7a6020;
   --bone:           #5a4a30;
   --kombu-green:    #c8dac8;
@@ -187,22 +185,38 @@ body::after {
   transition: background .3s;
 }
 
+/* FIX: Sidebar brand area — clean, fixed height, no overflow */
 .brand {
-  padding: 22px 16px 16px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .brand-logo {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
 }
+
+/* FIX: Single definitive rule for sidebar logo — 40px, clean */
 .brand-logo img {
-  height: 52px; width: auto; object-fit: contain;
-  filter: brightness(0) invert(1); opacity: 0.92;
+  height: 40px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
 }
-[data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.85; }
+[data-theme="light"] .brand-logo img {
+  filter: brightness(0);
+  opacity: 0.85;
+}
+
 .brand-sub {
   font-size: 9px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
-  margin-top: 10px; font-weight: 700; opacity: 0.7;
+  margin-top: 8px; font-weight: 700; opacity: 0.7;
 }
 
 .nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
@@ -276,10 +290,10 @@ body::after {
 }
 .user-avatar {
   width: 26px; height: 26px; border-radius: 50%;
-  background: var(--kombu-green);  /* FIX 1: now resolves correctly */
+  background: var(--kombu-green);
   border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; color: var(--bone); flex-shrink: 0; font-weight: 800; /* FIX 1: --bone resolves correctly */
+  font-size: 10px; color: var(--bone); flex-shrink: 0; font-weight: 800;
   font-family: 'Poppins', sans-serif;
 }
 .user-name { font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
@@ -540,7 +554,7 @@ body::after {
 }
 .recent-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 0; border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   cursor: pointer; transition: background .12s; border-radius: 6px; padding: 7px 8px;
 }
 .recent-row:last-child { border-bottom: none; }
@@ -695,7 +709,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
 .td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
 
-/* BADGES — FIX 2: removed .b-dash (dead code), added .b-none for '-' status */
+/* BADGES */
 .badge {
   display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 20px;
@@ -715,7 +729,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .b-NOT-SCANNED { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
 .b-SENT        { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
 .b-NOT-YET-SENT{ background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
-/* FIX 2: safe fallback for '-' or empty status — replaces invalid .b-- */
 .b-none        { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
 
 /* ============================================================
@@ -982,7 +995,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .log-time { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
 
 /* ============================================================
-   LOGIN
+   LOGIN SCREEN
    ============================================================ */
 .login-screen {
   position: fixed; inset: 0; background: var(--bg-base);
@@ -1009,10 +1022,27 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-.login-logo { height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
-.login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.92; }
-.brand-logo img { height: 88px; max-width: 185px; }
-.login-logo { height: 118px; }
+/* FIX: Login logo — single clean definition, properly sized for the card */
+.login-logo {
+  height: 96px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-logo img {
+  height: 100%;
+  width: auto;
+  max-width: 220px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+[data-theme="light"] .login-logo img {
+  filter: brightness(0) sepia(1) hue-rotate(60deg) saturate(0.6);
+  opacity: 0.85;
+}
 
 .req-check-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
 .req-check { display:flex; align-items:flex-start; gap:8px; padding:9px 10px; border:1px solid var(--border); background:var(--bg-frosted); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text2); line-height:1.35; }
@@ -1021,8 +1051,11 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .req-progress-bar { width:54px; height:5px; background:rgba(136,144,99,0.14); border-radius:99px; overflow:hidden; }
 .req-progress-fill { height:100%; background:var(--moss-green); border-radius:99px; }
 
-[data-theme="light"] .login-logo img { filter: brightness(0) sepia(1) hue-rotate(60deg) saturate(0.6); opacity: 0.85; }
-.login-title { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
+.login-title {
+  font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700;
+  margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--moss-green); opacity: 0.8;
+}
 .login-sub { font-size: 12px; color: var(--text3); margin-bottom: 30px; line-height: 1.7; }
 .btn-google {
   width: 100%; padding: 11px 20px; border-radius: 10px; border: 1px solid var(--border2);
@@ -1112,7 +1145,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Poppins',sans-serif;font-size:22px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:18px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
   </div>
@@ -1266,9 +1299,6 @@ const SHEET_LAST_COL = 'AQ';
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
 const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
 
-// FIX 3 & 9: Unified requirement fields list.
-// requirementsComplete and reqDoneCount now use the same REQUIRED_FIELDS (9 items, COE excluded as optional).
-// REQUIREMENT_FIELDS (all 10) is used for display in detail panel only.
 const REQUIREMENT_FIELDS = [
   ['medicalCert','Medical Certificate (CBC, X-ray, Fecalysis, Urinalysis, Drug Test and PT)'],
   ['govForms','SSS, Pag-IBIG, PhilHealth and TIN (Number/ID or Government forms)'],
@@ -1281,7 +1311,7 @@ const REQUIREMENT_FIELDS = [
   ['preEmploymentForms','Pre-Employment Forms'],
   ['jobOffer','Job Offer']
 ];
-// FIX 3: required fields excluding optional COE — used for completion calculation
+// Required fields excluding optional COE — used for completion calculation
 const REQUIRED_FIELDS = ['medicalCert','govForms','clearance','idPicture','validIdCopy','birthCert','diplomaTor','preEmploymentForms','jobOffer'];
 
 const TABLE_COLUMNS = [
@@ -1321,7 +1351,7 @@ let missingFieldFilter=null;
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
 
 // ============================================================
-// FIX 5: XSS-safe escape helper
+// XSS-safe escape helper
 // ============================================================
 function esc(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -1856,13 +1886,11 @@ function updateSortHeaders(){
   });
 }
 
-// FIX 4: filteredEmployees now correctly handles filterStatus alongside active/inactive separation
 function filteredEmployees(type){
   const isActive=type==='active';
   let list;
 
   if(filterStatus){
-    // FIX 4: when filterStatus is set, filter the right base set (active/inactive) then apply status filter
     if(filterStatus==='Active'){
       list=employees.filter(e=>normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT');
     } else {
@@ -1875,7 +1903,6 @@ function filteredEmployees(type){
     );
   }
 
-  // Missing field filters — active promoters only
   if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
     if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && isNotYetDeployedColL(e.deploymentStatusColL));
@@ -1953,11 +1980,9 @@ function getBirthdaysThisMonth(){
 function isMissing(v){return String(v||'').trim()==='';}
 function isYesField(v){return v===true || yes(v);}
 
-// FIX 3: requirementsComplete uses REQUIRED_FIELDS (9, excludes COE)
 function requirementsComplete(e){
   return REQUIRED_FIELDS.every(k=>isYesField(e[k]));
 }
-// FIX 3: reqDoneCount uses REQUIRED_FIELDS (9) too for consistent % display
 function reqDoneCount(e){ return REQUIRED_FIELDS.filter(k=>isYesField(e[k])).length; }
 function reqProgressHTML(e){
   const done=reqDoneCount(e), total=REQUIRED_FIELDS.length, pct=Math.round((done/total)*100);
@@ -1975,7 +2000,7 @@ function getStats(){
   return s;
 }
 
-// FIX 2: Safe badge helper — returns .b-none for '-' or empty to avoid invalid .b-- class
+// Safe badge helper — returns .b-none for '-' or empty
 function badgeHTML(val, cls){
   if(!val||val==='-') return `<span class="badge b-none">—</span>`;
   const safeClass=cls||(val.replace(/ /g,'-'));
@@ -1996,7 +2021,6 @@ function renderSidebar(){
 function filterByStatus(s){
   filterStatus=filterStatus===s?null:s;
   missingFieldFilter=null;
-  // FIX 4: correctly set view based on which status was clicked
   currentView=(s==='Active')?'active':'inactive';
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
@@ -2045,7 +2069,7 @@ function dashSearch(q){
 }
 
 // ============================================================
-// RING SVG HELPER (for dashboard completion rings)
+// RING SVG HELPER
 // ============================================================
 function ringHTML(pct, color, size=48, sw=5){
   const r=(size-sw)/2;
@@ -2060,7 +2084,7 @@ function ringHTML(pct, color, size=48, sw=5){
 }
 
 // ============================================================
-// DASHBOARD — REDESIGNED
+// DASHBOARD
 // ============================================================
 function renderDashboard(){
   document.getElementById('topbar-title').textContent='Dashboard';
@@ -2094,7 +2118,6 @@ function renderDashboard(){
   const contractPct=activeTotal?Math.round(contractSent/activeTotal*100):0;
   const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
 
-  // pending items count
   const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
@@ -2108,7 +2131,6 @@ function renderDashboard(){
 
     <!-- HERO KPI ROW -->
     <div class="dash-hero">
-
       <div class="dash-hero-card glass-card">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
         <div class="dhc-label">Total Workforce</div>
@@ -2116,7 +2138,6 @@ function renderDashboard(){
         <div class="dhc-sub">All employment records</div>
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:#4ecb71"></div></div>
       </div>
-
       <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
         <div class="dhc-label">Deployed</div>
@@ -2124,7 +2145,6 @@ function renderDashboard(){
         <div class="dhc-sub">${deployPct}% of active promoters</div>
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:#4ecb71"></div></div>
       </div>
-
       <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#f5c842,transparent)"></div>
         <div class="dhc-label">Pending Deploy</div>
@@ -2132,7 +2152,6 @@ function renderDashboard(){
         <div class="dhc-sub">Active sheet · Col L</div>
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:#f5c842"></div></div>
       </div>
-
       <div class="dash-hero-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--teal-deep),transparent)"></div>
         <div class="dhc-label">QR Scanned</div>
@@ -2140,7 +2159,6 @@ function renderDashboard(){
         <div class="dhc-sub">${scanPct}% of active promoters</div>
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${scanPct}%;background:var(--teal-deep)"></div></div>
       </div>
-
       <div class="dash-hero-card glass-card" onclick="drillDown('missingRequirements')" style="cursor:pointer">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--moss-green),transparent)"></div>
         <div class="dhc-label">Req. Complete</div>
@@ -2148,7 +2166,6 @@ function renderDashboard(){
         <div class="dhc-sub">${reqPct}% of active promoters</div>
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${reqPct}%;background:var(--moss-green)"></div></div>
       </div>
-
     </div>
 
     <!-- STATUS CARDS -->
@@ -2199,77 +2216,20 @@ function renderDashboard(){
         ${pendingCount>0?`<span style="background:var(--danger-bg);border:1px solid rgba(224,92,92,0.3);color:var(--danger);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">${pendingCount} issue${pendingCount!==1?'s':''}</span>`:`<span style="background:var(--success-bg);border:1px solid rgba(78,203,113,0.3);color:var(--success);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">All clear</span>`}
       </div>
       <div class="pending-grid">
-        ${notDeployed>0?`
-        <div class="pending-card glass-card" onclick="drillDown('notDeployed')">
-          <div class="pc-icon" style="background:rgba(245,200,66,0.12)">🚀</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:#f5c842">${notDeployed}</div>
-            <div class="pc-label">Not Yet Deployed</div>
-          </div>
-        </div>`:''}
-        ${notScanned>0?`
-        <div class="pending-card glass-card" onclick="drillDown('notScanned')">
-          <div class="pc-icon" style="background:rgba(46,196,190,0.12)">📱</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div>
-            <div class="pc-label">QR Not Scanned</div>
-          </div>
-        </div>`:''}
-        ${contractPending>0?`
-        <div class="pending-card glass-card" onclick="drillDown('contractPending')">
-          <div class="pc-icon" style="background:rgba(245,200,66,0.12)">📄</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:#f5c842">${contractPending}</div>
-            <div class="pc-label">Contract Pending</div>
-          </div>
-        </div>`:''}
-        ${missingRequirements>0?`
-        <div class="pending-card glass-card" onclick="drillDown('missingRequirements')">
-          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">📋</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:var(--danger)">${missingRequirements}</div>
-            <div class="pc-label">Reqs Incomplete</div>
-          </div>
-        </div>`:''}
-        ${missingGovIds>0?`
-        <div class="pending-card glass-card" onclick="drillDown('missingGovIds')">
-          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:var(--danger)">${missingGovIds}</div>
-            <div class="pc-label">Missing Gov IDs</div>
-          </div>
-        </div>`:''}
-        ${missingBank>0?`
-        <div class="pending-card glass-card" onclick="drillDown('missingBank')">
-          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏦</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:var(--danger)">${missingBank}</div>
-            <div class="pc-label">Missing Bank Acct</div>
-          </div>
-        </div>`:''}
-        ${missingMobile>0?`
-        <div class="pending-card glass-card" onclick="drillDown('missingMobile')">
-          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">📞</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:var(--danger)">${missingMobile}</div>
-            <div class="pc-label">Missing Mobile</div>
-          </div>
-        </div>`:''}
-        ${pendingCount===0?`
-        <div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1">
-          <div class="pc-icon" style="background:var(--success-bg)">✅</div>
-          <div class="pc-body">
-            <div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div>
-            <div class="pc-label">All active records are complete</div>
-          </div>
-        </div>`:''}
+        ${notDeployed>0?`<div class="pending-card glass-card" onclick="drillDown('notDeployed')"><div class="pc-icon" style="background:rgba(245,200,66,0.12)">🚀</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${notDeployed}</div><div class="pc-label">Not Yet Deployed</div></div></div>`:''}
+        ${notScanned>0?`<div class="pending-card glass-card" onclick="drillDown('notScanned')"><div class="pc-icon" style="background:rgba(46,196,190,0.12)">📱</div><div class="pc-body"><div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div><div class="pc-label">QR Not Scanned</div></div></div>`:''}
+        ${contractPending>0?`<div class="pending-card glass-card" onclick="drillDown('contractPending')"><div class="pc-icon" style="background:rgba(245,200,66,0.12)">📄</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${contractPending}</div><div class="pc-label">Contract Pending</div></div></div>`:''}
+        ${missingRequirements>0?`<div class="pending-card glass-card" onclick="drillDown('missingRequirements')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📋</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingRequirements}</div><div class="pc-label">Reqs Incomplete</div></div></div>`:''}
+        ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
+        ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏦</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
+        ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📞</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
+        ${pendingCount===0?`<div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1"><div class="pc-icon" style="background:var(--success-bg)">✅</div><div class="pc-body"><div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div><div class="pc-label">All active records are complete</div></div></div>`:''}
       </div>
     </div>
 
     <!-- CHARTS + SIDE PANEL -->
     <div class="dash-grid">
       <div>
-        <!-- CHARTS ROW -->
         <div class="charts-row">
           <div class="chart-card glass-card">
             <div class="chart-title">Status Breakdown</div>
@@ -2281,11 +2241,7 @@ function renderDashboard(){
           </div>
         </div>
       </div>
-
-      <!-- RIGHT COLUMN -->
       <div class="dash-right">
-
-        <!-- RECENTLY UPDATED -->
         <div class="recent-card glass-card">
           <h4>Recently Updated</h4>
           ${recent.map(e=>{
@@ -2297,8 +2253,6 @@ function renderDashboard(){
             </div>`;
           }).join('')||`<div style="font-size:12px;color:var(--text3);padding:8px 0">No recent updates.</div>`}
         </div>
-
-        <!-- BIRTHDAYS -->
         <div class="birthday-card glass-card">
           <h4>🎂 Birthdays This Month</h4>
           ${birthdays.length===0
@@ -2314,64 +2268,30 @@ function renderDashboard(){
               </div>`;
             }).join('')}
         </div>
-
       </div>
     </div>`;
 
-  // Render charts after DOM is ready
   setTimeout(()=>{
     const isDark=document.documentElement.getAttribute('data-theme')!=='light';
     Chart.defaults.color=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
     Chart.defaults.font.family='Poppins';
-
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
       _charts.status=new Chart(ctxS,{
         type:'doughnut',
-        data:{
-          labels:STATUSES,
-          datasets:[{
-            data:STATUSES.map(st=>s[st]||0),
-            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),
-            borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
-            borderWidth:1.5,hoverOffset:5
-          }]
-        },
-        options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{
-            legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8}},
-            tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}
-          }
-        }
+        data:{labels:STATUSES,datasets:[{data:STATUSES.map(st=>s[st]||0),backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),borderColor:STATUSES.map(st=>STATUS_COLORS[st]),borderWidth:1.5,hoverOffset:5}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}}}
       });
     }
-
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
       const rEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]).slice(0,7);
       _charts.region=new Chart(ctxR,{
         type:'bar',
-        data:{
-          labels:rEntries.map(([r])=>r),
-          datasets:[{
-            label:'Active',
-            data:rEntries.map(([,c])=>c),
-            backgroundColor:'rgba(46,196,190,0.18)',
-            borderColor:'rgba(46,196,190,0.7)',
-            borderWidth:1,borderRadius:6
-          }]
-        },
-        options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false}},
-          scales:{
-            x:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9}}},
-            y:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9},stepSize:1}}
-          }
-        }
+        data:{labels:rEntries.map(([r])=>r),datasets:[{label:'Active',data:rEntries.map(([,c])=>c),backgroundColor:'rgba(46,196,190,0.18)',borderColor:'rgba(46,196,190,0.7)',borderWidth:1,borderRadius:6}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9}}},y:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9},stepSize:1}}}}
       });
     }
   },80);
@@ -2738,7 +2658,6 @@ function buildDetailHTML(e){
     }
   }
 
-  // FIX 3: Profile completion uses REQUIRED_FIELDS (9 items, consistent with requirementsComplete)
   const checks = [
     { label: 'Employment Status',  done: !!e.status && e.status !== '-' },
     { label: 'Deployment Status',  done: e.deploymentStatus === 'DEPLOYED' },
@@ -2831,8 +2750,9 @@ function buildDetailHTML(e){
 
 async function loadEmployeeAudit(infinixId){
   try{
+    // FIX: Use spread copy to avoid mutating logCache when reversing
     if(!logCache){const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});logCache=r.result.values||[];}
-    const entries=logCache.filter(r=>String(r[1]||'').trim()===String(infinixId).trim()).reverse();
+    const entries=[...logCache].filter(r=>String(r[1]||'').trim()===String(infinixId).trim()).reverse();
     const el=document.getElementById('dp-audit-inner');if(!el)return;
     if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
     const colorMap={Added:'#4ecb71','Status Changed':'#f5c842',Deleted:'#e05c5c',Updated:'var(--moss-green)'};
@@ -2857,6 +2777,7 @@ async function renderLog(){
   try{
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:G`});
     logCache=r.result.values||[];
+    // FIX: Use spread copy to avoid mutating logCache
     const rows=[...logCache].reverse();
     const el=document.getElementById('log-list');
     if(!rows.length){el.innerHTML='<div class="empty-state"><div class="ei">—</div><p>No activity yet</p></div>';return;}
@@ -3029,8 +2950,6 @@ function gatherForm(){
   return data;
 }
 
-// FIX 6: validate() — Backout deployment status sets status='-' which is a valid inactive state.
-// Do NOT require statusDate/statusRemarks for Backout — only for true inactive statuses.
 function validate(data){
   let ok=true;
   ['firstName','lastName','infinixId','status'].forEach(k=>{
@@ -3049,7 +2968,7 @@ function validate(data){
   if(data.storeId&&!data.storeId.startsWith('PH0'))ok=false;
   if(data.rssId&&!data.rssId.startsWith('1700'))ok=false;
 
-  // FIX 6: Only require statusDate+statusRemarks for true inactive statuses (not Backout deployment)
+  // Only require statusDate+statusRemarks for true inactive statuses (not Backout deployment)
   const trueInactiveStatuses=['Floating','Resigned','AWOL','Terminated'];
   if(trueInactiveStatuses.includes(data.status)){
     ['statusDate','statusRemarks'].forEach(k=>{
@@ -3126,13 +3045,13 @@ async function doDelete(id){
 // ============================================================
 function toast(msg,type=''){
   const el=document.getElementById('toast');
-  el.textContent=msg; // safe: textContent not innerHTML
+  el.textContent=msg;
   el.className='toast show '+type;
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 function showLoading(v,text='Loading...'){
   const el=document.getElementById('loading');el.style.display=v?'flex':'none';
-  const t=document.getElementById('loading-text');if(t)t.textContent=text; // safe: textContent
+  const t=document.getElementById('loading-text');if(t)t.textContent=text;
 }
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetailPanel();}});
