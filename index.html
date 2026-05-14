@@ -176,7 +176,7 @@ body::after {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0;
 }
 .brand-logo img {
-  height: 88px; width: auto; object-fit: contain;
+  height: 52px; width: auto; object-fit: contain;
   filter: brightness(0) invert(1); opacity: 0.92;
 }
 [data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.85; }
@@ -873,7 +873,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-.login-logo { height: 120px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+.login-logo { height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
 .login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.92; }
 .brand-logo img { height: 88px; max-width: 185px; }
 .login-logo { height: 118px; }
@@ -1098,11 +1098,27 @@ const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a'
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
 const HEADERS = [
-  'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name','Employment Status','Store Assignment','Store ID','QR Scan Status','Deployment Date','Deployment Status','RSS Name','RSS ID','Basic Wage Rate','Address','Mobile No.','Email Address','Date of Birth','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'
+  'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name','Employment Status','Store Assignment','Store ID','QR Scan Status',
+  'Deployment Date','Deployment Status','RSS Name','RSS ID','Basic Wage Rate','Address','Mobile No.','Email Address','Date of Birth','Gender','Marital Status',
+  'SSS Number','PhilHealth Number','Pag-IBIG Number','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Pre-Employment Forms','Job Offer',
+  'Status Effective Date','Status Remarks','Last Updated','Notes','Medical Certificate','Government Numbers / IDs','NBI / Police / Barangay Clearance','2x2 ID Picture',
+  'Valid IDs','Birth Certificate','Diploma / TOR','COE from Previous Employer'
 ];
-const SHEET_LAST_COL = 'AD';
+const SHEET_LAST_COL = 'AP';
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
-const BANK_OPTIONS = ['','CTBC','Union Bank'];
+const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
+const REQUIREMENT_FIELDS = [
+  ['medicalCert','Medical Certificate (CBC, X-ray, Fecalysis, Urinalysis, Drug Test and PT)'],
+  ['govForms','SSS, Pag-IBIG, PhilHealth and TIN (Number/ID or Government forms)'],
+  ['clearance','NBI / Police Clearance / Barangay Certificate'],
+  ['idPicture','2x2 ID Picture with white background, formal attire'],
+  ['validIdCopy','Clear scanned copy of ALL Valid ID'],
+  ['birthCert','Birth Certificate'],
+  ['diplomaTor','Diploma or TOR (College)'],
+  ['previousCoe','Certificate of Employment from previous employer (if any)'],
+  ['preEmploymentForms','Pre-Employment Forms'],
+  ['jobOffer','Job Offer']
+];
 
 // Column definitions for visibility toggle
 const TABLE_COLUMNS = [
@@ -1391,8 +1407,9 @@ async function loadData(){
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
     ]);
     employees=[];
-    (aRes.result.values||[]).forEach((r,i)=>{if(String(r[1]||'').trim())employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
-    (iRes.result.values||[]).forEach((r,i)=>{if(String(r[1]||'').trim())employees.push({...rowToObj(r),_sheet:INACTIVE_SHEET,_row:i+2});});
+    // NEW FORMAT: Infinix Employee ID is Column B, index 1. Do not filter by old Column E.
+    (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
+    (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
@@ -1441,8 +1458,6 @@ function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-d
 function yes(v){ return ['YES','DONE','TRUE','✓','CHECKED','1'].includes(String(v||'').trim().toUpperCase()); }
 function yn(v){ return yes(v) ? 'YES' : ''; }
 function rowToObj(r){
-  // NEW GOOGLE SHEET FORMAT A:AD
-  // A Region | B Infinix Employee ID | C Full Name | D First Name | E Last Name | F Middle Name
   return {
     region:r[0]||'',
     infinixId:String(r[1]||''),
@@ -1472,12 +1487,24 @@ function rowToObj(r){
     bankAccount:r[25]||'',
     contractStatus:r[26]||'NOT YET SENT',
     contractSentDate:r[27]||'',
-    lastUpdated:r[28]||'',
-    notes:r[29]||''
+    preEmploymentForms:yes(r[28]),
+    jobOffer:yes(r[29]),
+    statusDate:r[30]||'',
+    statusRemarks:r[31]||'',
+    lastUpdated:r[32]||'',
+    notes:r[33]||'',
+    medicalCert:yes(r[34]),
+    govForms:yes(r[35]),
+    clearance:yes(r[36]),
+    idPicture:yes(r[37]),
+    validIdCopy:yes(r[38]),
+    birthCert:yes(r[39]),
+    diplomaTor:yes(r[40]),
+    previousCoe:yes(r[41])
   };
 }
 function objToRow(d){
-  const fullName = (d.fullName || `${d.firstName||''} ${d.lastName||''}`.trim());
+  const fullName=(d.fullName||`${d.firstName||''} ${d.lastName||''}`.trim()).trim();
   return [
     d.region||'',
     d.infinixId||'',
@@ -1507,8 +1534,20 @@ function objToRow(d){
     d.bankAccount||'',
     d.contractStatus||'NOT YET SENT',
     d.contractSentDate||'',
+    yn(d.preEmploymentForms),
+    yn(d.jobOffer),
+    d.statusDate||'',
+    d.statusRemarks||'',
     ts(),
-    d.notes||''
+    d.notes||'',
+    yn(d.medicalCert),
+    yn(d.govForms),
+    yn(d.clearance),
+    yn(d.idPicture),
+    yn(d.validIdCopy),
+    yn(d.birthCert),
+    yn(d.diplomaTor),
+    yn(d.previousCoe)
   ];
 }
 function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
@@ -2364,7 +2403,7 @@ function buildDetailHTML(e){
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
       ${row('Full Name',`<b>${e.fullName||''}</b>`)}
       ${row('Status',badge(e.status))}
-      ${row('Status Date',e.statusDate)}
+      ${row('Status Effective Date',e.statusDate)}${row('Status Remarks',e.statusRemarks)}
       ${row('QR Status',badge(e.qrStatus,(e.qrStatus||'').replace(/ /g,'-')))}
       ${row('Deploy Status',badge(e.deploymentStatus,(e.deploymentStatus||'-').replace(/ /g,'-')))}
       ${row('Deploy Date',e.deploymentDate)}
@@ -2481,7 +2520,8 @@ function getFormHTML(emp){
       <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system. Check before saving.</div>
     </div>
     <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}</div>
-    <div class="field"><label>Status Date</label>${dateInp('statusDate')}</div>
+    <div class="field"><label>Status Effective Date</label>${dateInp('statusDate')}</div>
+    <div class="field"><label>Status Remarks</label>${inp('statusRemarks')}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
     <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',['NOT YET DEPLOYED','DEPLOYED','BACKOUT','-'])}</div>
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
@@ -2588,7 +2628,7 @@ function validateRssId(){
 function gatherForm(){
   const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
   const c=k=>!!document.getElementById('f_'+k)?.checked;
-  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),statusDate:f('statusDate'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),tin:f('tin'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),medicalCert:c('medicalCert'),govForms:c('govForms'),clearance:c('clearance'),idPicture:c('idPicture'),validIdCopy:c('validIdCopy'),birthCert:c('birthCert'),diplomaTor:c('diplomaTor'),previousCoe:c('previousCoe'),notes:f('notes')};
+  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),statusDate:f('statusDate'),statusRemarks:f('statusRemarks'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),tin:f('tin'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),medicalCert:c('medicalCert'),govForms:c('govForms'),clearance:c('clearance'),idPicture:c('idPicture'),validIdCopy:c('validIdCopy'),birthCert:c('birthCert'),diplomaTor:c('diplomaTor'),previousCoe:c('previousCoe'),notes:f('notes')};
 }
 function validate(data){
   let ok=true;
