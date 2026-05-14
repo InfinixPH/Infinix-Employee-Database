@@ -875,6 +875,15 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 
 .login-logo { height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
 .login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.92; }
+.brand-logo img { height: 88px; max-width: 185px; }
+.login-logo { height: 118px; }
+.req-check-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
+.req-check { display:flex; align-items:flex-start; gap:8px; padding:9px 10px; border:1px solid var(--border); background:var(--bg-frosted); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text2); line-height:1.35; }
+.req-check input { width:15px; height:15px; margin-top:1px; accent-color:var(--moss-green); flex-shrink:0; }
+.req-progress { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--text2); }
+.req-progress-bar { width:54px; height:5px; background:rgba(136,144,99,0.14); border-radius:99px; overflow:hidden; }
+.req-progress-fill { height:100%; background:var(--moss-green); border-radius:99px; }
+@media(max-width:780px){.req-check-grid{grid-template-columns:1fr}.brand-logo img{height:72px}.login-logo{height:100px}}
 [data-theme="light"] .login-logo img { filter: brightness(0) sepia(1) hue-rotate(60deg) saturate(0.6); opacity: 0.85; }
 .login-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
 .login-sub { font-size: 12px; color: var(--text3); margin-bottom: 30px; line-height: 1.7; }
@@ -1088,21 +1097,41 @@ const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated'];
 const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
-const HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'];
+const HEADERS = [
+  'First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes',
+  'TIN Number','Status Date','Medical Certificate','SSS/Pag-IBIG/PhilHealth/TIN Forms','NBI/Police/Barangay Clearance','2x2 ID Picture','Valid ID Copy','Birth Certificate','Diploma/TOR','Previous COE','Pre-Employment Forms','Job Offer'
+];
+const SHEET_LAST_COL = 'AP';
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
+const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
+const REQUIREMENT_FIELDS = [
+  ['medicalCert','Medical Certificate (CBC, X-ray, Fecalysis, Urinalysis, Drug Test and PT)'],
+  ['govForms','SSS, Pag-IBIG, PhilHealth and TIN (Number/ID or Government forms)'],
+  ['clearance','NBI / Police Clearance / Barangay Certificate'],
+  ['idPicture','2x2 ID Picture with white background, formal attire'],
+  ['validIdCopy','Clear scanned copy of ALL Valid ID'],
+  ['birthCert','Birth Certificate'],
+  ['diplomaTor','Diploma or TOR (College)'],
+  ['previousCoe','Certificate of Employment from previous employer (if any)'],
+  ['preEmploymentForms','Pre-Employment Forms'],
+  ['jobOffer','Job Offer']
+];
 
 // Column definitions for visibility toggle
 const TABLE_COLUMNS = [
   { key:'fullName',        label:'Full Name',       always:true },
   { key:'infinixId',       label:'Infinix ID',      always:true },
   { key:'status',          label:'Status',          always:false },
+  { key:'statusDate',      label:'Status Date',     always:false },
   { key:'deploymentDate',  label:'Deploy Date',     always:false },
   { key:'deploymentStatus',label:'Deploy Status',   always:false },
+  { key:'requirements',    label:'Requirements',    always:false },
   { key:'qrStatus',        label:'QR Status',       always:false },
   { key:'region',          label:'Region',          always:false },
   { key:'storeAssignment', label:'Store',           always:false },
   { key:'storeId',         label:'Store ID',        always:false },
   { key:'rssName',         label:'RSS Name',        always:false },
+  { key:'bankName',        label:'Bank',            always:false },
   { key:'contractStatus',  label:'Contract',        always:false },
 ];
 
@@ -1357,8 +1386,8 @@ async function ensureHeaders(){
       if(!vals||!vals[0]||vals[0].length<hdrs.length)
         await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1`,valueInputOption:'RAW',resource:{values:[hdrs]}});
     };
-    await chk(ACTIVE_SHEET,HEADERS,'A1:AD1');
-    await chk(INACTIVE_SHEET,HEADERS,'A1:AD1');
+    await chk(ACTIVE_SHEET,HEADERS,`A1:${SHEET_LAST_COL}1`);
+    await chk(INACTIVE_SHEET,HEADERS,`A1:${SHEET_LAST_COL}1`);
     await chk(LOG_SHEET,LOG_HEADERS,'A1:G1');
   }catch(e){console.warn('Header setup:',e);}
 }
@@ -1371,8 +1400,8 @@ async function loadData(){
   setOfflineBanner(false);
   try{
     const [aRes,iRes]=await Promise.all([
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AD`}),
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AD`})
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
     ]);
     employees=[];
     (aRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
@@ -1422,6 +1451,8 @@ async function refreshData(){
 // DATA HELPERS
 // ============================================================
 function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function yes(v){ return ['YES','DONE','TRUE','✓','CHECKED','1'].includes(String(v||'').trim().toUpperCase()); }
+function yn(v){ return yes(v) ? 'YES' : ''; }
 function rowToObj(r){
   return {
     firstName:r[0]||'',lastName:r[1]||'',middleName:r[2]||'',fullName:r[3]||'',
@@ -1434,8 +1465,10 @@ function rowToObj(r){
     sss:r[20]||'',philhealth:r[21]||'',pagibig:r[22]||'',
     basicWage:r[23]||'',bankName:r[24]||'',bankAccount:r[25]||'',
     contractStatus:r[26]||'NOT YET SENT',contractSentDate:r[27]||'',
-    lastUpdated:r[28]||'',
-    notes:r[29]||''
+    lastUpdated:r[28]||'',notes:r[29]||'',
+    tin:r[30]||'',statusDate:r[31]||'',medicalCert:yes(r[32]),govForms:yes(r[33]),
+    clearance:yes(r[34]),idPicture:yes(r[35]),validIdCopy:yes(r[36]),birthCert:yes(r[37]),
+    diplomaTor:yes(r[38]),previousCoe:yes(r[39]),preEmploymentForms:yes(r[40]),jobOffer:yes(r[41])
   };
 }
 function objToRow(d){
@@ -1452,7 +1485,8 @@ function objToRow(d){
     d.basicWage||'',d.bankName||'',d.bankAccount||'',
     d.contractStatus||'NOT YET SENT',d.contractSentDate||'',
     ts(),
-    d.notes||''
+    d.notes||'',
+    d.tin||'',d.statusDate||'',yn(d.medicalCert),yn(d.govForms),yn(d.clearance),yn(d.idPicture),yn(d.validIdCopy),yn(d.birthCert),yn(d.diplomaTor),yn(d.previousCoe),yn(d.preEmploymentForms),yn(d.jobOffer)
   ];
 }
 function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
@@ -1480,7 +1514,7 @@ async function apiAddEmployee(data){
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
-  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:${SHEET_LAST_COL}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
   await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Added','—',data.status);
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
@@ -1492,13 +1526,13 @@ async function apiUpdateEmployee(data){
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:${SHEET_LAST_COL}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
     if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AD${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:${SHEET_LAST_COL}${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
@@ -2082,6 +2116,12 @@ function renderEmployeeTable(type){
   renderTableRows(type);
 }
 
+function reqDoneCount(e){ return REQUIREMENT_FIELDS.filter(([k])=>!!e[k]).length; }
+function reqProgressHTML(e){
+  const done=reqDoneCount(e), total=REQUIREMENT_FIELDS.length, pct=Math.round((done/total)*100);
+  return `<span class="req-progress"><span>${done}/${total}</span><span class="req-progress-bar"><span class="req-progress-fill" style="width:${pct}%"></span></span></span>`;
+}
+
 function renderTableRows(type){
   const list=filteredEmployees(type);
   const total=list.length;
@@ -2101,13 +2141,16 @@ function renderTableRows(type){
     fullName:e=>`<td><div class="td-name">${e.fullName||''}</div><div class="td-sub">${e.email||''}</div></td>`,
     infinixId:e=>`<td><span class="td-id">${e.infinixId}</span></td>`,
     status:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
+    statusDate:e=>`<td style="color:var(--text2);font-size:12px">${e.statusDate||'—'}</td>`,
     deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>`,
     deploymentStatus:e=>`<td><span class="badge b-${(e.deploymentStatus||'-').replace(/ /g,'-')}">${e.deploymentStatus||'-'}</span></td>`,
+    requirements:e=>`<td>${reqProgressHTML(e)}</td>`,
     qrStatus:e=>`<td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>`,
     region:e=>`<td style="color:var(--text2)">${e.region||'—'}</td>`,
     storeAssignment:e=>`<td style="color:var(--text2)">${e.storeAssignment||'—'}</td>`,
     storeId:e=>`<td style="color:var(--text3);font-size:11px">${e.storeId||'—'}</td>`,
     rssName:e=>`<td style="color:var(--text2)">${e.rssName||'—'}</td>`,
+    bankName:e=>`<td style="color:var(--text2)">${e.bankName||'—'}</td>`,
     contractStatus:e=>`<td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>`,
   };
 
@@ -2299,6 +2342,7 @@ function buildDetailHTML(e){
       ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
       ${row('Full Name',`<b>${e.fullName||''}</b>`)}
       ${row('Status',badge(e.status))}
+      ${row('Status Date',e.statusDate)}
       ${row('QR Status',badge(e.qrStatus,(e.qrStatus||'').replace(/ /g,'-')))}
       ${row('Deploy Status',badge(e.deploymentStatus,(e.deploymentStatus||'-').replace(/ /g,'-')))}
       ${row('Deploy Date',e.deploymentDate)}
@@ -2319,13 +2363,18 @@ function buildDetailHTML(e){
     <div class="detail-section">
       <div class="detail-section-title">Government</div>
       ${row('SSS',e.sss||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-      ${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}
+      ${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}${row('TIN',e.tin)}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
       ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',e.bankName)}
       ${row('Account No.',e.bankAccount||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Requirements</div>
+      ${REQUIREMENT_FIELDS.map(([k,label])=>row(label,e[k]?'✅ Done':'—')).join('')}
+      ${row('Completion', reqProgressHTML(e))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Notes / Remarks</div>
@@ -2410,6 +2459,7 @@ function getFormHTML(emp){
       <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system. Check before saving.</div>
     </div>
     <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}</div>
+    <div class="field"><label>Status Date</label>${dateInp('statusDate')}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
     <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',['NOT YET DEPLOYED','DEPLOYED','BACKOUT','-'])}</div>
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
@@ -2454,12 +2504,13 @@ function getFormHTML(emp){
     <div class="field"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
     <div class="field"><label>PhilHealth Number</label>${inp('philhealth','text','XXXX-XXXX-XXXX')}</div>
     <div class="field"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
+    <div class="field"><label>TIN Number</label>${inp('tin','text','XXX-XXX-XXX-XXX')}</div>
   </div>
 
   <div class="section-label">Payroll & Banking</div>
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
-    <div class="field"><label>Bank Name</label>${sel('bankName',['','CTBC Bank (Philippines)','Union Bank of the Philippines','BDO','BPI','Metrobank','Security Bank','Landbank','PNB','Eastwest Bank','RCBC'])}</div>
+    <div class="field"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
     <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number')}</div>
   </div>
 
@@ -2467,6 +2518,11 @@ function getFormHTML(emp){
   <div class="form-grid">
     <div class="field"><label>Contract Status</label>${sel('contractStatus',['NOT YET SENT','SENT'])}</div>
     <div class="field"><label>Contract Sent Date</label>${dateInp('contractSentDate')}</div>
+  </div>
+
+  <div class="section-label">Requirements Checklist</div>
+  <div class="req-check-grid">
+    ${REQUIREMENT_FIELDS.map(([k,label])=>`<label class="req-check"><input id="f_${k}" type="checkbox" ${v(k)?'checked':''}> <span>${label}</span></label>`).join('')}
   </div>
 
   <div class="section-label">Notes / Remarks</div>
@@ -2509,7 +2565,8 @@ function validateRssId(){
 }
 function gatherForm(){
   const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
-  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),notes:f('notes')};
+  const c=k=>!!document.getElementById('f_'+k)?.checked;
+  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),statusDate:f('statusDate'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),tin:f('tin'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),medicalCert:c('medicalCert'),govForms:c('govForms'),clearance:c('clearance'),idPicture:c('idPicture'),validIdCopy:c('validIdCopy'),birthCert:c('birthCert'),diplomaTor:c('diplomaTor'),previousCoe:c('previousCoe'),notes:f('notes')};
 }
 function validate(data){
   let ok=true;
