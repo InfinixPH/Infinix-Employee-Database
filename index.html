@@ -380,9 +380,9 @@ body::after {
 /* ============================================================
    DASHBOARD
    ============================================================ */
-.dash-kf-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
-@media (max-width: 1280px) { .dash-kf-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
-@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+.dash-kf-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 1280px){ .dash-kf-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 760px){ .dash-kf-grid { grid-template-columns: repeat(2,1fr); } }
 .kf-card { padding: 20px 22px; }
 .kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
 .kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
@@ -1148,7 +1148,6 @@ const TABLE_COLUMNS = [
 let tokenClient, gapiInited=false, gisInited=false;
 let accessToken=null, currentUser=null;
 let employees=[], currentView='dashboard', filterStatus=null, editingId=null;
-let lastSyncTime=null;
 let currentPage=1, pageSize=PAGE_SIZE_DEFAULT;
 let sortCol=null, sortDir=1;
 let selectedIds=new Set();
@@ -1420,7 +1419,6 @@ async function loadData(){
     (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
     (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
-    lastSyncTime=new Date();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
   }catch(e){
@@ -1844,20 +1842,21 @@ function filteredEmployees(type){
     :employees.filter(e=>isActive?(normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT'):(normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT'));
 
   // Missing field filter (from dashboard pill clicks)
-  // Dashboard pending actions must only drill down Active promoters.
-  if(missingFieldFilter){
+  // Most dashboard pending actions drill down Active promoters only.
+  // Not Yet Deployed KPI is GLOBAL regardless of Employment Status.
+  if(missingFieldFilter==='notDeployedAll'){
+    list=employees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
+  } else if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
-  if(missingFieldFilter==='deployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED');
-  else if(missingFieldFilter==='notDeployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
-  else if(missingFieldFilter==='notScanned')list=list.filter(e=>String(e.qrStatus||'').trim()===''||String(e.qrStatus||'').trim().toUpperCase()==='NOT SCANNED');
-  else if(missingFieldFilter==='contractPending')list=list.filter(e=>String(e.contractStatus||'').trim()===''||String(e.contractStatus||'').trim().toUpperCase()==='NOT YET SENT');
+  if(missingFieldFilter==='notDeployed')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED');
+  else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
+  else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
   else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
   else if(missingFieldFilter==='missingSSS')list=list.filter(e=>isMissing(e.sss));
   else if(missingFieldFilter==='missingBank')list=list.filter(e=>isMissing(e.bankAccount));
   else if(missingFieldFilter==='missingMobile')list=list.filter(e=>isMissing(e.mobile));
   else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
-  else if(missingFieldFilter==='needsAttention')list=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED'||String(e.qrStatus||'').trim()===''||String(e.qrStatus||'').trim().toUpperCase()==='NOT SCANNED'||String(e.contractStatus||'').trim()===''||String(e.contractStatus||'').trim().toUpperCase()==='NOT YET SENT'||!requirementsComplete(e)||isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin)||isMissing(e.bankAccount)||isMissing(e.mobile));
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
@@ -1874,7 +1873,7 @@ function onSearch(){
   renderTableRows(currentView==='inactive'?'inactive':'active');
 }
 function onFilterChange(){currentPage=1;selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
-function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;filterStatus=null;const si=document.getElementById('search-input');if(si)si.value='';document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');currentPage=1;selectedIds.clear();renderView();}
+function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');onFilterChange();}
 function activeFilterCount(){return [filterRegion,filterDeployStatus,filterQR,filterContractStatus,missingFieldFilter].filter(Boolean).length;}
 
 // ============================================================
@@ -1902,19 +1901,6 @@ document.addEventListener('click',e=>{
 // ============================================================
 function getBirthdaysThisMonth(){
   const now=new Date();
-  const lastSyncText=lastSyncTime?lastSyncTime.toLocaleString():'Not synced yet';
-  const needsAttention=activeEmployees.filter(e=>{
-    const missing=[];
-    if(normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED')missing.push('Not Yet Deployed');
-    if(String(e.qrStatus||'').trim()===''||String(e.qrStatus||'').trim().toUpperCase()==='NOT SCANNED')missing.push('QR Not Scanned');
-    if(String(e.contractStatus||'').trim()===''||String(e.contractStatus||'').trim().toUpperCase()==='NOT YET SENT')missing.push('Contract Pending');
-    if(!requirementsComplete(e))missing.push('Requirements');
-    if(isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin))missing.push('Gov IDs');
-    if(isMissing(e.bankAccount))missing.push('Bank');
-    if(isMissing(e.mobile))missing.push('Mobile');
-    e._attentionMissing=missing;
-    return missing.length;
-  }).slice(0,8);
   const thisMonth=now.getMonth();
   const today=now.getDate();
   const result=[];
@@ -2026,11 +2012,13 @@ function renderDashboard(){
   // Pending actions and completion cards count ACTIVE promoters only.
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
   const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
+  // Global count: Not Yet Deployed regardless of Employment Status / sheet.
+  const notYetDeployedAll=employees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
   const notDeployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
-  const scanned=activeEmployees.filter(e=>String(e.qrStatus||'').trim().toUpperCase()==='SCANNED').length;
-  const notScanned=activeEmployees.filter(e=>String(e.qrStatus||'').trim()===''||String(e.qrStatus||'').trim().toUpperCase()==='NOT SCANNED').length;
-  const contractSent=activeEmployees.filter(e=>String(e.contractStatus||'').trim().toUpperCase()==='SENT').length;
-  const contractPending=activeEmployees.filter(e=>String(e.contractStatus||'').trim()===''||String(e.contractStatus||'').trim().toUpperCase()==='NOT YET SENT').length;
+  const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
+  const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
+  const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
+  const contractPending=activeEmployees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
   const missingGovIds=activeEmployees.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin)).length;
   const missingSSS=activeEmployees.filter(e=>isMissing(e.sss)).length;
   const missingBank=activeEmployees.filter(e=>isMissing(e.bankAccount)).length;
@@ -2041,19 +2029,6 @@ function renderDashboard(){
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
   const birthdays=getBirthdaysThisMonth().slice(0,5);
   const now=new Date();
-  const lastSyncText=lastSyncTime?lastSyncTime.toLocaleString():'Not synced yet';
-  const needsAttention=activeEmployees.filter(e=>{
-    const missing=[];
-    if(normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED')missing.push('Not Yet Deployed');
-    if(String(e.qrStatus||'').trim()===''||String(e.qrStatus||'').trim().toUpperCase()==='NOT SCANNED')missing.push('QR Not Scanned');
-    if(String(e.contractStatus||'').trim()===''||String(e.contractStatus||'').trim().toUpperCase()==='NOT YET SENT')missing.push('Contract Pending');
-    if(!requirementsComplete(e))missing.push('Requirements');
-    if(isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin))missing.push('Gov IDs');
-    if(isMissing(e.bankAccount))missing.push('Bank');
-    if(isMissing(e.mobile))missing.push('Mobile');
-    e._attentionMissing=missing;
-    return missing.length;
-  }).slice(0,8);
 
   document.getElementById('content').innerHTML=`
     <!-- DASHBOARD SEARCH -->
@@ -2063,7 +2038,6 @@ function renderDashboard(){
       </span>
       <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)" oninput="if(!this.value)return">
     </div>
-    <div style="display:flex;justify-content:flex-end;margin:-8px 2px 10px;color:var(--text3);font-size:10.5px">Last Sync: ${lastSyncText}</div>
 
     <!-- KF CARDS -->
     <div class="dash-kf-grid">
@@ -2073,17 +2047,17 @@ function renderDashboard(){
         <div class="kf-sub">Active records only</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:100%"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('deployed')" style="cursor:pointer">
+      <div class="kf-card glass-card">
         <div class="kf-label-top">Deployed</div>
         <div class="kf-num">${deployed}</div>
         <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer;border-color:rgba(201,184,122,0.26)">
+      <div class="kf-card glass-card" onclick="drillDown('notDeployedAll')" title="Not Yet Deployed across Active and Inactive records" style="cursor:pointer;border-color:rgba(201,184,122,0.22)">
         <div class="kf-label-top">Not Yet Deployed</div>
-        <div class="kf-num" style="color:var(--warning)">${notDeployed}</div>
-        <div class="kf-sub">${activeTotal?Math.round(notDeployed/activeTotal*100):0}% of active</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?notDeployed/activeTotal*100:0}%;background:var(--warning)"></div></div>
+        <div class="kf-num" style="color:var(--warning)">${notYetDeployedAll}</div>
+        <div class="kf-sub">All records · regardless of status</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?notYetDeployedAll/total*100:0}%;background:var(--warning)"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">QR Scanned</div>
@@ -2112,31 +2086,14 @@ function renderDashboard(){
     <!-- PENDING ACTIONS -->
     <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Active promoters only · click a pill to filter</span></div>
     <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see active employees with Deployment Status = NOT YET DEPLOYED / blank / -"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Yet Deployed</span></div>`:''}
+      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
       ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
       ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Active promoters with contract not yet sent"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
       ${missingRequirements>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingRequirements')" title="Active promoters with incomplete requirements checklist"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingRequirements}</span><span>Requirements Incomplete</span></div>`:''}
-      ${missingGovIds>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingGovIds')" title="Active promoters missing SSS, PhilHealth, Pag-IBIG, or TIN"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingGovIds}</span><span>Missing Gov IDs</span></div>`:''}
+      ${missingGovIds>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingGovIds')" title="Active promoters missing SSS, PhilHealth, or Pag-IBIG"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingGovIds}</span><span>Missing Gov IDs</span></div>`:''}
       ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')" title="Active promoters missing bank account"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
       ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')" title="Active promoters missing mobile number"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
       ${notDeployed===0&&notScanned===0&&contractPending===0&&missingRequirements===0&&missingGovIds===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All active records complete</span></div>`:''}
-    </div>
-
-    <!-- NEEDS ATTENTION -->
-    <div class="table-wrap" style="margin-bottom:14px">
-      <div class="table-head">
-        <h3>Needs Attention</h3>
-        <span class="rec">Active promoters only · top 8</span>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="drillDown('needsAttention')">View All</button>
-      </div>
-      <div class="table-scroll" style="max-height:230px">
-        <table style="min-width:720px">
-          <thead><tr><th>Name</th><th>ID</th><th>Store</th><th>Missing / Pending</th></tr></thead>
-          <tbody>
-            ${needsAttention.length?needsAttention.map(e=>`<tr onclick="openDetailPanel('${e.infinixId}')"><td class="td-name">${e.fullName||`${e.firstName||''} ${e.lastName||''}`}</td><td class="td-id">${e.infinixId}</td><td>${e.storeAssignment||'—'}</td><td>${(e._attentionMissing||[]).map(x=>`<span class="badge b-NOT-YET-SENT" style="margin:1px 3px 1px 0">${x}</span>`).join('')}</td></tr>`).join(''):`<tr><td colspan="4"><div class="empty-state" style="padding:20px"><p>No active promoters need attention.</p></div></td></tr>`}
-          </tbody>
-        </table>
-      </div>
     </div>
 
     <!-- BOTTOM GRID -->
@@ -2351,7 +2308,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={deployed:'Deployed',notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',needsAttention:'Needs Attention'};
+    const labels={notDeployedAll:'Not Yet Deployed',notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
@@ -2380,7 +2337,6 @@ function renderEmployeeTable(type){
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
           ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status</button>`:''}
           ${missingFieldFilter?`<button class="btn btn-ghost btn-sm" onclick="missingFieldFilter=null;currentPage=1;renderView()">Clear Filter</button>`:''}
-          ${activeFilterCount()>0?`<button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset All Filters</button>`:''}
         </div>
       </div>
       <div class="filter-bar">
@@ -2610,19 +2566,6 @@ function buildDetailHTML(e){
   let bdayNote='';
   if(e.dob){
     const d=new Date(e.dob);const now=new Date();
-  const lastSyncText=lastSyncTime?lastSyncTime.toLocaleString():'Not synced yet';
-  const needsAttention=activeEmployees.filter(e=>{
-    const missing=[];
-    if(normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED')missing.push('Not Yet Deployed');
-    if(String(e.qrStatus||'').trim()===''||String(e.qrStatus||'').trim().toUpperCase()==='NOT SCANNED')missing.push('QR Not Scanned');
-    if(String(e.contractStatus||'').trim()===''||String(e.contractStatus||'').trim().toUpperCase()==='NOT YET SENT')missing.push('Contract Pending');
-    if(!requirementsComplete(e))missing.push('Requirements');
-    if(isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin))missing.push('Gov IDs');
-    if(isMissing(e.bankAccount))missing.push('Bank');
-    if(isMissing(e.mobile))missing.push('Mobile');
-    e._attentionMissing=missing;
-    return missing.length;
-  }).slice(0,8);
     if(!isNaN(d)&&d.getMonth()===now.getMonth()){
       const diff=d.getDate()-now.getDate();
       if(diff===0)bdayNote=`<div style="background:rgba(201,184,122,0.1);border:1px solid rgba(201,184,122,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:10px">🎉 Birthday today!</div>`;
@@ -2808,8 +2751,8 @@ function getFormHTML(emp){
     <div class="field"><label>Date of Birth</label>${dateInp('dob')}</div>
     <div class="field"><label>Gender</label>${sel('gender',['','Male','Female','N/A'])}</div>
     <div class="field"><label>Marital Status</label>${sel('maritalStatus',['','Single','Married'])}</div>
-    <div class="field"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDuplicate()"')}<div class="dup-warning" id="dup-mobile">⚠ Same mobile number found in another record.</div></div>
-    <div class="field form-full"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDuplicate()"')}<div class="dup-warning" id="dup-email">⚠ Same email found in another record.</div></div>
+    <div class="field"><label>Mobile No.</label>${inp('mobile','text','+63')}</div>
+    <div class="field form-full"><label>Email Address</label>${inp('email','email','juan@email.com')}</div>
     <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
@@ -2844,7 +2787,7 @@ function getFormHTML(emp){
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
     <div class="field"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
-    <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number','oninput="checkDuplicate()"')}<div class="dup-warning" id="dup-bank">⚠ Same bank account found in another record.</div></div>
+    <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number')}</div>
   </div>
 
   <div class="section-label">Contract</div>
@@ -2879,18 +2822,15 @@ function validateInfinixId(){
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
 function checkDuplicate(){
-  const currentId=editingId?String(editingId).trim():'';
-  const getVal=id=>document.getElementById(id)?.value.trim()||'';
-  const show=(id,on)=>{const el=document.getElementById(id); if(el)el.classList.toggle('visible',!!on);};
-  const idVal=getVal('f_infinixId');
-  const mobile=getVal('f_mobile');
-  const email=getVal('f_email').toLowerCase();
-  const bank=getVal('f_bankAccount');
-  const isOther=e=>String(e.infinixId||'').trim()!==currentId;
-  show('dup-warning', idVal && employees.some(e=>isOther(e)&&String(e.infinixId||'').trim()===idVal));
-  show('dup-mobile', mobile && employees.some(e=>isOther(e)&&String(e.mobile||'').trim()===mobile));
-  show('dup-email', email && employees.some(e=>isOther(e)&&String(e.email||'').trim().toLowerCase()===email));
-  show('dup-bank', bank && employees.some(e=>isOther(e)&&String(e.bankAccount||'').trim()===bank));
+  if(editingId)return; // skip on edit
+  const val=document.getElementById('f_infinixId')?.value.trim()||'';
+  const warn=document.getElementById('dup-warning');
+  if(!warn)return;
+  if(val&&employees.some(e=>String(e.infinixId).trim()===val)){
+    warn.classList.add('visible');
+  } else {
+    warn.classList.remove('visible');
+  }
 }
 function validateRssId(){
   const val=document.getElementById('f_rssId')?.value.trim()||'';
@@ -2938,7 +2878,6 @@ function openAddModal(){
   document.getElementById('modal-save-btn').textContent='Save Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(null);
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(checkDuplicate,0);
 }
 function openEditModal(id){
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
@@ -2947,7 +2886,6 @@ function openEditModal(id){
   document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(checkDuplicate,0);
   if(emp.storeId&&storeCacheLoaded){
     const found=lookupStore(emp.storeId);
     const statusEl=document.getElementById('store-lookup-status');
@@ -2969,17 +2907,6 @@ function closeModal(){document.getElementById('modal-overlay').classList.remove(
 async function saveEmployee(){
   const data=gatherForm();
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
-  if(editingId){
-    const oldEmp=employees.find(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
-    if(oldEmp){
-      const oldSheet=oldEmp._sheet||getTargetSheet(oldEmp.status,oldEmp.deploymentStatus);
-      const newSheet=getTargetSheet(data.status,data.deploymentStatus)||oldSheet;
-      if(oldSheet!==newSheet){
-        const ok=confirm(`This will move ${oldEmp.fullName||data.firstName+' '+data.lastName} from ${oldSheet} to ${newSheet}. Continue?`);
-        if(!ok)return;
-      }
-    }
-  }
   closeModal();showLoading(true,editingId?'Updating employee...':'Adding employee...');
   try{
     const result=editingId?await apiUpdateEmployee(data):await apiAddEmployee(data);
