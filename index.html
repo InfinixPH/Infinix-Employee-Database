@@ -1098,10 +1098,9 @@ const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a'
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
 const HEADERS = [
-  'First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes',
-  'TIN Number','Status Date','Medical Certificate','SSS/Pag-IBIG/PhilHealth/TIN Forms','NBI/Police/Barangay Clearance','2x2 ID Picture','Valid ID Copy','Birth Certificate','Diploma/TOR','Previous COE','Pre-Employment Forms','Job Offer'
+  'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name','Employment Status','Store Assignment','Store ID','QR Scan Status','Deployment Date','Deployment Status','RSS Name','RSS ID','Basic Wage Rate','Address','Mobile No.','Email Address','Date of Birth','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'
 ];
-const SHEET_LAST_COL = 'AP';
+const SHEET_LAST_COL = 'AD';
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
 const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
 const REQUIREMENT_FIELDS = [
@@ -1376,19 +1375,108 @@ window.addEventListener('offline',()=>setOfflineBanner(true,'You are offline —
 window.addEventListener('online',()=>{setOfflineBanner(false);toast('Back online','success');});
 
 // ============================================================
-// SHEET SETUP
+// SHEET SETUP + DYNAMIC HEADER MAPPING
 // ============================================================
+let sheetHeaders = {};
+
+function colLetter(n){
+  let s='';
+  while(n>0){let m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}
+  return s || 'A';
+}
+function normHeader(h){
+  return String(h||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim();
+}
+function findHeaderIndex(headers, aliases){
+  const norms=headers.map(normHeader);
+  for(const a of aliases){
+    const i=norms.indexOf(normHeader(a));
+    if(i>=0)return i;
+  }
+  return -1;
+}
+const FIELD_ALIASES = {
+  firstName:['First Name','Firstname','Given Name'],
+  lastName:['Last Name','Lastname','Surname'],
+  middleName:['Middle Name','Middlename','Middle Initial'],
+  fullName:['Full Name','Name','Employee Name'],
+  infinixId:['Infinix Employee ID','Employee ID','Infinix ID','ID'],
+  qrStatus:['QR Scan Status','QR Status','Scan Status'],
+  status:['Employment Status','Status'],
+  deploymentDate:['Deployment Date','Date Deployed','Deploy Date'],
+  deploymentStatus:['Deployment Status','Deploy Status'],
+  region:['Region'],
+  storeAssignment:['Store Assignment','Store','Store Name','Dealer Store'],
+  storeId:['Store ID','Shop ID','Store Code'],
+  rssName:['RSS Name','RSS'],
+  rssId:['RSS ID'],
+  address:['Address','Complete Address'],
+  mobile:['Mobile No.','Mobile Number','Contact Number','Phone'],
+  dob:['Date of Birth','DOB','Birthdate'],
+  email:['Email Address','Email'],
+  gender:['Gender'],
+  maritalStatus:['Marital Status','Civil Status'],
+  sss:['SSS Number','SSS'],
+  philhealth:['PhilHealth Number','Philhealth','PhilHealth'],
+  pagibig:['Pag-IBIG Number','Pagibig','Pag-IBIG'],
+  tin:['TIN Number','TIN'],
+  basicWage:['Basic Wage Rate','Basic Wage','Wage Rate'],
+  bankName:['Bank Name','Bank'],
+  bankAccount:['Bank Account Number','Bank Account No.','Account Number'],
+  contractStatus:['Contract Status','Contract'],
+  contractSentDate:['Contract Sent Date','Contract Date'],
+  lastUpdated:['Last Updated','Updated At'],
+  notes:['Notes','Remarks'],
+  statusDate:['Status Date','Resigned/AWOL/Terminated/Floating Date','Inactive Date'],
+  medicalCert:['Medical Certificate'],
+  govForms:['SSS/Pag-IBIG/PhilHealth/TIN Forms','Government Forms','SSS Pagibig Philhealth Tin'],
+  clearance:['NBI/Police/Barangay Clearance','NBI or Police Clearance or Barangay Cert','Clearance'],
+  idPicture:['2x2 ID Picture','ID Picture'],
+  validIdCopy:['Valid ID Copy','Clear scanned copy of ALL Valid ID','Valid ID'],
+  birthCert:['Birth Certificate'],
+  diplomaTor:['Diploma/TOR','Diploma or TOR (College)','Diploma','TOR'],
+  previousCoe:['Previous COE','Certificate of Employment from previous employer (if any)','COE'],
+  preEmploymentForms:['Pre-Employment Forms'],
+  jobOffer:['Job Offer']
+};
+function getValByHeader(row, headers, key, fallbackIndex=-1){
+  const i=findHeaderIndex(headers, FIELD_ALIASES[key]||[key]);
+  if(i>=0)return row[i]||'';
+  return fallbackIndex>=0 ? (row[fallbackIndex]||'') : '';
+}
+function setValByHeader(out, headers, key, val){
+  const i=findHeaderIndex(headers, FIELD_ALIASES[key]||[key]);
+  if(i>=0)out[i]=val||'';
+}
+function requirementCount(e){
+  return REQUIREMENT_FIELDS.reduce((n,[key])=>n+(e[key]?1:0),0);
+}
+async function getSheetHeaders(sheetName){
+  if(sheetHeaders[sheetName])return sheetHeaders[sheetName];
+  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!A1:AD1`});
+  const headers=(r.result.values&&r.result.values[0])?r.result.values[0]:[];
+  sheetHeaders[sheetName]=headers;
+  return headers;
+}
 async function ensureHeaders(){
+  // SAFE MODE: do NOT rearrange or append headers automatically.
+  // Your Sheet already uses the exact A:AD arrangement you provided.
+  // This prevents the website from moving/breaking existing Google Sheet data.
   try{
-    const chk=async(sheet,hdrs,range)=>{
-      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheet}!${range}`});
-      const vals=r.result.values;
-      if(!vals||!vals[0]||vals[0].length<hdrs.length)
-        await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1`,valueInputOption:'RAW',resource:{values:[hdrs]}});
+    const cacheHeaders=async(sheet)=>{
+      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheet}!A1:AD1`});
+      const headers=(r.result.values&&r.result.values[0])?r.result.values[0]:[];
+      sheetHeaders[sheet]=headers.length?headers:[...HEADERS];
+      // Only write headers if the sheet is completely empty.
+      if(!headers.length){
+        await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1:AD1`,valueInputOption:'RAW',resource:{values:[HEADERS]}});
+      }
     };
-    await chk(ACTIVE_SHEET,HEADERS,`A1:${SHEET_LAST_COL}1`);
-    await chk(INACTIVE_SHEET,HEADERS,`A1:${SHEET_LAST_COL}1`);
-    await chk(LOG_SHEET,LOG_HEADERS,'A1:G1');
+    await cacheHeaders(ACTIVE_SHEET);
+    await cacheHeaders(INACTIVE_SHEET);
+    const lr=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A1:G1`});
+    if(!lr.result.values||!lr.result.values[0]||!lr.result.values[0].length)
+      await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A1`,valueInputOption:'RAW',resource:{values:[LOG_HEADERS]}});
   }catch(e){console.warn('Header setup:',e);}
 }
 
@@ -1399,13 +1487,16 @@ async function loadData(){
   showLoading(true,'Loading employees...');
   setOfflineBanner(false);
   try{
+    const [ah,ih]=await Promise.all([getSheetHeaders(ACTIVE_SHEET),getSheetHeaders(INACTIVE_SHEET)]);
     const [aRes,iRes]=await Promise.all([
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AD`}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AD`})
     ]);
+    const aIdIdx=findHeaderIndex(ah,FIELD_ALIASES.infinixId);
+    const iIdIdx=findHeaderIndex(ih,FIELD_ALIASES.infinixId);
     employees=[];
-    (aRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
-    (iRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:INACTIVE_SHEET,_row:i+2});});
+    (aRes.result.values||[]).forEach((r,i)=>{if((aIdIdx>=0?r[aIdIdx]:r[4]))employees.push({...rowToObj(r,ah),_sheet:ACTIVE_SHEET,_row:i+2});});
+    (iRes.result.values||[]).forEach((r,i)=>{if((iIdIdx>=0?r[iIdIdx]:r[4]))employees.push({...rowToObj(r,ih),_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
@@ -1421,19 +1512,11 @@ async function loadData(){
     }
     setOfflineBanner(true, msg);
     toast(msg, 'error');
-    // Show the error clearly on the screen too
     document.getElementById('content').innerHTML=`
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;text-align:center;padding:24px">
         <div style="font-size:32px;opacity:0.4">⚠️</div>
         <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Could Not Load Data</div>
         <div style="font-size:13px;color:var(--text2);max-width:440px;line-height:1.7">${msg}</div>
-        ${status===403?`<div style="font-size:12px;color:var(--text3);background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;max-width:440px;line-height:1.7">
-          <b style="color:var(--moss-green)">How to fix:</b><br>
-          1. Open the Google Sheet<br>
-          2. Click <b>Share</b> in the top right<br>
-          3. Add your email with <b>Editor</b> access<br>
-          4. Come back and click <b>Refresh</b>
-        </div>`:''}
         <button class="btn btn-primary" onclick="refreshData()">Try Again</button>
         <button class="btn btn-ghost" onclick="signOut()">Sign Out & Switch Account</button>
       </div>`;
@@ -1442,7 +1525,7 @@ async function loadData(){
 async function refreshData(){
   const btn=document.getElementById('refresh-btn');
   btn.classList.add('spinning');
-  storeCacheLoaded=false;
+  storeCacheLoaded=false; sheetHeaders={};
   await Promise.all([loadData(),loadStoreDetails()]);
   setTimeout(()=>btn.classList.remove('spinning'),500);
 }
@@ -1453,41 +1536,63 @@ async function refreshData(){
 function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 function yes(v){ return ['YES','DONE','TRUE','✓','CHECKED','1'].includes(String(v||'').trim().toUpperCase()); }
 function yn(v){ return yes(v) ? 'YES' : ''; }
-function rowToObj(r){
+function rowToObj(r,headers=HEADERS){
+  const region=getValByHeader(r,headers,'region',0);
+  const id=getValByHeader(r,headers,'infinixId',1);
+  const full=getValByHeader(r,headers,'fullName',2);
+  const first=getValByHeader(r,headers,'firstName',3);
+  const last=getValByHeader(r,headers,'lastName',4);
   return {
-    firstName:r[0]||'',lastName:r[1]||'',middleName:r[2]||'',fullName:r[3]||'',
-    infinixId:String(r[4]||''),qrStatus:r[5]||'NOT SCANNED',status:r[6]||'',
-    deploymentDate:r[7]||'',deploymentStatus:r[8]||'-',
-    region:r[9]||'',storeAssignment:r[10]||'',storeId:r[11]||'',
-    rssName:r[12]||'',rssId:String(r[13]||''),address:r[14]||'',
-    mobile:r[15]||'',dob:r[16]||'',email:r[17]||'',
-    gender:r[18]||'',maritalStatus:r[19]||'',
-    sss:r[20]||'',philhealth:r[21]||'',pagibig:r[22]||'',
-    basicWage:r[23]||'',bankName:r[24]||'',bankAccount:r[25]||'',
-    contractStatus:r[26]||'NOT YET SENT',contractSentDate:r[27]||'',
-    lastUpdated:r[28]||'',notes:r[29]||'',
-    tin:r[30]||'',statusDate:r[31]||'',medicalCert:yes(r[32]),govForms:yes(r[33]),
-    clearance:yes(r[34]),idPicture:yes(r[35]),validIdCopy:yes(r[36]),birthCert:yes(r[37]),
-    diplomaTor:yes(r[38]),previousCoe:yes(r[39]),preEmploymentForms:yes(r[40]),jobOffer:yes(r[41])
+    region:region,
+    infinixId:String(id||''),
+    fullName:full||`${first} ${last}`.trim(),
+    firstName:first,
+    lastName:last,
+    middleName:getValByHeader(r,headers,'middleName',5),
+    status:getValByHeader(r,headers,'status',6)||'',
+    storeAssignment:getValByHeader(r,headers,'storeAssignment',7),
+    storeId:getValByHeader(r,headers,'storeId',8),
+    qrStatus:getValByHeader(r,headers,'qrStatus',9)||'NOT SCANNED',
+    deploymentDate:getValByHeader(r,headers,'deploymentDate',10),
+    deploymentStatus:getValByHeader(r,headers,'deploymentStatus',11)||'-',
+    rssName:getValByHeader(r,headers,'rssName',12),
+    rssId:String(getValByHeader(r,headers,'rssId',13)||''),
+    basicWage:getValByHeader(r,headers,'basicWage',14),
+    address:getValByHeader(r,headers,'address',15),
+    mobile:getValByHeader(r,headers,'mobile',16),
+    email:getValByHeader(r,headers,'email',17),
+    dob:getValByHeader(r,headers,'dob',18),
+    gender:getValByHeader(r,headers,'gender',19),
+    maritalStatus:getValByHeader(r,headers,'maritalStatus',20),
+    sss:getValByHeader(r,headers,'sss',21),
+    philhealth:getValByHeader(r,headers,'philhealth',22),
+    pagibig:getValByHeader(r,headers,'pagibig',23),
+    bankName:getValByHeader(r,headers,'bankName',24),
+    bankAccount:getValByHeader(r,headers,'bankAccount',25),
+    contractStatus:getValByHeader(r,headers,'contractStatus',26)||'NOT YET SENT',
+    contractSentDate:getValByHeader(r,headers,'contractSentDate',27),
+    lastUpdated:getValByHeader(r,headers,'lastUpdated',28),
+    notes:getValByHeader(r,headers,'notes',29),
+    tin:getValByHeader(r,headers,'tin',-1),
+    statusDate:getValByHeader(r,headers,'statusDate',-1),
+    medicalCert:yes(getValByHeader(r,headers,'medicalCert',-1)),govForms:yes(getValByHeader(r,headers,'govForms',-1)),
+    clearance:yes(getValByHeader(r,headers,'clearance',-1)),idPicture:yes(getValByHeader(r,headers,'idPicture',-1)),validIdCopy:yes(getValByHeader(r,headers,'validIdCopy',-1)),birthCert:yes(getValByHeader(r,headers,'birthCert',-1)),
+    diplomaTor:yes(getValByHeader(r,headers,'diplomaTor',-1)),previousCoe:yes(getValByHeader(r,headers,'previousCoe',-1)),preEmploymentForms:yes(getValByHeader(r,headers,'preEmploymentForms',-1)),jobOffer:yes(getValByHeader(r,headers,'jobOffer',-1))
   };
 }
-function objToRow(d){
-  return [
-    d.firstName||'',d.lastName||'',d.middleName||'',
-    `${d.firstName||''} ${d.lastName||''}`.trim(),
-    d.infinixId||'',d.qrStatus||'NOT SCANNED',d.status||'Active',
-    d.deploymentDate||'',d.deploymentStatus||'-',
-    d.region||'',d.storeAssignment||'',d.storeId||'',
-    d.rssName||'',d.rssId||'',d.address||'',
-    d.mobile||'',d.dob||'',d.email||'',
-    d.gender||'',d.maritalStatus||'',
-    d.sss||'',d.philhealth||'',d.pagibig||'',
-    d.basicWage||'',d.bankName||'',d.bankAccount||'',
-    d.contractStatus||'NOT YET SENT',d.contractSentDate||'',
-    ts(),
-    d.notes||'',
-    d.tin||'',d.statusDate||'',yn(d.medicalCert),yn(d.govForms),yn(d.clearance),yn(d.idPicture),yn(d.validIdCopy),yn(d.birthCert),yn(d.diplomaTor),yn(d.previousCoe),yn(d.preEmploymentForms),yn(d.jobOffer)
-  ];
+
+function objToRow(d,headers=HEADERS){
+  const out=new Array(headers.length).fill('');
+  const vals={
+    firstName:d.firstName||'',lastName:d.lastName||'',middleName:d.middleName||'',fullName:`${d.firstName||''} ${d.lastName||''}`.trim(),
+    infinixId:d.infinixId||'',qrStatus:d.qrStatus||'NOT SCANNED',status:d.status||'Active',deploymentDate:d.deploymentDate||'',deploymentStatus:d.deploymentStatus||'-',
+    region:d.region||'',storeAssignment:d.storeAssignment||'',storeId:d.storeId||'',rssName:d.rssName||'',rssId:d.rssId||'',address:d.address||'',
+    mobile:d.mobile||'',dob:d.dob||'',email:d.email||'',gender:d.gender||'',maritalStatus:d.maritalStatus||'',sss:d.sss||'',philhealth:d.philhealth||'',pagibig:d.pagibig||'',tin:d.tin||'',
+    basicWage:d.basicWage||'',bankName:d.bankName||'',bankAccount:d.bankAccount||'',contractStatus:d.contractStatus||'NOT YET SENT',contractSentDate:d.contractSentDate||'',lastUpdated:ts(),notes:d.notes||'',statusDate:d.statusDate||'',
+    medicalCert:yn(d.medicalCert),govForms:yn(d.govForms),clearance:yn(d.clearance),idPicture:yn(d.idPicture),validIdCopy:yn(d.validIdCopy),birthCert:yn(d.birthCert),diplomaTor:yn(d.diplomaTor),previousCoe:yn(d.previousCoe),preEmploymentForms:yn(d.preEmploymentForms),jobOffer:yn(d.jobOffer)
+  };
+  for(const k in vals)setValByHeader(out,headers,k,vals[k]);
+  return out;
 }
 function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
 async function writeLog(empId,name,action,from,to){
@@ -1501,7 +1606,10 @@ async function writeLog(empId,name,action,from,to){
   }catch(e){console.warn('Log write failed:',e);}
 }
 async function findEmployeeRowInSheet(infinixId,sheetName){
-  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!E:E`});
+  const headers=await getSheetHeaders(sheetName);
+  const idIdx=findHeaderIndex(headers,FIELD_ALIASES.infinixId);
+  const col=idIdx>=0?colLetter(idIdx+1):'E';
+  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!${col}:${col}`});
   const vals=r.result.values||[];
   for(let i=1;i<vals.length;i++){if(String(vals[i][0]||'').trim()===String(infinixId).trim())return i+1;}
   return -1;
@@ -1514,7 +1622,8 @@ async function apiAddEmployee(data){
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
-  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:${SHEET_LAST_COL}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+  const headers=await getSheetHeaders(sheet);
+  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:${colLetter(headers.length)}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data,headers)]}});
   await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Added','—',data.status);
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
@@ -1526,13 +1635,15 @@ async function apiUpdateEmployee(data){
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:${SHEET_LAST_COL}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+    const newHeaders=await getSheetHeaders(newSheet);
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:${colLetter(newHeaders.length)}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data,newHeaders)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
     if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:${SHEET_LAST_COL}${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
+    const oldHeaders=await getSheetHeaders(oldSheet);
+    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:${colLetter(oldHeaders.length)}${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data,oldHeaders)]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
