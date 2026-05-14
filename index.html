@@ -113,7 +113,7 @@
   --radius:    14px;
   --radius-sm: 9px;
   --radius-lg: 20px;
-  --sidebar-w: 260px;
+  --sidebar-w: 224px;
   --topbar-h:  58px;
 }
 
@@ -176,7 +176,7 @@ body::after {
   display: flex; flex-direction: column; align-items: flex-start; gap: 0;
 }
 .brand-logo img {
-  height: 98px; width: auto; max-width: 220px; object-fit: contain;
+  height: 52px; width: auto; object-fit: contain;
   filter: brightness(0) invert(1); opacity: 0.92;
 }
 [data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.85; }
@@ -873,7 +873,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-.login-logo { height: 132px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+.login-logo { height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
 .login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.92; }
 [data-theme="light"] .login-logo img { filter: brightness(0) sepia(1) hue-rotate(60deg) saturate(0.6); opacity: 0.85; }
 .login-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
@@ -1085,23 +1085,10 @@ const STORE_DETAILS_SHEET = 'Store Details';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated'];
-const ACTIVE_STATUSES = ['Active'];
-const INACTIVE_STATUSES = ['Floating','Resigned','AWOL','Terminated'];
-const DEPLOYMENT_STATUSES = ['DEPLOYED','NOT YET DEPLOYED','-'];
-const BANK_NAMES = ['','CTBC','UnionBank'];
 const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
-const HEADERS = [
-  'Region','Infinix Employee ID','Full Name','First Name','Last Name','Middle Name',
-  'Employment Status','Store Assignment','Store ID','QR Scan Status','Deployment Date','Deployment Status',
-  'RSS Name','RSS ID','Basic Wage Rate','Address','Mobile No.','Email Address','Date of Birth',
-  'Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Bank Name','Bank Account Number',
-  'Contract Status','Contract Sent Date','Pre-Employment Forms','Job Offer','Status Effective Date','Status Remarks',
-  'Last Updated','Notes','Medical Certificate','Government Numbers / IDs','NBI / Police / Barangay Clearance',
-  '2x2 ID Picture','Valid IDs','Birth Certificate','Diploma / TOR','COE from Previous Employer'
-];
-const OLD_HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'];
+const HEADERS = ['First Name','Last Name','Middle Name','Full Name','Infinix Employee ID','QR Scan Status','Employment Status','Deployment Date','Deployment Status','Region','Store Assignment','Store ID','RSS Name','RSS ID','Address','Mobile No.','Date of Birth','Email Address','Gender','Marital Status','SSS Number','PhilHealth Number','Pag-IBIG Number','Basic Wage Rate','Bank Name','Bank Account Number','Contract Status','Contract Sent Date','Last Updated','Notes'];
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
 
 // Column definitions for visibility toggle
@@ -1117,8 +1104,6 @@ const TABLE_COLUMNS = [
   { key:'storeId',         label:'Store ID',        always:false },
   { key:'rssName',         label:'RSS Name',        always:false },
   { key:'contractStatus',  label:'Contract',        always:false },
-  { key:'basicWage',       label:'Wage',            always:false },
-  { key:'requirements',    label:'Requirements',    always:false },
 ];
 
 // ============================================================
@@ -1366,35 +1351,15 @@ window.addEventListener('online',()=>{setOfflineBanner(false);toast('Back online
 // ============================================================
 async function ensureHeaders(){
   try{
-    const migrateSheet=async(sheet)=>{
-      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheet}!A1:AZ`});
-      const rows=r.result.values||[];
-      const current=rows[0]||[];
-      const same=HEADERS.every((h,i)=>current[i]===h) && current.length>=HEADERS.length;
-      if(same)return;
-      const sourceHeaders=current.length?current:OLD_HEADERS;
-      const idx={};sourceHeaders.forEach((h,i)=>{idx[String(h).trim()]=i;});
-      const migrated=[HEADERS];
-      const dataRows=current.length?rows.slice(1):rows;
-      dataRows.forEach(row=>{
-        const out=HEADERS.map(h=>idx[h]!==undefined?(row[idx[h]]||''):'');
-        const get=name=>out[HEADERS.indexOf(name)]||'';
-        const set=(name,val)=>{out[HEADERS.indexOf(name)]=val;};
-        if(!get('Full Name'))set('Full Name',`${get('First Name')} ${get('Last Name')}`.trim());
-        if(get('Deployment Status')&&!DEPLOYMENT_STATUSES.includes(get('Deployment Status')))set('Deployment Status','-');
-        const bank=get('Bank Name');
-        if(bank){const b=String(bank).toLowerCase();set('Bank Name',b.includes('ctbc')?'CTBC':(b.includes('union')?'UnionBank':bank));}
-        migrated.push(out);
-      });
-      await gapi.client.sheets.spreadsheets.values.clear({spreadsheetId:SHEET_ID,range:`${sheet}!A:AZ`});
-      await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1`,valueInputOption:'RAW',resource:{values:migrated}});
+    const chk=async(sheet,hdrs,range)=>{
+      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheet}!${range}`});
+      const vals=r.result.values;
+      if(!vals||!vals[0]||vals[0].length<hdrs.length)
+        await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${sheet}!A1`,valueInputOption:'RAW',resource:{values:[hdrs]}});
     };
-    await migrateSheet(ACTIVE_SHEET);
-    await migrateSheet(INACTIVE_SHEET);
-    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A1:G1`});
-    const vals=r.result.values;
-    if(!vals||!vals[0]||vals[0].length<LOG_HEADERS.length)
-      await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A1`,valueInputOption:'RAW',resource:{values:[LOG_HEADERS]}});
+    await chk(ACTIVE_SHEET,HEADERS,'A1:AD1');
+    await chk(INACTIVE_SHEET,HEADERS,'A1:AD1');
+    await chk(LOG_SHEET,LOG_HEADERS,'A1:G1');
   }catch(e){console.warn('Header setup:',e);}
 }
 
@@ -1406,22 +1371,12 @@ async function loadData(){
   setOfflineBanner(false);
   try{
     const [aRes,iRes]=await Promise.all([
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A1:AZ`}),
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A1:AZ`})
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:AD`}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:AD`})
     ]);
     employees=[];
-    const pushRows=(values,sheet)=>{
-      const hdr=values[0]||HEADERS;
-      (values.slice(1)||[]).forEach((r,i)=>{
-        const obj=rowToObj(r,hdr);
-        if(obj.infinixId)employees.push({...obj,_sheet:sheet,_row:i+2});
-      });
-    };
-    pushRows(aRes.result.values||[],ACTIVE_SHEET);
-    pushRows(iRes.result.values||[],INACTIVE_SHEET);
-    // Do NOT auto-move rows on page load.
-    // Auto-reconciling many existing rows can spam Google Sheets append requests and trigger 429 quota errors.
-    // Employees are now placed in the correct sheet when adding/editing/saving only.
+    (aRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:ACTIVE_SHEET,_row:i+2});});
+    (iRes.result.values||[]).forEach((r,i)=>{if(r[4])employees.push({...rowToObj(r),_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
     toast(`${employees.length} employees loaded`,'success');
@@ -1467,53 +1422,40 @@ async function refreshData(){
 // DATA HELPERS
 // ============================================================
 function ts(){return new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
-function cleanMoney(value){return String(value||'').replace(/[₱,]/g,'').trim();}
-function formatPeso(value){const raw=cleanMoney(value);if(!raw)return'';const num=Number(raw);if(isNaN(num))return value;return '₱'+num.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function yesNo(v){const s=String(v||'').trim().toLowerCase();return ['true','yes','done','✓','checked','1'].includes(s);}
-function boolToSheet(v){return v?'TRUE':'';}
-function headerMap(headers){const m={};headers.forEach((h,i)=>m[String(h).trim()]=i);return m;}
-function getCell(row,map,name){return map[name]!==undefined?(row[map[name]]||''):'';}
-function rowToObj(r,headers=HEADERS){
-  const m=headerMap(headers);
-  const obj={
-    region:getCell(r,m,'Region'),infinixId:String(getCell(r,m,'Infinix Employee ID')),fullName:getCell(r,m,'Full Name'),
-    firstName:getCell(r,m,'First Name'),lastName:getCell(r,m,'Last Name'),middleName:getCell(r,m,'Middle Name'),
-    status:getCell(r,m,'Employment Status'),storeAssignment:getCell(r,m,'Store Assignment'),storeId:getCell(r,m,'Store ID'),
-    qrStatus:getCell(r,m,'QR Scan Status')||'NOT SCANNED',deploymentDate:getCell(r,m,'Deployment Date'),
-    deploymentStatus:DEPLOYMENT_STATUSES.includes(getCell(r,m,'Deployment Status'))?getCell(r,m,'Deployment Status'):'-',
-    rssName:getCell(r,m,'RSS Name'),rssId:String(getCell(r,m,'RSS ID')),basicWage:cleanMoney(getCell(r,m,'Basic Wage Rate')),
-    address:getCell(r,m,'Address'),mobile:getCell(r,m,'Mobile No.'),email:getCell(r,m,'Email Address'),dob:getCell(r,m,'Date of Birth'),
-    gender:getCell(r,m,'Gender'),maritalStatus:getCell(r,m,'Marital Status'),sss:getCell(r,m,'SSS Number'),
-    philhealth:getCell(r,m,'PhilHealth Number'),pagibig:getCell(r,m,'Pag-IBIG Number'),bankName:getCell(r,m,'Bank Name'),
-    bankAccount:getCell(r,m,'Bank Account Number'),contractStatus:getCell(r,m,'Contract Status')||'NOT YET SENT',
-    contractSentDate:getCell(r,m,'Contract Sent Date'),preEmploymentForms:yesNo(getCell(r,m,'Pre-Employment Forms')),jobOffer:yesNo(getCell(r,m,'Job Offer')),
-    statusEffectiveDate:getCell(r,m,'Status Effective Date'),statusRemarks:getCell(r,m,'Status Remarks'),lastUpdated:getCell(r,m,'Last Updated'),notes:getCell(r,m,'Notes'),
-    medicalCertificate:yesNo(getCell(r,m,'Medical Certificate')),governmentIds:yesNo(getCell(r,m,'Government Numbers / IDs')),
-    clearance:yesNo(getCell(r,m,'NBI / Police / Barangay Clearance')),idPicture:yesNo(getCell(r,m,'2x2 ID Picture')),
-    validIds:yesNo(getCell(r,m,'Valid IDs')),birthCertificate:yesNo(getCell(r,m,'Birth Certificate')),diplomaTor:yesNo(getCell(r,m,'Diploma / TOR')),
-    coePrevious:yesNo(getCell(r,m,'COE from Previous Employer'))
+function rowToObj(r){
+  return {
+    firstName:r[0]||'',lastName:r[1]||'',middleName:r[2]||'',fullName:r[3]||'',
+    infinixId:String(r[4]||''),qrStatus:r[5]||'NOT SCANNED',status:r[6]||'',
+    deploymentDate:r[7]||'',deploymentStatus:r[8]||'-',
+    region:r[9]||'',storeAssignment:r[10]||'',storeId:r[11]||'',
+    rssName:r[12]||'',rssId:String(r[13]||''),address:r[14]||'',
+    mobile:r[15]||'',dob:r[16]||'',email:r[17]||'',
+    gender:r[18]||'',maritalStatus:r[19]||'',
+    sss:r[20]||'',philhealth:r[21]||'',pagibig:r[22]||'',
+    basicWage:r[23]||'',bankName:r[24]||'',bankAccount:r[25]||'',
+    contractStatus:r[26]||'NOT YET SENT',contractSentDate:r[27]||'',
+    lastUpdated:r[28]||'',
+    notes:r[29]||''
   };
-  if(!obj.fullName)obj.fullName=`${obj.firstName} ${obj.lastName}`.trim();
-  return obj;
 }
 function objToRow(d){
-  const fullName=d.fullName||`${d.firstName||''} ${d.lastName||''}`.trim();
-  return [d.region||'',d.infinixId||'',fullName,d.firstName||'',d.lastName||'',d.middleName||'',d.status||'Active',d.storeAssignment||'',d.storeId||'',d.qrStatus||'NOT SCANNED',d.deploymentDate||'',DEPLOYMENT_STATUSES.includes(d.deploymentStatus)?d.deploymentStatus:'-',d.rssName||'',d.rssId||'',cleanMoney(d.basicWage),d.address||'',d.mobile||'',d.email||'',d.dob||'',d.gender||'',d.maritalStatus||'',d.sss||'',d.philhealth||'',d.pagibig||'',d.bankName||'',d.bankAccount||'',d.contractStatus||'NOT YET SENT',d.contractSentDate||'',boolToSheet(d.preEmploymentForms),boolToSheet(d.jobOffer),d.statusEffectiveDate||'',d.statusRemarks||'',ts(),d.notes||'',boolToSheet(d.medicalCertificate),boolToSheet(d.governmentIds),boolToSheet(d.clearance),boolToSheet(d.idPicture),boolToSheet(d.validIds),boolToSheet(d.birthCertificate),boolToSheet(d.diplomaTor),boolToSheet(d.coePrevious)];
+  return [
+    d.firstName||'',d.lastName||'',d.middleName||'',
+    `${d.firstName||''} ${d.lastName||''}`.trim(),
+    d.infinixId||'',d.qrStatus||'NOT SCANNED',d.status||'Active',
+    d.deploymentDate||'',d.deploymentStatus||'-',
+    d.region||'',d.storeAssignment||'',d.storeId||'',
+    d.rssName||'',d.rssId||'',d.address||'',
+    d.mobile||'',d.dob||'',d.email||'',
+    d.gender||'',d.maritalStatus||'',
+    d.sss||'',d.philhealth||'',d.pagibig||'',
+    d.basicWage||'',d.bankName||'',d.bankAccount||'',
+    d.contractStatus||'NOT YET SENT',d.contractSentDate||'',
+    ts(),
+    d.notes||''
+  ];
 }
-function getTargetSheet(status){return ACTIVE_STATUSES.includes(status)?ACTIVE_SHEET:INACTIVE_SHEET;}
-function colLetter(n){let out='';while(n>0){const m=(n-1)%26;out=String.fromCharCode(65+m)+out;n=Math.floor((n-1)/26);}return out;}
-function lastDataCol(){return colLetter(HEADERS.length);}
-async function reconcileEmployeeSheets(){
-  const wrong=employees.filter(e=>e._sheet&&e._sheet!==getTargetSheet(e.status));
-  if(!wrong.length)return 0;
-  const meta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
-  const byOld={};
-  for(const emp of wrong){const target=getTargetSheet(emp.status);await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${target}!A:${lastDataCol()}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(emp)]}});(byOld[emp._sheet] ||= []).push(emp._row);}
-  for(const [sheet,rows] of Object.entries(byOld)){const sheetObj=meta.result.sheets.find(s=>s.properties.title===sheet);if(!sheetObj)continue;const requests=rows.sort((a,b)=>b-a).map(row=>({deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}));if(requests.length)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests}});}
-  toast(`Moved ${wrong.length} employee(s) to the correct sheet`,'success');
-  return wrong.length;
-}
-
+function getTargetSheet(status){return status==='Active'?ACTIVE_SHEET:INACTIVE_SHEET;}
 async function writeLog(empId,name,action,from,to){
   try{
     await gapi.client.sheets.spreadsheets.values.append({
@@ -1525,12 +1467,9 @@ async function writeLog(empId,name,action,from,to){
   }catch(e){console.warn('Log write failed:',e);}
 }
 async function findEmployeeRowInSheet(infinixId,sheetName){
-  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!A1:AZ`});
+  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${sheetName}!E:E`});
   const vals=r.result.values||[];
-  const hdr=vals[0]||HEADERS;
-  const idCol=hdr.findIndex(h=>String(h).trim()==='Infinix Employee ID');
-  if(idCol<0)return -1;
-  for(let i=1;i<vals.length;i++){if(String(vals[i][idCol]||'').trim()===String(infinixId).trim())return i+1;}
+  for(let i=1;i<vals.length;i++){if(String(vals[i][0]||'').trim()===String(infinixId).trim())return i+1;}
   return -1;
 }
 
@@ -1541,7 +1480,7 @@ async function apiAddEmployee(data){
   const exists=employees.some(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(exists)return{ok:false,msg:'Infinix Employee ID already exists.'};
   const sheet=getTargetSheet(data.status);
-  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:${lastDataCol()}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+  await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${sheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
   await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Added','—',data.status);
   return{ok:true,msg:`${data.firstName} ${data.lastName} added successfully.`};
 }
@@ -1553,13 +1492,13 @@ async function apiUpdateEmployee(data){
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:'Could not find employee row in sheet.'};
   if(oldSheet!==newSheet){
-    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:${lastDataCol()}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:AD`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
     if(sheetObj)await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{deleteDimension:{range:{sheetId:sheetObj.properties.sheetId,dimension:'ROWS',startIndex:row-1,endIndex:row}}}]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Status Changed',oldStatus,newStatus);
   }else{
-    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:${lastDataCol()}${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
+    await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${oldSheet}!A${row}:AD${row}`,valueInputOption:'RAW',resource:{values:[objToRow(data)]}});
     await writeLog(data.infinixId,`${data.firstName} ${data.lastName}`,'Updated',oldStatus,oldStatus);
   }
   return{ok:true,msg:`${data.firstName} ${data.lastName} updated successfully.`};
@@ -1930,24 +1869,24 @@ function renderTracker(){
   const total=list.length;
   const deployed=list.filter(e=>e.deploymentStatus==='DEPLOYED').length;
   const notYet=list.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length;
-  const dashCount=list.filter(e=>e.deploymentStatus==='-').length;
+  const backout=list.filter(e=>e.deploymentStatus==='BACKOUT').length;
   const pct=total?Math.round(deployed/total*100):0;
 
   // by region
   const byRegion={};
   REGIONS.forEach(r=>{
     const reg=list.filter(e=>e.region===r);
-    byRegion[r]={total:reg.length,deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus).length,dash:reg.filter(e=>e.deploymentStatus==='-').length};
+    byRegion[r]={total:reg.length,deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length,backout:reg.filter(e=>e.deploymentStatus==='BACKOUT').length};
   });
 
   // by store (top 10)
   const byStore={};
   list.forEach(e=>{
     const key=e.storeAssignment||e.storeId||'Unknown';
-    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:e.region,total:0,deployed:0,notYet:0,dash:0};
+    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:e.region,total:0,deployed:0,notYet:0,backout:0};
     byStore[key].total++;
     if(e.deploymentStatus==='DEPLOYED')byStore[key].deployed++;
-    else if(e.deploymentStatus==='-')byStore[key].dash++;
+    else if(e.deploymentStatus==='BACKOUT')byStore[key].backout++;
     else byStore[key].notYet++;
   });
   const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
@@ -1983,8 +1922,8 @@ function renderTracker(){
       <div class="tracker-kf glass-card" style="display:flex;flex-direction:column;gap:6px">
         <div class="kf-label-top">Breakdown</div>
         <div style="display:flex;gap:12px;font-size:12px">
-          <span><span style="color:var(--warning);font-weight:700">${notYet}</span> <span style="color:var(--text3)">Not Yet</span></span>
-          <span><span style="color:var(--text3);font-weight:700">${dashCount}</span> <span style="color:var(--text3)">Dash</span></span>
+          <span><span style="color:var(--warning);font-weight:700">${notYet}</span> <span style="color:var(--text3)">Pending</span></span>
+          <span><span style="color:var(--danger);font-weight:700">${backout}</span> <span style="color:var(--text3)">Backout</span></span>
         </div>
       </div>
     </div>
@@ -2002,7 +1941,7 @@ function renderTracker(){
           <div class="tracker-region-bar-wrap"><div class="tracker-region-bar" style="width:${rpct}%"></div></div>
           <div class="tracker-region-stats">
             <span style="color:var(--success)">${rpct}% deployed</span>
-            <span>${rd.notYet} not yet · ${rd.dash} dash</span>
+            <span>${rd.notYet} pending · ${rd.backout} backout</span>
           </div>
         </div>`;
       }).join('')}
@@ -2021,7 +1960,7 @@ function renderTracker(){
               <th class="no-sort">Total</th>
               <th class="no-sort">Deployed</th>
               <th class="no-sort">Pending</th>
-              <th class="no-sort">Dash</th>
+              <th class="no-sort">Backout</th>
               <th class="no-sort">Progress</th>
             </tr>
           </thead>
@@ -2036,7 +1975,7 @@ function renderTracker(){
                 <td style="font-weight:700">${st.total}</td>
                 <td><span style="color:var(--success);font-weight:700">${st.deployed}</span></td>
                 <td><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td>
-                <td><span style="color:var(--text3);font-weight:700">${st.dash}</span></td>
+                <td><span style="color:var(--danger);font-weight:700">${st.backout}</span></td>
                 <td style="min-width:120px">
                   <div style="display:flex;align-items:center;gap:8px">
                     <div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden">
@@ -2099,7 +2038,7 @@ function renderEmployeeTable(type){
         </select>
         <select onchange="filterDeployStatus=this.value;onFilterChange()">
           <option value="">All Deploy Status</option>
-          ${DEPLOYMENT_STATUSES.map(s=>`<option value="${s}" ${filterDeployStatus===s?'selected':''}>${s}</option>`).join('')}
+          ${['DEPLOYED','NOT YET DEPLOYED','BACKOUT','-'].map(s=>`<option value="${s}" ${filterDeployStatus===s?'selected':''}>${s}</option>`).join('')}
         </select>
         <select onchange="filterQR=this.value;onFilterChange()">
           <option value="">All QR</option>
@@ -2143,8 +2082,6 @@ function renderEmployeeTable(type){
   renderTableRows(type);
 }
 
-function requirementProgress(e){const keys=['medicalCertificate','governmentIds','clearance','idPicture','validIds','birthCertificate','diplomaTor','coePrevious'];const done=keys.filter(k=>!!e[k]).length;return `<span class="badge ${done===keys.length?'b-DEPLOYED':'b-NOT-YET-DEPLOYED'}">${done}/${keys.length}</span>`;}
-
 function renderTableRows(type){
   const list=filteredEmployees(type);
   const total=list.length;
@@ -2172,8 +2109,6 @@ function renderTableRows(type){
     storeId:e=>`<td style="color:var(--text3);font-size:11px">${e.storeId||'—'}</td>`,
     rssName:e=>`<td style="color:var(--text2)">${e.rssName||'—'}</td>`,
     contractStatus:e=>`<td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>`,
-    basicWage:e=>`<td>${formatPeso(e.basicWage)||'-'}</td>`,
-    requirements:e=>`<td>${requirementProgress(e)}</td>`,
   };
 
   if(!page.length){
@@ -2388,27 +2323,9 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
-      ${row('Basic Wage',formatPeso(e.basicWage))}
+      ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',e.bankName)}
       ${row('Account No.',e.bankAccount||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Contract & Status</div>
-      ${row('Pre-Employment Forms',e.preEmploymentForms?'Done':'')}
-      ${row('Job Offer',e.jobOffer?'Done':'')}
-      ${row('Status Effective Date',e.statusEffectiveDate)}
-      ${row('Status Remarks',e.statusRemarks)}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Requirements</div>
-      ${row('Medical Certificate',e.medicalCertificate?'Done':'')}
-      ${row('Gov. Numbers / IDs',e.governmentIds?'Done':'')}
-      ${row('Clearance',e.clearance?'Done':'')}
-      ${row('2x2 ID Picture',e.idPicture?'Done':'')}
-      ${row('Valid IDs',e.validIds?'Done':'')}
-      ${row('Birth Certificate',e.birthCertificate?'Done':'')}
-      ${row('Diploma / TOR',e.diplomaTor?'Done':'')}
-      ${row('COE Previous Employer',e.coePrevious?'Done':'')}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Notes / Remarks</div>
@@ -2479,7 +2396,6 @@ function getFormHTML(emp){
   const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${v(k).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
   const dateInp=k=>`<input id="f_${k}" type="date" value="${toDateInput(v(k))}">`;
   const sel=(k,opts)=>`<select id="f_${k}">${opts.map(o=>`<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
-  const chk=k=>`<label style="display:flex;align-items:center;gap:8px;text-transform:none;color:var(--text2);font-size:12px"><input id="f_${k}" type="checkbox" ${v(k)?'checked':''} style="width:16px;height:16px;accent-color:var(--moss-green)"> Done</label>`;
   const fn=emp?`${emp.firstName||''} ${emp.lastName||''}`.trim():'';
 
   return `
@@ -2495,7 +2411,7 @@ function getFormHTML(emp){
     </div>
     <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated'])}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
-    <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',DEPLOYMENT_STATUSES)}</div>
+    <div class="field"><label>Deployment Status</label>${sel('deploymentStatus',['NOT YET DEPLOYED','DEPLOYED','BACKOUT','-'])}</div>
     <div class="field"><label>QR Scan Status</label>${sel('qrStatus',['NOT SCANNED','SCANNED'])}</div>
   </div>
 
@@ -2543,7 +2459,7 @@ function getFormHTML(emp){
   <div class="section-label">Payroll & Banking</div>
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
-    <div class="field"><label>Bank Name</label>${sel('bankName',BANK_NAMES)}</div>
+    <div class="field"><label>Bank Name</label>${sel('bankName',['','CTBC Bank (Philippines)','Union Bank of the Philippines','BDO','BPI','Metrobank','Security Bank','Landbank','PNB','Eastwest Bank','RCBC'])}</div>
     <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number')}</div>
   </div>
 
@@ -2551,26 +2467,6 @@ function getFormHTML(emp){
   <div class="form-grid">
     <div class="field"><label>Contract Status</label>${sel('contractStatus',['NOT YET SENT','SENT'])}</div>
     <div class="field"><label>Contract Sent Date</label>${dateInp('contractSentDate')}</div>
-    <div class="field"><label>Pre-Employment Forms</label>${chk('preEmploymentForms')}</div>
-    <div class="field"><label>Job Offer</label>${chk('jobOffer')}</div>
-  </div>
-
-  <div class="section-label">Status Details</div>
-  <div class="form-grid">
-    <div class="field"><label>Status Effective Date</label>${dateInp('statusEffectiveDate')}</div>
-    <div class="field"><label>Status Remarks</label>${inp('statusRemarks','text','Resigned / AWOL / Terminated / Floating remarks')}</div>
-  </div>
-
-  <div class="section-label">Requirements Checklist</div>
-  <div class="form-grid">
-    <div class="field"><label>Medical Certificate</label>${chk('medicalCertificate')}</div>
-    <div class="field"><label>SSS, Pag-IBIG, PhilHealth and TIN</label>${chk('governmentIds')}</div>
-    <div class="field"><label>NBI / Police / Barangay Clearance</label>${chk('clearance')}</div>
-    <div class="field"><label>2x2 ID Picture</label>${chk('idPicture')}</div>
-    <div class="field"><label>Clear Scanned Valid IDs</label>${chk('validIds')}</div>
-    <div class="field"><label>Birth Certificate</label>${chk('birthCertificate')}</div>
-    <div class="field"><label>Diploma / TOR</label>${chk('diplomaTor')}</div>
-    <div class="field"><label>COE from Previous Employer</label>${chk('coePrevious')}</div>
   </div>
 
   <div class="section-label">Notes / Remarks</div>
@@ -2613,8 +2509,7 @@ function validateRssId(){
 }
 function gatherForm(){
   const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
-  const c=k=>!!document.getElementById('f_'+k)?.checked;
-  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:cleanMoney(f('basicWage')),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),statusEffectiveDate:f('statusEffectiveDate'),statusRemarks:f('statusRemarks'),notes:f('notes'),medicalCertificate:c('medicalCertificate'),governmentIds:c('governmentIds'),clearance:c('clearance'),idPicture:c('idPicture'),validIds:c('validIds'),birthCertificate:c('birthCertificate'),diplomaTor:c('diplomaTor'),coePrevious:c('coePrevious')};
+  return{firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),notes:f('notes')};
 }
 function validate(data){
   let ok=true;
