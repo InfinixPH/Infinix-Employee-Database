@@ -4,104 +4,123 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Infinix Employee Database</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ============================================================
-   THEME TOKENS — DARK (default)
-   Palette: Café Noir / Kombu Green / Moss Green / Tan / Bone
+   THEME TOKENS — DARK
    ============================================================ */
 :root,
 [data-theme="dark"] {
-  --cafe-noir:      #4C3D19;
+  --teal:           #D7FEFA;
+  --teal-mid:       #8FE8E4;
+  --teal-deep:      #2EC4BE;
+  --charcoal-deep:  #1A1D1D;
+  --charcoal-mid:   #2B2E2E;
+  --charcoal-soft:  #323636;
+  --charcoal-card:  #272B2B;
+
+  --bg-base:        #1A1D1D;
+  --bg-deep:        #141717;
+  --bg-mid:         #222626;
+  --bg-card:        rgba(43,46,46,0.85);
+  --bg-card-hover:  rgba(50,54,54,0.95);
+  --bg-glass:       rgba(26,29,29,0.92);
+  --bg-frosted:     rgba(215,254,250,0.04);
+
+  --accent:         #D7FEFA;
+  --accent-bright:  #ffffff;
+  --accent-dim:     rgba(215,254,250,0.10);
+  --accent-glow:    rgba(215,254,250,0.15);
+  --teal-glow:      rgba(46,196,190,0.18);
+
+  --border:         rgba(215,254,250,0.08);
+  --border2:        rgba(215,254,250,0.16);
+  --border3:        rgba(215,254,250,0.30);
+
+  --text:           #FFFFFF;
+  --text2:          rgba(255,255,255,0.65);
+  --text3:          rgba(255,255,255,0.38);
+  --text4:          rgba(255,255,255,0.18);
+
+  --sidebar-bg:     rgba(20,23,23,0.97);
+  --topbar-bg:      rgba(20,23,23,0.90);
+
+  --success:        #4ecb71;
+  --success-bg:     rgba(78,203,113,0.12);
+  --warning:        #f5c842;
+  --warning-bg:     rgba(245,200,66,0.12);
+  --danger:         #e05c5c;
+  --danger-bg:      rgba(224,92,92,0.12);
+  --info:           #D7FEFA;
+  --info-bg:        rgba(215,254,250,0.10);
+
+  --c-active:       #4ecb71;
+  --c-floating:     #f5c842;
+  --c-resigned:     #e8a24a;
+  --c-awol:         #e05c5c;
+  --c-terminated:   #b07ae0;
+
+  --moss-green:     #D7FEFA;
+
+  /* FIX 1: Add missing CSS variables --tan, --bone, --kombu-green */
+  --tan:            #c9b87a;
+  --bone:           #e5d7c4;
   --kombu-green:    #354024;
-  --moss-green:     #889063;
-  --tan:            #CFBB99;
-  --bone:           #E5D7C4;
 
-  --bg-base:        #1e1f18;
-  --bg-deep:        #17180f;
-  --bg-mid:         #252619;
-  --bg-card:        rgba(53,64,36,0.22);
-  --bg-card-hover:  rgba(53,64,36,0.35);
-  --bg-glass:       rgba(30,31,24,0.82);
-  --bg-frosted:     rgba(229,215,196,0.06);
-
-  --accent:         #CFBB99;
-  --accent-bright:  #E5D7C4;
-  --accent-dim:     rgba(207,187,153,0.12);
-  --accent-glow:    rgba(207,187,153,0.18);
-
-  --border:         rgba(207,187,153,0.1);
-  --border2:        rgba(207,187,153,0.22);
-  --border3:        rgba(207,187,153,0.38);
-
-  --text:           #E5D7C4;
-  --text2:          rgba(229,215,196,0.65);
-  --text3:          rgba(229,215,196,0.38);
-  --text4:          rgba(229,215,196,0.18);
-
-  --sidebar-bg:     rgba(23,24,15,0.92);
-  --topbar-bg:      rgba(23,24,15,0.85);
-
-  --success:        #7ab894;
-  --success-bg:     rgba(122,184,148,0.12);
-  --warning:        #c9b87a;
-  --warning-bg:     rgba(201,184,122,0.12);
-  --danger:         #c47a7a;
-  --danger-bg:      rgba(196,122,122,0.12);
-  --info:           #7a9ec4;
-  --info-bg:        rgba(122,158,196,0.12);
-
-  --c-active:       #7ab894;
-  --c-floating:     #c9b87a;
-  --c-resigned:     #c4a07a;
-  --c-awol:         #c47a7a;
-  --c-terminated:   #a07ac4;
-
-  --shadow:         0 4px 24px rgba(0,0,0,0.55);
-  --shadow-lg:      0 12px 60px rgba(0,0,0,0.75);
-  --shadow-accent:  0 0 40px rgba(207,187,153,0.07);
+  --shadow:         0 4px 24px rgba(0,0,0,0.6);
+  --shadow-lg:      0 12px 60px rgba(0,0,0,0.8);
+  --shadow-accent:  0 0 40px rgba(46,196,190,0.10);
 }
 
 [data-theme="light"] {
-  --bg-base:        #f5f0e8;
-  --bg-deep:        #ede6d8;
-  --bg-mid:         #ede6d8;
-  --bg-card:        rgba(255,255,255,0.72);
-  --bg-card-hover:  rgba(255,255,255,0.9);
-  --bg-glass:       rgba(245,240,232,0.88);
-  --bg-frosted:     rgba(76,61,25,0.05);
+  --teal:           #0a8a85;
+  --teal-mid:       #1aada8;
+  --teal-deep:      #0d7a76;
+  --bg-base:        #f0f4f4;
+  --bg-deep:        #e4ecec;
+  --bg-mid:         #e8eeee;
+  --bg-card:        rgba(255,255,255,0.82);
+  --bg-card-hover:  rgba(255,255,255,0.96);
+  --bg-glass:       rgba(240,244,244,0.92);
+  --bg-frosted:     rgba(10,138,133,0.05);
 
-  --accent:         #4C3D19;
-  --accent-bright:  #354024;
-  --accent-dim:     rgba(76,61,25,0.1);
-  --accent-glow:    rgba(76,61,25,0.14);
+  --accent:         #0a8a85;
+  --accent-bright:  #0d7a76;
+  --accent-dim:     rgba(10,138,133,0.10);
+  --accent-glow:    rgba(10,138,133,0.14);
 
-  --border:         rgba(76,61,25,0.12);
-  --border2:        rgba(76,61,25,0.22);
-  --border3:        rgba(76,61,25,0.38);
+  --border:         rgba(10,138,133,0.12);
+  --border2:        rgba(10,138,133,0.22);
+  --border3:        rgba(10,138,133,0.38);
 
-  --text:           #2a2214;
-  --text2:          rgba(42,34,20,0.65);
-  --text3:          rgba(42,34,20,0.4);
-  --text4:          rgba(42,34,20,0.2);
+  --text:           #1a2222;
+  --text2:          rgba(26,34,34,0.65);
+  --text3:          rgba(26,34,34,0.42);
+  --text4:          rgba(26,34,34,0.20);
 
-  --sidebar-bg:     rgba(229,215,196,0.95);
-  --topbar-bg:      rgba(229,215,196,0.9);
+  --sidebar-bg:     rgba(228,236,236,0.97);
+  --topbar-bg:      rgba(228,236,236,0.93);
 
-  --success:        #3d7a58;
-  --success-bg:     rgba(61,122,88,0.1);
-  --warning:        #7a6020;
-  --warning-bg:     rgba(122,96,32,0.1);
-  --danger:         #a03030;
-  --danger-bg:      rgba(160,48,48,0.1);
-  --info:           #2a5a8a;
-  --info-bg:        rgba(42,90,138,0.1);
+  --success:        #1a8a40;
+  --success-bg:     rgba(26,138,64,0.1);
+  --warning:        #a07020;
+  --warning-bg:     rgba(160,112,32,0.1);
+  --danger:         #b03030;
+  --danger-bg:      rgba(176,48,48,0.1);
+  --info:           #0a8a85;
+  --info-bg:        rgba(10,138,133,0.1);
 
-  --shadow:         0 4px 24px rgba(76,61,25,0.12);
-  --shadow-lg:      0 12px 60px rgba(76,61,25,0.2);
-  --shadow-accent:  0 0 40px rgba(76,61,25,0.06);
+  --moss-green:     #0a8a85;
+
+  /* FIX 1: Add missing CSS variables --tan, --bone, --kombu-green (light variants) */
+  --tan:            #7a6020;
+  --bone:           #5a4a30;
+  --kombu-green:    #c8dac8;
+
+  --shadow:         0 4px 24px rgba(10,138,133,0.10);
+  --shadow-lg:      0 12px 60px rgba(10,138,133,0.18);
+  --shadow-accent:  0 0 40px rgba(10,138,133,0.06);
 }
 
 /* ============================================================
@@ -118,7 +137,7 @@
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: var(--bg-base);
   color: var(--text);
   height: 100vh;
@@ -137,14 +156,14 @@ body::after {
 .ambient-1 {
   position: fixed; top: -300px; left: -200px;
   width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(53,64,36,0.22) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(46,196,190,0.10) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
   animation: amb 14s ease-in-out infinite;
 }
 .ambient-2 {
   position: fixed; bottom: -250px; right: -150px;
   width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(136,144,99,0.08) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(215,254,250,0.05) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
   animation: amb 18s ease-in-out infinite reverse;
 }
@@ -204,18 +223,18 @@ body::after {
 }
 .nav-item:hover { background: var(--bg-frosted); border-color: var(--border); color: var(--text); }
 .nav-item.active {
-  background: rgba(136,144,99,0.15);
-  border-color: var(--border2);
+  background: rgba(215,254,250,0.08);
+  border-color: rgba(215,254,250,0.18);
   color: var(--text);
   font-weight: 600;
 }
 .nav-item.active::before {
   content: '';
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 2.5px; height: 50%;
-  background: var(--moss-green);
-  border-radius: 0 2px 2px 0;
-  opacity: 0.9;
+  width: 3px; height: 55%;
+  background: var(--teal-deep);
+  border-radius: 0 3px 3px 0;
+  opacity: 1;
 }
 
 .nav-badge {
@@ -227,9 +246,9 @@ body::after {
   padding: 1px 7px; border-radius: 20px;
 }
 .nav-item.active .nav-badge {
-  background: var(--accent-dim);
-  border-color: var(--border2);
-  color: var(--moss-green);
+  background: rgba(215,254,250,0.12);
+  border-color: rgba(215,254,250,0.25);
+  color: var(--teal-deep);
 }
 
 .icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; opacity: 0.65; }
@@ -257,11 +276,11 @@ body::after {
 }
 .user-avatar {
   width: 26px; height: 26px; border-radius: 50%;
-  background: var(--kombu-green);
+  background: var(--kombu-green);  /* FIX 1: now resolves correctly */
   border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; color: var(--bone); flex-shrink: 0; font-weight: 800;
-  font-family: 'Sora', sans-serif;
+  font-size: 10px; color: var(--bone); flex-shrink: 0; font-weight: 800; /* FIX 1: --bone resolves correctly */
+  font-family: 'Poppins', sans-serif;
 }
 .user-name { font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .btn-signout {
@@ -286,11 +305,10 @@ body::after {
   transition: background .3s;
 }
 .topbar-left { display: flex; flex-direction: column; }
-.topbar-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2px; }
+.topbar-title { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.2px; }
 .topbar-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-/* Theme toggle */
 .theme-toggle {
   width: 32px; height: 32px; border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -308,7 +326,7 @@ body::after {
   border-radius: var(--radius-sm);
   padding: 7px 12px 7px 32px;
   font-size: 12.5px; color: var(--text); width: 220px;
-  font-family: 'DM Sans', sans-serif; outline: none; transition: all .2s;
+  font-family: 'Poppins', sans-serif; outline: none; transition: all .2s;
 }
 .search-wrap input:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
 .search-wrap input::placeholder { color: var(--text3); }
@@ -320,14 +338,14 @@ body::after {
   padding: 7px 14px; border-radius: var(--radius-sm);
   border: 1px solid transparent; cursor: pointer;
   font-size: 12px; font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   transition: all .18s; white-space: nowrap; letter-spacing: 0.2px;
 }
 .btn-primary {
-  background: var(--moss-green); color: #fff;
-  border-color: rgba(136,144,99,0.4); font-weight: 700;
+  background: var(--teal-deep); color: #1A1D1D;
+  border-color: rgba(46,196,190,0.6); font-weight: 700;
 }
-.btn-primary:hover { background: #7a8358; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(136,144,99,0.25); }
+.btn-primary:hover { background: #28b0aa; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(46,196,190,0.30); }
 .btn-ghost {
   background: var(--bg-frosted); color: var(--text2);
   border-color: var(--border); backdrop-filter: blur(8px);
@@ -366,100 +384,215 @@ body::after {
   position: relative; overflow: hidden;
   transition: all .22s cubic-bezier(.4,0,.2,1);
 }
-.glass-card:hover { background: var(--bg-card-hover); border-color: var(--border2); transform: translateY(-1px); box-shadow: var(--shadow-accent); }
+.glass-card:hover { background: var(--bg-card-hover); border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 0 30px rgba(46,196,190,0.08); }
 .glass-card::before {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(215,254,250,0.03) 0%, transparent 60%);
   pointer-events: none;
 }
 .glass-card::after {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(207,187,153,0.18), transparent);
+  background: linear-gradient(90deg, transparent, rgba(215,254,250,0.12), transparent);
 }
 
 /* ============================================================
-   DASHBOARD
+   DASHBOARD — REDESIGNED
    ============================================================ */
-.dash-kf-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; margin-bottom: 16px; }
-@media (max-width:1280px){.dash-kf-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
-@media (max-width:760px){.dash-kf-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-.kf-card { padding: 20px 22px; }
-.kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
-.kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
-.kf-sub { font-size: 10.5px; color: var(--text3); margin-top: 6px; }
-.kf-bar { height: 2px; background: rgba(136,144,99,0.12); border-radius: 2px; margin-top: 14px; overflow: hidden; }
-.kf-bar-fill { height: 100%; border-radius: 2px; background: var(--moss-green); transition: width 1s cubic-bezier(.4,0,.2,1); opacity: 0.7; }
 
-.dash-status-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
-.status-card { padding: 10px 12px; cursor: pointer; min-height: 86px; }
-.status-card-dot { width: 6px; height: 6px; border-radius: 50%; margin-bottom: 7px; }
-.status-num { font-family: 'Sora', sans-serif; font-size: 23px; font-weight: 800; color: var(--text); line-height: 1; }
-.status-lbl { font-size: 9.5px; color: var(--text3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; }
-.status-bar { height: 2px; background: rgba(136,144,99,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-.status-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
-@media (max-width: 1280px) { .dash-status-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 760px) { .dash-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Hero strip at top */
+.dash-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width:1280px){ .dash-hero { grid-template-columns: repeat(3,1fr); } }
 
-.dash-bottom { display: grid; grid-template-columns: 1.1fr 1.6fr; gap: 14px; margin-top: 16px; }
-.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }
-.chart-card { padding: 18px; }
-.chart-title { font-size: 9px; font-weight: 700; margin-bottom: 14px; color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; }
-.chart-wrap { position: relative; height: 160px; }
+.dash-hero-card {
+  padding: 18px 20px 16px;
+  position: relative; overflow: hidden;
+}
+.dash-hero-card .dhc-accent-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.dhc-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.8px; color: var(--text3); margin-bottom: 10px;
+}
+.dhc-value {
+  font-size: 36px; font-weight: 800; line-height: 1;
+  font-family: 'Poppins', sans-serif; letter-spacing: -1px;
+}
+.dhc-sub {
+  font-size: 10.5px; color: var(--text3); margin-top: 6px;
+}
+.dhc-progress {
+  height: 3px; background: rgba(255,255,255,0.06);
+  border-radius: 2px; margin-top: 14px; overflow: hidden;
+}
+.dhc-progress-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+.dhc-trend {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; margin-top: 6px;
+  padding: 2px 7px; border-radius: 20px;
+}
+
+/* Status row redesigned */
+.dash-status-row {
+  display: grid;
+  grid-template-columns: repeat(6,1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width:1280px){ .dash-status-row { grid-template-columns: repeat(3,1fr); } }
+
+.dsr-card {
+  padding: 14px 14px 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all .2s;
+}
+.dsr-card:hover { transform: translateY(-2px); }
+.dsr-num {
+  font-size: 26px; font-weight: 800; line-height: 1;
+  font-family: 'Poppins', sans-serif;
+}
+.dsr-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text3); margin-top: 5px;
+}
+.dsr-pct {
+  font-size: 10px; color: var(--text3); margin-top: 3px;
+}
+.dsr-bar { height: 2px; margin-top: 10px; border-radius: 2px; overflow: hidden; background: rgba(255,255,255,0.05); }
+.dsr-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+
+/* Main 2-column layout */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width:1100px){ .dash-grid { grid-template-columns: 1fr; } }
+
+/* Pending actions redesigned */
+.pending-section { margin-bottom: 14px; }
+.pending-title {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--moss-green); opacity: 0.7;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.pending-title-line { flex:1; height:1px; background: var(--border); }
+
+.pending-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width:1280px){ .pending-grid { grid-template-columns: repeat(2,1fr); } }
+
+.pending-card {
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  border-left: 3px solid var(--border);
+  transition: all .2s;
+}
+.pending-card:hover { transform: translateY(-2px); border-left-color: var(--warning); }
+.pending-card.ok-card:hover { border-left-color: var(--success); }
+
+.pc-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
+}
+.pc-body { flex: 1; min-width: 0; }
+.pc-num { font-size: 22px; font-weight: 800; font-family: 'Poppins', sans-serif; line-height: 1; }
+.pc-label { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Charts row */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.chart-card { padding: 18px 18px 14px; }
+.chart-title {
+  font-size: 9px; font-weight: 700; margin-bottom: 14px;
+  color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;
+}
+.chart-wrap { position: relative; height: 170px; }
+
+/* Right column sidebar */
+.dash-right { display: flex; flex-direction: column; gap: 12px; }
+
+/* Recently updated mini-table */
+.recent-card { padding: 16px; }
+.recent-card h4 {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--moss-green); opacity: 0.8; margin-bottom: 12px;
+}
+.recent-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s; border-radius: 6px; padding: 7px 8px;
+}
+.recent-row:last-child { border-bottom: none; }
+.recent-row:hover { background: var(--bg-frosted); }
+.rr-avatar {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--bg-frosted); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--teal-deep); flex-shrink: 0;
+}
+.rr-name { font-size: 12px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rr-badge { flex-shrink: 0; }
 
 /* Birthday widget */
-.birthday-widget { padding: 16px; }
-.bday-list { display: flex; flex-direction: column; gap: 8px; }
+.birthday-card { padding: 16px; }
+.birthday-card h4 {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--moss-green); opacity: 0.8; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+}
 .bday-item {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 10px; border-radius: var(--radius-sm);
   background: var(--bg-frosted); border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 12px; margin-bottom: 6px; cursor: pointer; transition: all .15s;
 }
+.bday-item:hover { border-color: var(--border2); }
 .bday-icon { font-size: 16px; flex-shrink: 0; }
-.bday-name { font-weight: 600; flex: 1; }
+.bday-name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bday-date { font-size: 10.5px; color: var(--text3); }
-.bday-today { border-color: rgba(201,184,122,0.3); background: rgba(201,184,122,0.06); }
-.bday-soon { border-color: rgba(136,144,99,0.2); }
+.bday-today { border-color: rgba(245,200,66,0.3); background: rgba(245,200,66,0.06); }
 
-/* Summary quick pills */
-.summary-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-.summary-pill {
-  display: flex; align-items: center; gap: 7px;
-  padding: 8px 14px; border-radius: 30px;
-  border: 1px solid var(--border); background: var(--bg-card);
-  font-size: 11.5px; color: var(--text2); backdrop-filter: blur(12px);
-  transition: all .15s; cursor: pointer;
+/* Completion ring summary */
+.completion-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 14px;
 }
-.summary-pill:hover { border-color: var(--border2); color: var(--text); transform: translateY(-1px); }
-.summary-pill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.summary-pill-num { font-weight: 800; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text); }
-.summary-pill-warn { border-color: rgba(196,122,122,0.25); }
-.summary-pill-warn .summary-pill-dot { background: var(--danger); }
-.summary-pill-warn .summary-pill-num { color: var(--danger); }
-.summary-pill-ok .summary-pill-dot { background: var(--success); }
-.summary-pill-ok .summary-pill-num { color: var(--success); }
-
-/* Section heading */
-.section-heading {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
-  color: var(--moss-green); opacity: 0.7; margin-bottom: 10px;
+.completion-card {
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
 }
-.section-heading-line { flex: 1; height: 1px; background: var(--border); }
-
-/* Dashboard search */
-.dash-search-wrap {
-  position: relative; margin-bottom: 16px;
+.cc-ring {
+  position: relative; width: 48px; height: 48px; flex-shrink: 0;
 }
-.dash-search-wrap input {
-  width: 100%; padding: 11px 16px 11px 42px;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); font-size: 13.5px; color: var(--text);
-  font-family: 'DM Sans', sans-serif; outline: none; transition: all .2s;
+.cc-ring svg { transform: rotate(-90deg); }
+.cc-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 5; }
+.cc-ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+.cc-pct {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; font-family: 'Poppins', sans-serif;
 }
-.dash-search-wrap input:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
-.dash-search-wrap input::placeholder { color: var(--text3); }
-.dash-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; }
+.cc-label { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.cc-val { font-size: 18px; font-weight: 800; font-family: 'Poppins', sans-serif; line-height: 1.1; }
 
 /* ============================================================
    FILTER BAR
@@ -472,7 +605,7 @@ body::after {
 .filter-bar select {
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 5px 10px; font-size: 11.5px;
-  color: var(--text2); font-family: 'DM Sans', sans-serif;
+  color: var(--text2); font-family: 'Poppins', sans-serif;
   outline: none; cursor: pointer; transition: all .15s;
 }
 .filter-bar select:focus { border-color: var(--border2); color: var(--text); }
@@ -491,15 +624,14 @@ body::after {
   padding: 5px 10px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: var(--bg-frosted);
   color: var(--text2); font-size: 11.5px; cursor: pointer; transition: all .15s;
-  font-family: 'DM Sans', sans-serif; font-weight: 600;
+  font-family: 'Poppins', sans-serif; font-weight: 600;
 }
 .col-toggle-btn:hover { border-color: var(--border2); color: var(--text); }
 .col-dropdown {
-  position: absolute; right: 0; top: calc(100% + 8px);
+  position: absolute; right: 0; top: calc(100% + 6px);
   background: var(--bg-mid); border: 1px solid var(--border2);
-  border-radius: var(--radius); padding: 10px;
-  min-width: 220px; max-height: 360px; overflow-y: auto;
-  z-index: 500; box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-sm); padding: 8px;
+  min-width: 180px; z-index: 50; box-shadow: var(--shadow-lg);
   display: none;
 }
 .col-dropdown.open { display: block; }
@@ -531,7 +663,7 @@ body::after {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   background: rgba(53,64,36,0.1); position: relative; z-index: 1;
 }
-.table-head h3 { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2px; }
+.table-head h3 { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.2px; }
 .table-head .rec { font-size: 11px; color: var(--text3); }
 .table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); position: relative; z-index: 1; }
 
@@ -557,13 +689,13 @@ tbody tr:hover { background: rgba(136,144,99,0.06); }
 tbody tr.selected { background: rgba(136,144,99,0.1); }
 tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 
-.td-id { font-family: 'Sora', sans-serif; font-size: 11px; font-weight: 700; color: var(--moss-green); opacity: 0.9; }
+.td-id { font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700; color: var(--moss-green); opacity: 0.9; }
 .td-name { font-weight: 600; font-size: 13px; }
 .td-sub { font-size: 10.5px; color: var(--text3); margin-top: 1px; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
 .td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
 
-/* BADGES */
+/* BADGES — FIX 2: removed .b-dash (dead code), added .b-none for '-' status */
 .badge {
   display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 20px;
@@ -575,14 +707,16 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .b-Resigned    { background: rgba(196,160,122,0.1); color: #c4a07a; border-color: rgba(196,160,122,0.2); }
 .b-AWOL        { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
 .b-Terminated  { background: rgba(160,122,196,0.1); color: #a07ac4; border-color: rgba(160,122,196,0.2); }
+.b-Backout     { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
 .b-DEPLOYED    { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
 .b-NOT-YET-DEPLOYED { background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
-.b-BACKOUT, .b-Backout { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
+.b-BACKOUT     { background: var(--danger-bg); color: var(--danger); border-color: rgba(196,122,122,0.25); }
 .b-SCANNED     { background: var(--info-bg); color: var(--info); border-color: rgba(122,158,196,0.2); }
 .b-NOT-SCANNED { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
 .b-SENT        { background: var(--success-bg); color: var(--success); border-color: rgba(122,184,148,0.25); }
 .b-NOT-YET-SENT{ background: var(--warning-bg); color: var(--warning); border-color: rgba(201,184,122,0.25); }
-.b-dash        { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
+/* FIX 2: safe fallback for '-' or empty status — replaces invalid .b-- */
+.b-none        { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
 
 /* ============================================================
    PAGINATION
@@ -598,7 +732,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   width: 28px; height: 28px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-frosted);
   color: var(--text2); cursor: pointer;
-  font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 600; font-family: 'Poppins', sans-serif;
   display: flex; align-items: center; justify-content: center; transition: all .15s;
 }
 .page-btn:hover:not(:disabled) { border-color: var(--border2); color: var(--tan); }
@@ -608,7 +742,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: 7px; padding: 4px 8px;
   font-size: 11px; color: var(--text2);
-  font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer; margin-left: 8px;
+  font-family: 'Poppins', sans-serif; outline: none; cursor: pointer; margin-left: 8px;
 }
 .page-size-sel option { background: var(--bg-mid); }
 
@@ -629,7 +763,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: 7px; padding: 5px 10px;
   font-size: 12px; color: var(--text);
-  font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
+  font-family: 'Poppins', sans-serif; outline: none; cursor: pointer;
 }
 .bulk-status-sel option { background: var(--bg-mid); }
 
@@ -652,7 +786,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   padding: 18px 20px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
 }
-.detail-panel-header h3 { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail-panel-header h3 { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-panel-close {
   width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
   background: var(--bg-frosted); cursor: pointer; font-size: 12px;
@@ -681,12 +815,11 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .audit-time { font-size: 10px; color: var(--text3); margin-top: 2px; }
 .audit-empty { font-size: 12px; color: var(--text3); padding: 16px 0; text-align: center; }
 
-/* Notes field */
 .notes-area {
   width: 100%; min-height: 80px; padding: 8px 10px;
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: var(--radius-sm); font-size: 12px;
-  color: var(--text); font-family: 'DM Sans', sans-serif;
+  color: var(--text); font-family: 'Poppins', sans-serif;
   resize: vertical; outline: none; transition: all .15s;
 }
 .notes-area:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
@@ -719,7 +852,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   padding: 16px 22px 14px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 10px; border-radius: 20px 20px 0 0;
 }
-.modal-header h2 { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2px; }
+.modal-header h2 { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2px; }
 .modal-close {
   margin-left: auto; width: 28px; height: 28px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-frosted);
@@ -753,7 +886,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .field input, .field select, .field textarea {
   width: 100%; padding: 7px 11px;
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 12.5px; font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px; font-family: 'Poppins', sans-serif;
   color: var(--text); background: rgba(136,144,99,0.05);
   outline: none; transition: all .15s;
 }
@@ -778,7 +911,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .store-lookup-status.notfound { color: var(--danger); }
 .store-lookup-status.searching { color: var(--warning); }
 
-/* Duplicate warning */
 .dup-warning {
   background: rgba(201,184,122,0.08); border: 1px solid rgba(201,184,122,0.3);
   border-radius: var(--radius-sm); padding: 8px 12px;
@@ -797,13 +929,12 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .tracker-region-bar-wrap { height: 6px; background: rgba(136,144,99,0.12); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
 .tracker-region-bar { height: 100%; background: var(--moss-green); border-radius: 3px; transition: width .8s cubic-bezier(.4,0,.2,1); }
 .tracker-region-stats { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text3); }
-.tracker-store-table { margin-top: 16px; }
 .tracker-date-filters { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .tracker-date-filters input[type=date] {
   background: var(--bg-frosted); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 5px 10px;
   font-size: 11.5px; color: var(--text2);
-  font-family: 'DM Sans', sans-serif; outline: none;
+  font-family: 'Poppins', sans-serif; outline: none;
 }
 .tracker-date-filters input[type=date]:focus { border-color: var(--border2); }
 
@@ -837,7 +968,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 
 .confirm-modal { width: 380px; }
 .confirm-body { padding: 28px 24px 12px; text-align: center; }
-.confirm-body h3 { font-family: 'Sora', sans-serif; font-size: 15px; margin-bottom: 8px; }
+.confirm-body h3 { font-family: 'Poppins', sans-serif; font-size: 15px; margin-bottom: 8px; }
 .confirm-body p { font-size: 12.5px; color: var(--text2); line-height: 1.7; }
 
 .log-item { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
@@ -882,20 +1013,21 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .login-logo img { height: 100%; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.92; }
 .brand-logo img { height: 88px; max-width: 185px; }
 .login-logo { height: 118px; }
+
 .req-check-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
 .req-check { display:flex; align-items:flex-start; gap:8px; padding:9px 10px; border:1px solid var(--border); background:var(--bg-frosted); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text2); line-height:1.35; }
 .req-check input { width:15px; height:15px; margin-top:1px; accent-color:var(--moss-green); flex-shrink:0; }
 .req-progress { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--text2); }
 .req-progress-bar { width:54px; height:5px; background:rgba(136,144,99,0.14); border-radius:99px; overflow:hidden; }
 .req-progress-fill { height:100%; background:var(--moss-green); border-radius:99px; }
-@media(max-width:780px){.req-check-grid{grid-template-columns:1fr}.brand-logo img{height:72px}.login-logo{height:100px}}
+
 [data-theme="light"] .login-logo img { filter: brightness(0) sepia(1) hue-rotate(60deg) saturate(0.6); opacity: 0.85; }
-.login-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
+.login-title { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; color: var(--moss-green); opacity: 0.8; }
 .login-sub { font-size: 12px; color: var(--text3); margin-bottom: 30px; line-height: 1.7; }
 .btn-google {
   width: 100%; padding: 11px 20px; border-radius: 10px; border: 1px solid var(--border2);
   background: var(--bg-frosted); backdrop-filter: blur(8px); color: var(--text);
-  font-size: 13.5px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; font-weight: 600; font-family: 'Poppins', sans-serif;
   cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 .btn-google:hover { border-color: var(--border3); background: rgba(136,144,99,0.1); }
@@ -923,103 +1055,25 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .view-tab.active { background: var(--moss-green); color: #fff; font-weight: 800; }
 .view-tab:hover:not(.active) { color: var(--text); }
 
-
-/* ============================================================
-   2026 UI POLISH — DARK HRADAR STYLE + FIXED FILTERS/COLUMNS
-   Inspired by the reference dashboard: Poppins, graphite panels, mint glow.
-   ============================================================ */
-:root,
-[data-theme="dark"]{
-  --bg-base:#cfdedb;
-  --bg-deep:#101413;
-  --bg-mid:#1b1f1e;
-  --bg-card:rgba(27,31,30,.92);
-  --bg-card-hover:rgba(34,39,38,.96);
-  --bg-glass:rgba(17,20,19,.92);
-  --bg-frosted:rgba(215,254,250,.075);
-  --accent:#D7FEFA;
-  --accent-bright:#D7FEFA;
-  --accent-dim:rgba(215,254,250,.13);
-  --accent-glow:rgba(215,254,250,.25);
-  --border:rgba(215,254,250,.10);
-  --border2:rgba(215,254,250,.22);
-  --border3:rgba(215,254,250,.36);
-  --text:#ffffff;
-  --text2:rgba(255,255,255,.72);
-  --text3:rgba(255,255,255,.45);
-  --sidebar-bg:rgba(15,18,17,.98);
-  --topbar-bg:rgba(15,18,17,.90);
-  --moss-green:#D7FEFA;
-  --tan:#D7FEFA;
-  --success:#79ead3;
-  --warning:#f4c76b;
-  --danger:#ff7f88;
-  --info:#8ecbff;
-  --shadow:0 18px 60px rgba(0,0,0,.30);
-  --shadow-lg:0 26px 90px rgba(0,0,0,.45);
-  --shadow-accent:0 0 42px rgba(215,254,250,.13);
+/* Dashboard search */
+.dash-search-wrap { position: relative; margin-bottom: 16px; }
+.dash-search-wrap input {
+  width: 100%; padding: 11px 16px 11px 42px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13.5px; color: var(--text);
+  font-family: 'Poppins', sans-serif; outline: none; transition: all .2s;
 }
-body{font-family:'Poppins','DM Sans',sans-serif;background:#cfdedb;padding:22px;}
-body::before{content:'';position:fixed;inset:22px;border-radius:28px;background:linear-gradient(135deg,#111514 0%,#1a1d1c 55%,#111514 100%);box-shadow:0 25px 90px rgba(0,0,0,.35);z-index:0;pointer-events:none;}
-#app{border-radius:28px;overflow:hidden;background:transparent;box-shadow:none;position:relative;z-index:2;}
-.sidebar{width:86px;border-right:1px solid rgba(215,254,250,.10);border-radius:28px 0 0 28px;align-items:center;}
-.brand{padding:18px 10px 12px;width:100%;}
-.brand-logo img{height:34px !important;max-width:54px !important;object-fit:contain;}
-.brand-sub,.nav-section,.user-name,.nav-badge{display:none!important;}
-.nav{padding:12px 10px;width:100%;}
-.nav-item{justify-content:center;width:52px;height:52px;padding:0;margin:5px auto;border-radius:18px;font-size:0;gap:0;}
-.nav-item .icon{width:20px;height:20px;opacity:.75;}
-.nav-item.active{background:var(--accent-dim);box-shadow:0 0 0 1px rgba(215,254,250,.10) inset;color:#D7FEFA;}
-.nav-item.active::before{left:-10px;width:4px;height:24px;background:#D7FEFA;border-radius:0 8px 8px 0;}
-.status-filters{display:none;}
-.sidebar-footer{padding:12px 8px;width:100%;}
-.user-pill{justify-content:center;border-radius:18px;padding:8px;background:rgba(255,255,255,.04);}
-.user-avatar{width:34px;height:34px;background:#D7FEFA;color:#111514;}
-.btn-signout,.sidebar-footer .theme-toggle{display:none!important;}
-.main{background:transparent;border-radius:0 28px 28px 0;}
-.topbar{height:72px;padding:0 28px;border-bottom:1px solid rgba(215,254,250,.10);background:rgba(17,20,19,.74);}
-.topbar-title{font-size:20px;font-weight:700;color:#fff;}
-.topbar-sub{font-size:12px;color:rgba(255,255,255,.50);}
-.content{padding:26px;}
-.dash-search-wrap input{height:52px;border-radius:999px;background:rgba(255,255,255,.05);border-color:rgba(215,254,250,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);font-size:14px;}
-.glass-card,.table-wrap{border-radius:22px;background:linear-gradient(180deg,rgba(37,42,41,.96),rgba(27,31,30,.96));border:1px solid rgba(215,254,250,.10);box-shadow:0 16px 44px rgba(0,0,0,.18);}
-.glass-card:hover{transform:translateY(-2px);border-color:rgba(215,254,250,.22);}
-.kf-card{min-height:142px;padding:24px;}
-.kf-label-top,.chart-title,.section-heading,.filter-label,thead th{color:#D7FEFA;letter-spacing:1.8px;}
-.kf-num{font-size:38px;color:#fff;}
-.kf-sub{font-size:12px;color:rgba(255,255,255,.50);}
-.kf-bar,.status-bar{height:5px;background:rgba(255,255,255,.08);border-radius:999px;}
-.kf-bar-fill,.status-bar-fill{border-radius:999px;background:#D7FEFA;box-shadow:0 0 20px rgba(215,254,250,.25);}
-.status-card{border-radius:20px;min-height:104px;padding:18px;}
-.status-num{font-size:30px;}
-.summary-pill{padding:12px 18px;border-radius:999px;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.10);font-size:13px;}
-.summary-pill-warn{border-color:rgba(255,127,136,.22);}
-.dash-bottom{grid-template-columns:1fr 1.45fr;}
-.chart-wrap{height:210px;}
-.table-head{padding:18px 20px;background:rgba(255,255,255,.035);border-bottom-color:rgba(215,254,250,.10);}
-.table-head h3{font-size:16px;color:#fff;}
-thead th{background:rgba(215,254,250,.06)!important;padding:13px 16px;}
-tbody td{padding:14px 16px;border-bottom-color:rgba(255,255,255,.05);}
-tbody tr:hover{background:rgba(215,254,250,.06);}
-.badge{padding:5px 11px;font-size:10.5px;border-radius:999px;}
-.filter-bar{display:grid;grid-template-columns:auto repeat(4,minmax(150px,190px)) minmax(0,1fr) auto;gap:10px;align-items:center;padding:14px 20px;background:rgba(255,255,255,.035);position:sticky;top:0;z-index:35;backdrop-filter:blur(18px);}
-.filter-bar select{height:38px;border-radius:999px;padding:0 38px 0 16px;background:rgba(215,254,250,.08);border:1px solid rgba(215,254,250,.18);color:#fff;font-size:13px;appearance:auto;}
-.filter-bar select option{background:#1b1f1e;color:#fff;}
-.filter-active-count{height:32px;display:inline-flex;align-items:center;justify-content:center;background:rgba(215,254,250,.12);color:#D7FEFA;border-color:rgba(215,254,250,.24);}
-.col-toggle-wrap{grid-column:7;justify-self:end;margin-left:0;z-index:80;}
-.col-toggle-btn{height:38px;border-radius:999px;padding:0 16px;background:rgba(215,254,250,.09);border-color:rgba(215,254,250,.22);color:#fff;}
-.col-dropdown{right:0;top:calc(100% + 10px);width:280px;max-height:420px;overflow:auto;background:#171b1a;border:1px solid rgba(215,254,250,.24);border-radius:18px;padding:12px;box-shadow:0 22px 70px rgba(0,0,0,.55);z-index:999;}
-.col-check-item{padding:10px 12px;border-radius:12px;font-size:13px;color:rgba(255,255,255,.74);}
-.col-check-item:hover{background:rgba(215,254,250,.09);color:#fff;}
-.col-check-item input{accent-color:#D7FEFA;}
-.table-scroll{max-height:calc(100vh - 310px);}
-.pagination{background:rgba(255,255,255,.035);}
-.page-btn,.page-size-sel{border-radius:12px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.72);}
-.page-btn.active{background:#D7FEFA;color:#111514;}
-.login-screen{background:#cfdedb;}
-.login-card{background:#171b1a;border-color:rgba(215,254,250,.18);}
-@media(max-width:1100px){.filter-bar{grid-template-columns:1fr 1fr;}.filter-label{grid-column:1/-1}.col-toggle-wrap{grid-column:1/-1;justify-self:start}.dash-kf-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.dash-bottom{grid-template-columns:1fr}.sidebar{display:none}body{padding:0}body::before{inset:0;border-radius:0}#app,.main{border-radius:0}}
+.dash-search-wrap input:focus { border-color: var(--border2); box-shadow: 0 0 0 3px var(--accent-dim); }
+.dash-search-wrap input::placeholder { color: var(--text3); }
+.dash-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.4; display: flex; }
 
+/* section heading */
+.section-heading {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+  color: var(--moss-green); opacity: 0.7; margin-bottom: 10px;
+}
+.section-heading-line { flex: 1; height: 1px; background: var(--border); }
 </style>
 </head>
 <body>
@@ -1031,8 +1085,9 @@ tbody tr:hover{background:rgba(215,254,250,.06);}
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Sora',sans-serif;font-size:36px;font-weight:900;color:var(--tan);letter-spacing:3px">INFINIX</span>
+      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:36px;font-weight:900;color:var(--tan);letter-spacing:3px">INFINIX</span>
     </div>
     <div class="login-title">HR System</div>
     <div class="login-sub">Employee Database<br>Sign in with your Google account to continue.</div>
@@ -1057,7 +1112,7 @@ tbody tr:hover{background:rgba(215,254,250,.06);}
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Sora',sans-serif;font-size:22px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:22px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
   </div>
@@ -1183,8 +1238,6 @@ tbody tr:hover{background:rgba(215,254,250,.06);}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
 <script>
-window.addEventListener('error', e => console.error('SITE ERROR:', e.message, e.filename, e.lineno, e.colno));
-window.addEventListener('unhandledrejection', e => console.error('SITE PROMISE ERROR:', e.reason));
 // ============================================================
 // CONFIG
 // ============================================================
@@ -1199,7 +1252,7 @@ const STORE_DETAILS_SHEET = 'Store Details';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated','Backout'];
-const STATUS_COLORS = { Active:'#7ab894', Floating:'#c9b87a', Resigned:'#c4a07a', AWOL:'#c47a7a', Terminated:'#a07ac4', Backout:'#c47a7a' };
+const STATUS_COLORS = { Active:'#4ecb71', Floating:'#f5c842', Resigned:'#e8a24a', AWOL:'#e05c5c', Terminated:'#a07ac4', Backout:'#e05c5c' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
 const HEADERS = [
@@ -1212,6 +1265,10 @@ const HEADERS = [
 const SHEET_LAST_COL = 'AQ';
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By'];
 const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
+
+// FIX 3 & 9: Unified requirement fields list.
+// requirementsComplete and reqDoneCount now use the same REQUIRED_FIELDS (9 items, COE excluded as optional).
+// REQUIREMENT_FIELDS (all 10) is used for display in detail panel only.
 const REQUIREMENT_FIELDS = [
   ['medicalCert','Medical Certificate (CBC, X-ray, Fecalysis, Urinalysis, Drug Test and PT)'],
   ['govForms','SSS, Pag-IBIG, PhilHealth and TIN (Number/ID or Government forms)'],
@@ -1220,12 +1277,13 @@ const REQUIREMENT_FIELDS = [
   ['validIdCopy','Clear scanned copy of ALL Valid ID'],
   ['birthCert','Birth Certificate'],
   ['diplomaTor','Diploma or TOR (College)'],
-  ['previousCoe','Certificate of Employment from previous employer (if any)'],
+  ['previousCoe','Certificate of Employment (optional — skip if no prev employer)'],
   ['preEmploymentForms','Pre-Employment Forms'],
   ['jobOffer','Job Offer']
 ];
+// FIX 3: required fields excluding optional COE — used for completion calculation
+const REQUIRED_FIELDS = ['medicalCert','govForms','clearance','idPicture','validIdCopy','birthCert','diplomaTor','preEmploymentForms','jobOffer'];
 
-// Column definitions for visibility toggle
 const TABLE_COLUMNS = [
   { key:'fullName',        label:'Full Name',       always:true },
   { key:'infinixId',       label:'Infinix ID',      always:true },
@@ -1257,12 +1315,17 @@ let detailEmpId=null;
 let logCache=null;
 let _charts={};
 let storeCache={}, storeCacheLoaded=false;
-let visibleCols=new Set(['fullName','infinixId','status','deploymentStatus','requirements','region','storeAssignment','contractStatus']); // clean default view; users can enable more columns
+let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
 let colDropdownOpen=false;
-// Missing field filter for dashboard drill-down
 let missingFieldFilter=null;
-// Tracker filters
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
+
+// ============================================================
+// FIX 5: XSS-safe escape helper
+// ============================================================
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 // ============================================================
 // THEME
@@ -1278,7 +1341,6 @@ function toggleTheme(){
   document.documentElement.setAttribute('data-theme',next);
   localStorage.setItem('hr_theme',next);
   updateThemeIcon(next);
-  // re-render charts if on dashboard
   if(currentView==='dashboard') renderDashboard();
 }
 function updateThemeIcon(theme){
@@ -1293,16 +1355,14 @@ initTheme();
 async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
-    // B=RSS Name, C=RSS ID, D=skip, E=Store Name, F=Store ID
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!B:F`});
     const rows=r.result.values||[];
     storeCache={};
     for(let i=1;i<rows.length;i++){
-      const rssName  =(rows[i][0]||'').trim(); // col B
-      const rssId    =(rows[i][1]||'').trim(); // col C
-      // col D = index 2, skipped
-      const storeName=(rows[i][3]||'').trim(); // col E
-      const shopId   =(rows[i][4]||'').trim(); // col F
+      const rssName  =(rows[i][0]||'').trim();
+      const rssId    =(rows[i][1]||'').trim();
+      const storeName=(rows[i][3]||'').trim();
+      const shopId   =(rows[i][4]||'').trim();
       if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId};
     }
     storeCacheLoaded=true;
@@ -1357,7 +1417,6 @@ function doLogin(){
   if(!tokenClient){setLoginStatus('Auth not ready yet — please refresh the page.','error');return;}
   const btn=document.getElementById('btn-google-signin');
   if(btn){btn.classList.add('loading');btn.innerHTML='<span style="font-size:13px">Signing in…</span>';}
-  // Always use 'select_account' so users can pick their account without a popup dependency
   tokenClient.requestAccessToken({prompt:'select_account'});
 }
 
@@ -1376,7 +1435,6 @@ function _onAuthReady(resp){
   if(btn){btn.classList.remove('loading');btn.innerHTML=GOOGLE_BTN_HTML;}
   if(resp.error){
     clearTimeout(_silentAuthTimer);
-    // These are expected non-errors (user closed popup, session expired, etc.)
     const silent=['user_closed_modal','interaction_required','immediate_failed','access_denied'];
     if(silent.includes(resp.error)){
       showGoogleButton();setLoginStatus('','');
@@ -1425,7 +1483,6 @@ window.onGoogleLibraryLoad=()=>{
     prompt:'',
     callback:_onAuthReady,
     error_callback:(err)=>{
-      // Handles popup blocked at the browser level before OAuth even starts
       if(err.type==='popup_failed_to_open'||err.type==='popup_closed'){
         const btn=document.getElementById('btn-google-signin');
         if(btn){btn.classList.remove('loading');btn.innerHTML=GOOGLE_BTN_HTML;}
@@ -1440,9 +1497,7 @@ window.onGoogleLibraryLoad=()=>{
 function trySilentAuth(){
   if(!gapiInited||!gisInited||!tokenClient)return;
   const storedUser=localStorage.getItem('hr_user');
-  // No stored session — go straight to login screen
   if(!storedUser){clearTimeout(_silentAuthTimer);showLoginScreen(false);return;}
-  // Stored session exists — try silent token refresh (no prompt)
   try{
     const u=JSON.parse(storedUser);
     tokenClient.requestAccessToken({prompt:'',login_hint:u.email||''});
@@ -1477,7 +1532,7 @@ function showApp(){
 }
 function setOfflineBanner(visible,msg){
   const el=document.getElementById('offline-banner');
-  if(visible){el.classList.add('visible');if(msg)el.innerHTML=`${msg} <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>`;}
+  if(visible){el.classList.add('visible');if(msg)el.innerHTML=`${esc(msg)} <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button>`;}
   else el.classList.remove('visible');
 }
 window.addEventListener('offline',()=>setOfflineBanner(true,'You are offline — data may be stale.'));
@@ -1512,7 +1567,6 @@ async function loadData(){
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
     ]);
     employees=[];
-    // NEW FORMAT: Infinix Employee ID is Column B, index 1. Do not filter by old Column E.
     (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
     (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
@@ -1522,7 +1576,7 @@ async function loadData(){
     const status = e?.result?.error?.code || e?.status;
     let msg = 'Failed to load data.';
     if(status===403){
-      msg = 'Access denied (403) — your Google account does not have permission to view this Sheet. Ask the admin to share the Sheet with your email.';
+      msg = 'Access denied (403) — your Google account does not have permission to view this Sheet.';
     } else if(status===401){
       msg = 'Session expired — please sign out and sign in again.';
     } else if(e?.message){
@@ -1530,21 +1584,13 @@ async function loadData(){
     }
     setOfflineBanner(true, msg);
     toast(msg, 'error');
-    // Show the error clearly on the screen too
     document.getElementById('content').innerHTML=`
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;text-align:center;padding:24px">
         <div style="font-size:32px;opacity:0.4">⚠️</div>
-        <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Could Not Load Data</div>
-        <div style="font-size:13px;color:var(--text2);max-width:440px;line-height:1.7">${msg}</div>
-        ${status===403?`<div style="font-size:12px;color:var(--text3);background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;max-width:440px;line-height:1.7">
-          <b style="color:var(--moss-green)">How to fix:</b><br>
-          1. Open the Google Sheet<br>
-          2. Click <b>Share</b> in the top right<br>
-          3. Add your email with <b>Editor</b> access<br>
-          4. Come back and click <b>Refresh</b>
-        </div>`:''}
+        <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Could Not Load Data</div>
+        <div style="font-size:13px;color:var(--text2);max-width:440px;line-height:1.7">${esc(msg)}</div>
         <button class="btn btn-primary" onclick="refreshData()">Try Again</button>
-        <button class="btn btn-ghost" onclick="signOut()">Sign Out & Switch Account</button>
+        <button class="btn btn-ghost" onclick="signOut()">Sign Out &amp; Switch Account</button>
       </div>`;
   }finally{showLoading(false);}
 }
@@ -1620,49 +1666,15 @@ function objToRow(d){
   }
   const fullName=(d.fullName||`${d.firstName||''} ${d.lastName||''}`.trim()).trim();
   return [
-    d.region||'',
-    d.infinixId||'',
-    fullName,
-    d.firstName||'',
-    d.lastName||'',
-    d.middleName||'',
-    d.status||'Active',
-    d.storeAssignment||'',
-    d.storeId||'',
-    d.qrStatus||'NOT SCANNED',
-    d.deploymentDate||'',
-    d.deploymentStatus||'-',
-    d.rssName||'',
-    d.rssId||'',
-    d.basicWage||'',
-    d.address||'',
-    d.mobile||'',
-    d.email||'',
-    d.dob||'',
-    d.gender||'',
-    d.maritalStatus||'',
-    d.sss||'',
-    d.philhealth||'',
-    d.pagibig||'',
-    d.tin||'',
-    d.bankName||'',
-    d.bankAccount||'',
-    d.contractStatus||'NOT YET SENT',
-    d.contractSentDate||'',
-    yn(d.preEmploymentForms),
-    yn(d.jobOffer),
-    d.statusDate||'',
-    d.statusRemarks||'',
-    ts(),
-    d.notes||'',
-    yn(d.medicalCert),
-    yn(d.govForms),
-    yn(d.clearance),
-    yn(d.idPicture),
-    yn(d.validIdCopy),
-    yn(d.birthCert),
-    yn(d.diplomaTor),
-    yn(d.previousCoe)
+    d.region||'',d.infinixId||'',fullName,d.firstName||'',d.lastName||'',d.middleName||'',
+    d.status||'Active',d.storeAssignment||'',d.storeId||'',d.qrStatus||'NOT SCANNED',
+    d.deploymentDate||'',d.deploymentStatus||'-',d.rssName||'',d.rssId||'',d.basicWage||'',
+    d.address||'',d.mobile||'',d.email||'',d.dob||'',d.gender||'',d.maritalStatus||'',
+    d.sss||'',d.philhealth||'',d.pagibig||'',d.tin||'',d.bankName||'',d.bankAccount||'',
+    d.contractStatus||'NOT YET SENT',d.contractSentDate||'',yn(d.preEmploymentForms),yn(d.jobOffer),
+    d.statusDate||'',d.statusRemarks||'',ts(),d.notes||'',
+    yn(d.medicalCert),yn(d.govForms),yn(d.clearance),yn(d.idPicture),yn(d.validIdCopy),
+    yn(d.birthCert),yn(d.diplomaTor),yn(d.previousCoe)
   ];
 }
 function normalizeStatus(status){
@@ -1676,7 +1688,6 @@ function normalizeStatus(status){
   if(s==='BACKOUT'||s==='BACK OUT'||s==='BACK-OUT')return 'Backout';
   return '';
 }
-
 function normalizeRegion(region){
   const raw=String(region||'').trim();
   const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
@@ -1690,39 +1701,16 @@ function normalizeRegion(region){
   return raw.toUpperCase();
 }
 function normalizeDeployStatus(status){
-  // BULLETPROOF DEPLOYMENT NORMALIZER
-  // IMPORTANT: Dashboard + tracker use Active sheet COLUMN L only (r[11]).
-  // This handles hidden spaces, NBSP, weird dashes, underscores, lowercase,
-  // and values like "Not yet deployed", "NOT-YET-DEPLOYED", "not_deployed".
-  const raw=String(status ?? '')
-    .replace(/\u00A0/g,' ')
-    .replace(/[‐‑‒–—−]/g,'-')
-    .trim();
-  const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ').trim();
+  const raw=String(status||'').trim();
+  const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
   if(!s)return '';
   if(s==='-')return '-';
-  if(s.includes('BACK') && s.includes('OUT'))return 'BACKOUT';
-  if(s.includes('NOT') && s.includes('DEPLOY'))return 'NOT YET DEPLOYED';
-  if(s.includes('PENDING') && s.includes('DEPLOY'))return 'NOT YET DEPLOYED';
-  if(s==='DEPLOYED' || (s.includes('DEPLOYED') && !s.includes('NOT')))return 'DEPLOYED';
+  if(s==='DEPLOYED')return 'DEPLOYED';
+  if(s==='BACKOUT'||s==='BACK OUT'||s==='BACKOUT PROMOTER')return 'BACKOUT';
+  if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED')return 'NOT YET DEPLOYED';
   return s;
 }
-function getDeployStatusFromColumnL(e){
-  return normalizeDeployStatus(e?._raw?.[11] ?? e?.deploymentStatusColL ?? e?.deploymentStatus ?? '');
-}
-function debugDeploymentColumnL(){
-  const rows=employees.filter(e=>e._sheet===ACTIVE_SHEET);
-  const sample=rows.slice(0,25).map(e=>({id:e.infinixId,name:e.fullName,columnL:e._raw?.[11],normalized:getDeployStatusFromColumnL(e)}));
-  const counts=rows.reduce((acc,e)=>{const k=getDeployStatusFromColumnL(e)||'(blank)';acc[k]=(acc[k]||0)+1;return acc;},{});
-  console.table(sample);
-  console.log('Active sheet Column L counts:', counts);
-  return {counts,sample};
-}
-window.debugDeploymentColumnL=debugDeploymentColumnL;
-function isNotYetDeployedColL(value){
-  return normalizeDeployStatus(value)==='NOT YET DEPLOYED';
-}
-
+function isNotYetDeployedColL(value){return normalizeDeployStatus(value)==='NOT YET DEPLOYED';}
 function isInactiveStatus(status){return ['Floating','Resigned','AWOL','Terminated','Backout'].includes(normalizeStatus(status));}
 function isBackoutDeployment(deploymentStatus){return normalizeDeployStatus(deploymentStatus)==='BACKOUT';}
 function getTargetSheet(status,deploymentStatus){
@@ -1732,7 +1720,7 @@ function getTargetSheet(status,deploymentStatus){
   if(isInactiveStatus(st)||st==='-')return INACTIVE_SHEET;
   return null;
 }
-function isCompletelyBlankRow(row){return !row || row.every(v=>String(v||'').trim()==='');}
+
 async function getSheetIdByName(sheetName){
   const meta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
   const sheet=meta.result.sheets.find(s=>s.properties.title===sheetName);
@@ -1756,11 +1744,6 @@ async function appendRowsToSheet(sheetName,rows){
     insertDataOption:'INSERT_ROWS',
     resource:{values:rows.map(r=>HEADERS.map((_,i)=>r[i]||''))}
   });
-}
-async function reconcileActiveInactiveSheets(){
-  // Disabled on-load sheet clearing to prevent Google Sheets API 400 errors.
-  // Row movement still happens when saving/editing an employee.
-  return {movedToInactive:0,movedToActive:0,deletedBlankRows:0};
 }
 async function writeLog(empId,name,action,from,to){
   try{
@@ -1793,22 +1776,14 @@ async function apiAddEmployee(data){
 async function apiUpdateEmployee(data){
   const emp=employees.find(e=>String(e.infinixId).trim()===String(data.infinixId).trim());
   if(!emp)return{ok:false,msg:'Employee not found.'};
-
   const oldStatus=emp.status||'Active';
   if(normalizeDeployStatus(data.deploymentStatus)==='BACKOUT'){data.deploymentStatus='BACKOUT';data.status='-';}
   const newStatus=data.status||'Active';
-
-  // IMPORTANT: use the employee's ACTUAL current sheet, not guessed from status.
-  // This fixes old rows that are still in Active even if their status is Resigned/AWOL/etc.
   const oldSheet=emp._sheet||getTargetSheet(oldStatus);
   const newSheet=getTargetSheet(newStatus,data.deploymentStatus)||oldSheet;
-
   const row=await findEmployeeRowInSheet(data.infinixId,oldSheet);
   if(row<0)return{ok:false,msg:`Could not find employee row in ${oldSheet} sheet.`};
-
   if(oldSheet!==newSheet){
-    // Move ONE employee only when you manually save/update their status.
-    // Active => Active sheet. Floating/Resigned/AWOL/Terminated => Inactive sheet.
     await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:`${newSheet}!A:${SHEET_LAST_COL}`,valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[objToRow(data)]}});
     const sheetMeta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
     const sheetObj=sheetMeta.result.sheets.find(s=>s.properties.title===oldSheet);
@@ -1823,8 +1798,6 @@ async function apiUpdateEmployee(data){
 async function apiDeleteEmployee(infinixId){
   const emp=employees.find(e=>String(e.infinixId).trim()===String(infinixId).trim());
   if(!emp)return{ok:false,msg:'Employee not found.'};
-
-  // Delete from the employee's ACTUAL current sheet, not guessed from status.
   const sheet=emp._sheet||getTargetSheet(emp.status,emp.deploymentStatus);
   const row=await findEmployeeRowInSheet(infinixId,sheet);
   if(row<0)return{ok:false,msg:`Could not find employee row in ${sheet} sheet.`};
@@ -1847,7 +1820,6 @@ async function apiBulkUpdateStatus(ids,newStatus){
   selectedIds.clear();await loadData();
 }
 
-// Notes save
 async function saveNotes(infinixId, notesVal){
   const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
   if(!emp)return;
@@ -1884,34 +1856,46 @@ function updateSortHeaders(){
   });
 }
 
+// FIX 4: filteredEmployees now correctly handles filterStatus alongside active/inactive separation
 function filteredEmployees(type){
   const isActive=type==='active';
-  let list=filterStatus
-    ?employees.filter(e=>e.status===filterStatus)
-    :employees.filter(e=>isActive?(normalizeStatus(e.status)==='Active' && getDeployStatusFromColumnL(e)!=='BACKOUT'):(normalizeStatus(e.status)!=='Active' || getDeployStatusFromColumnL(e)==='BACKOUT'));
+  let list;
 
-  // Missing field filter (from dashboard pill clicks)
-  // Dashboard pending actions must only drill down Active promoters.
+  if(filterStatus){
+    // FIX 4: when filterStatus is set, filter the right base set (active/inactive) then apply status filter
+    if(filterStatus==='Active'){
+      list=employees.filter(e=>normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT');
+    } else {
+      list=employees.filter(e=>normalizeStatus(e.status)===filterStatus || (filterStatus==='Backout'&&normalizeDeployStatus(e.deploymentStatus)==='BACKOUT'));
+    }
+  } else {
+    list=employees.filter(e=>isActive
+      ?(normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT')
+      :(normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT')
+    );
+  }
+
+  // Missing field filters — active promoters only
   if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
+    if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && isNotYetDeployedColL(e.deploymentStatusColL));
+    else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
+    else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
+    else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
+    else if(missingFieldFilter==='missingBank')list=list.filter(e=>isMissing(e.bankAccount));
+    else if(missingFieldFilter==='missingMobile')list=list.filter(e=>isMissing(e.mobile));
+    else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
   }
-  if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED');
-  else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
-  else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
-  else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
-  else if(missingFieldFilter==='missingSSS')list=list.filter(e=>isMissing(e.sss));
-  else if(missingFieldFilter==='missingBank')list=list.filter(e=>isMissing(e.bankAccount));
-  else if(missingFieldFilter==='missingMobile')list=list.filter(e=>isMissing(e.mobile));
-  else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
   if(filterRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(filterRegion));
-  if(filterDeployStatus)list=list.filter(e=>getDeployStatusFromColumnL(e)===normalizeDeployStatus(filterDeployStatus));
+  if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
   if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
 }
+
 function onSearch(){
   if(currentView==='dashboard'){showView('active');return;}
   if(currentView!=='active'&&currentView!=='inactive'){showView('active');return;}
@@ -1964,46 +1948,63 @@ function getBirthdaysThisMonth(){
 }
 
 // ============================================================
-// RENDER
+// DATA HELPERS
 // ============================================================
 function isMissing(v){return String(v||'').trim()==='';}
 function isYesField(v){return v===true || yes(v);}
+
+// FIX 3: requirementsComplete uses REQUIRED_FIELDS (9, excludes COE)
 function requirementsComplete(e){
-  // Required onboarding checklist for active promoters.
-  // COE is optional when there is no previous employer, so it is not counted as required.
-  const required=['medicalCert','govForms','clearance','idPicture','validIdCopy','birthCert','diplomaTor','preEmploymentForms','jobOffer'];
-  return required.every(k=>isYesField(e[k]));
+  return REQUIRED_FIELDS.every(k=>isYesField(e[k]));
 }
-function activePromotersOnly(){return employees.filter(e=>normalizeStatus(e.status)==='Active' && getDeployStatusFromColumnL(e)!=='BACKOUT');}
+// FIX 3: reqDoneCount uses REQUIRED_FIELDS (9) too for consistent % display
+function reqDoneCount(e){ return REQUIRED_FIELDS.filter(k=>isYesField(e[k])).length; }
+function reqProgressHTML(e){
+  const done=reqDoneCount(e), total=REQUIRED_FIELDS.length, pct=Math.round((done/total)*100);
+  return `<span class="req-progress"><span>${done}/${total}</span><span class="req-progress-bar"><span class="req-progress-fill" style="width:${pct}%"></span></span></span>`;
+}
+
+function activePromotersOnly(){return employees.filter(e=>normalizeStatus(e.status)==='Active' && normalizeDeployStatus(e.deploymentStatus)!=='BACKOUT');}
 
 function getStats(){
   const s={Active:0,Floating:0,Resigned:0,AWOL:0,Terminated:0,Backout:0};
   employees.forEach(e=>{
-    const st=getDeployStatusFromColumnL(e)==='BACKOUT' ? 'Backout' : normalizeStatus(e.status);
+    const st=normalizeDeployStatus(e.deploymentStatus)==='BACKOUT' ? 'Backout' : normalizeStatus(e.status);
     if(s[st]!==undefined)s[st]++;
   });
   return s;
 }
+
+// FIX 2: Safe badge helper — returns .b-none for '-' or empty to avoid invalid .b-- class
+function badgeHTML(val, cls){
+  if(!val||val==='-') return `<span class="badge b-none">—</span>`;
+  const safeClass=cls||(val.replace(/ /g,'-'));
+  return `<span class="badge b-${esc(safeClass)}">${esc(val)}</span>`;
+}
+
 function renderSidebar(){
   const s=getStats();
   document.getElementById('badge-active').textContent=s.Active;
-  document.getElementById('badge-inactive').textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || getDeployStatusFromColumnL(e)==='BACKOUT').length;
+  document.getElementById('badge-inactive').textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
   document.getElementById('status-filters').innerHTML=STATUSES.map(st=>`
-    <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${st}')">
-      <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span>${st}
+    <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${esc(st)}')">
+      <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span>${esc(st)}
       <span class="sf-count">${s[st]||0}</span>
     </div>`).join('');
 }
+
 function filterByStatus(s){
   filterStatus=filterStatus===s?null:s;
   missingFieldFilter=null;
-  currentView=s==='Active'?'active':'inactive';
+  // FIX 4: correctly set view based on which status was clicked
+  currentView=(s==='Active')?'active':'inactive';
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const navEl=document.getElementById('nav-'+(s==='Active'?'active':'inactive'));
   if(navEl)navEl.classList.add('active');
   renderSidebar();renderView();
 }
+
 function showView(v){
   currentView=v;
   if(v!=='active'&&v!=='inactive'){filterStatus=null;missingFieldFilter=null;}
@@ -2012,6 +2013,7 @@ function showView(v){
   const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
   renderSidebar();renderView();
 }
+
 function renderView(){
   const si=document.getElementById('search-input');
   const sicon=document.getElementById('topbar-search-icon');
@@ -2026,7 +2028,6 @@ function renderView(){
   else if(currentView==='log')renderLog();
 }
 
-// Dashboard pill drill-down
 function drillDown(filterKey){
   missingFieldFilter=filterKey;
   filterStatus=null;
@@ -2037,7 +2038,6 @@ function drillDown(filterKey){
   renderSidebar();renderView();
 }
 
-// Dashboard search redirect
 function dashSearch(q){
   if(!q.trim())return;
   document.getElementById('search-input').value=q;
@@ -2045,37 +2045,57 @@ function dashSearch(q){
 }
 
 // ============================================================
-// DASHBOARD
+// RING SVG HELPER (for dashboard completion rings)
+// ============================================================
+function ringHTML(pct, color, size=48, sw=5){
+  const r=(size-sw)/2;
+  const circ=2*Math.PI*r;
+  const offset=circ - (pct/100)*circ;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg)">
+    <circle class="cc-ring-track" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${sw}"/>
+    <circle class="cc-ring-fill" cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}"
+      stroke-width="${sw}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
+      fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+// ============================================================
+// DASHBOARD — REDESIGNED
 // ============================================================
 function renderDashboard(){
   document.getElementById('topbar-title').textContent='Dashboard';
-  document.getElementById('topbar-sub').textContent='Overview';
+  document.getElementById('topbar-sub').textContent='Overview · Active promoters only for HR metrics';
 
   const s=getStats();
   const total=employees.length;
   const activeEmployees=activePromotersOnly();
   const activeTotal=activeEmployees.length;
-  // Pending actions and completion cards count ACTIVE promoters only.
-  // Inactive employees stay visible in status totals but do not affect HR pending tasks.
-  // Deployment counts read the Active sheet only and use Column L: Deployment Status.
+
+  const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
   const activeSheetRows=employees.filter(e=>e._sheet===ACTIVE_SHEET);
-  const deployed=activeSheetRows.filter(e=>getDeployStatusFromColumnL(e)==='DEPLOYED').length;
-  const notDeployed=activeSheetRows.filter(e=>getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED').length;
-  console.log('COLUMN L DEPLOYMENT COUNTS',{activeSheetRows:activeSheetRows.length,deployed,notDeployed,sampleColumnL:activeSheetRows.slice(0,10).map(e=>e._raw?.[11])});
+  const notDeployed=activeSheetRows.filter(e=>isNotYetDeployedColL(e.deploymentStatusColL)).length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
   const contractPending=activeEmployees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
   const missingGovIds=activeEmployees.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin)).length;
-  const missingSSS=activeEmployees.filter(e=>isMissing(e.sss)).length;
   const missingBank=activeEmployees.filter(e=>isMissing(e.bankAccount)).length;
   const missingMobile=activeEmployees.filter(e=>isMissing(e.mobile)).length;
   const missingRequirements=activeEmployees.filter(e=>!requirementsComplete(e)).length;
   const reqComplete=activeTotal-missingRequirements;
-  const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region); if(rr)regions[rr]=(regions[rr]||0)+1;});
-  const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
+
+  const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region);if(rr)regions[rr]=(regions[rr]||0)+1;});
+  const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,6);
   const birthdays=getBirthdaysThisMonth().slice(0,5);
   const now=new Date();
+
+  const deployPct=activeTotal?Math.round(deployed/activeTotal*100):0;
+  const scanPct=activeTotal?Math.round(scanned/activeTotal*100):0;
+  const contractPct=activeTotal?Math.round(contractSent/activeTotal*100):0;
+  const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
+
+  // pending items count
+  const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
     <!-- DASHBOARD SEARCH -->
@@ -2083,127 +2103,276 @@ function renderDashboard(){
       <span class="dash-search-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </span>
-      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)" oninput="if(!this.value)return">
+      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)">
     </div>
 
-    <!-- KF CARDS -->
-    <div class="dash-kf-grid">
-      <div class="kf-card glass-card">
-        <div class="kf-label-top">Active Promoters</div>
-        <div class="kf-num">${activeTotal}</div>
-        <div class="kf-sub">Active records only</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:100%"></div></div>
+    <!-- HERO KPI ROW -->
+    <div class="dash-hero">
+
+      <div class="dash-hero-card glass-card">
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
+        <div class="dhc-label">Total Workforce</div>
+        <div class="dhc-value" style="color:var(--text)">${total}</div>
+        <div class="dhc-sub">All employment records</div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:#4ecb71"></div></div>
       </div>
-      <div class="kf-card glass-card">
-        <div class="kf-label-top">Deployed</div>
-        <div class="kf-num">${deployed}</div>
-        <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
+
+      <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
+        <div class="dhc-label">Deployed</div>
+        <div class="dhc-value" style="color:#4ecb71">${deployed}</div>
+        <div class="dhc-sub">${deployPct}% of active promoters</div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:#4ecb71"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" title="Active sheet rows where Column L = NOT YET DEPLOYED" style="cursor:pointer;border-color:rgba(201,184,122,0.25)">
-        <div class="kf-label-top">Not Yet Deployed</div>
-        <div class="kf-num" style="color:var(--warning)">${notDeployed}</div>
-        <div class="kf-sub">Column L · Active sheet only</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeSheetRows.length?notDeployed/activeSheetRows.length*100:0}%;background:var(--warning)"></div></div>
+
+      <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#f5c842,transparent)"></div>
+        <div class="dhc-label">Pending Deploy</div>
+        <div class="dhc-value" style="color:#f5c842">${notDeployed}</div>
+        <div class="dhc-sub">Active sheet · Col L</div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:#f5c842"></div></div>
       </div>
-      <div class="kf-card glass-card">
-        <div class="kf-label-top">QR Scanned</div>
-        <div class="kf-num">${scanned}</div>
-        <div class="kf-sub">${activeTotal?Math.round(scanned/activeTotal*100):0}% of active</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?scanned/activeTotal*100:0}%"></div></div>
+
+      <div class="dash-hero-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--teal-deep),transparent)"></div>
+        <div class="dhc-label">QR Scanned</div>
+        <div class="dhc-value" style="color:var(--teal-deep)">${scanned}</div>
+        <div class="dhc-sub">${scanPct}% of active promoters</div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${scanPct}%;background:var(--teal-deep)"></div></div>
       </div>
-      <div class="kf-card glass-card">
-        <div class="kf-label-top">Requirements Complete</div>
-        <div class="kf-num">${reqComplete}</div>
-        <div class="kf-sub">${activeTotal?Math.round(reqComplete/activeTotal*100):0}% of active</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?reqComplete/activeTotal*100:0}%"></div></div>
+
+      <div class="dash-hero-card glass-card" onclick="drillDown('missingRequirements')" style="cursor:pointer">
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--moss-green),transparent)"></div>
+        <div class="dhc-label">Req. Complete</div>
+        <div class="dhc-value" style="color:var(--moss-green)">${reqComplete}</div>
+        <div class="dhc-sub">${reqPct}% of active promoters</div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${reqPct}%;background:var(--moss-green)"></div></div>
       </div>
+
     </div>
 
-    <!-- STATUS ROW -->
-    <div class="dash-status-grid">
-      ${STATUSES.map(st=>{const pct=total?Math.round((s[st]||0)/total*100):0;return`<div class="status-card glass-card" onclick="filterByStatus('${st}')">
-        <div class="status-card-dot" style="background:${STATUS_COLORS[st]}"></div>
-        <div class="status-num">${s[st]||0}</div>
-        <div class="status-lbl">${st}</div>
-        <div class="status-bar"><div class="status-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div>
-      </div>`;}).join('')}
+    <!-- STATUS CARDS -->
+    <div class="dash-status-row">
+      ${STATUSES.map(st=>{
+        const cnt=s[st]||0;
+        const pct=total?Math.round(cnt/total*100):0;
+        return`<div class="dsr-card glass-card" onclick="filterByStatus('${esc(st)}')" style="border-left-color:${STATUS_COLORS[st]}">
+          <div class="dsr-num" style="color:${STATUS_COLORS[st]}">${cnt}</div>
+          <div class="dsr-label">${esc(st)}</div>
+          <div class="dsr-pct">${pct}% of total</div>
+          <div class="dsr-bar"><div class="dsr-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- COMPLETION RINGS -->
+    <div class="completion-row">
+      <div class="completion-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
+        <div class="cc-ring" id="ring-qr">${ringHTML(scanPct,'#2EC4BE')}</div>
+        <div>
+          <div class="cc-val" style="color:#2EC4BE">${scanned}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${activeTotal}</span></div>
+          <div class="cc-label">QR Scanned</div>
+        </div>
+      </div>
+      <div class="completion-card glass-card" onclick="drillDown('contractPending')" style="cursor:pointer">
+        <div class="cc-ring" id="ring-contract">${ringHTML(contractPct,'#f5c842')}</div>
+        <div>
+          <div class="cc-val" style="color:#f5c842">${contractSent}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${activeTotal}</span></div>
+          <div class="cc-label">Contract Sent</div>
+        </div>
+      </div>
+      <div class="completion-card glass-card" onclick="drillDown('missingRequirements')" style="cursor:pointer">
+        <div class="cc-ring" id="ring-req">${ringHTML(reqPct,'#4ecb71')}</div>
+        <div>
+          <div class="cc-val" style="color:#4ecb71">${reqComplete}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${activeTotal}</span></div>
+          <div class="cc-label">Requirements Done</div>
+        </div>
+      </div>
     </div>
 
     <!-- PENDING ACTIONS -->
-    <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Active promoters only · click a pill to filter</span></div>
-    <div class="summary-pills">
-      ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Active sheet rows where Column L = NOT YET DEPLOYED"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Yet Deployed</span></div>`:''}
-      ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
-      ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Active promoters with contract not yet sent"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
-      ${missingRequirements>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingRequirements')" title="Active promoters with incomplete requirements checklist"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingRequirements}</span><span>Requirements Incomplete</span></div>`:''}
-      ${missingGovIds>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingGovIds')" title="Active promoters missing SSS, PhilHealth, or Pag-IBIG"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingGovIds}</span><span>Missing Gov IDs</span></div>`:''}
-      ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')" title="Active promoters missing bank account"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
-      ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')" title="Active promoters missing mobile number"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
-      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingRequirements===0&&missingGovIds===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All active records complete</span></div>`:''}
+    <div class="pending-section">
+      <div class="pending-title">
+        <span>Pending Actions</span>
+        <div class="pending-title-line"></div>
+        <span style="font-size:9px;opacity:.55">Active promoters only · click to filter</span>
+        ${pendingCount>0?`<span style="background:var(--danger-bg);border:1px solid rgba(224,92,92,0.3);color:var(--danger);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">${pendingCount} issue${pendingCount!==1?'s':''}</span>`:`<span style="background:var(--success-bg);border:1px solid rgba(78,203,113,0.3);color:var(--success);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">All clear</span>`}
+      </div>
+      <div class="pending-grid">
+        ${notDeployed>0?`
+        <div class="pending-card glass-card" onclick="drillDown('notDeployed')">
+          <div class="pc-icon" style="background:rgba(245,200,66,0.12)">🚀</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:#f5c842">${notDeployed}</div>
+            <div class="pc-label">Not Yet Deployed</div>
+          </div>
+        </div>`:''}
+        ${notScanned>0?`
+        <div class="pending-card glass-card" onclick="drillDown('notScanned')">
+          <div class="pc-icon" style="background:rgba(46,196,190,0.12)">📱</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div>
+            <div class="pc-label">QR Not Scanned</div>
+          </div>
+        </div>`:''}
+        ${contractPending>0?`
+        <div class="pending-card glass-card" onclick="drillDown('contractPending')">
+          <div class="pc-icon" style="background:rgba(245,200,66,0.12)">📄</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:#f5c842">${contractPending}</div>
+            <div class="pc-label">Contract Pending</div>
+          </div>
+        </div>`:''}
+        ${missingRequirements>0?`
+        <div class="pending-card glass-card" onclick="drillDown('missingRequirements')">
+          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">📋</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:var(--danger)">${missingRequirements}</div>
+            <div class="pc-label">Reqs Incomplete</div>
+          </div>
+        </div>`:''}
+        ${missingGovIds>0?`
+        <div class="pending-card glass-card" onclick="drillDown('missingGovIds')">
+          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:var(--danger)">${missingGovIds}</div>
+            <div class="pc-label">Missing Gov IDs</div>
+          </div>
+        </div>`:''}
+        ${missingBank>0?`
+        <div class="pending-card glass-card" onclick="drillDown('missingBank')">
+          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏦</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:var(--danger)">${missingBank}</div>
+            <div class="pc-label">Missing Bank Acct</div>
+          </div>
+        </div>`:''}
+        ${missingMobile>0?`
+        <div class="pending-card glass-card" onclick="drillDown('missingMobile')">
+          <div class="pc-icon" style="background:rgba(224,92,92,0.12)">📞</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:var(--danger)">${missingMobile}</div>
+            <div class="pc-label">Missing Mobile</div>
+          </div>
+        </div>`:''}
+        ${pendingCount===0?`
+        <div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1">
+          <div class="pc-icon" style="background:var(--success-bg)">✅</div>
+          <div class="pc-body">
+            <div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div>
+            <div class="pc-label">All active records are complete</div>
+          </div>
+        </div>`:''}
+      </div>
     </div>
 
-    <!-- BOTTOM GRID -->
-    <div class="dash-bottom">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="chart-card glass-card">
-          <div class="chart-title">Status Breakdown</div>
-          <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
-        </div>
-        <div class="chart-card glass-card">
-          <div class="chart-title">By Region</div>
-          <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
-        </div>
-        <!-- BIRTHDAYS -->
-        <div class="birthday-widget glass-card">
-          <div class="chart-title">🎂 Birthdays This Month</div>
-          ${birthdays.length===0
-            ?`<div style="font-size:12px;color:var(--text3);padding:8px 0">No birthdays this month.</div>`
-            :`<div class="bday-list">${birthdays.map(({emp,day,daysUntil})=>{
-              const isToday=daysUntil===0;
-              return`<div class="bday-item ${isToday?'bday-today':'bday-soon'}" onclick="openDetailPanel('${emp.infinixId}')">
-                <span class="bday-icon">${isToday?'🎉':'🎂'}</span>
-                <div>
-                  <div class="bday-name">${emp.fullName||''}</div>
-                  <div class="bday-date">${isToday?'<b style="color:var(--warning)">Today!</b>':daysUntil>0?`in ${daysUntil} day${daysUntil!==1?'s':''}`:`${Math.abs(daysUntil)} day${Math.abs(daysUntil)!==1?'s':''} ago`} · ${emp.storeAssignment||emp.region||''}</div>
-                </div>
-              </div>`;
-            }).join('')}</div>`}
+    <!-- CHARTS + SIDE PANEL -->
+    <div class="dash-grid">
+      <div>
+        <!-- CHARTS ROW -->
+        <div class="charts-row">
+          <div class="chart-card glass-card">
+            <div class="chart-title">Status Breakdown</div>
+            <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+          </div>
+          <div class="chart-card glass-card">
+            <div class="chart-title">Active Promoters by Region</div>
+            <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
+          </div>
         </div>
       </div>
-      <div class="table-wrap">
-        <div class="table-head"><h3>Recently Updated</h3><span class="rec">Latest 8</span></div>
-        <div class="table-scroll">
-          <table>
-            <thead><tr><th class="no-sort">Name</th><th class="no-sort">ID</th><th class="no-sort">Status</th><th class="no-sort">Deployment</th></tr></thead>
-            <tbody>
-              ${recent.map(e=>`<tr onclick="openDetailPanel('${e.infinixId}')">
-                <td><div class="td-name">${e.fullName||''}</div></td>
-                <td><span class="td-id">${e.infinixId}</span></td>
-                <td><span class="badge b-${e.status}">${e.status}</span></td>
-                <td><span class="badge b-${(getDeployStatusFromColumnL(e)||'-').replace(/ /g,'-')}">${getDeployStatusFromColumnL(e)||'-'}</span></td>
-              </tr>`).join('')||'<tr><td colspan="4"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>'}
-            </tbody>
-          </table>
+
+      <!-- RIGHT COLUMN -->
+      <div class="dash-right">
+
+        <!-- RECENTLY UPDATED -->
+        <div class="recent-card glass-card">
+          <h4>Recently Updated</h4>
+          ${recent.map(e=>{
+            const initials=((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
+            return`<div class="recent-row" onclick="openDetailPanel('${esc(e.infinixId)}')">
+              <div class="rr-avatar">${initials}</div>
+              <div class="rr-name">${esc(e.fullName||'')}</div>
+              <div class="rr-badge">${badgeHTML(e.status)}</div>
+            </div>`;
+          }).join('')||`<div style="font-size:12px;color:var(--text3);padding:8px 0">No recent updates.</div>`}
         </div>
+
+        <!-- BIRTHDAYS -->
+        <div class="birthday-card glass-card">
+          <h4>🎂 Birthdays This Month</h4>
+          ${birthdays.length===0
+            ?`<div style="font-size:12px;color:var(--text3)">No birthdays this month.</div>`
+            :birthdays.map(({emp,day,daysUntil})=>{
+              const isToday=daysUntil===0;
+              return`<div class="bday-item ${isToday?'bday-today':''}" onclick="openDetailPanel('${esc(emp.infinixId)}')">
+                <span class="bday-icon">${isToday?'🎉':'🎂'}</span>
+                <div style="min-width:0">
+                  <div class="bday-name">${esc(emp.fullName||'')}</div>
+                  <div class="bday-date">${isToday?'<b style="color:var(--warning)">Today!</b>':daysUntil>0?`in ${daysUntil} day${daysUntil!==1?'s':''}`:`${Math.abs(daysUntil)} day${Math.abs(daysUntil)!==1?'s':''} ago`} · ${esc(emp.storeAssignment||emp.region||'')}</div>
+                </div>
+              </div>`;
+            }).join('')}
+        </div>
+
       </div>
     </div>`;
 
+  // Render charts after DOM is ready
   setTimeout(()=>{
     const isDark=document.documentElement.getAttribute('data-theme')!=='light';
-    Chart.defaults.color=isDark?'rgba(229,215,196,0.35)':'rgba(42,34,20,0.45)';
-    Chart.defaults.font.family='DM Sans';
+    Chart.defaults.color=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
+    Chart.defaults.font.family='Poppins';
 
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
-      _charts.status=new Chart(ctxS,{type:'doughnut',data:{labels:STATUSES,datasets:[{data:STATUSES.map(st=>s[st]||0),backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),borderColor:STATUSES.map(st=>STATUS_COLORS[st]),borderWidth:1.5,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}}}});
+      _charts.status=new Chart(ctxS,{
+        type:'doughnut',
+        data:{
+          labels:STATUSES,
+          datasets:[{
+            data:STATUSES.map(st=>s[st]||0),
+            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),
+            borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
+            borderWidth:1.5,hoverOffset:5
+          }]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{
+            legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8}},
+            tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}
+          }
+        }
+      });
     }
+
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
       const rEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]).slice(0,7);
-      _charts.region=new Chart(ctxR,{type:'bar',data:{labels:rEntries.map(([r])=>r),datasets:[{label:'Employees',data:rEntries.map(([,c])=>c),backgroundColor:'rgba(136,144,99,0.2)',borderColor:'rgba(136,144,99,0.6)',borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(136,144,99,0.07)'},ticks:{font:{size:9}}},y:{grid:{color:'rgba(136,144,99,0.07)'},ticks:{font:{size:9},stepSize:1}}}}});
+      _charts.region=new Chart(ctxR,{
+        type:'bar',
+        data:{
+          labels:rEntries.map(([r])=>r),
+          datasets:[{
+            label:'Active',
+            data:rEntries.map(([,c])=>c),
+            backgroundColor:'rgba(46,196,190,0.18)',
+            borderColor:'rgba(46,196,190,0.7)',
+            borderWidth:1,borderRadius:6
+          }]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9}}},
+            y:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9},stepSize:1}}
+          }
+        }
+      });
     }
   },80);
 }
@@ -2213,133 +2382,90 @@ function renderDashboard(){
 // ============================================================
 function renderTracker(){
   document.getElementById('topbar-title').textContent='Deployment Tracker';
-  document.getElementById('topbar-sub').textContent='Track deployment progress by region and store — Active promoters only';
+  document.getElementById('topbar-sub').textContent='Active promoters only';
 
-  // Deployment tracker must count ACTIVE promoters only.
-  // Inactive statuses (Floating, Resigned, AWOL, Terminated, Backout) are excluded from totals, regions, and store breakdown.
   let list=employees.filter(e=>normalizeStatus(e.status)==='Active');
   if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&e.deploymentDate>=trackerDateFrom);
   if(trackerDateTo)list=list.filter(e=>e.deploymentDate&&e.deploymentDate<=trackerDateTo);
   if(trackerRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(trackerRegion));
 
   const total=list.length;
-  const deployed=list.filter(e=>getDeployStatusFromColumnL(e)==='DEPLOYED').length;
-  const notYet=list.filter(e=>getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED').length;
-  const backout=list.filter(e=>getDeployStatusFromColumnL(e)==='BACKOUT').length;
+  const deployed=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
+  const notYet=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
+  const backout=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
   const pct=total?Math.round(deployed/total*100):0;
 
-  // by region
   const byRegion={};
   REGIONS.forEach(r=>{
     const reg=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(r));
-    byRegion[r]={total:reg.length,deployed:reg.filter(e=>getDeployStatusFromColumnL(e)==='DEPLOYED').length,notYet:reg.filter(e=>getDeployStatusFromColumnL(e)==='NOT YET DEPLOYED').length,backout:reg.filter(e=>getDeployStatusFromColumnL(e)==='BACKOUT').length};
+    byRegion[r]={total:reg.length,deployed:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length,notYet:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length,backout:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length};
   });
 
-  // by store (top 10)
   const byStore={};
   list.forEach(e=>{
     const key=e.storeAssignment||e.storeId||'Unknown';
     if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:normalizeRegion(e.region),total:0,deployed:0,notYet:0,backout:0};
     byStore[key].total++;
-    if(getDeployStatusFromColumnL(e)==='DEPLOYED')byStore[key].deployed++;
-    else if(getDeployStatusFromColumnL(e)==='BACKOUT')byStore[key].backout++;
+    if(normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED')byStore[key].deployed++;
+    else if(normalizeDeployStatus(e.deploymentStatus)==='BACKOUT')byStore[key].backout++;
     else byStore[key].notYet++;
   });
   const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
 
   document.getElementById('content').innerHTML=`
-    <!-- DATE / REGION FILTERS -->
     <div class="tracker-date-filters glass-card" style="padding:12px 16px;margin-bottom:16px">
       <span style="font-size:9.5px;color:var(--moss-green);font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.8">Filters</span>
-      <input type="date" value="${trackerDateFrom}" onchange="trackerDateFrom=this.value;renderTracker()" placeholder="From date">
+      <input type="date" value="${esc(trackerDateFrom)}" onchange="trackerDateFrom=this.value;renderTracker()" placeholder="From date">
       <span style="font-size:11px;color:var(--text3)">to</span>
-      <input type="date" value="${trackerDateTo}" onchange="trackerDateTo=this.value;renderTracker()" placeholder="To date">
-      <select style="background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:11.5px;color:var(--text2);font-family:'DM Sans',sans-serif;outline:none;" onchange="trackerRegion=this.value;renderTracker()">
+      <input type="date" value="${esc(trackerDateTo)}" onchange="trackerDateTo=this.value;renderTracker()" placeholder="To date">
+      <select style="background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:11.5px;color:var(--text2);font-family:'Poppins',sans-serif;outline:none;" onchange="trackerRegion=this.value;renderTracker()">
         <option value="">All Regions</option>
-        ${REGIONS.map(r=>`<option value="${r}" ${trackerRegion===r?'selected':''}>${r}</option>`).join('')}
+        ${REGIONS.map(r=>`<option value="${esc(r)}" ${trackerRegion===r?'selected':''}>${esc(r)}</option>`).join('')}
       </select>
       ${(trackerDateFrom||trackerDateTo||trackerRegion)?`<button class="btn btn-ghost btn-sm" onclick="trackerDateFrom='';trackerDateTo='';trackerRegion='';renderTracker()">Reset</button>`:''}
       <span style="margin-left:auto;font-size:11px;color:var(--text3)">${total} employees in view</span>
     </div>
-
-    <!-- KF CARDS -->
     <div class="tracker-grid">
-      <div class="tracker-kf glass-card">
-        <div class="kf-label-top">Total in View</div>
-        <div class="kf-num">${total}</div>
-        <div class="kf-sub">Filtered records</div>
-      </div>
-      <div class="tracker-kf glass-card">
-        <div class="kf-label-top">Deployed</div>
-        <div class="kf-num" style="color:var(--success)">${deployed}</div>
-        <div class="kf-sub">${pct}% deployment rate</div>
-        <div class="kf-bar" style="margin-top:10px"><div class="kf-bar-fill" style="width:${pct}%;background:var(--success)"></div></div>
-      </div>
-      <div class="tracker-kf glass-card" style="display:flex;flex-direction:column;gap:6px">
-        <div class="kf-label-top">Breakdown</div>
-        <div style="display:flex;gap:12px;font-size:12px">
-          <span><span style="color:var(--warning);font-weight:700">${notYet}</span> <span style="color:var(--text3)">Pending</span></span>
-          <span><span style="color:var(--danger);font-weight:700">${backout}</span> <span style="color:var(--text3)">Backout</span></span>
-        </div>
-      </div>
+      <div class="tracker-kf glass-card"><div class="kf-label-top" style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:12px">Total in View</div><div style="font-size:32px;font-weight:800">${total}</div><div style="font-size:10.5px;color:var(--text3);margin-top:6px">Filtered records</div></div>
+      <div class="tracker-kf glass-card"><div class="kf-label-top" style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:12px">Deployed</div><div style="font-size:32px;font-weight:800;color:var(--success)">${deployed}</div><div style="font-size:10.5px;color:var(--text3);margin-top:6px">${pct}% deployment rate</div><div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:12px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--success);border-radius:2px"></div></div></div>
+      <div class="tracker-kf glass-card"><div class="kf-label-top" style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:12px">Breakdown</div><div style="display:flex;gap:16px;font-size:13px;margin-top:4px"><span><span style="color:var(--warning);font-weight:800;font-size:22px">${notYet}</span><div style="font-size:10px;color:var(--text3);margin-top:2px">Pending</div></span><span><span style="color:var(--danger);font-weight:800;font-size:22px">${backout}</span><div style="font-size:10px;color:var(--text3);margin-top:2px">Backout</div></span></div></div>
     </div>
-
-    <!-- BY REGION -->
     <div class="section-heading"><span>By Region</span><div class="section-heading-line"></div></div>
     <div class="tracker-region-grid">
       ${REGIONS.map(r=>{
         const rd=byRegion[r];
-        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card"><div class="tracker-region-name">${r}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
+        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card"><div class="tracker-region-name">${esc(r)}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
         const rpct=Math.round(rd.deployed/rd.total*100);
         return`<div class="tracker-region-card glass-card">
-          <div class="tracker-region-name">${r}</div>
-          <div style="font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--text)">${rd.deployed}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${rd.total}</span></div>
+          <div class="tracker-region-name">${esc(r)}</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text)">${rd.deployed}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${rd.total}</span></div>
           <div class="tracker-region-bar-wrap"><div class="tracker-region-bar" style="width:${rpct}%"></div></div>
-          <div class="tracker-region-stats">
-            <span style="color:var(--success)">${rpct}% deployed</span>
-            <span>${rd.notYet} pending · ${rd.backout} backout</span>
-          </div>
+          <div class="tracker-region-stats"><span style="color:var(--success)">${rpct}% deployed</span><span>${rd.notYet} pending · ${rd.backout} backout</span></div>
         </div>`;
       }).join('')}
     </div>
-
-    <!-- BY STORE -->
     <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount</span></div>
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
-          <thead>
-            <tr>
-              <th class="no-sort">Store</th>
-              <th class="no-sort">Store ID</th>
-              <th class="no-sort">Region</th>
-              <th class="no-sort">Total</th>
-              <th class="no-sort">Deployed</th>
-              <th class="no-sort">Pending</th>
-              <th class="no-sort">Backout</th>
-              <th class="no-sort">Progress</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th class="no-sort">Store</th><th class="no-sort">Store ID</th><th class="no-sort">Region</th>
+            <th class="no-sort">Total</th><th class="no-sort">Deployed</th><th class="no-sort">Pending</th>
+            <th class="no-sort">Backout</th><th class="no-sort">Progress</th>
+          </tr></thead>
           <tbody>
             ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
             :storeList.map(st=>{
               const sp=st.total?Math.round(st.deployed/st.total*100):0;
               return`<tr>
-                <td><div class="td-name">${st.name}</div></td>
-                <td><span class="td-id">${st.storeId||'—'}</span></td>
-                <td style="color:var(--text2)">${st.region||'—'}</td>
+                <td><div class="td-name">${esc(st.name)}</div></td>
+                <td><span class="td-id">${esc(st.storeId||'—')}</span></td>
+                <td style="color:var(--text2)">${esc(st.region||'—')}</td>
                 <td style="font-weight:700">${st.total}</td>
                 <td><span style="color:var(--success);font-weight:700">${st.deployed}</span></td>
                 <td><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td>
                 <td><span style="color:var(--danger);font-weight:700">${st.backout}</span></td>
-                <td style="min-width:120px">
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden">
-                      <div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div>
-                    </div>
-                    <span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span>
-                  </div>
-                </td>
+                <td style="min-width:120px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -2355,7 +2481,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
@@ -2369,8 +2495,8 @@ function renderEmployeeTable(type){
     <div class="col-dropdown" id="col-dropdown">
       ${TABLE_COLUMNS.filter(c=>!c.always).map(c=>`
         <label class="col-check-item">
-          <input type="checkbox" ${visibleCols.has(c.key)?'checked':''} onchange="toggleColVisibility('${c.key}',this.checked)">
-          ${c.label}
+          <input type="checkbox" ${visibleCols.has(c.key)?'checked':''} onchange="toggleColVisibility('${esc(c.key)}',this.checked)">
+          ${esc(c.label)}
         </label>`).join('')}
     </div>
   </div>`;
@@ -2379,7 +2505,7 @@ function renderEmployeeTable(type){
   document.getElementById('content').innerHTML=`
     <div class="table-wrap">
       <div class="table-head">
-        <h3>${label}</h3>
+        <h3>${esc(label)}</h3>
         <span class="rec" id="emp-count"></span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
           ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status</button>`:''}
@@ -2390,11 +2516,11 @@ function renderEmployeeTable(type){
         <span class="filter-label">Filter</span>
         <select onchange="filterRegion=this.value;onFilterChange()">
           <option value="">All Regions</option>
-          ${REGIONS.map(r=>`<option value="${r}" ${filterRegion===r?'selected':''}>${r}</option>`).join('')}
+          ${REGIONS.map(r=>`<option value="${esc(r)}" ${filterRegion===r?'selected':''}>${esc(r)}</option>`).join('')}
         </select>
         <select onchange="filterDeployStatus=this.value;onFilterChange()">
           <option value="">All Deploy Status</option>
-          ${['DEPLOYED','NOT YET DEPLOYED','BACKOUT','-'].map(s=>`<option value="${s}" ${filterDeployStatus===s?'selected':''}>${s}</option>`).join('')}
+          ${['DEPLOYED','NOT YET DEPLOYED','BACKOUT','-'].map(s=>`<option value="${esc(s)}" ${filterDeployStatus===s?'selected':''}>${esc(s)}</option>`).join('')}
         </select>
         <select onchange="filterQR=this.value;onFilterChange()">
           <option value="">All QR</option>
@@ -2414,7 +2540,7 @@ function renderEmployeeTable(type){
         <div class="bulk-sep"></div>
         <span class="bulk-label">Change status to:</span>
         <select class="bulk-status-sel" id="bulk-status-sel">
-          ${STATUSES.map(st=>`<option value="${st}">${st}</option>`).join('')}
+          ${STATUSES.map(st=>`<option value="${esc(st)}">${esc(st)}</option>`).join('')}
         </select>
         <button class="btn btn-primary btn-sm" onclick="doBulkStatusChange()">Apply</button>
         <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Deselect All</button>
@@ -2425,7 +2551,7 @@ function renderEmployeeTable(type){
           <thead>
             <tr>
               <th class="td-check no-sort"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
-              ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th data-sort="${c.key}" onclick="toggleSort('${c.key}')">${c.label}</th>`).join('')}
+              ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
               <th class="no-sort">Actions</th>
             </tr>
           </thead>
@@ -2436,12 +2562,6 @@ function renderEmployeeTable(type){
     </div>`;
   updateSortHeaders();
   renderTableRows(type);
-}
-
-function reqDoneCount(e){ return REQUIREMENT_FIELDS.filter(([k])=>!!e[k]).length; }
-function reqProgressHTML(e){
-  const done=reqDoneCount(e), total=REQUIREMENT_FIELDS.length, pct=Math.round((done/total)*100);
-  return `<span class="req-progress"><span>${done}/${total}</span><span class="req-progress-bar"><span class="req-progress-fill" style="width:${pct}%"></span></span></span>`;
 }
 
 function renderTableRows(type){
@@ -2460,20 +2580,20 @@ function renderTableRows(type){
   if(!tbody)return;
 
   const colRender={
-    fullName:e=>`<td><div class="td-name">${e.fullName||''}</div><div class="td-sub">${e.email||''}</div></td>`,
-    infinixId:e=>`<td><span class="td-id">${e.infinixId}</span></td>`,
-    status:e=>`<td><span class="badge b-${e.status}">${e.status}</span></td>`,
-    statusDate:e=>`<td style="color:var(--text2);font-size:12px">${e.statusDate||'—'}</td>`,
-    deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${e.deploymentDate||'—'}</td>`,
-    deploymentStatus:e=>`<td><span class="badge b-${(getDeployStatusFromColumnL(e)||'-').replace(/ /g,'-')}">${getDeployStatusFromColumnL(e)||'-'}</span></td>`,
+    fullName:e=>`<td><div class="td-name">${esc(e.fullName||'')}</div><div class="td-sub">${esc(e.email||'')}</div></td>`,
+    infinixId:e=>`<td><span class="td-id">${esc(e.infinixId)}</span></td>`,
+    status:e=>`<td>${badgeHTML(e.status)}</td>`,
+    statusDate:e=>`<td style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>`,
+    deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${esc(e.deploymentDate||'—')}</td>`,
+    deploymentStatus:e=>`<td>${badgeHTML(e.deploymentStatus,e.deploymentStatus?e.deploymentStatus.replace(/ /g,'-'):null)}</td>`,
     requirements:e=>`<td>${reqProgressHTML(e)}</td>`,
-    qrStatus:e=>`<td><span class="badge b-${(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')}">${e.qrStatus||'NOT SCANNED'}</span></td>`,
-    region:e=>`<td style="color:var(--text2)">${e.region||'—'}</td>`,
-    storeAssignment:e=>`<td style="color:var(--text2)">${e.storeAssignment||'—'}</td>`,
-    storeId:e=>`<td style="color:var(--text3);font-size:11px">${e.storeId||'—'}</td>`,
-    rssName:e=>`<td style="color:var(--text2)">${e.rssName||'—'}</td>`,
-    bankName:e=>`<td style="color:var(--text2)">${e.bankName||'—'}</td>`,
-    contractStatus:e=>`<td><span class="badge b-${(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')}">${e.contractStatus||'NOT YET SENT'}</span></td>`,
+    qrStatus:e=>`<td>${badgeHTML(e.qrStatus||(e.qrStatus===''?'NOT SCANNED':e.qrStatus),(e.qrStatus||'NOT-SCANNED').replace(/ /g,'-'))}</td>`,
+    region:e=>`<td style="color:var(--text2)">${esc(e.region||'—')}</td>`,
+    storeAssignment:e=>`<td style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>`,
+    storeId:e=>`<td style="color:var(--text3);font-size:11px">${esc(e.storeId||'—')}</td>`,
+    rssName:e=>`<td style="color:var(--text2)">${esc(e.rssName||'—')}</td>`,
+    bankName:e=>`<td style="color:var(--text2)">${esc(e.bankName||'—')}</td>`,
+    contractStatus:e=>`<td>${badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-'))}</td>`,
   };
 
   if(!page.length){
@@ -2481,14 +2601,14 @@ function renderTableRows(type){
   }else{
     const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
-      <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${e.infinixId}')">
+      <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${esc(e.infinixId)}')">
         <td class="td-check" onclick="event.stopPropagation()">
-          <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect('${e.infinixId}',this.checked)">
+          <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect('${esc(e.infinixId)}',this.checked)">
         </td>
         ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-ghost btn-sm" onclick="openEditModal('${e.infinixId}')">Edit</button>
-          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${e.infinixId}','${(e.fullName||'').replace(/'/g,"\\'")}')">Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick="openEditModal('${esc(e.infinixId)}')">Edit</button>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')">Delete</button>
         </td>
       </tr>`).join('');
   }
@@ -2606,38 +2726,37 @@ function dpDelete(){
 }
 
 function buildDetailHTML(e){
-  const row=(label,val)=>`<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-val">${val||'—'}</div></div>`;
-  const badge=(val,cls)=>val?`<span class="badge b-${cls||val.replace(/ /g,'-')}">${val}</span>`:'—';
+  const row=(label,val)=>`<div class="detail-row"><div class="detail-label">${esc(label)}</div><div class="detail-val">${val||'—'}</div></div>`;
 
-  // Birthday highlight
   let bdayNote='';
   if(e.dob){
     const d=new Date(e.dob);const now=new Date();
     if(!isNaN(d)&&d.getMonth()===now.getMonth()){
       const diff=d.getDate()-now.getDate();
-      if(diff===0)bdayNote=`<div style="background:rgba(201,184,122,0.1);border:1px solid rgba(201,184,122,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:10px">🎉 Birthday today!</div>`;
-      else if(diff>0&&diff<=7)bdayNote=`<div style="background:rgba(136,144,99,0.08);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--moss-green);margin-bottom:10px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
+      if(diff===0)bdayNote=`<div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:10px">🎉 Birthday today!</div>`;
+      else if(diff>0&&diff<=7)bdayNote=`<div style="background:rgba(46,196,190,0.08);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--teal-deep);margin-bottom:10px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
     }
   }
 
-  // Onboarding completion checklist
+  // FIX 3: Profile completion uses REQUIRED_FIELDS (9 items, consistent with requirementsComplete)
   const checks = [
-    { label: 'Employment Status',  done: !!e.status },
+    { label: 'Employment Status',  done: !!e.status && e.status !== '-' },
     { label: 'Deployment Status',  done: e.deploymentStatus === 'DEPLOYED' },
     { label: 'QR Scanned',         done: e.qrStatus === 'SCANNED' },
     { label: 'Contract Sent',      done: e.contractStatus === 'SENT' },
-    { label: 'Mobile Number',      done: !!e.mobile && e.mobile.trim() !== '' },
-    { label: 'Email Address',      done: !!e.email && e.email.trim() !== '' },
-    { label: 'SSS Number',         done: !!e.sss && e.sss.trim() !== '' },
-    { label: 'PhilHealth',         done: !!e.philhealth && e.philhealth.trim() !== '' },
-    { label: 'Pag-IBIG',           done: !!e.pagibig && e.pagibig.trim() !== '' },
-    { label: 'Bank Account',       done: !!e.bankAccount && e.bankAccount.trim() !== '' },
-    { label: 'Date of Birth',      done: !!e.dob && e.dob.trim() !== '' },
-    { label: 'Region Assigned',    done: !!e.region && e.region.trim() !== '' },
+    { label: 'Mobile Number',      done: !isMissing(e.mobile) },
+    { label: 'Email Address',      done: !isMissing(e.email) },
+    { label: 'SSS Number',         done: !isMissing(e.sss) },
+    { label: 'PhilHealth',         done: !isMissing(e.philhealth) },
+    { label: 'Pag-IBIG',           done: !isMissing(e.pagibig) },
+    { label: 'Bank Account',       done: !isMissing(e.bankAccount) },
+    { label: 'Date of Birth',      done: !isMissing(e.dob) },
+    { label: 'Region Assigned',    done: !isMissing(e.region) },
   ];
   const doneCount = checks.filter(c => c.done).length;
   const pct = Math.round(doneCount / checks.length * 100);
   const barColor = pct === 100 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+
   const onboardingHTML = `
     <div class="detail-section">
       <div class="detail-section-title">Profile Completion</div>
@@ -2645,13 +2764,13 @@ function buildDetailHTML(e){
         <div style="flex:1;height:7px;background:rgba(136,144,99,0.12);border-radius:4px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${barColor};border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
         </div>
-        <span style="font-family:'Sora',sans-serif;font-size:13px;font-weight:800;color:${barColor};min-width:36px;text-align:right">${pct}%</span>
+        <span style="font-size:13px;font-weight:800;color:${barColor};min-width:36px;text-align:right">${pct}%</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px">
         ${checks.map(c=>`
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:${c.done?'var(--text2)':'var(--danger)'}">
             <span style="width:14px;height:14px;border-radius:50%;background:${c.done?'var(--success-bg)':'var(--danger-bg)'};border:1px solid ${c.done?'rgba(122,184,148,0.3)':'rgba(196,122,122,0.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px">${c.done?'✓':'!'}</span>
-            ${c.label}
+            ${esc(c.label)}
           </div>`).join('')}
       </div>
     </div>`;
@@ -2661,47 +2780,48 @@ function buildDetailHTML(e){
     ${onboardingHTML}
     <div class="detail-section">
       <div class="detail-section-title">Key Info</div>
-      ${row('Infinix ID',`<span class="td-id">${e.infinixId}</span>`)}
-      ${row('Full Name',`<b>${e.fullName||''}</b>`)}
-      ${row('Status',badge(e.status))}
-      ${row('Status Effective Date',e.statusDate)}${row('Status Remarks',e.statusRemarks)}
-      ${row('QR Status',badge(e.qrStatus,(e.qrStatus||'').replace(/ /g,'-')))}
-      ${row('Deploy Status',badge(e.deploymentStatus,(e.deploymentStatus||'-').replace(/ /g,'-')))}
-      ${row('Deploy Date',e.deploymentDate)}
-      ${row('Contract',badge(e.contractStatus,(e.contractStatus||'').replace(/ /g,'-')))}
+      ${row('Infinix ID',`<span class="td-id">${esc(e.infinixId)}</span>`)}
+      ${row('Full Name',`<b>${esc(e.fullName||'')}</b>`)}
+      ${row('Status',badgeHTML(e.status))}
+      ${row('Status Date',esc(e.statusDate))}${row('Status Remarks',esc(e.statusRemarks))}
+      ${row('QR Status',badgeHTML(e.qrStatus||(e.qrStatus===''?'NOT SCANNED':e.qrStatus),(e.qrStatus||'NOT-SCANNED').replace(/ /g,'-')))}
+      ${row('Deploy Status',badgeHTML(e.deploymentStatus,e.deploymentStatus?(e.deploymentStatus).replace(/ /g,'-'):null))}
+      ${row('Deploy Date',esc(e.deploymentDate))}
+      ${row('Contract',badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Personal</div>
-      ${row('First Name',e.firstName)}${row('Last Name',e.lastName)}
-      ${row('Middle Name',e.middleName)}${row('Date of Birth',e.dob)}
-      ${row('Gender',e.gender)}${row('Marital Status',e.maritalStatus)}
-      ${row('Mobile',e.mobile)}${row('Email',e.email)}${row('Address',e.address)}
+      ${row('First Name',esc(e.firstName))}${row('Last Name',esc(e.lastName))}
+      ${row('Middle Name',esc(e.middleName))}${row('Date of Birth',esc(e.dob))}
+      ${row('Gender',esc(e.gender))}${row('Marital Status',esc(e.maritalStatus))}
+      ${row('Mobile',esc(e.mobile))}${row('Email',esc(e.email))}${row('Address',esc(e.address))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Assignment</div>
-      ${row('Region',e.region)}${row('Store',e.storeAssignment)}
-      ${row('Store ID',e.storeId)}${row('RSS Name',e.rssName)}${row('RSS ID',e.rssId)}
+      ${row('Region',esc(e.region))}${row('Store',esc(e.storeAssignment))}
+      ${row('Store ID',esc(e.storeId))}${row('RSS Name',esc(e.rssName))}${row('RSS ID',esc(e.rssId))}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">Government</div>
-      ${row('SSS',e.sss||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-      ${row('PhilHealth',e.philhealth)}${row('Pag-IBIG',e.pagibig)}${row('TIN',e.tin)}
+      <div class="detail-section-title">Government IDs</div>
+      ${row('SSS',e.sss?esc(e.sss):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${row('PhilHealth',e.philhealth?esc(e.philhealth):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${row('Pag-IBIG',esc(e.pagibig))}${row('TIN',esc(e.tin))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
       ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
-      ${row('Bank',e.bankName)}
-      ${row('Account No.',e.bankAccount||'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
+      ${row('Bank',esc(e.bankName))}
+      ${row('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Requirements</div>
       ${REQUIREMENT_FIELDS.map(([k,label])=>row(label,e[k]?'✅ Done':'—')).join('')}
-      ${row('Completion', reqProgressHTML(e))}
+      ${row('Progress (Required 9)',reqProgressHTML(e))}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Notes / Remarks</div>
-      <textarea class="notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${e.notes||''}</textarea>
-      <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${e.infinixId}',document.getElementById('dp-notes-area').value)">Save Notes</button>
+      <textarea class="notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${esc(e.notes||'')}</textarea>
+      <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${esc(e.infinixId)}',document.getElementById('dp-notes-area').value)">Save Notes</button>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Audit Trail</div>
@@ -2715,12 +2835,12 @@ async function loadEmployeeAudit(infinixId){
     const entries=logCache.filter(r=>String(r[1]||'').trim()===String(infinixId).trim()).reverse();
     const el=document.getElementById('dp-audit-inner');if(!el)return;
     if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
-    const colorMap={Added:'#7ab894','Status Changed':'#c9b87a',Deleted:'#c47a7a',Updated:'var(--moss-green)'};
+    const colorMap={Added:'#4ecb71','Status Changed':'#f5c842',Deleted:'#e05c5c',Updated:'var(--moss-green)'};
     el.innerHTML=entries.map(r=>`<div class="audit-item">
       <div class="audit-dot" style="background:${colorMap[r[3]]||'rgba(136,144,99,0.5)'}"></div>
-      <div class="audit-meta"><b>${r[3]||'Updated'}</b>
-        ${r[4]&&r[4]!=='—'?`<span style="color:var(--text3)"> · ${r[4]} → <b style="color:var(--text)">${r[5]||''}</b></span>`:''}
-        <div class="audit-time">${r[0]||''} · by ${r[6]||''}</div>
+      <div class="audit-meta"><b>${esc(r[3]||'Updated')}</b>
+        ${r[4]&&r[4]!=='—'?`<span style="color:var(--text3)"> · ${esc(r[4])} → <b style="color:var(--text)">${esc(r[5]||'')}</b></span>`:''}
+        <div class="audit-time">${esc(r[0]||'')} · by ${esc(r[6]||'')}</div>
       </div>
     </div>`).join('');
   }catch(e){const el=document.getElementById('dp-audit-inner');if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;}
@@ -2749,9 +2869,9 @@ async function renderLog(){
     };
     el.innerHTML=rows.map(r=>`<div class="log-item">
       <div class="log-icon ${iconMap[r[3]]||'log-updated'}">${svgMap[r[3]]||svgMap['Updated']}</div>
-      <div class="log-meta"><b>${r[2]||''}</b> (${r[1]||''}) — ${r[3]||''}
-        ${r[4]&&r[4]!=='—'?` · <span style="color:var(--text3)">${r[4]}</span> → <b>${r[5]||''}</b>`:''}
-        <div class="log-time">${r[0]||''} · by ${r[6]||''}</div>
+      <div class="log-meta"><b>${esc(r[2]||'')}</b> (${esc(r[1]||'')}) — ${esc(r[3]||'')}
+        ${r[4]&&r[4]!=='—'?` · <span style="color:var(--text3)">${esc(r[4])}</span> → <b>${esc(r[5]||'')}</b>`:''}
+        <div class="log-time">${esc(r[0]||'')} · by ${esc(r[6]||'')}</div>
       </div>
     </div>`).join('');
   }catch(e){toast('Failed to load log: '+e.message,'error');}
@@ -2764,16 +2884,16 @@ async function renderLog(){
 function getFormHTML(emp){
   const v=k=>emp?(emp[k]||''):'';
   const toDateInput=val=>{if(!val)return'';const d=new Date(val);if(isNaN(d))return'';return d.toISOString().split('T')[0];};
-  const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${v(k).replace(/"/g,'&quot;')}" placeholder="${ph||''}" ${extra||''}>`;
-  const dateInp=k=>`<input id="f_${k}" type="date" value="${toDateInput(v(k))}">`;
-  const sel=(k,opts)=>`<select id="f_${k}">${opts.map(o=>`<option value="${o}" ${v(k)===o?'selected':''}>${o||'—'}</option>`).join('')}</select>`;
+  const inp=(k,type,ph,extra)=>`<input id="f_${k}" type="${type||'text'}" value="${esc(v(k))}" placeholder="${esc(ph||'')}" ${extra||''}>`;
+  const dateInp=k=>`<input id="f_${k}" type="date" value="${esc(toDateInput(v(k)))}">`;
+  const sel=(k,opts)=>`<select id="f_${k}">${opts.map(o=>`<option value="${esc(o)}" ${v(k)===o?'selected':''}>${esc(o)||'—'}</option>`).join('')}</select>`;
   const fn=emp?`${emp.firstName||''} ${emp.lastName||''}`.trim():'';
 
   return `
   <div class="section-label key-section">Key Fields</div>
   <div class="form-grid">
     <div class="field req"><label>Full Name (Auto)</label>
-      <div class="fullname-preview" id="fullname-preview">${fn||'— Enter First & Last Name —'}</div>
+      <div class="fullname-preview" id="fullname-preview">${fn?esc(fn):'— Enter First &amp; Last Name —'}</div>
     </div>
     <div class="field req"><label>Infinix Employee ID</label>
       ${inp('infinixId','text','1700XXXX',emp?'readonly style="opacity:.5"':'oninput="validateInfinixId();checkDuplicate()"')}
@@ -2803,7 +2923,7 @@ function getFormHTML(emp){
     <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
-  <div class="section-label">Store & Deployment</div>
+  <div class="section-label">Store &amp; Deployment</div>
   <div class="form-grid">
     <div class="field"><label>Region</label>${sel('region',['',...REGIONS])}</div>
     <div class="field">
@@ -2814,7 +2934,7 @@ function getFormHTML(emp){
     </div>
     <div class="field form-full">
       <label>Store Assignment <span style="color:var(--text3);font-weight:400;font-size:10px">(auto-filled from Store ID)</span></label>
-      <input id="f_storeAssignment" type="text" value="${v('storeAssignment').replace(/"/g,'&quot;')}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
+      <input id="f_storeAssignment" type="text" value="${esc(v('storeAssignment'))}" placeholder="Auto-filled or enter manually" ${v('storeId')&&lookupStore(v('storeId'))?.storeName?'readonly':''}>
     </div>
     <div class="field"><label>RSS Name</label>${inp('rssName','text','RSS Name')}</div>
     <div class="field"><label>RSS ID</label>${inp('rssId','text','1700XXXX','oninput="validateRssId()"')}
@@ -2830,7 +2950,7 @@ function getFormHTML(emp){
     <div class="field"><label>TIN Number</label>${inp('tin','text','XXX-XXX-XXX-XXX')}</div>
   </div>
 
-  <div class="section-label">Payroll & Banking</div>
+  <div class="section-label">Payroll &amp; Banking</div>
   <div class="form-grid">
     <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
     <div class="field"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
@@ -2845,13 +2965,13 @@ function getFormHTML(emp){
 
   <div class="section-label">Requirements Checklist</div>
   <div class="req-check-grid">
-    ${REQUIREMENT_FIELDS.map(([k,label])=>`<label class="req-check"><input id="f_${k}" type="checkbox" ${v(k)?'checked':''}> <span>${label}</span></label>`).join('')}
+    ${REQUIREMENT_FIELDS.map(([k,label])=>`<label class="req-check"><input id="f_${k}" type="checkbox" ${v(k)?'checked':''}> <span>${esc(label)}</span></label>`).join('')}
   </div>
 
   <div class="section-label">Notes / Remarks</div>
   <div class="field form-full">
     <label>Notes</label>
-    <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${v('notes')}</textarea>
+    <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'Poppins',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${esc(v('notes'))}</textarea>
   </div>`;
 }
 
@@ -2869,7 +2989,7 @@ function validateInfinixId(){
   else{hint?.classList.remove('visible');el?.classList.remove('err');}
 }
 function checkDuplicate(){
-  if(editingId)return; // skip on edit
+  if(editingId)return;
   const val=document.getElementById('f_infinixId')?.value.trim()||'';
   const warn=document.getElementById('dup-warning');
   if(!warn)return;
@@ -2889,10 +3009,28 @@ function validateRssId(){
 function gatherForm(){
   const f=k=>document.getElementById('f_'+k)?.value.trim()||'';
   const c=k=>!!document.getElementById('f_'+k)?.checked;
-  const data={firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),statusDate:f('statusDate'),statusRemarks:f('statusRemarks'),deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),tin:f('tin'),basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),medicalCert:c('medicalCert'),govForms:c('govForms'),clearance:c('clearance'),idPicture:c('idPicture'),validIdCopy:c('validIdCopy'),birthCert:c('birthCert'),diplomaTor:c('diplomaTor'),previousCoe:c('previousCoe'),notes:f('notes')};
+  const data={
+    firstName:f('firstName'),lastName:f('lastName'),middleName:f('middleName'),
+    infinixId:f('infinixId'),qrStatus:f('qrStatus'),status:f('status'),
+    statusDate:f('statusDate'),statusRemarks:f('statusRemarks'),
+    deploymentDate:f('deploymentDate'),deploymentStatus:f('deploymentStatus'),
+    region:f('region'),storeAssignment:f('storeAssignment'),storeId:f('storeId'),
+    rssName:f('rssName'),rssId:f('rssId'),address:f('address'),mobile:f('mobile'),
+    dob:f('dob'),email:f('email'),gender:f('gender'),maritalStatus:f('maritalStatus'),
+    sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),tin:f('tin'),
+    basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),
+    contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),
+    preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),
+    medicalCert:c('medicalCert'),govForms:c('govForms'),clearance:c('clearance'),
+    idPicture:c('idPicture'),validIdCopy:c('validIdCopy'),birthCert:c('birthCert'),
+    diplomaTor:c('diplomaTor'),previousCoe:c('previousCoe'),notes:f('notes')
+  };
   if(normalizeDeployStatus(data.deploymentStatus)==='BACKOUT'){data.deploymentStatus='BACKOUT';data.status='-';}
   return data;
 }
+
+// FIX 6: validate() — Backout deployment status sets status='-' which is a valid inactive state.
+// Do NOT require statusDate/statusRemarks for Backout — only for true inactive statuses.
 function validate(data){
   let ok=true;
   ['firstName','lastName','infinixId','status'].forEach(k=>{
@@ -2910,8 +3048,10 @@ function validate(data){
   if(data.infinixId&&!data.infinixId.startsWith('1700'))ok=false;
   if(data.storeId&&!data.storeId.startsWith('PH0'))ok=false;
   if(data.rssId&&!data.rssId.startsWith('1700'))ok=false;
-  const willBeInactive=getTargetSheet(data.status,data.deploymentStatus)===INACTIVE_SHEET;
-  if(willBeInactive){
+
+  // FIX 6: Only require statusDate+statusRemarks for true inactive statuses (not Backout deployment)
+  const trueInactiveStatuses=['Floating','Resigned','AWOL','Terminated'];
+  if(trueInactiveStatuses.includes(data.status)){
     ['statusDate','statusRemarks'].forEach(k=>{
       const el=document.getElementById('f_'+k);
       if(!data[k]){el?.classList.add('err');ok=false;}else el?.classList.remove('err');
@@ -2919,6 +3059,7 @@ function validate(data){
   }
   return ok;
 }
+
 function openAddModal(){
   editingId=null;
   document.getElementById('modal-title').textContent='Add New Employee';
@@ -2929,7 +3070,7 @@ function openAddModal(){
 function openEditModal(id){
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   editingId=id;
-  document.getElementById('modal-title').textContent=`Edit — ${emp.fullName||emp.firstName+' '+emp.lastName}`;
+  document.getElementById('modal-title').textContent=`Edit — ${esc(emp.fullName||emp.firstName+' '+emp.lastName)}`;
   document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
   document.getElementById('modal-overlay').classList.add('open');
@@ -2984,12 +3125,14 @@ async function doDelete(id){
 // UTILITIES
 // ============================================================
 function toast(msg,type=''){
-  const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+type;
+  const el=document.getElementById('toast');
+  el.textContent=msg; // safe: textContent not innerHTML
+  el.className='toast show '+type;
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 function showLoading(v,text='Loading...'){
   const el=document.getElementById('loading');el.style.display=v?'flex':'none';
-  const t=document.getElementById('loading-text');if(t)t.textContent=text;
+  const t=document.getElementById('loading-text');if(t)t.textContent=text; // safe: textContent
 }
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetailPanel();}});
