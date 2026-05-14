@@ -1463,7 +1463,7 @@ function yes(v){ return ['YES','DONE','TRUE','✓','CHECKED','1'].includes(Strin
 function yn(v){ return yes(v) ? 'YES' : ''; }
 function rowToObj(r){
   return {
-    region:r[0]||'',
+    region:normalizeRegion(r[0]||''),
     infinixId:String(r[1]||''),
     fullName:r[2]||'',
     firstName:r[3]||'',
@@ -1474,7 +1474,7 @@ function rowToObj(r){
     storeId:r[8]||'',
     qrStatus:r[9]||'NOT SCANNED',
     deploymentDate:r[10]||'',
-    deploymentStatus:r[11]||'-',
+    deploymentStatus:normalizeDeployStatus(r[11]||'-'),
     rssName:r[12]||'',
     rssId:String(r[13]||''),
     basicWage:r[14]||'',
@@ -1564,6 +1564,27 @@ function normalizeStatus(status){
   if(s==='BACKOUT'||s==='BACK OUT'||s==='BACK-OUT')return 'Backout';
   return '';
 }
+
+function normalizeRegion(region){
+  const raw=String(region||'').trim();
+  const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
+  if(!s)return '';
+  if(s==='NCR'||s.includes('NATIONAL CAPITAL'))return 'NCR';
+  if(s==='NL'||s.includes('NORTH LUZON')||s.includes('NORTH'))return 'NORTH LUZON';
+  if(s==='CL'||s.includes('CENTRAL LUZON')||s.includes('CENTRAL'))return 'CENTRAL LUZON';
+  if(s==='SL'||s.includes('SOUTH LUZON')||s.includes('SOUTH'))return 'SOUTH LUZON';
+  if(s.includes('VISAYA'))return 'VISAYAS';
+  if(s.includes('MINDANAO'))return 'MINDANAO';
+  return raw.toUpperCase();
+}
+function normalizeDeployStatus(status){
+  const s=String(status||'').trim().toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
+  if(s==='DEPLOYED')return 'DEPLOYED';
+  if(s==='BACKOUT'||s==='BACK OUT'||s==='BACK OUT')return 'BACKOUT';
+  if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED'||s==='PENDING'||s==='-'||!s)return 'NOT YET DEPLOYED';
+  return s;
+}
+
 function isInactiveStatus(status){return ['Floating','Resigned','AWOL','Terminated','Backout'].includes(normalizeStatus(status));}
 function getTargetSheet(status){return normalizeStatus(status)==='Active'?ACTIVE_SHEET:(isInactiveStatus(status)?INACTIVE_SHEET:null);}
 function isCompletelyBlankRow(row){return !row || row.every(v=>String(v||'').trim()==='');}
@@ -1800,16 +1821,22 @@ function filteredEmployees(type){
     :employees.filter(e=>isActive?e.status==='Active':e.status!=='Active');
 
   // Missing field filter (from dashboard pill clicks)
+  // Dashboard pending actions must only drill down Active promoters.
+  if(missingFieldFilter){
+    list=list.filter(e=>normalizeStatus(e.status)==='Active');
+  }
   if(missingFieldFilter==='notDeployed')list=list.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-');
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
-  else if(missingFieldFilter==='missingSSS')list=list.filter(e=>!e.sss||e.sss.trim()==='');
-  else if(missingFieldFilter==='missingBank')list=list.filter(e=>!e.bankAccount||e.bankAccount.trim()==='');
-  else if(missingFieldFilter==='missingMobile')list=list.filter(e=>!e.mobile||e.mobile.trim()==='');
+  else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig));
+  else if(missingFieldFilter==='missingSSS')list=list.filter(e=>isMissing(e.sss));
+  else if(missingFieldFilter==='missingBank')list=list.filter(e=>isMissing(e.bankAccount));
+  else if(missingFieldFilter==='missingMobile')list=list.filter(e=>isMissing(e.mobile));
+  else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
-  if(filterRegion)list=list.filter(e=>e.region===filterRegion);
+  if(filterRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(filterRegion));
   if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
   if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
@@ -1869,6 +1896,16 @@ function getBirthdaysThisMonth(){
 // ============================================================
 // RENDER
 // ============================================================
+function isMissing(v){return String(v||'').trim()==='';}
+function isYesField(v){return v===true || yes(v);}
+function requirementsComplete(e){
+  // Required onboarding checklist for active promoters.
+  // COE is optional when there is no previous employer, so it is not counted as required.
+  const required=['medicalCert','govForms','clearance','idPicture','validIdCopy','birthCert','diplomaTor','preEmploymentForms','jobOffer'];
+  return required.every(k=>isYesField(e[k]));
+}
+function activePromotersOnly(){return employees.filter(e=>normalizeStatus(e.status)==='Active');}
+
 function getStats(){
   const s={Active:0,Floating:0,Resigned:0,AWOL:0,Terminated:0,Backout:0};
   employees.forEach(e=>{if(s[e.status]!==undefined)s[e.status]++;});
@@ -1943,16 +1980,23 @@ function renderDashboard(){
 
   const s=getStats();
   const total=employees.length;
-  const deployed=employees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
-  const notDeployed=employees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
-  const scanned=employees.filter(e=>e.qrStatus==='SCANNED').length;
-  const notScanned=employees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
-  const contractSent=employees.filter(e=>e.contractStatus==='SENT').length;
-  const contractPending=employees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
-  const missingSSS=employees.filter(e=>!e.sss||e.sss.trim()==='').length;
-  const missingBank=employees.filter(e=>!e.bankAccount||e.bankAccount.trim()==='').length;
-  const missingMobile=employees.filter(e=>!e.mobile||e.mobile.trim()==='').length;
-  const regions={};employees.forEach(e=>{if(e.region)regions[e.region]=(regions[e.region]||0)+1;});
+  const activeEmployees=activePromotersOnly();
+  const activeTotal=activeEmployees.length;
+  // Pending actions and completion cards count ACTIVE promoters only.
+  // Inactive employees stay visible in status totals but do not affect HR pending tasks.
+  const deployed=activeEmployees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
+  const notDeployed=activeEmployees.filter(e=>!e.deploymentStatus||e.deploymentStatus==='NOT YET DEPLOYED'||e.deploymentStatus==='-').length;
+  const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
+  const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
+  const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
+  const contractPending=activeEmployees.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT').length;
+  const missingGovIds=activeEmployees.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)).length;
+  const missingSSS=activeEmployees.filter(e=>isMissing(e.sss)).length;
+  const missingBank=activeEmployees.filter(e=>isMissing(e.bankAccount)).length;
+  const missingMobile=activeEmployees.filter(e=>isMissing(e.mobile)).length;
+  const missingRequirements=activeEmployees.filter(e=>!requirementsComplete(e)).length;
+  const reqComplete=activeTotal-missingRequirements;
+  const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region); if(rr)regions[rr]=(regions[rr]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,8);
   const birthdays=getBirthdaysThisMonth().slice(0,5);
   const now=new Date();
@@ -1969,28 +2013,28 @@ function renderDashboard(){
     <!-- KF CARDS -->
     <div class="dash-kf-grid">
       <div class="kf-card glass-card">
-        <div class="kf-label-top">Total Employees</div>
-        <div class="kf-num">${total}</div>
-        <div class="kf-sub">All records</div>
+        <div class="kf-label-top">Active Promoters</div>
+        <div class="kf-num">${activeTotal}</div>
+        <div class="kf-sub">Active records only</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:100%"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">Deployed</div>
         <div class="kf-num">${deployed}</div>
-        <div class="kf-sub">${total?Math.round(deployed/total*100):0}% of total</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?deployed/total*100:0}%"></div></div>
+        <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">QR Scanned</div>
         <div class="kf-num">${scanned}</div>
-        <div class="kf-sub">${total?Math.round(scanned/total*100):0}% of total</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?scanned/total*100:0}%"></div></div>
+        <div class="kf-sub">${activeTotal?Math.round(scanned/activeTotal*100):0}% of active</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?scanned/activeTotal*100:0}%"></div></div>
       </div>
       <div class="kf-card glass-card">
-        <div class="kf-label-top">Contract Sent</div>
-        <div class="kf-num">${contractSent}</div>
-        <div class="kf-sub">${total?Math.round(contractSent/total*100):0}% of total</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${total?contractSent/total*100:0}%"></div></div>
+        <div class="kf-label-top">Requirements Complete</div>
+        <div class="kf-num">${reqComplete}</div>
+        <div class="kf-sub">${activeTotal?Math.round(reqComplete/activeTotal*100):0}% of active</div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?reqComplete/activeTotal*100:0}%"></div></div>
       </div>
     </div>
 
@@ -2005,15 +2049,16 @@ function renderDashboard(){
     </div>
 
     <!-- PENDING ACTIONS -->
-    <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Click a pill to filter employees</span></div>
+    <div class="section-heading"><span>Pending Actions</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:0.55">Active promoters only · click a pill to filter</span></div>
     <div class="summary-pills">
       ${notDeployed>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notDeployed')" title="Click to see employees not yet deployed"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notDeployed}</span><span>Not Deployed</span></div>`:''}
       ${notScanned>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('notScanned')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${notScanned}</span><span>QR Not Scanned</span></div>`:''}
-      ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
-      ${missingSSS>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingSSS')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingSSS}</span><span>Missing SSS</span></div>`:''}
-      ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
-      ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')" title="Click to filter"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
-      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingSSS===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All records complete</span></div>`:''}
+      ${contractPending>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('contractPending')" title="Active promoters with contract not yet sent"><div class="summary-pill-dot"></div><span class="summary-pill-num">${contractPending}</span><span>Contract Pending</span></div>`:''}
+      ${missingRequirements>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingRequirements')" title="Active promoters with incomplete requirements checklist"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingRequirements}</span><span>Requirements Incomplete</span></div>`:''}
+      ${missingGovIds>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingGovIds')" title="Active promoters missing SSS, PhilHealth, or Pag-IBIG"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingGovIds}</span><span>Missing Gov IDs</span></div>`:''}
+      ${missingBank>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingBank')" title="Active promoters missing bank account"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingBank}</span><span>Missing Bank Account</span></div>`:''}
+      ${missingMobile>0?`<div class="summary-pill summary-pill-warn" onclick="drillDown('missingMobile')" title="Active promoters missing mobile number"><div class="summary-pill-dot"></div><span class="summary-pill-num">${missingMobile}</span><span>Missing Mobile</span></div>`:''}
+      ${notDeployed===0&&notScanned===0&&contractPending===0&&missingRequirements===0&&missingGovIds===0&&missingBank===0&&missingMobile===0?`<div class="summary-pill summary-pill-ok"><div class="summary-pill-dot"></div><span class="summary-pill-num">✓</span><span>All active records complete</span></div>`:''}
     </div>
 
     <!-- BOTTOM GRID -->
@@ -2092,29 +2137,29 @@ function renderTracker(){
   let list=employees;
   if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&e.deploymentDate>=trackerDateFrom);
   if(trackerDateTo)list=list.filter(e=>e.deploymentDate&&e.deploymentDate<=trackerDateTo);
-  if(trackerRegion)list=list.filter(e=>e.region===trackerRegion);
+  if(trackerRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(trackerRegion));
 
   const total=list.length;
-  const deployed=list.filter(e=>e.deploymentStatus==='DEPLOYED').length;
-  const notYet=list.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length;
-  const backout=list.filter(e=>e.deploymentStatus==='BACKOUT').length;
+  const deployed=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
+  const notYet=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length;
+  const backout=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
   const pct=total?Math.round(deployed/total*100):0;
 
   // by region
   const byRegion={};
   REGIONS.forEach(r=>{
-    const reg=list.filter(e=>e.region===r);
-    byRegion[r]={total:reg.length,deployed:reg.filter(e=>e.deploymentStatus==='DEPLOYED').length,notYet:reg.filter(e=>e.deploymentStatus==='NOT YET DEPLOYED'||!e.deploymentStatus||e.deploymentStatus==='-').length,backout:reg.filter(e=>e.deploymentStatus==='BACKOUT').length};
+    const reg=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(r));
+    byRegion[r]={total:reg.length,deployed:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length,notYet:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length,backout:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length};
   });
 
   // by store (top 10)
   const byStore={};
   list.forEach(e=>{
     const key=e.storeAssignment||e.storeId||'Unknown';
-    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:e.region,total:0,deployed:0,notYet:0,backout:0};
+    if(!byStore[key])byStore[key]={name:key,storeId:e.storeId,region:normalizeRegion(e.region),total:0,deployed:0,notYet:0,backout:0};
     byStore[key].total++;
-    if(e.deploymentStatus==='DEPLOYED')byStore[key].deployed++;
-    else if(e.deploymentStatus==='BACKOUT')byStore[key].backout++;
+    if(normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED')byStore[key].deployed++;
+    else if(normalizeDeployStatus(e.deploymentStatus)==='BACKOUT')byStore[key].backout++;
     else byStore[key].notYet++;
   });
   const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
@@ -2227,7 +2272,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    const labels={notDeployed:'Not Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingSSS:'Missing SSS',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
