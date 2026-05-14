@@ -1597,7 +1597,14 @@ async function loadData(){
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
     ]);
     employees=[];
-    (aRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});});
+    (aRes.result.values||[]).forEach((r,i)=>{
+      const obj=rowToObj(r);
+      const hasId=String(obj.infinixId||'').trim();
+      const hasName=String(obj.fullName||obj.firstName||'').trim();
+      // Include Active rows with no ID but a name (for missingInfinixId tracking)
+      if(hasId || hasName)
+        employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});
+    });
     (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
@@ -1912,6 +1919,8 @@ function filteredEmployees(type){
     else if(missingFieldFilter==='missingBank')list=list.filter(e=>isMissing(e.bankAccount));
     else if(missingFieldFilter==='missingMobile')list=list.filter(e=>isMissing(e.mobile));
     else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
+    else if(missingFieldFilter==='missingInfinixId')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim());
+    else if(missingFieldFilter==='missingStore')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment) && isMissing(e.storeId));
   }
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
@@ -2107,6 +2116,8 @@ function renderDashboard(){
   const missingMobile=activeEmployees.filter(e=>isMissing(e.mobile)).length;
   const missingRequirements=activeEmployees.filter(e=>!requirementsComplete(e)).length;
   const reqComplete=activeTotal-missingRequirements;
+  const missingInfinixId=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim()).length;
+  const missingStore=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment) && isMissing(e.storeId)).length;
 
   const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region);if(rr)regions[rr]=(regions[rr]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,6);
@@ -2118,7 +2129,7 @@ function renderDashboard(){
   const contractPct=activeTotal?Math.round(contractSent/activeTotal*100):0;
   const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
 
-  const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile].filter(v=>v>0).length;
+  const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile,missingInfinixId,missingStore].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
     <!-- DASHBOARD SEARCH -->
@@ -2223,6 +2234,8 @@ function renderDashboard(){
         ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
         ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏦</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
         ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📞</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
+        ${missingInfinixId>0?`<div class="pending-card glass-card" onclick="drillDown('missingInfinixId')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingInfinixId}</div><div class="pc-label">No Infinix ID</div></div></div>`:''}
+        ${missingStore>0?`<div class="pending-card glass-card" onclick="drillDown('missingStore')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingStore}</div><div class="pc-label">No Store Assignment</div></div></div>`:''}
         ${pendingCount===0?`<div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1"><div class="pc-icon" style="background:var(--success-bg)">✅</div><div class="pc-body"><div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div><div class="pc-label">All active records are complete</div></div></div>`:''}
       </div>
     </div>
@@ -2401,7 +2414,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile'};
+    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
