@@ -536,13 +536,13 @@ body::after {
   gap: 12px;
   margin-bottom: 14px;
 }
-.chart-card { padding: 18px 18px 14px; }
+.chart-card { padding: 18px 18px 14px; min-height: 200px; }
 .chart-title {
   font-size: 9px; font-weight: 700; margin-bottom: 14px;
   color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;
+  flex-shrink: 0;
 }
-.chart-wrap { position: relative; height: 170px; }
-
+.chart-wrap { position: relative; height: 165px; }
 /* Right column sidebar */
 .dash-right { display: flex; flex-direction: column; gap: 12px; }
 
@@ -2198,31 +2198,6 @@ function renderDashboard(){
       }).join('')}
     </div>
 
-    <!-- COMPLETION RINGS -->
-    <div class="completion-row">
-      <div class="completion-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
-        <div class="cc-ring" id="ring-qr">${ringHTML(scanPct,'#2EC4BE')}</div>
-        <div>
-          <div class="cc-val" style="color:#2EC4BE">${scanned}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${activeTotal}</span></div>
-          <div class="cc-label">QR Scanned</div>
-        </div>
-      </div>
-      <div class="completion-card glass-card" onclick="drillDown('contractPending')" style="cursor:pointer">
-        <div class="cc-ring" id="ring-contract">${ringHTML(contractPct,'#f5c842')}</div>
-        <div>
-          <div class="cc-val" style="color:#f5c842">${contractSent}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${activeTotal}</span></div>
-          <div class="cc-label">Contract Sent</div>
-        </div>
-      </div>
-      <div class="completion-card glass-card" onclick="drillDown('missingRequirements')" style="cursor:pointer">
-        <div class="cc-ring" id="ring-req">${ringHTML(reqPct,'#4ecb71')}</div>
-        <div>
-          <div class="cc-val" style="color:#4ecb71">${reqComplete}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${activeTotal}</span></div>
-          <div class="cc-label">Requirements Done</div>
-        </div>
-      </div>
-    </div>
-
     <!-- PENDING ACTIONS -->
     <div class="pending-section">
       <div class="pending-title">
@@ -2249,14 +2224,46 @@ function renderDashboard(){
     <div class="dash-grid">
       <div>
         <div class="charts-row">
-          <div class="chart-card glass-card">
+
+          <!-- UPGRADED DOUGHNUT + STATUS TABLE -->
+          <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Status Breakdown</div>
-            <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+            <div style="display:flex;align-items:center;gap:16px;flex:1;min-height:0">
+              <!-- Doughnut with center label -->
+              <div style="position:relative;width:150px;height:150px;flex-shrink:0">
+                <canvas id="chart-status"></canvas>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+                  <div style="font-size:26px;font-weight:900;font-family:'Poppins',sans-serif;line-height:1;color:var(--text)">${total}</div>
+                  <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px">TOTAL</div>
+                </div>
+              </div>
+              <!-- Status table -->
+              <div style="flex:1;min-width:0">
+                <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:3px 10px;align-items:center">
+                  <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border)"></div>
+                  <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border)">Status</div>
+                  <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border);text-align:right">Count</div>
+                  <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border);text-align:right">%</div>
+                  ${STATUSES.map(st=>{
+                    const cnt=s[st]||0;
+                    const pct=total?Math.round(cnt/total*100):0;
+                    return`
+                  <span style="width:8px;height:8px;border-radius:50%;background:${STATUS_COLORS[st]};flex-shrink:0;display:block"></span>
+                  <div style="font-size:11.5px;font-weight:600;color:var(--text2);cursor:pointer;padding:3px 0" onclick="filterByStatus('${esc(st)}')">${esc(st)}</div>
+                  <div style="font-size:12px;font-weight:800;color:${STATUS_COLORS[st]};text-align:right">${cnt}</div>
+                  <div style="font-size:11px;color:var(--text3);text-align:right">${pct}%</div>`;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="chart-card glass-card">
+
+          <!-- UPGRADED BAR CHART — data labels, no Y-axis, top region highlighted -->
+          <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Active Promoters by Region</div>
-            <div class="chart-wrap"><canvas id="chart-region"></canvas></div>
+            <div class="chart-wrap" style="flex:1"><canvas id="chart-region"></canvas></div>
           </div>
+
         </div>
       </div>
       <div class="dash-right">
@@ -2291,25 +2298,110 @@ function renderDashboard(){
 
   setTimeout(()=>{
     const isDark=document.documentElement.getAttribute('data-theme')!=='light';
-    Chart.defaults.color=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
     Chart.defaults.font.family='Poppins';
+    const gridColor=isDark?'rgba(215,254,250,0.05)':'rgba(10,138,133,0.07)';
+    const tickColor=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
+    Chart.defaults.color=tickColor;
+
+    // DOUGHNUT — no legend (replaced by table), with center label
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
       _charts.status=new Chart(ctxS,{
         type:'doughnut',
-        data:{labels:STATUSES,datasets:[{data:STATUSES.map(st=>s[st]||0),backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+'33'),borderColor:STATUSES.map(st=>STATUS_COLORS[st]),borderWidth:1.5,hoverOffset:5}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:8,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}${total?' ('+Math.round(ctx.raw/total*100)+'%)':''}`}}}}
+        data:{
+          labels:STATUSES,
+          datasets:[{
+            data:STATUSES.map(st=>s[st]||0),
+            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+(isDark?'44':'55')),
+            borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
+            borderWidth:2,
+            hoverOffset:6,
+            hoverBorderWidth:3
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          cutout:'68%',
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              callbacks:{
+                label:ctx=>`${ctx.label}: ${ctx.raw} (${total?Math.round(ctx.raw/total*100):0}%)`
+              }
+            }
+          }
+        }
       });
     }
+
+    // BAR CHART — data labels on top, no Y-axis, top region highlighted
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
-      const rEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]).slice(0,7);
+      const rEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]);
+      const maxVal=rEntries.length?rEntries[0][1]:0;
+      const barColors=rEntries.map(([,c])=>
+        c===maxVal
+          ? (isDark?'rgba(46,196,190,0.85)':'rgba(13,122,118,0.85)')
+          : (isDark?'rgba(46,196,190,0.22)':'rgba(13,122,118,0.25)')
+      );
+      const barBorders=rEntries.map(([,c])=>
+        c===maxVal
+          ? (isDark?'rgba(46,196,190,1)':'rgba(13,122,118,1)')
+          : (isDark?'rgba(46,196,190,0.5)':'rgba(13,122,118,0.5)')
+      );
       _charts.region=new Chart(ctxR,{
         type:'bar',
-        data:{labels:rEntries.map(([r])=>r),datasets:[{label:'Active',data:rEntries.map(([,c])=>c),backgroundColor:'rgba(46,196,190,0.18)',borderColor:'rgba(46,196,190,0.7)',borderWidth:1,borderRadius:6}]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9}}},y:{grid:{color:'rgba(215,254,250,0.05)'},ticks:{font:{size:9},stepSize:1}}}}
+        data:{
+          labels:rEntries.map(([r])=>r),
+          datasets:[{
+            label:'Active',
+            data:rEntries.map(([,c])=>c),
+            backgroundColor:barColors,
+            borderColor:barBorders,
+            borderWidth:1.5,
+            borderRadius:6,
+            borderSkipped:false
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:ctx=>`${ctx.raw} promoters`}},
+            // Data labels plugin inline
+          },
+          scales:{
+            x:{
+              grid:{display:false},
+              border:{display:false},
+              ticks:{font:{size:9},color:tickColor}
+            },
+            y:{display:false}
+          },
+          animation:{
+            onComplete:(chart)=>{
+              const ctx=chart.chart.ctx;
+              chart.chart.data.datasets.forEach((dataset,i)=>{
+                const meta=chart.chart.getDatasetMeta(i);
+                meta.data.forEach((bar,idx)=>{
+                  const val=dataset.data[idx];
+                  if(!val)return;
+                  ctx.save();
+                  ctx.font='800 11px Poppins, sans-serif';
+                  ctx.fillStyle=isDark?'rgba(255,255,255,0.85)':'rgba(26,34,34,0.75)';
+                  ctx.textAlign='center';
+                  ctx.textBaseline='bottom';
+                  ctx.fillText(val, bar.x, bar.y-3);
+                  ctx.restore();
+                });
+              });
+            }
+          }
+        }
       });
     }
   },80);
