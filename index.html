@@ -381,8 +381,6 @@ body::after {
    DASHBOARD
    ============================================================ */
 .dash-kf-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 16px; }
-@media (max-width: 1380px) { .dash-kf-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 760px) { .dash-kf-grid { grid-template-columns: repeat(2,1fr); } }
 .kf-card { padding: 20px 22px; }
 .kf-label-top { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; }
 .kf-num { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; color: var(--text); }
@@ -1479,7 +1477,8 @@ function rowToObj(r){
     storeId:r[8]||'',
     qrStatus:r[9]||'NOT SCANNED',
     deploymentDate:r[10]||'',
-    deploymentStatus:normalizeDeployStatus(r[11]||'-'),
+    deploymentStatusRaw:String(r[11]||'').trim(),
+    deploymentStatus:normalizeDeployStatus(r[11]||''),
     rssName:r[12]||'',
     rssId:String(r[13]||''),
     basicWage:r[14]||'',
@@ -1598,12 +1597,11 @@ function normalizeDeployStatus(status){
   if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED'||s==='PENDING'||s==='-'||!s)return 'NOT YET DEPLOYED';
   return s;
 }
-function isStrictNotYetDeployed(e){
-  // Count only if the actual Deployment Status column has NOT YET DEPLOYED.
-  // Do not count blank or '-' cells. Use the raw sheet value so blanks are not converted by normalizeDeployStatus().
-  const raw = String((e && e._raw && e._raw[11] !== undefined) ? e._raw[11] : (e?.deploymentStatus || '')).trim();
-  if(!raw || raw === '-') return false;
-  return normalizeDeployStatus(raw) === 'NOT YET DEPLOYED';
+function isExactNotYetDeployed(status){
+  // Dashboard card must count ONLY actual NOT YET DEPLOYED values from the Deployment Status column.
+  // It must NOT count blank, dash (-), Pending, or Inactive-sheet rows.
+  const s=String(status||'').trim().toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
+  return s==='NOT YET DEPLOYED';
 }
 
 function isInactiveStatus(status){return ['Floating','Resigned','AWOL','Terminated','Backout'].includes(normalizeStatus(status));}
@@ -1853,7 +1851,7 @@ function filteredEmployees(type){
   if(missingFieldFilter){
     list=list.filter(e=>normalizeStatus(e.status)==='Active');
   }
-  if(missingFieldFilter==='notDeployed')list=list.filter(e=>e._sheet===ACTIVE_SHEET && isStrictNotYetDeployed(e));
+  if(missingFieldFilter==='notDeployed')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && isExactNotYetDeployed(e.deploymentStatusRaw));
   else if(missingFieldFilter==='notScanned')list=list.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED');
   else if(missingFieldFilter==='contractPending')list=list.filter(e=>!e.contractStatus||e.contractStatus==='NOT YET SENT');
   else if(missingFieldFilter==='missingGovIds')list=list.filter(e=>isMissing(e.sss)||isMissing(e.philhealth)||isMissing(e.pagibig)||isMissing(e.tin));
@@ -2016,7 +2014,8 @@ function renderDashboard(){
   // Pending actions and completion cards count ACTIVE promoters only.
   // Inactive employees stay visible in status totals but do not affect HR pending tasks.
   const deployed=activeEmployees.filter(e=>e.deploymentStatus==='DEPLOYED').length;
-  const notDeployed=activeEmployees.filter(e=>e._sheet===ACTIVE_SHEET && isStrictNotYetDeployed(e)).length;
+  const activeSheetEmployees=employees.filter(e=>e._sheet===ACTIVE_SHEET);
+  const notDeployed=activeSheetEmployees.filter(e=>isExactNotYetDeployed(e.deploymentStatusRaw)).length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const contractSent=activeEmployees.filter(e=>e.contractStatus==='SENT').length;
@@ -2055,11 +2054,11 @@ function renderDashboard(){
         <div class="kf-sub">${activeTotal?Math.round(deployed/activeTotal*100):0}% of active</div>
         <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?deployed/activeTotal*100:0}%"></div></div>
       </div>
-      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
+      <div class="kf-card glass-card" onclick="drillDown('notDeployed')" title="Active sheet rows with Deployment Status exactly NOT YET DEPLOYED" style="cursor:pointer">
         <div class="kf-label-top">Not Yet Deployed</div>
-        <div class="kf-num" style="color:var(--warning)">${notDeployed}</div>
+        <div class="kf-num">${notDeployed}</div>
         <div class="kf-sub">Active sheet only</div>
-        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeTotal?notDeployed/activeTotal*100:0}%;background:var(--warning)"></div></div>
+        <div class="kf-bar"><div class="kf-bar-fill" style="width:${activeSheetEmployees.length?notDeployed/activeSheetEmployees.length*100:0}%;background:var(--warning)"></div></div>
       </div>
       <div class="kf-card glass-card">
         <div class="kf-label-top">QR Scanned</div>
