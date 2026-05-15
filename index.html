@@ -8,132 +8,117 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ============================================================
-   THEME TOKENS — GLASSMORPHISM DARK (primary)
+   THEME TOKENS — DARK
    ============================================================ */
 :root,
 [data-theme="dark"] {
-  /* Base backgrounds — pure near-black with slight blue tint like reference */
-  --bg-base:        #0a0a0f;
-  --bg-deep:        #060609;
-  --bg-mid:         #111118;
-  --bg-card:        rgba(255,255,255,0.05);
-  --bg-card-hover:  rgba(255,255,255,0.08);
-  --bg-glass:       rgba(15,15,25,0.85);
-  --bg-frosted:     rgba(255,255,255,0.04);
+  --teal:           #D7FEFA;
+  --teal-mid:       #8FE8E4;
+  --teal-deep:      #2EC4BE;
+  --charcoal-deep:  #1A1D1D;
+  --charcoal-mid:   #2B2E2E;
+  --charcoal-soft:  #323636;
+  --charcoal-card:  #272B2B;
 
-  /* Glass borders — white-alpha like reference images */
-  --border:         rgba(255,255,255,0.08);
-  --border2:        rgba(255,255,255,0.14);
-  --border3:        rgba(255,255,255,0.28);
+  --bg-base:        #1A1D1D;
+  --bg-deep:        #141717;
+  --bg-mid:         #222626;
+  --bg-card:        rgba(43,46,46,0.85);
+  --bg-card-hover:  rgba(50,54,54,0.95);
+  --bg-glass:       rgba(26,29,29,0.92);
+  --bg-frosted:     rgba(215,254,250,0.04);
 
-  /* Accent — neon green matching glassmorphism reference toggle */
-  --accent:         #7fff6e;
-  --accent-dim:     rgba(127,255,110,0.12);
-  --accent-glow:    rgba(127,255,110,0.20);
-  --teal-deep:      #7fff6e;
-  --teal-mid:       #a8ff9e;
-  --teal:           #d4ffd0;
-  --moss-green:     #7fff6e;
-
-  --sidebar-bg:     rgba(8,8,14,0.92);
-  --topbar-bg:      rgba(8,8,14,0.85);
-
-  /* Text */
-  --text:           rgba(255,255,255,0.92);
-  --text2:          rgba(255,255,255,0.58);
-  --text3:          rgba(255,255,255,0.32);
-  --text4:          rgba(255,255,255,0.14);
-
-  /* Status colors — vivid on dark */
-  --success:        #7fff6e;
-  --success-bg:     rgba(127,255,110,0.10);
-  --warning:        #ffce4a;
-  --warning-bg:     rgba(255,206,74,0.10);
-  --danger:         #ff5f6d;
-  --danger-bg:      rgba(255,95,109,0.10);
-  --info:           #60b8ff;
-  --info-bg:        rgba(96,184,255,0.10);
-
-  --c-active:       #7fff6e;
-  --c-floating:     #ffce4a;
-  --c-resigned:     #ff9d4a;
-  --c-awol:         #ff5f6d;
-  --c-terminated:   #c084fc;
-
-  --tan:            #7fff6e;
-  --bone:           rgba(255,255,255,0.85);
-  --kombu-green:    rgba(127,255,110,0.18);
-
-  --shadow:         0 4px 32px rgba(0,0,0,0.7);
-  --shadow-lg:      0 16px 64px rgba(0,0,0,0.85);
-  --shadow-accent:  0 0 40px rgba(127,255,110,0.12);
-
-  --teal-glow:      rgba(127,255,110,0.15);
+  --accent:         #D7FEFA;
   --accent-bright:  #ffffff;
-  --charcoal-deep:  #0a0a0f;
-  --charcoal-mid:   #111118;
-  --charcoal-soft:  #18181f;
-  --charcoal-card:  rgba(255,255,255,0.05);
+  --accent-dim:     rgba(215,254,250,0.10);
+  --accent-glow:    rgba(215,254,250,0.15);
+  --teal-glow:      rgba(46,196,190,0.18);
+
+  --border:         rgba(215,254,250,0.08);
+  --border2:        rgba(215,254,250,0.16);
+  --border3:        rgba(215,254,250,0.30);
+
+  --text:           #FFFFFF;
+  --text2:          rgba(255,255,255,0.65);
+  --text3:          rgba(255,255,255,0.38);
+  --text4:          rgba(255,255,255,0.18);
+
+  --sidebar-bg:     rgba(20,23,23,0.97);
+  --topbar-bg:      rgba(20,23,23,0.90);
+
+  --success:        #4ecb71;
+  --success-bg:     rgba(78,203,113,0.12);
+  --warning:        #f5c842;
+  --warning-bg:     rgba(245,200,66,0.12);
+  --danger:         #e05c5c;
+  --danger-bg:      rgba(224,92,92,0.12);
+  --info:           #D7FEFA;
+  --info-bg:        rgba(215,254,250,0.10);
+
+  --c-active:       #4ecb71;
+  --c-floating:     #f5c842;
+  --c-resigned:     #e8a24a;
+  --c-awol:         #e05c5c;
+  --c-terminated:   #b07ae0;
+
+  --moss-green:     #D7FEFA;
+
+  --tan:            #c9b87a;
+  --bone:           #e5d7c4;
+  --kombu-green:    #354024;
+
+  --shadow:         0 4px 24px rgba(0,0,0,0.6);
+  --shadow-lg:      0 12px 60px rgba(0,0,0,0.8);
+  --shadow-accent:  0 0 40px rgba(46,196,190,0.10);
 }
 
 [data-theme="light"] {
-  --bg-base:        #f0f2f8;
-  --bg-deep:        #e4e8f2;
-  --bg-mid:         #e8ecf4;
-  --bg-card:        rgba(255,255,255,0.72);
-  --bg-card-hover:  rgba(255,255,255,0.92);
-  --bg-glass:       rgba(240,242,248,0.88);
-  --bg-frosted:     rgba(80,100,200,0.04);
+  --teal:           #0a8a85;
+  --teal-mid:       #1aada8;
+  --teal-deep:      #0d7a76;
+  --bg-base:        #f0f4f4;
+  --bg-deep:        #e4ecec;
+  --bg-mid:         #e8eeee;
+  --bg-card:        rgba(255,255,255,0.82);
+  --bg-card-hover:  rgba(255,255,255,0.96);
+  --bg-glass:       rgba(240,244,244,0.92);
+  --bg-frosted:     rgba(10,138,133,0.05);
 
-  --accent:         #22c55e;
-  --accent-dim:     rgba(34,197,94,0.10);
-  --accent-glow:    rgba(34,197,94,0.14);
-  --teal-deep:      #16a34a;
-  --teal-mid:       #22c55e;
-  --teal:           #4ade80;
-  --moss-green:     #16a34a;
+  --accent:         #0a8a85;
+  --accent-bright:  #0d7a76;
+  --accent-dim:     rgba(10,138,133,0.10);
+  --accent-glow:    rgba(10,138,133,0.14);
 
-  --sidebar-bg:     rgba(228,232,242,0.97);
-  --topbar-bg:      rgba(228,232,242,0.93);
+  --border:         rgba(10,138,133,0.12);
+  --border2:        rgba(10,138,133,0.22);
+  --border3:        rgba(10,138,133,0.38);
 
-  --border:         rgba(80,100,200,0.10);
-  --border2:        rgba(80,100,200,0.18);
-  --border3:        rgba(80,100,200,0.34);
+  --text:           #1a2222;
+  --text2:          rgba(26,34,34,0.65);
+  --text3:          rgba(26,34,34,0.42);
+  --text4:          rgba(26,34,34,0.20);
 
-  --text:           #1a1d2e;
-  --text2:          rgba(26,29,46,0.65);
-  --text3:          rgba(26,29,46,0.42);
-  --text4:          rgba(26,29,46,0.20);
+  --sidebar-bg:     rgba(228,236,236,0.97);
+  --topbar-bg:      rgba(228,236,236,0.93);
 
-  --success:        #16a34a;
-  --success-bg:     rgba(22,163,74,0.10);
-  --warning:        #d97706;
-  --warning-bg:     rgba(217,119,6,0.10);
-  --danger:         #dc2626;
-  --danger-bg:      rgba(220,38,38,0.10);
-  --info:           #2563eb;
-  --info-bg:        rgba(37,99,235,0.10);
+  --success:        #1a8a40;
+  --success-bg:     rgba(26,138,64,0.1);
+  --warning:        #a07020;
+  --warning-bg:     rgba(160,112,32,0.1);
+  --danger:         #b03030;
+  --danger-bg:      rgba(176,48,48,0.1);
+  --info:           #0a8a85;
+  --info-bg:        rgba(10,138,133,0.1);
 
-  --c-active:       #16a34a;
-  --c-floating:     #d97706;
-  --c-resigned:     #ea580c;
-  --c-awol:         #dc2626;
-  --c-terminated:   #9333ea;
+  --moss-green:     #0a8a85;
 
-  --tan:            #16a34a;
-  --bone:           #1a1d2e;
-  --kombu-green:    rgba(22,163,74,0.12);
+  --tan:            #7a6020;
+  --bone:           #5a4a30;
+  --kombu-green:    #c8dac8;
 
-  --shadow:         0 4px 24px rgba(80,100,200,0.08);
-  --shadow-lg:      0 16px 60px rgba(80,100,200,0.14);
-  --shadow-accent:  0 0 40px rgba(22,163,74,0.06);
-
-  --teal-glow:      rgba(22,163,74,0.12);
-  --accent-bright:  #16a34a;
-  --charcoal-deep:  #f0f2f8;
-  --charcoal-mid:   #e8ecf4;
-  --charcoal-soft:  #e0e4f0;
-  --charcoal-card:  rgba(255,255,255,0.72);
+  --shadow:         0 4px 24px rgba(10,138,133,0.10);
+  --shadow-lg:      0 12px 60px rgba(10,138,133,0.18);
+  --shadow-accent:  0 0 40px rgba(10,138,133,0.06);
 }
 
 /* ============================================================
@@ -158,13 +143,19 @@ body.role-supervisor .sensitive {
 }
 .role-overlay.hidden { display: none; }
 .role-modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border2);
+  background: rgba(20,24,24,0.88);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(48px) saturate(1.6);
+  -webkit-backdrop-filter: blur(48px) saturate(1.6);
   border-radius: var(--radius-lg);
   padding: 32px 36px;
   width: 360px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
   display: flex; flex-direction: column; gap: 6px;
+}
+[data-theme="light"] .role-modal {
+  background: rgba(230,240,240,0.90);
+  border-color: rgba(255,255,255,0.7);
 }
 .role-modal h2 {
   font-size: 16px; font-weight: 800;
@@ -174,16 +165,18 @@ body.role-supervisor .sensitive {
 .role-btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
 .role-btn {
   padding: 12px 8px; border-radius: var(--radius-sm);
-  border: 1px solid var(--border); background: var(--bg-frosted);
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
   cursor: pointer; font-family: 'Poppins', sans-serif;
   font-size: 11px; font-weight: 700; color: var(--text2);
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   transition: all .18s;
 }
-.role-btn:hover { border-color: var(--border2); color: var(--text); background: var(--bg-mid); }
+.role-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); background: rgba(255,255,255,0.08); }
 .role-btn.selected {
-  border-color: var(--teal-deep); background: var(--accent-dim);
+  border-color: rgba(46,196,190,0.45); background: rgba(46,196,190,0.14);
   color: var(--text);
+  box-shadow: 0 4px 16px rgba(46,196,190,0.15);
 }
 .role-btn .role-icon { font-size: 22px; }
 .role-pin-wrap { display: none; flex-direction: column; gap: 8px; }
@@ -229,83 +222,85 @@ body.role-supervisor .sensitive {
 
 body {
   font-family: 'Poppins', sans-serif;
-  background: var(--bg-base);
+  background: #0d1010;
   color: var(--text);
   height: 100vh;
   overflow: hidden;
   display: flex;
   transition: background .3s, color .3s;
 }
+[data-theme="light"] body {
+  background: #d8e8e8;
+}
 
-/* Glassmorphism background gradient blobs */
 body::before {
   content: '';
   position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(127,255,110,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 90%, rgba(96,184,255,0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(192,132,252,0.03) 0%, transparent 70%);
+  background-image:
+    linear-gradient(rgba(46,196,190,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46,196,190,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
   pointer-events: none; z-index: 0;
 }
-
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 9999; opacity: 0.18;
+[data-theme="light"] body::before {
+  background-image:
+    linear-gradient(rgba(10,138,133,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10,138,133,0.05) 1px, transparent 1px);
 }
 
 .ambient-1 {
-  position: fixed; top: -200px; left: -100px;
+  position: fixed; top: -200px; left: -150px;
   width: 600px; height: 600px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(127,255,110,0.07) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(46,196,190,0.18) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
-  animation: amb 16s ease-in-out infinite;
+  animation: amb 14s ease-in-out infinite;
 }
 .ambient-2 {
   position: fixed; bottom: -200px; right: -100px;
-  width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(96,184,255,0.06) 0%, transparent 65%);
+  width: 550px; height: 550px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(80,120,200,0.12) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
-  animation: amb 22s ease-in-out infinite reverse;
+  animation: amb 18s ease-in-out infinite reverse;
 }
 .ambient-3 {
-  position: fixed; top: 40%; right: 20%;
-  width: 300px; height: 300px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(192,132,252,0.04) 0%, transparent 65%);
+  position: fixed; top: 40%; left: 40%;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(46,196,190,0.06) 0%, transparent 65%);
   pointer-events: none; z-index: 0;
-  animation: amb 28s ease-in-out infinite 6s;
+  animation: amb 22s ease-in-out infinite 5s;
 }
-@keyframes amb { 0%,100%{transform:scale(1) translate(0,0);opacity:1}50%{transform:scale(1.15) translate(20px,-20px);opacity:0.6} }
+@keyframes amb { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:0.5} }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 /* ============================================================
-   SIDEBAR — GLASSMORPHISM
+   SIDEBAR
    ============================================================ */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
-  background: rgba(8,8,14,0.75);
-  backdrop-filter: blur(40px) saturate(1.8);
-  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  background: rgba(14,17,17,0.82);
+  backdrop-filter: blur(40px) saturate(1.8) brightness(0.9);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8) brightness(0.9);
   border-right: 1px solid rgba(255,255,255,0.07);
   display: flex; flex-direction: column; overflow: hidden;
   position: relative; z-index: 10;
   transition: background .3s;
-  box-shadow: inset -1px 0 0 rgba(255,255,255,0.04);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
 }
 [data-theme="light"] .sidebar {
-  background: rgba(230,234,248,0.82);
+  background: rgba(220,232,232,0.75);
   border-right-color: rgba(255,255,255,0.6);
+  box-shadow: 4px 0 24px rgba(10,138,133,0.06);
 }
 
 /* FIX: Sidebar brand area — clean, fixed height, no overflow */
 .brand {
   padding: 16px 16px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
+  background: rgba(255,255,255,0.02);
 }
 .brand-logo {
   display: flex;
@@ -344,10 +339,10 @@ body::after {
 }
 
 .nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; border-radius: 12px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
   cursor: pointer; font-size: 12.5px; font-weight: 500;
-  color: var(--text2); transition: all .2s cubic-bezier(.4,0,.2,1);
+  color: var(--text2); transition: all .18s;
   margin-bottom: 2px; position: relative;
   border: 1px solid transparent;
 }
@@ -355,28 +350,23 @@ body::after {
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.08);
   color: var(--text);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
 }
 .nav-item.active {
-  background: rgba(127,255,110,0.10);
-  border-color: rgba(127,255,110,0.20);
-  color: #fff;
+  background: rgba(46,196,190,0.12);
+  border-color: rgba(46,196,190,0.22);
+  color: var(--text);
   font-weight: 600;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 16px rgba(127,255,110,0.08), inset 0 1px 0 rgba(255,255,255,0.08);
-}
-[data-theme="light"] .nav-item.active {
-  background: rgba(22,163,74,0.10);
-  border-color: rgba(22,163,74,0.22);
-  color: #16a34a;
+  box-shadow: 0 2px 12px rgba(46,196,190,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .nav-item.active::before {
   content: '';
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 3px; height: 55%;
-  background: var(--accent);
+  background: var(--teal-deep);
   border-radius: 0 3px 3px 0;
-  box-shadow: 0 0 8px var(--accent);
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(46,196,190,0.5);
 }
 
 .nav-badge {
@@ -410,49 +400,42 @@ body::after {
 .sf-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .sf-count { margin-left: auto; font-size: 11px; color: var(--text3); font-weight: 700; }
 
-.sidebar-footer { padding: 12px 12px 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+.sidebar-footer { padding: 12px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
 .user-pill {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 11px;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 14px;
-  backdrop-filter: blur(16px);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(20px);
 }
 [data-theme="light"] .user-pill {
-  background: rgba(255,255,255,0.55);
-  border-color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.45);
+  border-color: rgba(255,255,255,0.6);
 }
 .user-avatar {
-  width: 32px; height: 32px; border-radius: 10px;
-  background: linear-gradient(135deg, rgba(127,255,110,0.25), rgba(96,184,255,0.15));
-  border: 1px solid rgba(127,255,110,0.30);
+  width: 30px; height: 30px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(46,196,190,0.40), rgba(46,196,190,0.15));
+  border: 1px solid rgba(46,196,190,0.40);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: #fff; flex-shrink: 0; font-weight: 800;
+  font-size: 11px; color: #D7FEFA; flex-shrink: 0; font-weight: 800;
   font-family: 'Poppins', sans-serif;
-  box-shadow: 0 0 12px rgba(127,255,110,0.15);
+  box-shadow: 0 0 12px rgba(46,196,190,0.15);
 }
-.user-info { flex: 1; min-width: 0; }
+.user-info { flex: 1; min-width: 0; overflow: hidden; }
 .user-name { font-size: 11.5px; color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-role-label { font-size: 9.5px; color: var(--accent); font-weight: 700; opacity: 0.85; letter-spacing: .3px; }
-.user-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.icon-btn {
-  width: 28px; height: 28px; border-radius: 9px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.05);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  color: var(--text3); transition: all .18s;
-  backdrop-filter: blur(8px);
+.user-role-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9px; font-weight: 700; color: var(--teal-deep);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px;
 }
-.icon-btn:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.14); color: var(--text); }
-.icon-btn.danger:hover { background: rgba(255,95,109,0.12); border-color: rgba(255,95,109,0.25); color: var(--danger); }
+.user-role-badge svg { opacity: 0.8; }
 .btn-signout {
   background: none; border: none; cursor: pointer; color: var(--text3);
-  font-size: 12px; padding: 2px 4px; border-radius: 4px; transition: color .15s;
-  display: flex; align-items: center;
+  font-size: 12px; padding: 4px; border-radius: 6px; transition: all .15s;
+  display: flex; align-items: center; opacity: 0.7;
 }
-.btn-signout:hover { color: var(--danger); }
+.btn-signout:hover { color: var(--danger); opacity: 1; background: rgba(224,92,92,0.1); }
 
 /* ============================================================
    MAIN
@@ -460,18 +443,18 @@ body::after {
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; position: relative; z-index: 5; }
 
 .topbar {
-  background: rgba(8,8,14,0.70);
+  background: rgba(14,17,17,0.70);
   backdrop-filter: blur(40px) saturate(1.6);
   -webkit-backdrop-filter: blur(40px) saturate(1.6);
   border-bottom: 1px solid rgba(255,255,255,0.07);
   padding: 0 24px; height: var(--topbar-h);
   display: flex; align-items: center; gap: 12px; flex-shrink: 0;
   transition: background .3s;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
 }
 [data-theme="light"] .topbar {
-  background: rgba(230,234,248,0.82);
-  border-bottom-color: rgba(255,255,255,0.5);
+  background: rgba(220,232,232,0.70);
+  border-bottom-color: rgba(255,255,255,0.6);
 }
 .topbar-left { display: flex; flex-direction: column; }
 .topbar-title { font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.2px; }
@@ -489,66 +472,50 @@ body::after {
 
 .search-wrap { position: relative; }
 .search-wrap input {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.09);
-  backdrop-filter: blur(16px);
-  border-radius: 12px;
-  padding: 7px 12px 7px 34px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px 7px 32px;
   font-size: 12.5px; color: var(--text); width: 220px;
   font-family: 'Poppins', sans-serif; outline: none; transition: all .2s;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
-.search-wrap input:focus {
-  border-color: rgba(127,255,110,0.25);
-  background: rgba(255,255,255,0.07);
-  box-shadow: 0 0 0 3px rgba(127,255,110,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
-}
+.search-wrap input:focus { border-color: rgba(46,196,190,0.4); box-shadow: 0 0 0 3px rgba(46,196,190,0.10); }
 .search-wrap input::placeholder { color: var(--text3); }
-.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.35; display: flex; align-items: center; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.4; display: flex; align-items: center; }
 
-/* BUTTONS — Glassmorphism style like reference image 3 */
+/* BUTTONS */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 16px; border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.09); cursor: pointer;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; cursor: pointer;
   font-size: 12px; font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  transition: all .2s cubic-bezier(.4,0,.2,1); white-space: nowrap; letter-spacing: 0.2px;
+  transition: all .18s; white-space: nowrap; letter-spacing: 0.2px;
   backdrop-filter: blur(12px);
-  background: rgba(255,255,255,0.05);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
 }
 .btn-primary {
-  background: rgba(127,255,110,0.15);
-  color: var(--accent);
-  border-color: rgba(127,255,110,0.28);
-  font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(127,255,110,0.15), 0 4px 16px rgba(127,255,110,0.08);
+  background: rgba(46,196,190,0.25);
+  color: #D7FEFA;
+  border-color: rgba(46,196,190,0.45); font-weight: 700;
+  box-shadow: 0 4px 16px rgba(46,196,190,0.15), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 .btn-primary:hover {
-  background: rgba(127,255,110,0.22);
-  border-color: rgba(127,255,110,0.4);
+  background: rgba(46,196,190,0.38);
+  border-color: rgba(46,196,190,0.65);
   transform: translateY(-1px);
-  box-shadow: inset 0 1px 0 rgba(127,255,110,0.2), 0 8px 24px rgba(127,255,110,0.15);
-}
-[data-theme="light"] .btn-primary {
-  background: rgba(22,163,74,0.12); color: #16a34a;
-  border-color: rgba(22,163,74,0.28);
+  box-shadow: 0 6px 24px rgba(46,196,190,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
 }
 .btn-ghost {
-  background: rgba(255,255,255,0.04); color: var(--text2);
-  border-color: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.05); color: var(--text2);
+  border-color: rgba(255,255,255,0.09);
 }
-.btn-ghost:hover { border-color: rgba(255,255,255,0.16); color: var(--text); background: rgba(255,255,255,0.08); }
-.btn-danger {
-  background: rgba(255,95,109,0.08); color: var(--danger);
-  border-color: rgba(255,95,109,0.18);
-  box-shadow: inset 0 1px 0 rgba(255,95,109,0.08);
-}
-.btn-danger:hover { background: rgba(255,95,109,0.15); border-color: rgba(255,95,109,0.32); }
-.btn-sm { padding: 4px 11px; font-size: 11px; border-radius: 9px; }
-.btn-refresh { background: rgba(255,255,255,0.04); color: var(--text2); border-color: rgba(255,255,255,0.08); }
-.btn-refresh:hover { border-color: rgba(255,255,255,0.16); color: var(--text); }
+.btn-ghost:hover { border-color: rgba(255,255,255,0.16); color: var(--text); background: rgba(255,255,255,0.09); }
+.btn-danger { background: rgba(224,92,92,0.12); color: var(--danger); border-color: rgba(224,92,92,0.25); }
+.btn-danger:hover { background: rgba(224,92,92,0.22); border-color: rgba(224,92,92,0.4); }
+.btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 7px; }
+.btn-refresh { background: rgba(255,255,255,0.05); color: var(--text2); border-color: rgba(255,255,255,0.08); }
+.btn-refresh:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
 .btn-refresh.spinning span { display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -566,37 +533,41 @@ body::after {
 .offline-banner.visible { display: flex; }
 
 /* ============================================================
-   GLASS CARDS — TRUE GLASSMORPHISM
+   GLASS CARDS — Enhanced Glassmorphism
    ============================================================ */
 .glass-card {
   background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border: 1px solid rgba(255,255,255,0.09);
+  backdrop-filter: blur(28px) saturate(1.6) brightness(1.1);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6) brightness(1.1);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: var(--radius);
   position: relative; overflow: hidden;
-  transition: all .25s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 .glass-card:hover {
   background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.18);
   transform: translateY(-1px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 30px rgba(127,255,110,0.04);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 30px rgba(46,196,190,0.08), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 .glass-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%);
   pointer-events: none;
 }
+.glass-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+}
 [data-theme="light"] .glass-card {
-  background: rgba(255,255,255,0.62);
-  border-color: rgba(255,255,255,0.8);
-  box-shadow: 0 4px 24px rgba(80,100,200,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(255,255,255,0.70);
+  box-shadow: 0 8px 32px rgba(10,138,133,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 [data-theme="light"] .glass-card:hover {
-  background: rgba(255,255,255,0.80);
-  box-shadow: 0 8px 32px rgba(80,100,200,0.12), inset 0 1px 0 rgba(255,255,255,1);
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(255,255,255,0.90);
 }
 
 /* ============================================================
@@ -827,9 +798,16 @@ body::after {
    TABLE
    ============================================================ */
 .table-wrap {
-  background: var(--bg-card); border: 1px solid var(--border);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(28px) saturate(1.5);
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
   border-radius: var(--radius); overflow: hidden; position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+[data-theme="light"] .table-wrap {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(255,255,255,0.7);
 }
 .table-wrap::after {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -907,8 +885,10 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .pagination-info { font-size: 11.5px; color: var(--text3); }
 .pagination-controls { display: flex; align-items: center; gap: 4px; }
 .page-btn {
-  width: 28px; height: 28px; border-radius: 7px;
-  border: 1px solid var(--border); background: var(--bg-frosted);
+  width: 28px; height: 28px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
   color: var(--text2); cursor: pointer;
   font-size: 11px; font-weight: 600; font-family: 'Poppins', sans-serif;
   display: flex; align-items: center; justify-content: center; transition: all .15s;
@@ -951,17 +931,13 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .detail-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
   width: 420px; max-width: 94vw;
-  background: rgba(10,10,18,0.82);
-  backdrop-filter: blur(48px) saturate(1.8);
-  -webkit-backdrop-filter: blur(48px) saturate(1.8);
-  border-left: 1px solid rgba(255,255,255,0.09);
-  box-shadow: -12px 0 80px rgba(0,0,0,.7), inset 1px 0 0 rgba(255,255,255,0.04);
+  background: rgba(14,18,18,0.88);
+  backdrop-filter: blur(48px) saturate(1.6);
+  -webkit-backdrop-filter: blur(48px) saturate(1.6);
+  border-left: 1px solid rgba(255,255,255,0.10);
+  box-shadow: -8px 0 60px rgba(0,0,0,.7), inset 1px 0 0 rgba(255,255,255,0.05);
   z-index: 90; display: flex; flex-direction: column;
   transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
-}
-[data-theme="light"] .detail-panel {
-  background: rgba(230,234,248,0.88);
-  border-left-color: rgba(255,255,255,0.6);
 }
 .detail-panel.open { transform: translateX(0); }
 .detail-panel-header {
@@ -1019,25 +995,20 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .overlay.open { opacity: 1; pointer-events: all; }
 
 .modal {
-  background: rgba(12,12,20,0.88);
-  backdrop-filter: blur(48px) saturate(1.8);
-  -webkit-backdrop-filter: blur(48px) saturate(1.8);
+  background: rgba(20,24,24,0.85);
+  backdrop-filter: blur(48px) saturate(1.6);
+  -webkit-backdrop-filter: blur(48px) saturate(1.6);
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 20px; width: 800px; max-width: 96vw; max-height: 92vh;
-  display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
   transform: translateY(16px) scale(.98); transition: transform .22s;
   position: relative; overflow: hidden;
 }
-.modal::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  pointer-events: none;
-}
-.overlay.open .modal { transform: translateY(0) scale(1); }
 [data-theme="light"] .modal {
-  background: rgba(240,242,248,0.90);
+  background: rgba(230,240,240,0.88);
   border-color: rgba(255,255,255,0.7);
 }
+.overlay.open .modal { transform: translateY(0) scale(1); }
 
 .modal-header {
   padding: 16px 22px 14px; border-bottom: 1px solid var(--border);
@@ -1176,27 +1147,31 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
    LOGIN SCREEN
    ============================================================ */
 .login-screen {
-  position: fixed; inset: 0; background: var(--bg-base);
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(46,196,190,0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(80,120,200,0.10) 0%, transparent 50%),
+              var(--bg-base);
   display: flex; align-items: center; justify-content: center;
   z-index: 500; flex-direction: column;
 }
-.login-screen::before {
-  content: ''; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(53,64,36,0.25), transparent 60%);
-  pointer-events: none;
-}
 .login-card {
-  background: var(--bg-mid); backdrop-filter: blur(40px) saturate(1.4);
-  -webkit-backdrop-filter: blur(40px) saturate(1.4);
-  border: 1px solid var(--border2); border-radius: 24px;
-  padding: 48px 50px; text-align: center; box-shadow: var(--shadow-lg);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(48px) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(48px) saturate(1.8) brightness(1.1);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+  padding: 48px 50px; text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.04);
   width: 390px; max-width: 94vw; animation: fadeUp .4s cubic-bezier(.4,0,.2,1); position: relative;
 }
 .login-card::after {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
   border-radius: 24px 24px 0 0; pointer-events: none;
+}
+[data-theme="light"] .login-card {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(255,255,255,0.7);
+  box-shadow: 0 24px 80px rgba(10,138,133,0.12), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
@@ -1361,25 +1336,25 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="nav">
     <div class="nav-section">Main</div>
     <div class="nav-item active" onclick="showView('dashboard')" id="nav-dashboard">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></span>
       Dashboard
     </div>
     <div class="nav-item" onclick="showView('active')" id="nav-active">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M22 11l-3 3-1.5-1.5"/></svg></span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h2"/><circle cx="19" cy="16" r="3"/><path d="M22 22l-2-2"/></svg></span>
       Active
       <span class="nav-badge" id="badge-active">0</span>
     </div>
     <div class="nav-item" onclick="showView('inactive')" id="nav-inactive">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg></span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><line x1="18" y1="9" x2="23" y2="9"/></svg></span>
       Inactive
       <span class="nav-badge" id="badge-inactive">0</span>
     </div>
     <div class="nav-item" onclick="showView('tracker')" id="nav-tracker">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg></span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 4-6"/></svg></span>
       Deployment Tracker
     </div>
     <div class="nav-item" onclick="showView('log')" id="nav-log">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M9 16h6M9 8h2"/><path d="M5 4h10l4 4v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg></span>
       Activity Log
     </div>
 
@@ -1399,17 +1374,18 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-info">
         <div class="user-name" id="user-name">Loading...</div>
-        <div class="user-role-label" id="user-role-label">—</div>
+        <div class="user-role-badge" id="user-role-display">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="user-role-label">Viewer</span>
+        </div>
       </div>
-      <div class="user-actions">
-        <button class="icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark">
-          <svg id="theme-icon-dark" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg id="theme-icon-light" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <button class="icon-btn danger" onclick="signOut()" title="Sign out">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
-      </div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark" style="width:26px;height:26px;border-radius:6px;flex-shrink:0">
+        <svg id="theme-icon-dark" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-light" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="btn-signout" onclick="signOut()" title="Sign out">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -1676,9 +1652,9 @@ function applyRole(role){
     document.getElementById('role-indicator-icon').textContent=meta.icon;
     document.getElementById('role-indicator-label').textContent=meta.label;
   }
-  // Update user pill role sub-label
+  // Update user footer role badge
   const roleLabel = document.getElementById('user-role-label');
-  if(roleLabel) roleLabel.textContent = meta.icon + ' ' + meta.label;
+  if(roleLabel) roleLabel.textContent = meta.label;
   // Re-render detail panel if open
   if(detailEmpId) openDetailPanel(detailEmpId);
 }
@@ -2425,43 +2401,50 @@ function renderDashboard(){
   const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile,missingInfinixId,missingStore].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
+    <!-- DASHBOARD SEARCH -->
+    <div class="dash-search-wrap">
+      <span class="dash-search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)">
+    </div>
 
     <!-- HERO KPI ROW -->
     <div class="dash-hero">
       <div class="dash-hero-card glass-card">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--accent),transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
         <div class="dhc-label">Total Workforce</div>
         <div class="dhc-value" style="color:var(--text)">${total}</div>
         <div class="dhc-sub">All employment records</div>
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:var(--accent)"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:#4ecb71"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--success),transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
         <div class="dhc-label">Deployed</div>
-        <div class="dhc-value" style="color:var(--success)">${deployed}</div>
+        <div class="dhc-value" style="color:#4ecb71">${deployed}</div>
         <div class="dhc-sub">${deployPct}% of active promoters</div>
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:var(--success)"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:#4ecb71"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--warning),transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#f5c842,transparent)"></div>
         <div class="dhc-label">Pending Deploy</div>
-        <div class="dhc-value" style="color:var(--warning)">${notDeployed}</div>
+        <div class="dhc-value" style="color:#f5c842">${notDeployed}</div>
         <div class="dhc-sub">Active sheet · Col L</div>
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:var(--warning)"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:#f5c842"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--info),transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--teal-deep),transparent)"></div>
         <div class="dhc-label">QR Scanned</div>
-        <div class="dhc-value" style="color:var(--info)">${scanned}</div>
+        <div class="dhc-value" style="color:var(--teal-deep)">${scanned}</div>
         <div class="dhc-sub">${scanPct}% of active promoters</div>
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${scanPct}%;background:var(--info)"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${scanPct}%;background:var(--teal-deep)"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('missingRequirements')" style="cursor:pointer">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--accent),transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--moss-green),transparent)"></div>
         <div class="dhc-label">Req. Complete</div>
-        <div class="dhc-value" style="color:var(--accent)">${reqComplete}</div>
+        <div class="dhc-value" style="color:var(--moss-green)">${reqComplete}</div>
         <div class="dhc-sub">${reqPct}% of active promoters</div>
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${reqPct}%;background:var(--accent)"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${reqPct}%;background:var(--moss-green)"></div></div>
       </div>
     </div>
 
@@ -2479,32 +2462,27 @@ function renderDashboard(){
       }).join('')}
     </div>
 
-    <!-- PENDING ACTIONS — only shows section if there are issues, otherwise inline badge -->
-    ${pendingCount===0
-      ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:rgba(127,255,110,0.06);border:1px solid rgba(127,255,110,0.15);border-radius:12px;backdrop-filter:blur(8px)">
-           <span style="font-size:15px">✅</span>
-           <span style="font-size:12px;font-weight:700;color:var(--success)">All Clear</span>
-           <span style="font-size:11px;color:var(--text3)">— All active records are complete. No pending actions.</span>
-         </div>`
-      : `<div class="pending-section">
-           <div class="pending-title">
-             <span>Pending Actions</span>
-             <div class="pending-title-line"></div>
-             <span style="font-size:9px;opacity:.55">Active promoters only · click to filter</span>
-             <span style="background:rgba(255,95,109,0.12);border:1px solid rgba(255,95,109,0.25);color:var(--danger);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">${pendingCount} issue${pendingCount!==1?'s':''}</span>
-           </div>
-           <div class="pending-grid">
-             ${notDeployed>0?`<div class="pending-card glass-card" onclick="drillDown('notDeployed')"><div class="pc-icon" style="background:rgba(255,206,74,0.12)">🚀</div><div class="pc-body"><div class="pc-num" style="color:var(--warning)">${notDeployed}</div><div class="pc-label">Not Yet Deployed</div></div></div>`:''}
-             ${notScanned>0?`<div class="pending-card glass-card" onclick="drillDown('notScanned')"><div class="pc-icon" style="background:rgba(96,184,255,0.12)">📱</div><div class="pc-body"><div class="pc-num" style="color:var(--info)">${notScanned}</div><div class="pc-label">QR Not Scanned</div></div></div>`:''}
-             ${contractPending>0?`<div class="pending-card glass-card" onclick="drillDown('contractPending')"><div class="pc-icon" style="background:rgba(255,206,74,0.12)">📄</div><div class="pc-body"><div class="pc-num" style="color:var(--warning)">${contractPending}</div><div class="pc-label">Contract Pending</div></div></div>`:''}
-             ${missingRequirements>0?`<div class="pending-card glass-card" onclick="drillDown('missingRequirements')"><div class="pc-icon" style="background:rgba(255,95,109,0.12)">📋</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingRequirements}</div><div class="pc-label">Reqs Incomplete</div></div></div>`:''}
-             ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon" style="background:rgba(255,95,109,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
-             ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon" style="background:rgba(255,95,109,0.12)">🏦</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
-             ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon" style="background:rgba(255,95,109,0.12)">📞</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
-             ${missingInfinixId>0?`<div class="pending-card glass-card" onclick="drillDown('missingInfinixId')"><div class="pc-icon" style="background:rgba(255,95,109,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingInfinixId}</div><div class="pc-label">No Infinix ID</div></div></div>`:''}
-             ${missingStore>0?`<div class="pending-card glass-card" onclick="drillDown('missingStore')"><div class="pc-icon" style="background:rgba(255,95,109,0.12)">🏪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingStore}</div><div class="pc-label">No Store Assignment</div></div></div>`:''}
-           </div>
-         </div>`}
+    <!-- PENDING ACTIONS -->
+    <div class="pending-section">
+      <div class="pending-title">
+        <span>Pending Actions</span>
+        <div class="pending-title-line"></div>
+        <span style="font-size:9px;opacity:.55">Active promoters only · click to filter</span>
+        ${pendingCount>0?`<span style="background:var(--danger-bg);border:1px solid rgba(224,92,92,0.3);color:var(--danger);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">${pendingCount} issue${pendingCount!==1?'s':''}</span>`:`<span style="background:var(--success-bg);border:1px solid rgba(78,203,113,0.3);color:var(--success);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">All clear</span>`}
+      </div>
+      <div class="pending-grid">
+        ${notDeployed>0?`<div class="pending-card glass-card" onclick="drillDown('notDeployed')"><div class="pc-icon" style="background:rgba(245,200,66,0.12)">🚀</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${notDeployed}</div><div class="pc-label">Not Yet Deployed</div></div></div>`:''}
+        ${notScanned>0?`<div class="pending-card glass-card" onclick="drillDown('notScanned')"><div class="pc-icon" style="background:rgba(46,196,190,0.12)">📱</div><div class="pc-body"><div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div><div class="pc-label">QR Not Scanned</div></div></div>`:''}
+        ${contractPending>0?`<div class="pending-card glass-card" onclick="drillDown('contractPending')"><div class="pc-icon" style="background:rgba(245,200,66,0.12)">📄</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${contractPending}</div><div class="pc-label">Contract Pending</div></div></div>`:''}
+        ${missingRequirements>0?`<div class="pending-card glass-card" onclick="drillDown('missingRequirements')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📋</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingRequirements}</div><div class="pc-label">Reqs Incomplete</div></div></div>`:''}
+        ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
+        ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏦</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
+        ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📞</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
+        ${missingInfinixId>0?`<div class="pending-card glass-card" onclick="drillDown('missingInfinixId')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingInfinixId}</div><div class="pc-label">No Infinix ID</div></div></div>`:''}
+        ${missingStore>0?`<div class="pending-card glass-card" onclick="drillDown('missingStore')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingStore}</div><div class="pc-label">No Store Assignment</div></div></div>`:''}
+        ${pendingCount===0?`<div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1"><div class="pc-icon" style="background:var(--success-bg)">✅</div><div class="pc-body"><div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div><div class="pc-label">All active records are complete</div></div></div>`:''}
+      </div>
+    </div>
 
     <!-- CHARTS + SIDE PANEL -->
     <div class="dash-grid">
@@ -2551,6 +2529,36 @@ function renderDashboard(){
           </div>
 
         </div>
+
+        <!-- COMPLETION SUMMARY ROW -->
+        <div class="completion-row">
+          ${[
+            {label:'Deployment',done:deployed,total:activeTotal,color:'#4ecb71'},
+            {label:'QR Scanned',done:scanned,total:activeTotal,color:'#2EC4BE'},
+            {label:'Contract',done:contractSent,total:activeTotal,color:'#f5c842'},
+            {label:'Requirements',done:reqComplete,total:activeTotal,color:'#D7FEFA'},
+            {label:'Has Bank',done:activeTotal-missingBank,total:activeTotal,color:'#a07ac4'},
+            {label:'Has Gov IDs',done:activeTotal-missingGovIds,total:activeTotal,color:'#e8a24a'},
+          ].map(({label,done,total:tot,color})=>{
+            const pct=tot?Math.round(done/tot*100):0;
+            const circ=2*Math.PI*20;
+            return`<div class="completion-card glass-card">
+              <div class="cc-ring">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <circle class="cc-ring-track" cx="24" cy="24" r="20" stroke-dasharray="${circ}"/>
+                  <circle class="cc-ring-fill" cx="24" cy="24" r="20" stroke="${color}"
+                    stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}"/>
+                </svg>
+                <div class="cc-pct" style="color:${color}">${pct}%</div>
+              </div>
+              <div>
+                <div class="cc-val">${done}<span style="font-size:11px;font-weight:400;color:var(--text3)">/${tot}</span></div>
+                <div class="cc-label">${label}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+
       </div>
       <div class="dash-right">
         <div class="recent-card glass-card">
@@ -2578,6 +2586,20 @@ function renderDashboard(){
                 </div>
               </div>`;
             }).join('')}
+        </div>
+        <!-- QUICK STATS FILLER CARD -->
+        <div class="glass-card" style="padding:16px">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--teal-deep);opacity:.8;margin-bottom:12px">Quick Snapshot</div>
+          ${[
+            {label:'Avg. Req. Completion', val: activeTotal?Math.round(activeEmployees.reduce((a,e)=>a+reqDoneCount(e),0)/activeTotal*10)/10+'/'+REQUIRED_FIELDS.length:'—'},
+            {label:'Missing Mobile No.', val: missingMobile, warn: missingMobile>0},
+            {label:'No Store Assigned', val: missingStore, warn: missingStore>0},
+            {label:'No Infinix ID', val: missingInfinixId, warn: missingInfinixId>0},
+          ].map(({label,val,warn})=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+              <span style="font-size:11.5px;color:var(--text3)">${label}</span>
+              <span style="font-size:12px;font-weight:700;color:${warn?'var(--danger)':'var(--text2)'}">${val}</span>
+            </div>`).join('')}
         </div>
       </div>
     </div>`;
@@ -3471,19 +3493,14 @@ async function saveEmployee(){
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
 
   // Extra confirmation for high-impact statuses
-  const highImpact={
-    'Terminated':'⛔ Permanent action — this will move the employee to inactive records.',
-    'AWOL':'⚠️ Marking as AWOL. Ensure this has been verified before proceeding.',
-    'Resigned':'📋 Marking as Resigned. This will move the employee to inactive records.',
-    'Floating':'🔄 Moving to Floating status. Employee will remain in the system but show as undeployed.'
-  };
-  if(highImpact[data.status]){
+  const highImpact=['Terminated','AWOL','Floating','Resigned'];
+  if(highImpact.includes(data.status)){
     const oldEmp=editingId?employees.find(e=>String(e.infinixId)===String(editingId)):null;
     const oldStatus=oldEmp?.status||'Active';
     if(data.status!==oldStatus){
       const proceed=await new Promise(resolve=>{
-        document.getElementById('confirm-title').textContent=`Confirm: Set to ${data.status}?`;
-        document.getElementById('confirm-msg').textContent=`${highImpact[data.status]}\n\nEmployee: ${data.firstName} ${data.lastName}`;
+        document.getElementById('confirm-title').textContent=`⚠ Confirm: Set to ${data.status}?`;
+        document.getElementById('confirm-msg').textContent=`You are about to mark ${data.firstName} ${data.lastName} as "${data.status}". This is a significant status change. Are you sure?`;
         document.getElementById('confirm-ok').textContent=`Yes, set to ${data.status}`;
         document.getElementById('confirm-ok').onclick=()=>{closeConfirm();resolve(true);};
         const cancelBtn=document.getElementById('confirm-overlay').querySelector('.btn-ghost');
