@@ -1260,6 +1260,121 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   color: var(--moss-green); opacity: 0.7; margin-bottom: 10px;
 }
 .section-heading-line { flex: 1; height: 1px; background: var(--border); }
+
+/* ============================================================
+   TARGETED UI FIXES — role selector, footer role, pending icons
+   ============================================================ */
+.role-modal-premium {
+  width: 430px;
+  padding: 30px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(46,196,190,0.18), transparent 38%),
+    rgba(16,20,20,0.88);
+  border: 1px solid rgba(215,254,250,0.16);
+}
+.role-modal-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(46,196,190,0.10);
+  border: 1px solid rgba(46,196,190,0.18);
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.role-lock-icon { width: 16px; height: 16px; display: inline-flex; }
+.role-lock-icon svg { width: 16px; height: 16px; }
+.role-modal-premium h2 { font-size: 24px; letter-spacing: -0.5px; margin-bottom: 6px; }
+.role-modal-premium p { font-size: 12.5px; line-height: 1.55; margin-bottom: 20px; color: var(--text2); }
+.role-modal-premium .role-btn-grid { gap: 12px; margin-bottom: 18px; }
+.role-modal-premium .role-btn {
+  min-height: 112px;
+  border-radius: 18px;
+  gap: 11px;
+  color: var(--text2);
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.role-modal-premium .role-btn:hover {
+  transform: translateY(-2px);
+  color: var(--text);
+  border-color: rgba(46,196,190,0.35);
+  background: rgba(46,196,190,0.08);
+}
+.role-modal-premium .role-btn.selected {
+  background: rgba(46,196,190,0.14);
+  border-color: rgba(46,196,190,0.55);
+  box-shadow: 0 0 22px rgba(46,196,190,0.13), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+.role-modal-premium .role-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal);
+  background: linear-gradient(135deg, rgba(215,254,250,0.13), rgba(46,196,190,0.05));
+  border: 1px solid rgba(215,254,250,0.18);
+}
+.role-modal-premium .role-icon svg { width: 24px; height: 24px; }
+.user-role-badge {
+  cursor: pointer;
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(46,196,190,0.08);
+  border: 1px solid rgba(46,196,190,0.14);
+}
+.user-role-badge:hover {
+  color: var(--text);
+  border-color: rgba(46,196,190,0.35);
+  background: rgba(46,196,190,0.14);
+}
+.pending-card { min-height: 74px; border-left-width: 0; }
+.pending-card:hover { border-color: rgba(46,196,190,0.22); }
+.pc-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  color: var(--teal);
+  background: linear-gradient(135deg, rgba(215,254,250,0.12), rgba(46,196,190,0.05)) !important;
+  border: 1px solid rgba(215,254,250,0.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 16px rgba(46,196,190,0.06);
+  font-size: 0;
+}
+.pc-icon svg { width: 22px; height: 22px; display: block; stroke: currentColor; }
+.pc-icon.warn {
+  color: #f5c842;
+  background: linear-gradient(135deg, rgba(245,200,66,0.16), rgba(245,200,66,0.04)) !important;
+  border-color: rgba(245,200,66,0.22);
+}
+.pc-icon.danger {
+  color: var(--danger);
+  background: linear-gradient(135deg, rgba(224,92,92,0.16), rgba(224,92,92,0.04)) !important;
+  border-color: rgba(224,92,92,0.22);
+}
+body.role-viewer #modal-save-btn,
+body.role-viewer #dp-edit-btn,
+body.role-viewer #dp-delete-btn,
+body.role-supervisor #dp-delete-btn,
+body.role-viewer .notes-save-btn,
+body.role-viewer #bulk-bar .btn-primary,
+body.role-viewer #bulk-bar .btn-danger,
+body.role-supervisor #bulk-bar .btn-danger,
+body.role-viewer .write-action {
+  display: none !important;
+}
+body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
+
 </style>
 </head>
 <body>
@@ -1293,18 +1408,33 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 
 <!-- ROLE SELECT MODAL -->
 <div class="role-overlay hidden" id="role-overlay">
-  <div class="role-modal">
-    <h2>🔐 Select Your Role</h2>
-    <p>Your role controls what sensitive data is visible. This clears when you close this tab.</p>
+  <div class="role-modal role-modal-premium">
+    <div class="role-modal-kicker">
+      <span class="role-lock-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      </span>
+      Access Mode
+    </div>
+    <h2>Select Your Role</h2>
+    <p>Choose how you want to view and manage employee records.</p>
     <div class="role-btn-grid">
       <button class="role-btn" id="role-btn-hr" onclick="selectRole('hr')">
-        <span class="role-icon">👔</span>HR
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M12 11l2 10-2 2-2-2 2-10"/></svg>
+        </span>
+        <span>HR</span>
       </button>
       <button class="role-btn" id="role-btn-supervisor" onclick="selectRole('supervisor')">
-        <span class="role-icon">🧑‍💼</span>Supervisor
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-5"/></svg>
+        </span>
+        <span>Supervisor</span>
       </button>
       <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
-        <span class="role-icon">👁️</span>Viewer
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
+        <span>Viewer</span>
       </button>
     </div>
     <div class="role-pin-wrap" id="role-pin-wrap">
@@ -1313,9 +1443,6 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
       <div class="role-pin-error" id="role-pin-error"></div>
       <button class="btn btn-primary" onclick="confirmRolePin()" style="width:100%;margin-top:2px">Confirm</button>
       <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
-    </div>
-    <div style="font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.6">
-      <b style="color:var(--warning)">Note:</b> Role blur is UI-only. HR role unlocks full data visibility including government IDs, bank accounts, and personal contact info.
     </div>
   </div>
 </div>
@@ -1363,18 +1490,12 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
   <div class="status-filters" id="status-filters"></div>
 
   <div class="sidebar-footer">
-    <div id="role-indicator" style="margin-bottom:6px;display:none">
-      <span class="role-badge" onclick="openRoleModal()" title="Click to change role">
-        <span id="role-indicator-icon">👔</span>
-        <span id="role-indicator-label">HR</span>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </span>
-    </div>
+    <div id="role-indicator" style="display:none"></div>
     <div class="user-pill">
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-info">
         <div class="user-name" id="user-name">Loading...</div>
-        <div class="user-role-badge" id="user-role-display">
+        <div class="user-role-badge" id="user-role-display" onclick="openRoleModal()" title="Change role">
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           <span id="user-role-label">Viewer</span>
         </div>
@@ -1408,7 +1529,7 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         <span>Refresh</span>
       </button>
-      <button class="btn btn-primary" onclick="openAddModal()">+ Add Employee</button>
+      <button class="btn btn-primary write-action" onclick="openAddModal()">+ Add Employee</button>
     </div>
   </div>
   <div class="content" id="content"></div>
@@ -1633,10 +1754,33 @@ function confirmRolePin(){
 }
 
 const ROLE_META = {
-  hr:         { label:'HR',         icon:'👔', bodyClass:'' },
-  supervisor: { label:'Supervisor', icon:'🧑‍💼', bodyClass:'role-supervisor' },
-  viewer:     { label:'Viewer',     icon:'👁️', bodyClass:'role-viewer' },
+  hr:         { label:'HR',         icon:'HR', bodyClass:'' },
+  supervisor:{ label:'Supervisor', icon:'SUP', bodyClass:'role-supervisor' },
+  viewer:    { label:'Viewer',     icon:'VIEW', bodyClass:'role-viewer' },
 };
+
+function canWrite(){
+  return currentRole === 'hr' || currentRole === 'supervisor';
+}
+function canDeleteRecords(){
+  return currentRole === 'hr';
+}
+function denyWrite(){
+  toast('Viewer access is read-only. Switch to HR or Supervisor to edit records.','error');
+}
+function actionIconSVG(name){
+  const icons={
+    rocket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1 1-1.5 3-1.5 4.5 1.5 0 3.5-.5 4.5-1.5"/><path d="M9 15 5 19"/><path d="M14 4c3.3-.4 5.4.4 6 1 .6.6 1.4 2.7 1 6l-4.5 4.5-8-8L14 4Z"/><path d="M9.5 8.5 4 9l4 4"/><path d="m15 14 4 4 .5-5.5"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>',
+    phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+    file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
+    alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>',
+    id:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="12" r="2"/><path d="M14 10h4M14 14h3"/><path d="M5.8 17c.6-1.4 1.6-2 2.7-2s2.1.6 2.7 2"/></svg>',
+    bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8"/><path d="M4 18h16M2 22h20"/><path d="m12 2 9 5H3Z"/></svg>',
+    store:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16l-1-6H5l-1 6Z"/><path d="M5 10v10h14V10"/><path d="M9 20v-5h6v5"/><path d="M3 10c.5 1.3 1.5 2 3 2s2.5-.7 3-2c.5 1.3 1.5 2 3 2s2.5-.7 3-2c.5 1.3 1.5 2 3 2s2.5-.7 3-2"/></svg>',
+    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><circle cx="12" cy="12" r="10"/></svg>'
+  };
+  return icons[name] || icons.alert;
+}
 
 function applyRole(role){
   currentRole = role;
@@ -1645,14 +1789,9 @@ function applyRole(role){
   document.body.classList.remove('role-viewer','role-supervisor');
   const meta = ROLE_META[role];
   if(meta.bodyClass) document.body.classList.add(meta.bodyClass);
-  // Update sidebar indicator
+  // Update footer role badge. The separate floating role pill stays hidden for cleaner UI.
   const indicator = document.getElementById('role-indicator');
-  if(indicator){
-    indicator.style.display='block';
-    document.getElementById('role-indicator-icon').textContent=meta.icon;
-    document.getElementById('role-indicator-label').textContent=meta.label;
-  }
-  // Update user footer role badge
+  if(indicator) indicator.style.display='none';
   const roleLabel = document.getElementById('user-role-label');
   if(roleLabel) roleLabel.textContent = meta.label;
   // Re-render detail panel if open
@@ -1838,7 +1977,7 @@ function signOut(){
   accessToken=null;currentUser=null;window._headersChecked=false;
   currentRole=null;
   document.body.classList.remove('role-viewer','role-supervisor');
-  document.getElementById('role-indicator').style.display='none';
+  document.getElementById('role-indicator')?.style&&(document.getElementById('role-indicator').style.display='none');
   showLoginScreen(false);
 }
 async function fetchUserInfo(token){
@@ -2134,6 +2273,7 @@ async function apiBulkUpdateStatus(ids,newStatus){
 }
 
 async function saveNotes(infinixId, notesVal){
+  if(!canWrite()){denyWrite();return;}
   const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
   if(!emp)return;
   showLoading(true,'Saving notes...');
@@ -2471,16 +2611,16 @@ function renderDashboard(){
         ${pendingCount>0?`<span style="background:var(--danger-bg);border:1px solid rgba(224,92,92,0.3);color:var(--danger);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">${pendingCount} issue${pendingCount!==1?'s':''}</span>`:`<span style="background:var(--success-bg);border:1px solid rgba(78,203,113,0.3);color:var(--success);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">All clear</span>`}
       </div>
       <div class="pending-grid">
-        ${notDeployed>0?`<div class="pending-card glass-card" onclick="drillDown('notDeployed')"><div class="pc-icon" style="background:rgba(245,200,66,0.12)">🚀</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${notDeployed}</div><div class="pc-label">Not Yet Deployed</div></div></div>`:''}
-        ${notScanned>0?`<div class="pending-card glass-card" onclick="drillDown('notScanned')"><div class="pc-icon" style="background:rgba(46,196,190,0.12)">📱</div><div class="pc-body"><div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div><div class="pc-label">QR Not Scanned</div></div></div>`:''}
-        ${contractPending>0?`<div class="pending-card glass-card" onclick="drillDown('contractPending')"><div class="pc-icon" style="background:rgba(245,200,66,0.12)">📄</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${contractPending}</div><div class="pc-label">Contract Pending</div></div></div>`:''}
-        ${missingRequirements>0?`<div class="pending-card glass-card" onclick="drillDown('missingRequirements')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📋</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingRequirements}</div><div class="pc-label">Reqs Incomplete</div></div></div>`:''}
-        ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
-        ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏦</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
-        ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">📞</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
-        ${missingInfinixId>0?`<div class="pending-card glass-card" onclick="drillDown('missingInfinixId')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🪪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingInfinixId}</div><div class="pc-label">No Infinix ID</div></div></div>`:''}
-        ${missingStore>0?`<div class="pending-card glass-card" onclick="drillDown('missingStore')"><div class="pc-icon" style="background:rgba(224,92,92,0.12)">🏪</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingStore}</div><div class="pc-label">No Store Assignment</div></div></div>`:''}
-        ${pendingCount===0?`<div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1"><div class="pc-icon" style="background:var(--success-bg)">✅</div><div class="pc-body"><div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div><div class="pc-label">All active records are complete</div></div></div>`:''}
+        ${notDeployed>0?`<div class="pending-card glass-card" onclick="drillDown('notDeployed')"><div class="pc-icon warn">${actionIconSVG('rocket')}</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${notDeployed}</div><div class="pc-label">Not Yet Deployed</div></div></div>`:''}
+        ${notScanned>0?`<div class="pending-card glass-card" onclick="drillDown('notScanned')"><div class="pc-icon">${actionIconSVG('phone')}</div><div class="pc-body"><div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div><div class="pc-label">QR Not Scanned</div></div></div>`:''}
+        ${contractPending>0?`<div class="pending-card glass-card" onclick="drillDown('contractPending')"><div class="pc-icon warn">${actionIconSVG('file')}</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${contractPending}</div><div class="pc-label">Contract Pending</div></div></div>`:''}
+        ${missingRequirements>0?`<div class="pending-card glass-card" onclick="drillDown('missingRequirements')"><div class="pc-icon danger">${actionIconSVG('alert')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingRequirements}</div><div class="pc-label">Reqs Incomplete</div></div></div>`:''}
+        ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon danger">${actionIconSVG('id')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
+        ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon danger">${actionIconSVG('bank')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
+        ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon danger">${actionIconSVG('phone')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
+        ${missingInfinixId>0?`<div class="pending-card glass-card" onclick="drillDown('missingInfinixId')"><div class="pc-icon danger">${actionIconSVG('id')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingInfinixId}</div><div class="pc-label">No Infinix ID</div></div></div>`:''}
+        ${missingStore>0?`<div class="pending-card glass-card" onclick="drillDown('missingStore')"><div class="pc-icon danger">${actionIconSVG('store')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingStore}</div><div class="pc-label">No Store Assignment</div></div></div>`:''}
+        ${pendingCount===0?`<div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1"><div class="pc-icon">${actionIconSVG('check')}</div><div class="pc-body"><div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div><div class="pc-label">All active records are complete</div></div></div>`:''}
       </div>
     </div>
 
@@ -2586,20 +2726,6 @@ function renderDashboard(){
                 </div>
               </div>`;
             }).join('')}
-        </div>
-        <!-- QUICK STATS FILLER CARD -->
-        <div class="glass-card" style="padding:16px">
-          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--teal-deep);opacity:.8;margin-bottom:12px">Quick Snapshot</div>
-          ${[
-            {label:'Avg. Req. Completion', val: activeTotal?Math.round(activeEmployees.reduce((a,e)=>a+reqDoneCount(e),0)/activeTotal*10)/10+'/'+REQUIRED_FIELDS.length:'—'},
-            {label:'Missing Mobile No.', val: missingMobile, warn: missingMobile>0},
-            {label:'No Store Assigned', val: missingStore, warn: missingStore>0},
-            {label:'No Infinix ID', val: missingInfinixId, warn: missingInfinixId>0},
-          ].map(({label,val,warn})=>`
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-              <span style="font-size:11.5px;color:var(--text3)">${label}</span>
-              <span style="font-size:12px;font-weight:700;color:${warn?'var(--danger)':'var(--text2)'}">${val}</span>
-            </div>`).join('')}
         </div>
       </div>
     </div>`;
@@ -3049,6 +3175,7 @@ function updateBulkBar(){
   if(selectedIds.size>0){bar.classList.remove('hidden');if(cnt)cnt.textContent=`${selectedIds.size} selected`;}else bar.classList.add('hidden');
 }
 function doBulkStatusChange(){
+  if(!canWrite()){denyWrite();return;}
   const sel=document.getElementById('bulk-status-sel');const newStatus=sel?.value;
   if(!newStatus||selectedIds.size===0)return;
   const ids=[...selectedIds];
@@ -3059,6 +3186,7 @@ function doBulkStatusChange(){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   const ids=[...selectedIds];if(ids.length===0)return;
   document.getElementById('confirm-title').textContent='Bulk Delete';
   document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
@@ -3087,8 +3215,10 @@ function openDetailPanel(id){
   loadEmployeeAudit(id);
 }
 function closeDetailPanel(){document.getElementById('detail-panel').classList.remove('open');detailEmpId=null;}
-function dpEdit(){const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
+function dpEdit(){
+  if(!canWrite()){denyWrite();return;}const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
   if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
@@ -3457,6 +3587,7 @@ function validate(data){
 }
 
 function openAddModal(){
+  if(!canWrite()){denyWrite();return;}
   editingId=null;
   document.getElementById('modal-title').textContent='Add New Employee';
   document.getElementById('modal-save-btn').textContent='Save Employee';
@@ -3464,6 +3595,7 @@ function openAddModal(){
   document.getElementById('modal-overlay').classList.add('open');
 }
 function openEditModal(id){
+  if(!canWrite()){denyWrite();return;}
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   editingId=id;
   document.getElementById('modal-title').textContent=`Edit — ${esc(emp.fullName||emp.firstName+' '+emp.lastName)}`;
@@ -3489,6 +3621,7 @@ function openEditModal(id){
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 async function saveEmployee(){
+  if(!canWrite()){denyWrite();return;}
   const data=gatherForm();
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
 
@@ -3521,6 +3654,7 @@ async function saveEmployee(){
   finally{showLoading(false);}
 }
 function confirmDelete(id,name){
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   document.getElementById('confirm-title').textContent='Delete Employee?';
   document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
   document.getElementById('confirm-ok').textContent='Delete';
@@ -3529,6 +3663,7 @@ function confirmDelete(id,name){
 }
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function doDelete(id){
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
