@@ -1846,6 +1846,7 @@ function canDeleteRecords(){
 function denyWrite(){
   toast('You need HR/Agency, RSH, or Owner access to edit records.','error');
 }
+function actionIconSVG(name){
   const icons={
     rocket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1 1-1.5 3-1.5 4.5 1.5 0 3.5-.5 4.5-1.5"/><path d="M9 15 5 19"/><path d="M14 4c3.3-.4 5.4.4 6 1 .6.6 1.4 2.7 1 6l-4.5 4.5-8-8L14 4Z"/><path d="M9.5 8.5 4 9l4 4"/><path d="m15 14 4 4 .5-5.5"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>',
     phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
