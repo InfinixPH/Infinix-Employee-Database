@@ -128,7 +128,7 @@
   transition: filter .25s;
 }
 body.role-viewer .sensitive,
-body.role-supervisor .sensitive {
+body.role-rssrsh .sensitive {
   filter: blur(5px);
   user-select: none;
   pointer-events: none;
@@ -1377,15 +1377,84 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 body.role-viewer #modal-save-btn,
 body.role-viewer #dp-edit-btn,
 body.role-viewer #dp-delete-btn,
-body.role-supervisor #dp-delete-btn,
+body.role-rssrsh #dp-delete-btn,
 body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
-body.role-supervisor #bulk-bar .btn-danger,
+body.role-rssrsh #bulk-bar .btn-danger,
 body.role-viewer .write-action {
   display: none !important;
 }
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
+
+
+/* FINAL ROLE MODAL ALIGNMENT + SENSITIVE FIELD SECURITY */
+.role-pin-wrap { align-items: center; }
+.role-pin-wrap .role-pin-label,
+.role-pin-wrap .role-pin-error { width: 100%; text-align: center; }
+.role-pin-wrap .role-pin-input { text-align: center; }
+.role-confirm-btn {
+  width: min(260px, 100%) !important;
+  margin: 10px auto 0 !important;
+  justify-content: center !important;
+  text-align: center;
+}
+.role-pin-wrap .role-reveal-btn {
+  width: 100%;
+  text-align: center;
+  margin-top: 8px;
+}
+body.role-rssrsh .form-sensitive-control input,
+body.role-rssrsh .form-sensitive-control select,
+body.role-rssrsh .form-sensitive-control textarea,
+body.role-viewer .form-sensitive-control input,
+body.role-viewer .form-sensitive-control select,
+body.role-viewer .form-sensitive-control textarea {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+}
+.form-sensitive-control.is-locked::after {
+  content: 'Restricted';
+  display: inline-flex;
+  margin-top: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--warning);
+  opacity: .85;
+}
+
+
+/* 5X QA FIX: Detail panel light-mode readability */
+[data-theme="light"] .detail-panel {
+  background: rgba(246,252,252,0.96);
+  border-left: 1px solid rgba(10,138,133,0.22);
+  box-shadow: -8px 0 50px rgba(10,80,80,0.16), inset 1px 0 0 rgba(255,255,255,0.75);
+  color: #1a2222;
+}
+[data-theme="light"] .detail-panel-header,
+[data-theme="light"] .detail-panel-footer {
+  border-color: rgba(10,138,133,0.14);
+  background: rgba(255,255,255,0.35);
+}
+[data-theme="light"] .detail-panel-header h3,
+[data-theme="light"] .detail-val { color: #1a2222; }
+[data-theme="light"] .detail-label,
+[data-theme="light"] .audit-time,
+[data-theme="light"] .audit-empty { color: rgba(26,34,34,0.52); }
+[data-theme="light"] .detail-row,
+[data-theme="light"] .audit-item { border-color: rgba(10,138,133,0.08); }
+[data-theme="light"] .detail-section-title {
+  color: var(--teal);
+  border-color: rgba(10,138,133,0.14);
+}
+[data-theme="light"] .notes-area {
+  background: rgba(255,255,255,0.62) !important;
+  border-color: rgba(10,138,133,0.16) !important;
+  color: #1a2222 !important;
+}
 
 </style>
 </head>
@@ -1440,13 +1509,13 @@ body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
         <span class="role-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M12 11l2 10-2 2-2-2 2-10"/></svg>
         </span>
-        <span>HR / Agency</span>
+        <span>HR/AGENCY</span>
       </button>
-      <button class="role-btn" id="role-btn-supervisor" onclick="selectRole('supervisor')">
+      <button class="role-btn" id="role-btn-rssrsh" onclick="selectRole('rssrsh')">
         <span class="role-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </span>
-        <span>RSH</span>
+        <span>RSS/RSH</span>
       </button>
       <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
         <span class="role-icon">
@@ -1459,7 +1528,7 @@ body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
       <div class="role-pin-label" id="role-pin-label">Enter PIN</div>
       <input class="role-pin-input" type="password" id="role-pin-input" maxlength="8" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
       <div class="role-pin-error" id="role-pin-error"></div>
-      <button class="btn btn-primary" onclick="confirmRolePin()" style="width:100%;margin-top:2px">Confirm</button>
+      <button class="btn btn-primary role-confirm-btn" onclick="confirmRolePin()">Confirm</button>
       <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
     </div>
   </div>
@@ -1473,14 +1542,14 @@ body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
       <button class="modal-close" onclick="closePwManager()">✕</button>
     </div>
     <div class="modal-body" style="padding:20px">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6">Set passwords for HR/Agency and RSH roles. Viewer has no password (open read-only access).</p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6">Set passwords for HR/AGENCY and RSS/RSH roles. Viewer has no password (open read-only access).</p>
       <div class="field" style="margin-bottom:14px">
-        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">HR / Agency Password</label>
+        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">HR/AGENCY Password</label>
         <input type="password" id="pw-hr" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
       </div>
       <div class="field" style="margin-bottom:14px">
-        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">RSH Password</label>
-        <input type="password" id="pw-supervisor" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
+        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">RSS/RSH Password</label>
+        <input type="password" id="pw-rssrsh" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
       </div>
       <div id="pw-manager-msg" style="font-size:11px;min-height:16px;color:var(--success)"></div>
     </div>
@@ -1747,24 +1816,25 @@ initTheme();
 // ============================================================
 // ROLE SYSTEM
 // ============================================================
-// Default PINs — Owner can change HR/RSH pins via Manage Passwords
+// Default PINs — Owner can change HR/AGENCY and RSS/RSH passwords via Manage Passwords
 function loadRolePins(){
+  const savedOwnerPin = localStorage.getItem('pin_owner');
   return {
-    owner:      localStorage.getItem('pin_owner')      || 'owner1234',
-    hr:         localStorage.getItem('pin_hr')         || '1234',
-    supervisor: localStorage.getItem('pin_supervisor') || '5678'
+    owner:  (savedOwnerPin && savedOwnerPin !== 'owner1234') ? savedOwnerPin : 'owner123',
+    hr:     localStorage.getItem('pin_hr')     || '1234',
+    rssrsh: localStorage.getItem('pin_rssrsh') || '5678'
   };
 }
 // viewer has no PIN — open access but with blur
 
-let currentRole = null; // 'owner' | 'hr' | 'supervisor' | 'viewer'
+let currentRole = null; // 'owner' | 'hr' | 'rssrsh' | 'viewer'
 let _pendingRole = null;
 
 function openRoleModal(){
   _pendingRole = null;
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-pin-wrap').classList.remove('show');
-  ['owner','hr','supervisor','viewer'].forEach(r=>{
+  ['owner','hr','rssrsh','viewer'].forEach(r=>{
     document.getElementById('role-btn-'+r)?.classList.remove('selected');
   });
 }
@@ -1772,7 +1842,7 @@ function closeRoleModal(){ document.getElementById('role-overlay').classList.add
 
 function selectRole(role){
   _pendingRole = role;
-  ['owner','hr','supervisor','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
+  ['owner','hr','rssrsh','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
   if(role){
     document.getElementById('role-btn-'+role)?.classList.add('selected');
     if(role==='viewer'){
@@ -1781,7 +1851,7 @@ function selectRole(role){
     } else {
       const pinWrap = document.getElementById('role-pin-wrap');
       const pinLabel = document.getElementById('role-pin-label');
-      const roleNames = {owner:'Owner',hr:'HR / Agency',supervisor:'RSH'};
+      const roleNames = {owner:'Owner',hr:'HR/AGENCY',rssrsh:'RSS/RSH'};
       pinLabel.textContent = `Enter ${roleNames[role]||role} Password`;
       document.getElementById('role-pin-input').value='';
       document.getElementById('role-pin-error').textContent='';
@@ -1816,35 +1886,58 @@ function openPwManager(){
   if(currentRole!=='owner'){toast('Only Owner can manage passwords.','error');return;}
   const pins=loadRolePins();
   document.getElementById('pw-hr').value='';
-  document.getElementById('pw-supervisor').value='';
+  document.getElementById('pw-rssrsh').value='';
   document.getElementById('pw-manager-msg').textContent='';
   document.getElementById('pw-manager-overlay').classList.add('open');
 }
 function closePwManager(){document.getElementById('pw-manager-overlay').classList.remove('open');}
 function savePwManager(){
   const hrPw=document.getElementById('pw-hr').value.trim();
-  const supPw=document.getElementById('pw-supervisor').value.trim();
+  const supPw=document.getElementById('pw-rssrsh').value.trim();
   if(hrPw) localStorage.setItem('pin_hr', hrPw);
-  if(supPw) localStorage.setItem('pin_supervisor', supPw);
+  if(supPw) localStorage.setItem('pin_rssrsh', supPw);
   document.getElementById('pw-manager-msg').textContent='✓ Passwords updated successfully!';
   setTimeout(()=>closePwManager(),1200);
 }
 
 const ROLE_META = {
-  owner:     { label:'Owner',      icon:'OWN', bodyClass:'' },
-  hr:        { label:'HR/Agency',  icon:'HR',  bodyClass:'' },
-  supervisor:{ label:'RSH',        icon:'RSH', bodyClass:'role-supervisor' },
-  viewer:    { label:'Viewer',     icon:'VIEW',bodyClass:'role-viewer' },
+  owner:  { label:'Owner',     icon:'OWN',  bodyClass:'' },
+  hr:     { label:'HR/AGENCY', icon:'HR',   bodyClass:'' },
+  rssrsh: { label:'RSS/RSH',   icon:'RSS',  bodyClass:'role-rssrsh' },
+  viewer: { label:'Viewer',    icon:'VIEW', bodyClass:'role-viewer' },
 };
 
 function canWrite(){
-  return currentRole === 'owner' || currentRole === 'hr' || currentRole === 'supervisor';
+  return currentRole === 'owner' || currentRole === 'hr' || currentRole === 'rssrsh';
 }
 function canDeleteRecords(){
   return currentRole === 'owner' || currentRole === 'hr';
 }
+function canViewSensitive(){
+  return currentRole === 'owner' || currentRole === 'hr';
+}
+const SENSITIVE_FIELD_KEYS = ['dob','mobile','email','address','sss','philhealth','pagibig','tin','basicWage','bankName','bankAccount'];
+function lockSensitiveFormFields(){
+  if(canViewSensitive()) return;
+  SENSITIVE_FIELD_KEYS.forEach(k=>{
+    const el=document.getElementById('f_'+k);
+    if(!el) return;
+    el.disabled = true;
+    el.setAttribute('data-sensitive-locked','1');
+    const field=el.closest('.field');
+    if(field){ field.classList.add('form-sensitive-control','is-locked'); }
+  });
+}
+function protectSensitiveDataBeforeSave(data){
+  if(canViewSensitive()) return data;
+  const oldEmp = editingId ? employees.find(e=>String(e.infinixId)===String(editingId)) : null;
+  SENSITIVE_FIELD_KEYS.forEach(k=>{
+    data[k] = oldEmp ? (oldEmp[k] || '') : '';
+  });
+  return data;
+}
 function denyWrite(){
-  toast('You need HR/Agency, RSH, or Owner access to edit records.','error');
+  toast('You need HR/AGENCY, RSS/RSH, or Owner access to edit records.','error');
 }
 function actionIconSVG(name){
   const icons={
@@ -1863,7 +1956,7 @@ function actionIconSVG(name){
 function applyRole(role){
   currentRole = role;
   sessionStorage.setItem('hr_role', role);
-  document.body.classList.remove('role-viewer','role-supervisor');
+  document.body.classList.remove('role-viewer','role-rssrsh');
   const meta = ROLE_META[role];
   if(meta.bodyClass) document.body.classList.add(meta.bodyClass);
   const indicator = document.getElementById('role-indicator');
@@ -2053,7 +2146,7 @@ function signOut(){
   sessionStorage.removeItem('hr_role');
   accessToken=null;currentUser=null;window._headersChecked=false;
   currentRole=null;
-  document.body.classList.remove('role-viewer','role-supervisor');
+  document.body.classList.remove('role-viewer','role-rssrsh');
   document.getElementById('role-indicator')?.style&&(document.getElementById('role-indicator').style.display='none');
   showLoginScreen(false);
 }
@@ -3236,7 +3329,7 @@ function doBulkStatusChange(){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   const ids=[...selectedIds];if(ids.length===0)return;
   document.getElementById('confirm-title').textContent='Bulk Delete';
   document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
@@ -3268,7 +3361,7 @@ function closeDetailPanel(){document.getElementById('detail-panel').classList.re
 function dpEdit(){
   if(!canWrite()){denyWrite();return;}const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
   if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
@@ -3358,8 +3451,8 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
-      ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
-      ${row('Bank',esc(e.bankName))}
+      ${rowSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
+      ${rowSensitive('Bank',esc(e.bankName))}
       ${rowSensitive('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
     <div class="detail-section">
@@ -3466,16 +3559,16 @@ function getFormHTML(emp){
     <div class="field"><label>Middle Name</label>${inp('middleName','text','Santos')}</div>
   </div>
   <div class="form-grid">
-    <div class="field"><label>Date of Birth</label>${dateInp('dob')}</div>
+    <div class="field form-sensitive-control"><label>Date of Birth</label>${dateInp('dob')}</div>
     <div class="field"><label>Gender</label>${sel('gender',['','Male','Female','N/A'])}</div>
     <div class="field"><label>Marital Status</label>${sel('maritalStatus',['','Single','Married'])}</div>
-    <div class="field"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDupMobile()"')}
+    <div class="field form-sensitive-control"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDupMobile()"')}
       <div class="dup-warning" id="dup-warning-mobile">⚠ This mobile number is already used by another employee.</div>
     </div>
-    <div class="field form-full"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDupEmail()"')}
+    <div class="field form-full form-sensitive-control"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDupEmail()"')}
       <div class="dup-warning" id="dup-warning-email">⚠ This email is already used by another employee.</div>
     </div>
-    <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
+    <div class="field form-full form-sensitive-control"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
   <div class="section-label">Store &amp; Deployment</div>
@@ -3499,17 +3592,17 @@ function getFormHTML(emp){
 
   <div class="section-label">Government Numbers</div>
   <div class="form-grid cols3">
-    <div class="field"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
-    <div class="field"><label>PhilHealth Number</label>${inp('philhealth','text','XXXX-XXXX-XXXX')}</div>
-    <div class="field"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
-    <div class="field"><label>TIN Number</label>${inp('tin','text','XXX-XXX-XXX-XXX')}</div>
+    <div class="field form-sensitive-control"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
+    <div class="field form-sensitive-control"><label>PhilHealth Number</label>${inp('philhealth','text','XXXX-XXXX-XXXX')}</div>
+    <div class="field form-sensitive-control"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
+    <div class="field form-sensitive-control"><label>TIN Number</label>${inp('tin','text','XXX-XXX-XXX-XXX')}</div>
   </div>
 
   <div class="section-label">Payroll &amp; Banking</div>
   <div class="form-grid">
-    <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
-    <div class="field"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
-    <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number','oninput="checkDupBank()"')}
+    <div class="field form-sensitive-control"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
+    <div class="field form-sensitive-control"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
+    <div class="field form-sensitive-control"><label>Bank Account Number</label>${inp('bankAccount','text','Account number','oninput="checkDupBank()"')}
       <div class="dup-warning" id="dup-warning-bank">⚠ This bank account number is already used by another employee.</div>
     </div>
   </div>
@@ -3642,6 +3735,7 @@ function openAddModal(){
   document.getElementById('modal-title').textContent='Add New Employee';
   document.getElementById('modal-save-btn').textContent='Save Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(null);
+  lockSensitiveFormFields();
   document.getElementById('modal-overlay').classList.add('open');
 }
 function openEditModal(id){
@@ -3651,6 +3745,7 @@ function openEditModal(id){
   document.getElementById('modal-title').textContent=`Edit — ${esc(emp.fullName||emp.firstName+' '+emp.lastName)}`;
   document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
+  lockSensitiveFormFields();
   document.getElementById('modal-overlay').classList.add('open');
   if(emp.storeId&&storeCacheLoaded){
     const found=lookupStore(emp.storeId);
@@ -3672,7 +3767,7 @@ function openEditModal(id){
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 async function saveEmployee(){
   if(!canWrite()){denyWrite();return;}
-  const data=gatherForm();
+  const data=protectSensitiveDataBeforeSave(gatherForm());
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
 
   // Extra confirmation for high-impact statuses
@@ -3704,7 +3799,7 @@ async function saveEmployee(){
   finally{showLoading(false);}
 }
 function confirmDelete(id,name){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   document.getElementById('confirm-title').textContent='Delete Employee?';
   document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
   document.getElementById('confirm-ok').textContent='Delete';
@@ -3713,7 +3808,7 @@ function confirmDelete(id,name){
 }
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function doDelete(id){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
