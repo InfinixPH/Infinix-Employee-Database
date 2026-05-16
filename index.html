@@ -128,7 +128,7 @@
   transition: filter .25s;
 }
 body.role-viewer .sensitive,
-body.role-rsh .sensitive {
+body.role-supervisor .sensitive {
   filter: blur(5px);
   user-select: none;
   pointer-events: none;
@@ -290,10 +290,22 @@ body::before {
   box-shadow: 4px 0 24px rgba(0,0,0,0.4);
 }
 [data-theme="light"] .sidebar {
-  background: rgba(220,232,232,0.75);
-  border-right-color: rgba(255,255,255,0.6);
-  box-shadow: 4px 0 24px rgba(10,138,133,0.06);
+  background: rgba(220,232,232,0.92);
+  border-right-color: rgba(10,138,133,0.15);
+  box-shadow: 4px 0 24px rgba(10,138,133,0.10);
 }
+[data-theme="light"] .nav-item { color: rgba(26,34,34,0.65); }
+[data-theme="light"] .nav-item:hover { background: rgba(10,138,133,0.08); border-color: rgba(10,138,133,0.15); color: rgba(26,34,34,0.9); }
+[data-theme="light"] .nav-item.active { background: rgba(10,138,133,0.14); border-color: rgba(10,138,133,0.30); color: rgba(26,34,34,0.95); }
+[data-theme="light"] .sf-item { color: rgba(26,34,34,0.60); }
+[data-theme="light"] .sf-item:hover, [data-theme="light"] .sf-item.active { color: rgba(26,34,34,0.90); background: rgba(10,138,133,0.08); border-color: rgba(10,138,133,0.15); }
+[data-theme="light"] .sf-count { color: rgba(26,34,34,0.45); }
+[data-theme="light"] .brand-sub { color: var(--teal); opacity: 0.8; }
+[data-theme="light"] .nav-section { color: var(--teal); }
+[data-theme="light"] .user-name { color: rgba(26,34,34,0.90); }
+[data-theme="light"] .user-role-badge { color: var(--teal); }
+[data-theme="light"] .btn-signout { color: rgba(26,34,34,0.45); }
+[data-theme="light"] .sidebar-footer { border-top-color: rgba(10,138,133,0.12); }
 
 /* FIX: Sidebar brand area — clean, fixed height, no overflow */
 .brand {
@@ -697,13 +709,13 @@ body::before {
   gap: 12px;
   margin-bottom: 14px;
 }
-.chart-card { padding: 18px 18px 14px; min-height: 200px; }
+.chart-card { padding: 18px 18px 14px; min-height: 230px; }
 .chart-title {
   font-size: 9px; font-weight: 700; margin-bottom: 14px;
   color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;
   flex-shrink: 0;
 }
-.chart-wrap { position: relative; height: 165px; }
+.chart-wrap { position: relative; height: 195px; }
 /* Right column sidebar */
 .dash-right { display: flex; flex-direction: column; gap: 12px; }
 
@@ -747,6 +759,27 @@ body::before {
 .bday-date { font-size: 10.5px; color: var(--text3); }
 .bday-today { border-color: rgba(245,200,66,0.3); background: rgba(245,200,66,0.06); }
 
+/* Completion ring summary */
+.completion-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 14px;
+}
+.completion-card {
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.cc-ring {
+  position: relative; width: 48px; height: 48px; flex-shrink: 0;
+}
+.cc-ring svg { transform: rotate(-90deg); }
+.cc-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 5; }
+.cc-ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+.cc-pct {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; font-family: 'Poppins', sans-serif;
+}
+.cc-label { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.cc-val { font-size: 18px; font-weight: 800; font-family: 'Poppins', sans-serif; line-height: 1.1; }
 
 /* ============================================================
    FILTER BAR
@@ -1344,73 +1377,15 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 body.role-viewer #modal-save-btn,
 body.role-viewer #dp-edit-btn,
 body.role-viewer #dp-delete-btn,
+body.role-supervisor #dp-delete-btn,
 body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
+body.role-supervisor #bulk-bar .btn-danger,
 body.role-viewer .write-action {
   display: none !important;
 }
-body.role-rsh #dp-delete-btn,
-body.role-rsh #bulk-bar .btn-danger {
-  display: none !important;
-}
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
-
-
-/* ============================================================
-   FINAL CLEANUP: role access, light detail panel, charts
-   ============================================================ */
-[data-theme="light"] .detail-panel {
-  background: rgba(242,248,248,0.96) !important;
-  color: #162323 !important;
-  border-left: 1px solid rgba(10,138,133,0.22) !important;
-  box-shadow: -10px 0 50px rgba(10,60,60,0.18) !important;
-}
-[data-theme="light"] .detail-panel .detail-val,
-[data-theme="light"] .detail-panel .detail-panel-header h3 { color:#162323 !important; }
-[data-theme="light"] .detail-panel .detail-label,
-[data-theme="light"] .detail-panel .audit-time,
-[data-theme="light"] .detail-panel .detail-section-title { color: rgba(10,90,90,0.75) !important; }
-body.role-viewer .sensitive,
-body.role-rsh .sensitive {
-  filter: blur(5px);
-  user-select: none;
-  pointer-events: none;
-}
-.role-modal-premium { width: 560px !important; }
-.role-modal-premium .role-btn-grid { grid-template-columns: repeat(4,1fr) !important; }
-.role-modal-premium .role-btn { min-height: 104px !important; }
-.role-password-manager {
-  display:none;
-  margin-top: 6px;
-  padding: 12px;
-  border-radius: 16px;
-  background: rgba(46,196,190,0.06);
-  border: 1px solid rgba(46,196,190,0.16);
-}
-body.role-owner .role-password-manager { display:block; }
-.rpm-title { font-size:10px; font-weight:900; color:var(--teal); letter-spacing:1.4px; text-transform:uppercase; margin-bottom:8px; }
-.rpm-row { display:grid; grid-template-columns: 1fr 1fr auto; gap:8px; align-items:center; }
-.rpm-row input {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 10px;
-  padding: 8px 10px;
-  color: var(--text);
-  font-family: 'Poppins', sans-serif;
-  font-size: 12px;
-}
-[data-theme="light"] .rpm-row input { background: rgba(255,255,255,0.75); color:#162323; }
-.completion-row { display:none !important; }
-.charts-row { grid-template-columns: minmax(390px,.95fr) minmax(560px,1.35fr) !important; gap:14px !important; }
-.chart-card { min-height: 300px !important; padding:20px !important; }
-.chart-wrap { height: 238px !important; }
-#chart-status { max-height: 205px !important; }
-@media(max-width:1100px){
-  .role-modal-premium { width: min(92vw,560px) !important; }
-  .role-modal-premium .role-btn-grid { grid-template-columns: repeat(2,1fr) !important; }
-  .charts-row { grid-template-columns: 1fr !important; }
-}
 
 </style>
 </head>
@@ -1453,38 +1428,65 @@ body.role-owner .role-password-manager { display:block; }
       Access Mode
     </div>
     <h2>Select Your Role</h2>
-    <div class="role-btn-grid">
+    <p>Choose how you want to view and manage employee records.</p>
+    <div class="role-btn-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
       <button class="role-btn" id="role-btn-owner" onclick="selectRole('owner')">
-        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l3 6 6 .8-4.4 4.3 1 6.1L12 17.3 6.4 20.2l1-6.1L3 9.8 9 9z"/></svg></span>
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </span>
         <span>Owner</span>
       </button>
-      <button class="role-btn" id="role-btn-hragency" onclick="selectRole('hragency')">
-        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M4 21h16"/></svg></span>
-        <span>HR/Agency</span>
+      <button class="role-btn" id="role-btn-hr" onclick="selectRole('hr')">
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M12 11l2 10-2 2-2-2 2-10"/></svg>
+        </span>
+        <span>HR / Agency</span>
       </button>
-      <button class="role-btn" id="role-btn-rsh" onclick="selectRole('rsh')">
-        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-5"/></svg></span>
+      <button class="role-btn" id="role-btn-supervisor" onclick="selectRole('supervisor')">
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
         <span>RSH</span>
       </button>
       <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
-        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
         <span>Viewer</span>
       </button>
     </div>
     <div class="role-pin-wrap" id="role-pin-wrap">
       <div class="role-pin-label" id="role-pin-label">Enter PIN</div>
-      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="12" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
+      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="8" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
       <div class="role-pin-error" id="role-pin-error"></div>
       <button class="btn btn-primary" onclick="confirmRolePin()" style="width:100%;margin-top:2px">Confirm</button>
       <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
     </div>
-    <div class="role-password-manager" id="role-password-manager">
-      <div class="rpm-title">Owner Password Settings</div>
-      <div class="rpm-row">
-        <input id="pin-hragency" type="password" placeholder="HR/Agency PIN">
-        <input id="pin-rsh" type="password" placeholder="RSH PIN">
-        <button class="btn btn-primary btn-sm" onclick="saveManagedRolePins()">Save</button>
+  </div>
+</div>
+
+<!-- OWNER PASSWORD MANAGER MODAL -->
+<div class="overlay" id="pw-manager-overlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2>🔑 Manage Passwords</h2>
+      <button class="modal-close" onclick="closePwManager()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6">Set passwords for HR/Agency and RSH roles. Viewer has no password (open read-only access).</p>
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">HR / Agency Password</label>
+        <input type="password" id="pw-hr" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
       </div>
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">RSH Password</label>
+        <input type="password" id="pw-supervisor" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
+      </div>
+      <div id="pw-manager-msg" style="font-size:11px;min-height:16px;color:var(--success)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePwManager()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePwManager()">Save Passwords</button>
     </div>
   </div>
 </div>
@@ -1533,6 +1535,10 @@ body.role-owner .role-password-manager { display:block; }
 
   <div class="sidebar-footer">
     <div id="role-indicator" style="display:none"></div>
+    <button id="pw-manager-btn" onclick="openPwManager()" title="Manage role passwords" style="display:none;width:100%;margin-bottom:8px;align-items:center;gap:7px;padding:7px 11px;background:rgba(46,196,190,0.08);border:1px solid rgba(46,196,190,0.18);border-radius:var(--radius-sm);cursor:pointer;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:var(--teal-deep)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Manage Passwords
+    </button>
     <div class="user-pill">
       <div class="user-avatar" id="user-avatar">?</div>
       <div class="user-info">
@@ -1741,29 +1747,32 @@ initTheme();
 // ============================================================
 // ROLE SYSTEM
 // ============================================================
-// PINs — change these to whatever your HR team decides
-const DEFAULT_ROLE_PINS = { owner: '0000', hragency: '1234', rsh: '5678' };
-function getRolePins(){
-  try { return {...DEFAULT_ROLE_PINS, ...(JSON.parse(localStorage.getItem('hr_role_pins')||'{}'))}; }
-  catch(e){ return {...DEFAULT_ROLE_PINS}; }
+// Default PINs — Owner can change HR/RSH pins via Manage Passwords
+function loadRolePins(){
+  return {
+    owner:      localStorage.getItem('pin_owner')      || 'owner1234',
+    hr:         localStorage.getItem('pin_hr')         || '1234',
+    supervisor: localStorage.getItem('pin_supervisor') || '5678'
+  };
 }
-function setRolePins(pins){ localStorage.setItem('hr_role_pins', JSON.stringify({...getRolePins(), ...pins})); }
-// Viewer has no PIN. Owner default PIN is 0000; change it in code if needed.
+// viewer has no PIN — open access but with blur
 
-let currentRole = null; // 'owner' | 'hragency' | 'rsh' | 'viewer'
+let currentRole = null; // 'owner' | 'hr' | 'supervisor' | 'viewer'
 let _pendingRole = null;
 
 function openRoleModal(){
   _pendingRole = null;
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-pin-wrap').classList.remove('show');
-  ['owner','hragency','rsh','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
+  ['owner','hr','supervisor','viewer'].forEach(r=>{
+    document.getElementById('role-btn-'+r)?.classList.remove('selected');
+  });
 }
 function closeRoleModal(){ document.getElementById('role-overlay').classList.add('hidden'); }
 
 function selectRole(role){
   _pendingRole = role;
-  ['owner','hragency','rsh','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
+  ['owner','hr','supervisor','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
   if(role){
     document.getElementById('role-btn-'+role)?.classList.add('selected');
     if(role==='viewer'){
@@ -1772,7 +1781,8 @@ function selectRole(role){
     } else {
       const pinWrap = document.getElementById('role-pin-wrap');
       const pinLabel = document.getElementById('role-pin-label');
-      pinLabel.textContent = `Enter ${ROLE_META[role]?.label || 'Role'} PIN`;
+      const roleNames = {owner:'Owner',hr:'HR / Agency',supervisor:'RSH'};
+      pinLabel.textContent = `Enter ${roleNames[role]||role} Password`;
       document.getElementById('role-pin-input').value='';
       document.getElementById('role-pin-error').textContent='';
       pinWrap.classList.add('show');
@@ -1789,34 +1799,53 @@ function onPinInput(){
 
 function confirmRolePin(){
   const pin = document.getElementById('role-pin-input').value;
-  const correct = getRolePins()[_pendingRole];
+  const pins = loadRolePins();
+  const correct = pins[_pendingRole];
   if(pin === correct){
     applyRole(_pendingRole);
     closeRoleModal();
   } else {
-    document.getElementById('role-pin-error').textContent = '❌ Incorrect PIN — try again';
+    document.getElementById('role-pin-error').textContent = '❌ Incorrect password — try again';
     document.getElementById('role-pin-input').value='';
     document.getElementById('role-pin-input').focus();
   }
 }
 
+// Password manager — Owner only
+function openPwManager(){
+  if(currentRole!=='owner'){toast('Only Owner can manage passwords.','error');return;}
+  const pins=loadRolePins();
+  document.getElementById('pw-hr').value='';
+  document.getElementById('pw-supervisor').value='';
+  document.getElementById('pw-manager-msg').textContent='';
+  document.getElementById('pw-manager-overlay').classList.add('open');
+}
+function closePwManager(){document.getElementById('pw-manager-overlay').classList.remove('open');}
+function savePwManager(){
+  const hrPw=document.getElementById('pw-hr').value.trim();
+  const supPw=document.getElementById('pw-supervisor').value.trim();
+  if(hrPw) localStorage.setItem('pin_hr', hrPw);
+  if(supPw) localStorage.setItem('pin_supervisor', supPw);
+  document.getElementById('pw-manager-msg').textContent='✓ Passwords updated successfully!';
+  setTimeout(()=>closePwManager(),1200);
+}
+
 const ROLE_META = {
-  owner:    { label:'Owner',     icon:'OWN', bodyClass:'role-owner' },
-  hragency: { label:'HR/Agency', icon:'HR',  bodyClass:'role-hragency' },
-  rsh:      { label:'RSH',       icon:'RSH', bodyClass:'role-rsh' },
-  viewer:   { label:'Viewer',    icon:'VIEW',bodyClass:'role-viewer' },
+  owner:     { label:'Owner',      icon:'OWN', bodyClass:'' },
+  hr:        { label:'HR/Agency',  icon:'HR',  bodyClass:'' },
+  supervisor:{ label:'RSH',        icon:'RSH', bodyClass:'role-supervisor' },
+  viewer:    { label:'Viewer',     icon:'VIEW',bodyClass:'role-viewer' },
 };
 
 function canWrite(){
-  return ['owner','hragency','rsh'].includes(currentRole);
+  return currentRole === 'owner' || currentRole === 'hr' || currentRole === 'supervisor';
 }
 function canDeleteRecords(){
-  return ['owner','hragency'].includes(currentRole);
+  return currentRole === 'owner' || currentRole === 'hr';
 }
 function denyWrite(){
-  toast('Viewer access is read-only. Switch to Owner, HR/Agency, or RSH to edit records.','error');
+  toast('You need HR/Agency, RSH, or Owner access to edit records.','error');
 }
-function actionIconSVG(name){
   const icons={
     rocket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1 1-1.5 3-1.5 4.5 1.5 0 3.5-.5 4.5-1.5"/><path d="M9 15 5 19"/><path d="M14 4c3.3-.4 5.4.4 6 1 .6.6 1.4 2.7 1 6l-4.5 4.5-8-8L14 4Z"/><path d="M9.5 8.5 4 9l4 4"/><path d="m15 14 4 4 .5-5.5"/><circle cx="15.5" cy="8.5" r="1.5"/></svg>',
     phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
@@ -1833,25 +1862,16 @@ function actionIconSVG(name){
 function applyRole(role){
   currentRole = role;
   sessionStorage.setItem('hr_role', role);
-  // Apply body class for CSS blur
-  document.body.classList.remove('role-owner','role-hragency','role-rsh','role-viewer');
+  document.body.classList.remove('role-viewer','role-supervisor');
   const meta = ROLE_META[role];
   if(meta.bodyClass) document.body.classList.add(meta.bodyClass);
-  if(role==='owner'){
-    const pins=getRolePins();
-    setTimeout(()=>{
-      const h=document.getElementById('pin-hragency');
-      const r=document.getElementById('pin-rsh');
-      if(h) h.value=pins.hragency||'';
-      if(r) r.value=pins.rsh||'';
-    },0);
-  }
-  // Update footer role badge. The separate floating role pill stays hidden for cleaner UI.
   const indicator = document.getElementById('role-indicator');
   if(indicator) indicator.style.display='none';
   const roleLabel = document.getElementById('user-role-label');
   if(roleLabel) roleLabel.textContent = meta.label;
-  // Re-render detail panel if open
+  // Show/hide manage passwords button for Owner
+  const pwBtn = document.getElementById('pw-manager-btn');
+  if(pwBtn) pwBtn.style.display = (role==='owner') ? 'flex' : 'none';
   if(detailEmpId) openDetailPanel(detailEmpId);
 }
 
@@ -1860,21 +1880,8 @@ function initRole(){
   if(saved && ROLE_META[saved]){
     applyRole(saved);
   } else {
-    // Show role modal after app loads
     setTimeout(()=>openRoleModal(), 400);
   }
-}
-
-
-function saveManagedRolePins(){
-  if(currentRole !== 'owner'){ toast('Only Owner can change role passwords.','error'); return; }
-  const h=(document.getElementById('pin-hragency')?.value||'').trim();
-  const r=(document.getElementById('pin-rsh')?.value||'').trim();
-  const update={};
-  if(h) update.hragency=h;
-  if(r) update.rsh=r;
-  setRolePins(update);
-  toast('Role passwords updated.','success');
 }
 
 // ============================================================
@@ -2045,7 +2052,7 @@ function signOut(){
   sessionStorage.removeItem('hr_role');
   accessToken=null;currentUser=null;window._headersChecked=false;
   currentRole=null;
-  document.body.classList.remove('role-owner','role-hragency','role-rsh','role-viewer');
+  document.body.classList.remove('role-viewer','role-supervisor');
   document.getElementById('role-indicator')?.style&&(document.getElementById('role-indicator').style.display='none');
   showLoginScreen(false);
 }
@@ -2698,11 +2705,10 @@ function renderDashboard(){
       <div>
         <div class="charts-row">
 
-          <!-- UPGRADED DOUGHNUT + STATUS TABLE -->
+          <!-- DOUGHNUT + STATUS TABLE -->
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Status Breakdown</div>
             <div style="display:flex;align-items:center;gap:16px;flex:1;min-height:0">
-              <!-- Doughnut with center label -->
               <div style="position:relative;width:150px;height:150px;flex-shrink:0">
                 <canvas id="chart-status"></canvas>
                 <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
@@ -2710,7 +2716,6 @@ function renderDashboard(){
                   <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px">TOTAL</div>
                 </div>
               </div>
-              <!-- Status table -->
               <div style="flex:1;min-width:0">
                 <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:3px 10px;align-items:center">
                   <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border)"></div>
@@ -2731,16 +2736,13 @@ function renderDashboard(){
             </div>
           </div>
 
-          <!-- UPGRADED BAR CHART — data labels, no Y-axis, top region highlighted -->
+          <!-- BAR CHART — Active Promoters by Region -->
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Active Promoters by Region</div>
             <div class="chart-wrap" style="flex:1"><canvas id="chart-region"></canvas></div>
           </div>
 
         </div>
-
-        <!-- Completion summary removed to avoid repeating Pending Actions -->
-
       </div>
       <div class="dash-right">
         <div class="recent-card glass-card">
@@ -2779,7 +2781,7 @@ function renderDashboard(){
     const tickColor=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
     Chart.defaults.color=tickColor;
 
-    // DOUGHNUT — no legend (replaced by table), with center label
+    // DOUGHNUT — clean, thicker, no gaps
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
@@ -2789,18 +2791,18 @@ function renderDashboard(){
           labels:STATUSES,
           datasets:[{
             data:STATUSES.map(st=>s[st]||0),
-            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+(isDark?'44':'55')),
+            backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+(isDark?'88':'99')),
             borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
             borderWidth:2,
-            hoverOffset:3,
-            hoverBorderWidth:2
+            spacing:2,
+            hoverOffset:8,
+            hoverBorderWidth:3
           }]
         },
         options:{
           responsive:true,
           maintainAspectRatio:false,
-          cutout:'62%',
-          radius:'92%',
+          cutout:'72%',
           plugins:{
             legend:{display:false},
             tooltip:{
@@ -2813,7 +2815,7 @@ function renderDashboard(){
       });
     }
 
-    // BAR CHART — data labels on top, no Y-axis, top region highlighted
+    // BAR CHART — horizontal bars for better alignment and readability
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
@@ -2821,75 +2823,63 @@ function renderDashboard(){
       const maxVal=rEntries.length?rEntries[0][1]:0;
       const barColors=rEntries.map(([,c])=>
         c===maxVal
-          ? (isDark?'rgba(46,196,190,0.85)':'rgba(13,122,118,0.85)')
-          : (isDark?'rgba(46,196,190,0.22)':'rgba(13,122,118,0.25)')
+          ? (isDark?'rgba(46,196,190,0.90)':'rgba(13,122,118,0.85)')
+          : (isDark?'rgba(46,196,190,0.28)':'rgba(13,122,118,0.28)')
       );
       const barBorders=rEntries.map(([,c])=>
         c===maxVal
           ? (isDark?'rgba(46,196,190,1)':'rgba(13,122,118,1)')
-          : (isDark?'rgba(46,196,190,0.5)':'rgba(13,122,118,0.5)')
+          : (isDark?'rgba(46,196,190,0.55)':'rgba(13,122,118,0.55)')
       );
       _charts.region=new Chart(ctxR,{
         type:'bar',
         data:{
-          labels:rEntries.map(([r])=>r),
+          labels:rEntries.map(([r])=>r.replace(' LUZON',' LUZ.').replace('CENTRAL LUZ.','C. LUZ.').replace('NORTH LUZ.','N. LUZ.').replace('SOUTH LUZ.','S. LUZ.')),
           datasets:[{
             label:'Active',
             data:rEntries.map(([,c])=>c),
             backgroundColor:barColors,
             borderColor:barBorders,
             borderWidth:1.5,
-            barThickness:44,
-            maxBarThickness:52,
-            borderRadius:10,
+            borderRadius:8,
             borderSkipped:false
           }]
         },
         options:{
           responsive:true,
           maintainAspectRatio:false,
+          layout:{padding:{top:24}},
           plugins:{
             legend:{display:false},
-            tooltip:{callbacks:{label:ctx=>`${ctx.raw} promoters`}},
-            // Data labels plugin inline
+            tooltip:{callbacks:{label:ctx=>`${ctx.raw} active promoters`}},
           },
           scales:{
             x:{
               grid:{display:false},
               border:{display:false},
-              ticks:{
-                font:{size:10, weight:'700'},
-                color:tickColor,
-                maxRotation:0,
-                minRotation:0,
-                callback:function(value){
-                  const label=this.getLabelForValue(value)||'';
-                  return label.includes(' ')?label.split(' '):label;
-                }
-              }
+              ticks:{font:{size:10,weight:'600'},color:tickColor,maxRotation:0}
             },
             y:{
+              display:false,
               beginAtZero:true,
-              grid:{color:gridColor, drawBorder:false},
-              border:{display:false},
-              ticks:{font:{size:10},color:tickColor,precision:0}
+              max:maxVal?Math.ceil(maxVal*1.25):10
             }
           },
           animation:{
             onComplete:(chart)=>{
-              const ctx=chart.chart.ctx;
+              const ctx2=chart.chart.ctx;
               chart.chart.data.datasets.forEach((dataset,i)=>{
                 const meta=chart.chart.getDatasetMeta(i);
                 meta.data.forEach((bar,idx)=>{
                   const val=dataset.data[idx];
-                  if(!val)return;
-                  ctx.save();
-                  ctx.font='800 11px Poppins, sans-serif';
-                  ctx.fillStyle=isDark?'rgba(255,255,255,0.85)':'rgba(26,34,34,0.75)';
-                  ctx.textAlign='center';
-                  ctx.textBaseline='bottom';
-                  ctx.fillText(val, bar.x, bar.y-3);
-                  ctx.restore();
+                  if(val===undefined||val===null)return;
+                  ctx2.save();
+                  ctx2.font='800 12px Poppins, sans-serif';
+                  ctx2.fillStyle=isDark?'rgba(255,255,255,0.90)':'rgba(26,34,34,0.80)';
+                  ctx2.textAlign='center';
+                  ctx2.textBaseline='bottom';
+                  ctx2.fillText(val, bar.x, bar.y-5);
+                  ctx2.restore();
                 });
               });
             }
@@ -3245,7 +3235,7 @@ function doBulkStatusChange(){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
-  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   const ids=[...selectedIds];if(ids.length===0)return;
   document.getElementById('confirm-title').textContent='Bulk Delete';
   document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
@@ -3277,7 +3267,7 @@ function closeDetailPanel(){document.getElementById('detail-panel').classList.re
 function dpEdit(){
   if(!canWrite()){denyWrite();return;}const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
-  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
   if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
@@ -3367,7 +3357,7 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
-      ${rowSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
+      ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',esc(e.bankName))}
       ${rowSensitive('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
@@ -3713,7 +3703,7 @@ async function saveEmployee(){
   finally{showLoading(false);}
 }
 function confirmDelete(id,name){
-  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   document.getElementById('confirm-title').textContent='Delete Employee?';
   document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
   document.getElementById('confirm-ok').textContent='Delete';
@@ -3722,7 +3712,7 @@ function confirmDelete(id,name){
 }
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function doDelete(id){
-  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
