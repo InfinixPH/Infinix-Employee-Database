@@ -128,7 +128,7 @@
   transition: filter .25s;
 }
 body.role-viewer .sensitive,
-body.role-supervisor .sensitive {
+body.role-rsh .sensitive {
   filter: blur(5px);
   user-select: none;
   pointer-events: none;
@@ -747,27 +747,6 @@ body::before {
 .bday-date { font-size: 10.5px; color: var(--text3); }
 .bday-today { border-color: rgba(245,200,66,0.3); background: rgba(245,200,66,0.06); }
 
-/* Completion ring summary */
-.completion-row {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px; margin-bottom: 14px;
-}
-.completion-card {
-  padding: 14px 16px;
-  display: flex; align-items: center; gap: 12px;
-}
-.cc-ring {
-  position: relative; width: 48px; height: 48px; flex-shrink: 0;
-}
-.cc-ring svg { transform: rotate(-90deg); }
-.cc-ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 5; }
-.cc-ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
-.cc-pct {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 800; font-family: 'Poppins', sans-serif;
-}
-.cc-label { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-.cc-val { font-size: 18px; font-weight: 800; font-family: 'Poppins', sans-serif; line-height: 1.1; }
 
 /* ============================================================
    FILTER BAR
@@ -1365,15 +1344,73 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 body.role-viewer #modal-save-btn,
 body.role-viewer #dp-edit-btn,
 body.role-viewer #dp-delete-btn,
-body.role-supervisor #dp-delete-btn,
 body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
-body.role-supervisor #bulk-bar .btn-danger,
 body.role-viewer .write-action {
   display: none !important;
 }
+body.role-rsh #dp-delete-btn,
+body.role-rsh #bulk-bar .btn-danger {
+  display: none !important;
+}
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
+
+
+/* ============================================================
+   FINAL CLEANUP: role access, light detail panel, charts
+   ============================================================ */
+[data-theme="light"] .detail-panel {
+  background: rgba(242,248,248,0.96) !important;
+  color: #162323 !important;
+  border-left: 1px solid rgba(10,138,133,0.22) !important;
+  box-shadow: -10px 0 50px rgba(10,60,60,0.18) !important;
+}
+[data-theme="light"] .detail-panel .detail-val,
+[data-theme="light"] .detail-panel .detail-panel-header h3 { color:#162323 !important; }
+[data-theme="light"] .detail-panel .detail-label,
+[data-theme="light"] .detail-panel .audit-time,
+[data-theme="light"] .detail-panel .detail-section-title { color: rgba(10,90,90,0.75) !important; }
+body.role-viewer .sensitive,
+body.role-rsh .sensitive {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+}
+.role-modal-premium { width: 560px !important; }
+.role-modal-premium .role-btn-grid { grid-template-columns: repeat(4,1fr) !important; }
+.role-modal-premium .role-btn { min-height: 104px !important; }
+.role-password-manager {
+  display:none;
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(46,196,190,0.06);
+  border: 1px solid rgba(46,196,190,0.16);
+}
+body.role-owner .role-password-manager { display:block; }
+.rpm-title { font-size:10px; font-weight:900; color:var(--teal); letter-spacing:1.4px; text-transform:uppercase; margin-bottom:8px; }
+.rpm-row { display:grid; grid-template-columns: 1fr 1fr auto; gap:8px; align-items:center; }
+.rpm-row input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+}
+[data-theme="light"] .rpm-row input { background: rgba(255,255,255,0.75); color:#162323; }
+.completion-row { display:none !important; }
+.charts-row { grid-template-columns: minmax(390px,.95fr) minmax(560px,1.35fr) !important; gap:14px !important; }
+.chart-card { min-height: 300px !important; padding:20px !important; }
+.chart-wrap { height: 238px !important; }
+#chart-status { max-height: 205px !important; }
+@media(max-width:1100px){
+  .role-modal-premium { width: min(92vw,560px) !important; }
+  .role-modal-premium .role-btn-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .charts-row { grid-template-columns: 1fr !important; }
+}
 
 </style>
 </head>
@@ -1416,33 +1453,38 @@ body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
       Access Mode
     </div>
     <h2>Select Your Role</h2>
-    <p>Choose how you want to view and manage employee records.</p>
     <div class="role-btn-grid">
-      <button class="role-btn" id="role-btn-hr" onclick="selectRole('hr')">
-        <span class="role-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M12 11l2 10-2 2-2-2 2-10"/></svg>
-        </span>
-        <span>HR</span>
+      <button class="role-btn" id="role-btn-owner" onclick="selectRole('owner')">
+        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l3 6 6 .8-4.4 4.3 1 6.1L12 17.3 6.4 20.2l1-6.1L3 9.8 9 9z"/></svg></span>
+        <span>Owner</span>
       </button>
-      <button class="role-btn" id="role-btn-supervisor" onclick="selectRole('supervisor')">
-        <span class="role-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-5"/></svg>
-        </span>
-        <span>Supervisor</span>
+      <button class="role-btn" id="role-btn-hragency" onclick="selectRole('hragency')">
+        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M4 21h16"/></svg></span>
+        <span>HR/Agency</span>
+      </button>
+      <button class="role-btn" id="role-btn-rsh" onclick="selectRole('rsh')">
+        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-5"/></svg></span>
+        <span>RSH</span>
       </button>
       <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
-        <span class="role-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-        </span>
+        <span class="role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
         <span>Viewer</span>
       </button>
     </div>
     <div class="role-pin-wrap" id="role-pin-wrap">
-      <div class="role-pin-label" id="role-pin-label">Enter HR PIN</div>
-      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="8" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
+      <div class="role-pin-label" id="role-pin-label">Enter PIN</div>
+      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="12" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
       <div class="role-pin-error" id="role-pin-error"></div>
       <button class="btn btn-primary" onclick="confirmRolePin()" style="width:100%;margin-top:2px">Confirm</button>
       <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
+    </div>
+    <div class="role-password-manager" id="role-password-manager">
+      <div class="rpm-title">Owner Password Settings</div>
+      <div class="rpm-row">
+        <input id="pin-hragency" type="password" placeholder="HR/Agency PIN">
+        <input id="pin-rsh" type="password" placeholder="RSH PIN">
+        <button class="btn btn-primary btn-sm" onclick="saveManagedRolePins()">Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1700,23 +1742,28 @@ initTheme();
 // ROLE SYSTEM
 // ============================================================
 // PINs — change these to whatever your HR team decides
-const ROLE_PINS = { hr: '1234', supervisor: '5678' };
-// viewer has no PIN — open access but with blur
+const DEFAULT_ROLE_PINS = { owner: '0000', hragency: '1234', rsh: '5678' };
+function getRolePins(){
+  try { return {...DEFAULT_ROLE_PINS, ...(JSON.parse(localStorage.getItem('hr_role_pins')||'{}'))}; }
+  catch(e){ return {...DEFAULT_ROLE_PINS}; }
+}
+function setRolePins(pins){ localStorage.setItem('hr_role_pins', JSON.stringify({...getRolePins(), ...pins})); }
+// Viewer has no PIN. Owner default PIN is 0000; change it in code if needed.
 
-let currentRole = null; // 'hr' | 'supervisor' | 'viewer'
+let currentRole = null; // 'owner' | 'hragency' | 'rsh' | 'viewer'
 let _pendingRole = null;
 
 function openRoleModal(){
   _pendingRole = null;
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-pin-wrap').classList.remove('show');
-  ['hr','supervisor','viewer'].forEach(r=>document.getElementById('role-btn-'+r).classList.remove('selected'));
+  ['owner','hragency','rsh','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
 }
 function closeRoleModal(){ document.getElementById('role-overlay').classList.add('hidden'); }
 
 function selectRole(role){
   _pendingRole = role;
-  ['hr','supervisor','viewer'].forEach(r=>document.getElementById('role-btn-'+r).classList.remove('selected'));
+  ['owner','hragency','rsh','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
   if(role){
     document.getElementById('role-btn-'+role)?.classList.add('selected');
     if(role==='viewer'){
@@ -1725,7 +1772,7 @@ function selectRole(role){
     } else {
       const pinWrap = document.getElementById('role-pin-wrap');
       const pinLabel = document.getElementById('role-pin-label');
-      pinLabel.textContent = `Enter ${role==='hr'?'HR':'Supervisor'} PIN`;
+      pinLabel.textContent = `Enter ${ROLE_META[role]?.label || 'Role'} PIN`;
       document.getElementById('role-pin-input').value='';
       document.getElementById('role-pin-error').textContent='';
       pinWrap.classList.add('show');
@@ -1742,7 +1789,7 @@ function onPinInput(){
 
 function confirmRolePin(){
   const pin = document.getElementById('role-pin-input').value;
-  const correct = ROLE_PINS[_pendingRole];
+  const correct = getRolePins()[_pendingRole];
   if(pin === correct){
     applyRole(_pendingRole);
     closeRoleModal();
@@ -1754,19 +1801,20 @@ function confirmRolePin(){
 }
 
 const ROLE_META = {
-  hr:         { label:'HR',         icon:'HR', bodyClass:'' },
-  supervisor:{ label:'Supervisor', icon:'SUP', bodyClass:'role-supervisor' },
-  viewer:    { label:'Viewer',     icon:'VIEW', bodyClass:'role-viewer' },
+  owner:    { label:'Owner',     icon:'OWN', bodyClass:'role-owner' },
+  hragency: { label:'HR/Agency', icon:'HR',  bodyClass:'role-hragency' },
+  rsh:      { label:'RSH',       icon:'RSH', bodyClass:'role-rsh' },
+  viewer:   { label:'Viewer',    icon:'VIEW',bodyClass:'role-viewer' },
 };
 
 function canWrite(){
-  return currentRole === 'hr' || currentRole === 'supervisor';
+  return ['owner','hragency','rsh'].includes(currentRole);
 }
 function canDeleteRecords(){
-  return currentRole === 'hr';
+  return ['owner','hragency'].includes(currentRole);
 }
 function denyWrite(){
-  toast('Viewer access is read-only. Switch to HR or Supervisor to edit records.','error');
+  toast('Viewer access is read-only. Switch to Owner, HR/Agency, or RSH to edit records.','error');
 }
 function actionIconSVG(name){
   const icons={
@@ -1786,9 +1834,18 @@ function applyRole(role){
   currentRole = role;
   sessionStorage.setItem('hr_role', role);
   // Apply body class for CSS blur
-  document.body.classList.remove('role-viewer','role-supervisor');
+  document.body.classList.remove('role-owner','role-hragency','role-rsh','role-viewer');
   const meta = ROLE_META[role];
   if(meta.bodyClass) document.body.classList.add(meta.bodyClass);
+  if(role==='owner'){
+    const pins=getRolePins();
+    setTimeout(()=>{
+      const h=document.getElementById('pin-hragency');
+      const r=document.getElementById('pin-rsh');
+      if(h) h.value=pins.hragency||'';
+      if(r) r.value=pins.rsh||'';
+    },0);
+  }
   // Update footer role badge. The separate floating role pill stays hidden for cleaner UI.
   const indicator = document.getElementById('role-indicator');
   if(indicator) indicator.style.display='none';
@@ -1806,6 +1863,18 @@ function initRole(){
     // Show role modal after app loads
     setTimeout(()=>openRoleModal(), 400);
   }
+}
+
+
+function saveManagedRolePins(){
+  if(currentRole !== 'owner'){ toast('Only Owner can change role passwords.','error'); return; }
+  const h=(document.getElementById('pin-hragency')?.value||'').trim();
+  const r=(document.getElementById('pin-rsh')?.value||'').trim();
+  const update={};
+  if(h) update.hragency=h;
+  if(r) update.rsh=r;
+  setRolePins(update);
+  toast('Role passwords updated.','success');
 }
 
 // ============================================================
@@ -1976,7 +2045,7 @@ function signOut(){
   sessionStorage.removeItem('hr_role');
   accessToken=null;currentUser=null;window._headersChecked=false;
   currentRole=null;
-  document.body.classList.remove('role-viewer','role-supervisor');
+  document.body.classList.remove('role-owner','role-hragency','role-rsh','role-viewer');
   document.getElementById('role-indicator')?.style&&(document.getElementById('role-indicator').style.display='none');
   showLoginScreen(false);
 }
@@ -2670,34 +2739,7 @@ function renderDashboard(){
 
         </div>
 
-        <!-- COMPLETION SUMMARY ROW -->
-        <div class="completion-row">
-          ${[
-            {label:'Deployment',done:deployed,total:activeTotal,color:'#4ecb71'},
-            {label:'QR Scanned',done:scanned,total:activeTotal,color:'#2EC4BE'},
-            {label:'Contract',done:contractSent,total:activeTotal,color:'#f5c842'},
-            {label:'Requirements',done:reqComplete,total:activeTotal,color:'#D7FEFA'},
-            {label:'Has Bank',done:activeTotal-missingBank,total:activeTotal,color:'#a07ac4'},
-            {label:'Has Gov IDs',done:activeTotal-missingGovIds,total:activeTotal,color:'#e8a24a'},
-          ].map(({label,done,total:tot,color})=>{
-            const pct=tot?Math.round(done/tot*100):0;
-            const circ=2*Math.PI*20;
-            return`<div class="completion-card glass-card">
-              <div class="cc-ring">
-                <svg width="48" height="48" viewBox="0 0 48 48">
-                  <circle class="cc-ring-track" cx="24" cy="24" r="20" stroke-dasharray="${circ}"/>
-                  <circle class="cc-ring-fill" cx="24" cy="24" r="20" stroke="${color}"
-                    stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}"/>
-                </svg>
-                <div class="cc-pct" style="color:${color}">${pct}%</div>
-              </div>
-              <div>
-                <div class="cc-val">${done}<span style="font-size:11px;font-weight:400;color:var(--text3)">/${tot}</span></div>
-                <div class="cc-label">${label}</div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
+        <!-- Completion summary removed to avoid repeating Pending Actions -->
 
       </div>
       <div class="dash-right">
@@ -2750,14 +2792,15 @@ function renderDashboard(){
             backgroundColor:STATUSES.map(st=>STATUS_COLORS[st]+(isDark?'44':'55')),
             borderColor:STATUSES.map(st=>STATUS_COLORS[st]),
             borderWidth:2,
-            hoverOffset:6,
-            hoverBorderWidth:3
+            hoverOffset:3,
+            hoverBorderWidth:2
           }]
         },
         options:{
           responsive:true,
           maintainAspectRatio:false,
-          cutout:'68%',
+          cutout:'62%',
+          radius:'92%',
           plugins:{
             legend:{display:false},
             tooltip:{
@@ -2796,7 +2839,9 @@ function renderDashboard(){
             backgroundColor:barColors,
             borderColor:barBorders,
             borderWidth:1.5,
-            borderRadius:6,
+            barThickness:44,
+            maxBarThickness:52,
+            borderRadius:10,
             borderSkipped:false
           }]
         },
@@ -2812,9 +2857,23 @@ function renderDashboard(){
             x:{
               grid:{display:false},
               border:{display:false},
-              ticks:{font:{size:9},color:tickColor}
+              ticks:{
+                font:{size:10, weight:'700'},
+                color:tickColor,
+                maxRotation:0,
+                minRotation:0,
+                callback:function(value){
+                  const label=this.getLabelForValue(value)||'';
+                  return label.includes(' ')?label.split(' '):label;
+                }
+              }
             },
-            y:{display:false}
+            y:{
+              beginAtZero:true,
+              grid:{color:gridColor, drawBorder:false},
+              border:{display:false},
+              ticks:{font:{size:10},color:tickColor,precision:0}
+            }
           },
           animation:{
             onComplete:(chart)=>{
@@ -3186,7 +3245,7 @@ function doBulkStatusChange(){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
   const ids=[...selectedIds];if(ids.length===0)return;
   document.getElementById('confirm-title').textContent='Bulk Delete';
   document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
@@ -3218,7 +3277,7 @@ function closeDetailPanel(){document.getElementById('detail-panel').classList.re
 function dpEdit(){
   if(!canWrite()){denyWrite();return;}const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
   if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
@@ -3308,7 +3367,7 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
-      ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
+      ${rowSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
       ${row('Bank',esc(e.bankName))}
       ${rowSensitive('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
@@ -3654,7 +3713,7 @@ async function saveEmployee(){
   finally{showLoading(false);}
 }
 function confirmDelete(id,name){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
   document.getElementById('confirm-title').textContent='Delete Employee?';
   document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
   document.getElementById('confirm-ok').textContent='Delete';
@@ -3663,7 +3722,7 @@ function confirmDelete(id,name){
 }
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function doDelete(id){
-  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only Owner or HR/Agency can delete records.','error');return;}
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
