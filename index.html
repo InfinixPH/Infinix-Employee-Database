@@ -309,7 +309,7 @@ body::before {
 
 /* FIX: Sidebar brand area — clean, fixed height, no overflow */
 .brand {
-  padding: 16px 16px 14px;
+  padding: 18px 18px 18px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
   background: rgba(255,255,255,0.02);
@@ -321,15 +321,15 @@ body::before {
   gap: 0;
 }
 
-/* FIX: Single definitive rule for sidebar logo — 40px, clean */
+/* Sidebar logo — enlarged wordmark */
 .brand-logo img {
-  height: 40px;
-  width: auto;
-  max-width: 160px;
+  width: 178px;
+  height: auto;
+  max-height: 82px;
   object-fit: contain;
   display: block;
   filter: brightness(0) invert(1);
-  opacity: 0.92;
+  opacity: 0.96;
 }
 [data-theme="light"] .brand-logo img {
   filter: brightness(0);
@@ -339,7 +339,7 @@ body::before {
 .brand-sub {
   font-size: 9px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
-  margin-top: 8px; font-weight: 700; opacity: 0.7;
+  margin-top: 12px; font-weight: 700; opacity: 0.7;
 }
 
 .nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
@@ -706,16 +706,16 @@ body::before {
 .charts-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 0;
 }
-.chart-card { padding: 18px 18px 14px; min-height: 230px; }
+.chart-card { padding: 22px 24px 20px; min-height: 330px; }
 .chart-title {
   font-size: 9px; font-weight: 700; margin-bottom: 14px;
   color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;
   flex-shrink: 0;
 }
-.chart-wrap { position: relative; height: 195px; }
+.chart-wrap { position: relative; height: 265px; }
 /* Right column sidebar */
 .dash-right { display: flex; flex-direction: column; gap: 12px; }
 
@@ -2803,11 +2803,11 @@ function renderDashboard(){
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Status Breakdown</div>
             <div style="display:flex;align-items:center;gap:16px;flex:1;min-height:0">
-              <div style="position:relative;width:150px;height:150px;flex-shrink:0">
+              <div style="position:relative;width:220px;height:220px;flex-shrink:0">
                 <canvas id="chart-status"></canvas>
                 <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-                  <div style="font-size:26px;font-weight:900;font-family:'Poppins',sans-serif;line-height:1;color:var(--text)">${total}</div>
-                  <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px">TOTAL</div>
+                  <div style="font-size:36px;font-weight:900;font-family:'Poppins',sans-serif;line-height:1;color:var(--text)">${total}</div>
+                  <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:5px">TOTAL</div>
                 </div>
               </div>
               <div style="flex:1;min-width:0">
@@ -2896,7 +2896,7 @@ function renderDashboard(){
         options:{
           responsive:true,
           maintainAspectRatio:false,
-          cutout:'72%',
+          cutout:'68%',
           plugins:{
             legend:{display:false},
             tooltip:{
@@ -2928,35 +2928,40 @@ function renderDashboard(){
       _charts.region=new Chart(ctxR,{
         type:'bar',
         data:{
-          labels:rEntries.map(([r])=>r.replace(' LUZON',' LUZ.').replace('CENTRAL LUZ.','C. LUZ.').replace('NORTH LUZ.','N. LUZ.').replace('SOUTH LUZ.','S. LUZ.')),
+          labels:rEntries.map(([r])=>toTitleCase(r)),
           datasets:[{
             label:'Active',
             data:rEntries.map(([,c])=>c),
             backgroundColor:barColors,
             borderColor:barBorders,
             borderWidth:1.5,
-            borderRadius:8,
-            borderSkipped:false
+            borderRadius:10,
+            borderSkipped:false,
+            barPercentage:0.72,
+            categoryPercentage:0.78
           }]
         },
         options:{
+          indexAxis:'y',
           responsive:true,
           maintainAspectRatio:false,
-          layout:{padding:{top:24}},
+          layout:{padding:{top:4,right:32,bottom:4,left:6}},
           plugins:{
             legend:{display:false},
             tooltip:{callbacks:{label:ctx=>`${ctx.raw} active promoters`}},
           },
           scales:{
             x:{
-              grid:{display:false},
+              beginAtZero:true,
+              max:maxVal?Math.ceil(maxVal*1.18):10,
+              grid:{color:gridColor,drawBorder:false},
               border:{display:false},
-              ticks:{font:{size:10,weight:'600'},color:tickColor,maxRotation:0}
+              ticks:{font:{size:10,weight:'600'},color:tickColor,precision:0}
             },
             y:{
-              display:false,
-              beginAtZero:true,
-              max:maxVal?Math.ceil(maxVal*1.25):10
+              grid:{display:false},
+              border:{display:false},
+              ticks:{font:{size:11,weight:'700'},color:tickColor,autoSkip:false}
             }
           },
           animation:{
@@ -2970,9 +2975,9 @@ function renderDashboard(){
                   ctx2.save();
                   ctx2.font='800 12px Poppins, sans-serif';
                   ctx2.fillStyle=isDark?'rgba(255,255,255,0.90)':'rgba(26,34,34,0.80)';
-                  ctx2.textAlign='center';
-                  ctx2.textBaseline='bottom';
-                  ctx2.fillText(val, bar.x, bar.y-5);
+                  ctx2.textAlign='left';
+                  ctx2.textBaseline='middle';
+                  ctx2.fillText(val, bar.x+8, bar.y);
                   ctx2.restore();
                 });
               });
