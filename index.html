@@ -191,14 +191,7 @@ body.role-rssrsh .sensitive {
 }
 .role-pin-input:focus { border-color: var(--border2); }
 .role-pin-error { font-size: 11px; color: var(--danger); min-height: 16px; }
-.role-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 20px;
-  font-size: 10.5px; font-weight: 700;
-  background: var(--accent-dim); border: 1px solid var(--border2);
-  color: var(--moss-green); cursor: pointer;
-}
-.role-badge:hover { border-color: var(--border3); }
+
 .role-reveal-btn {
   font-size: 10px; font-weight: 600; color: var(--text3);
   background: none; border: none; cursor: pointer;
@@ -290,26 +283,14 @@ body::before {
   box-shadow: 4px 0 24px rgba(0,0,0,0.4);
 }
 [data-theme="light"] .sidebar {
-  background: rgba(220,232,232,0.92);
-  border-right-color: rgba(10,138,133,0.15);
-  box-shadow: 4px 0 24px rgba(10,138,133,0.10);
+  background: rgba(220,232,232,0.75);
+  border-right-color: rgba(255,255,255,0.6);
+  box-shadow: 4px 0 24px rgba(10,138,133,0.06);
 }
-[data-theme="light"] .nav-item { color: rgba(26,34,34,0.65); }
-[data-theme="light"] .nav-item:hover { background: rgba(10,138,133,0.08); border-color: rgba(10,138,133,0.15); color: rgba(26,34,34,0.9); }
-[data-theme="light"] .nav-item.active { background: rgba(10,138,133,0.14); border-color: rgba(10,138,133,0.30); color: rgba(26,34,34,0.95); }
-[data-theme="light"] .sf-item { color: rgba(26,34,34,0.60); }
-[data-theme="light"] .sf-item:hover, [data-theme="light"] .sf-item.active { color: rgba(26,34,34,0.90); background: rgba(10,138,133,0.08); border-color: rgba(10,138,133,0.15); }
-[data-theme="light"] .sf-count { color: rgba(26,34,34,0.45); }
-[data-theme="light"] .brand-sub { color: var(--teal); opacity: 0.8; }
-[data-theme="light"] .nav-section { color: var(--teal); }
-[data-theme="light"] .user-name { color: rgba(26,34,34,0.90); }
-[data-theme="light"] .user-role-badge { color: var(--teal); }
-[data-theme="light"] .btn-signout { color: rgba(26,34,34,0.45); }
-[data-theme="light"] .sidebar-footer { border-top-color: rgba(10,138,133,0.12); }
 
 /* FIX: Sidebar brand area — clean, fixed height, no overflow */
 .brand {
-  padding: 22px 16px 18px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
   background: rgba(255,255,255,0.02);
@@ -323,13 +304,13 @@ body::before {
 
 /* FIX: Single definitive rule for sidebar logo — 40px, clean */
 .brand-logo img {
-  height: 110px;
+  height: 40px;
   width: auto;
-  max-width: 190px;
+  max-width: 160px;
   object-fit: contain;
   display: block;
   filter: brightness(0) invert(1);
-  opacity: 0.96;
+  opacity: 0.92;
 }
 [data-theme="light"] .brand-logo img {
   filter: brightness(0);
@@ -339,7 +320,7 @@ body::before {
 .brand-sub {
   font-size: 9px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
-  margin-top: 12px; font-weight: 700; opacity: 0.7;
+  margin-top: 8px; font-weight: 700; opacity: 0.7;
 }
 
 .nav { flex: 1; padding: 10px 8px; overflow-y: auto; }
@@ -622,11 +603,7 @@ body::before {
   height: 100%; border-radius: 2px;
   transition: width 1.2s cubic-bezier(.4,0,.2,1);
 }
-.dhc-trend {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 700; margin-top: 6px;
-  padding: 2px 7px; border-radius: 20px;
-}
+
 
 /* Status row redesigned */
 .dash-status-row {
@@ -663,8 +640,7 @@ body::before {
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 14px;
-  margin-bottom: 0;
-  align-items: start;
+  margin-bottom: 14px;
 }
 @media (max-width:1100px){ .dash-grid { grid-template-columns: 1fr; } }
 
@@ -708,22 +684,15 @@ body::before {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 0;
-  align-items: stretch;
+  margin-bottom: 14px;
 }
-.chart-card { padding: 18px 18px 16px; min-height: 360px; }
+.chart-card { padding: 18px 18px 14px; min-height: 200px; }
 .chart-title {
   font-size: 9px; font-weight: 700; margin-bottom: 14px;
   color: var(--moss-green); text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;
   flex-shrink: 0;
 }
-.chart-wrap { position: relative; height: 285px; }
-/* FIX: make chart area stretch with the right column so there is no dead blank space under charts */
-.dash-grid { align-items: stretch; }
-.dash-grid > div:first-child { display: flex; min-width: 0; }
-.dash-grid > div:first-child .charts-row { flex: 1; height: 100%; }
-.dash-grid > div:first-child .chart-card { height: 100%; }
-
+.chart-wrap { position: relative; height: 165px; }
 /* Right column sidebar */
 .dash-right { display: flex; flex-direction: column; gap: 12px; }
 
@@ -1252,16 +1221,34 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .empty-state .ei { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
 .empty-state p { font-size: 13px; }
 
-.view-tabs {
-  display: flex; gap: 2px; margin-bottom: 16px;
-  background: var(--bg-frosted); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 3px; width: fit-content;
-}
-.view-tab { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text3); transition: all .15s; }
-.view-tab.active { background: var(--moss-green); color: #fff; font-weight: 800; }
-.view-tab:hover:not(.active) { color: var(--text); }
 
-/* Dashboard search */
+
+/* Column toggle dropdown */
+.col-toggle-wrap { position: relative; }
+.col-toggle-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--bg-frosted); color: var(--text2);
+  font-size: 11px; font-weight: 600; font-family: 'Poppins', sans-serif;
+  cursor: pointer; transition: all .15s;
+}
+.col-toggle-btn:hover { border-color: var(--border2); color: var(--text); }
+.col-dropdown {
+  display: none; position: absolute; right: 0; top: calc(100% + 6px);
+  background: var(--bg-mid); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 8px;
+  min-width: 200px; z-index: 50;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.col-dropdown.open { display: block; }
+.col-check-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 6px; border-radius: 6px; cursor: pointer;
+  font-size: 11.5px; color: var(--text2); font-family: 'Poppins', sans-serif;
+  transition: background .12s;
+}
+.col-check-item:hover { background: var(--bg-frosted); color: var(--text); }
+.col-check-item input { accent-color: var(--moss-green); cursor: pointer; }
 .dash-search-wrap { position: relative; margin-bottom: 16px; }
 .dash-search-wrap input {
   width: 100%; padding: 11px 16px 11px 42px;
@@ -1395,75 +1382,6 @@ body.role-viewer .write-action {
 }
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
 
-
-/* FINAL ROLE MODAL ALIGNMENT + SENSITIVE FIELD SECURITY */
-.role-pin-wrap { align-items: center; }
-.role-pin-wrap .role-pin-label,
-.role-pin-wrap .role-pin-error { width: 100%; text-align: center; }
-.role-pin-wrap .role-pin-input { text-align: center; }
-.role-confirm-btn {
-  width: min(260px, 100%) !important;
-  margin: 10px auto 0 !important;
-  justify-content: center !important;
-  text-align: center;
-}
-.role-pin-wrap .role-reveal-btn {
-  width: 100%;
-  text-align: center;
-  margin-top: 8px;
-}
-body.role-rssrsh .form-sensitive-control input,
-body.role-rssrsh .form-sensitive-control select,
-body.role-rssrsh .form-sensitive-control textarea,
-body.role-viewer .form-sensitive-control input,
-body.role-viewer .form-sensitive-control select,
-body.role-viewer .form-sensitive-control textarea {
-  filter: blur(5px);
-  user-select: none;
-  pointer-events: none;
-}
-.form-sensitive-control.is-locked::after {
-  content: 'Restricted';
-  display: inline-flex;
-  margin-top: 5px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  color: var(--warning);
-  opacity: .85;
-}
-
-
-/* 5X QA FIX: Detail panel light-mode readability */
-[data-theme="light"] .detail-panel {
-  background: rgba(246,252,252,0.96);
-  border-left: 1px solid rgba(10,138,133,0.22);
-  box-shadow: -8px 0 50px rgba(10,80,80,0.16), inset 1px 0 0 rgba(255,255,255,0.75);
-  color: #1a2222;
-}
-[data-theme="light"] .detail-panel-header,
-[data-theme="light"] .detail-panel-footer {
-  border-color: rgba(10,138,133,0.14);
-  background: rgba(255,255,255,0.35);
-}
-[data-theme="light"] .detail-panel-header h3,
-[data-theme="light"] .detail-val { color: #1a2222; }
-[data-theme="light"] .detail-label,
-[data-theme="light"] .audit-time,
-[data-theme="light"] .audit-empty { color: rgba(26,34,34,0.52); }
-[data-theme="light"] .detail-row,
-[data-theme="light"] .audit-item { border-color: rgba(10,138,133,0.08); }
-[data-theme="light"] .detail-section-title {
-  color: var(--teal);
-  border-color: rgba(10,138,133,0.14);
-}
-[data-theme="light"] .notes-area {
-  background: rgba(255,255,255,0.62) !important;
-  border-color: rgba(10,138,133,0.16) !important;
-  color: #1a2222 !important;
-}
-
 </style>
 </head>
 <body>
@@ -1534,9 +1452,9 @@ body.role-viewer .form-sensitive-control textarea {
     </div>
     <div class="role-pin-wrap" id="role-pin-wrap">
       <div class="role-pin-label" id="role-pin-label">Enter PIN</div>
-      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="8" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
+      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="16" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
       <div class="role-pin-error" id="role-pin-error"></div>
-      <button class="btn btn-primary role-confirm-btn" onclick="confirmRolePin()">Confirm</button>
+      <button class="btn btn-primary" onclick="confirmRolePin()" style="width:100%;margin-top:2px">Confirm</button>
       <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
     </div>
   </div>
@@ -1550,12 +1468,12 @@ body.role-viewer .form-sensitive-control textarea {
       <button class="modal-close" onclick="closePwManager()">✕</button>
     </div>
     <div class="modal-body" style="padding:20px">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6">Set passwords for HR/AGENCY and RSS/RSH roles. Viewer has no password (open read-only access).</p>
-      <div class="field" style="margin-bottom:14px">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6">Set passwords for HR/AGENCY and RSS/RSH roles. Viewer has no password.</p>
+      <div style="margin-bottom:14px">
         <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">HR/AGENCY Password</label>
         <input type="password" id="pw-hr" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
       </div>
-      <div class="field" style="margin-bottom:14px">
+      <div style="margin-bottom:14px">
         <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">RSS/RSH Password</label>
         <input type="password" id="pw-rssrsh" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
       </div>
@@ -1824,16 +1742,13 @@ initTheme();
 // ============================================================
 // ROLE SYSTEM
 // ============================================================
-// Default PINs — Owner can change HR/AGENCY and RSS/RSH passwords via Manage Passwords
 function loadRolePins(){
-  const savedOwnerPin = localStorage.getItem('pin_owner');
   return {
-    owner:  (savedOwnerPin && savedOwnerPin !== 'owner1234') ? savedOwnerPin : 'owner123',
+    owner:  localStorage.getItem('pin_owner')  || 'owner123',
     hr:     localStorage.getItem('pin_hr')     || '1234',
     rssrsh: localStorage.getItem('pin_rssrsh') || '5678'
   };
 }
-// viewer has no PIN — open access but with blur
 
 let currentRole = null; // 'owner' | 'hr' | 'rssrsh' | 'viewer'
 let _pendingRole = null;
@@ -1842,9 +1757,7 @@ function openRoleModal(){
   _pendingRole = null;
   document.getElementById('role-overlay').classList.remove('hidden');
   document.getElementById('role-pin-wrap').classList.remove('show');
-  ['owner','hr','rssrsh','viewer'].forEach(r=>{
-    document.getElementById('role-btn-'+r)?.classList.remove('selected');
-  });
+  ['owner','hr','rssrsh','viewer'].forEach(r=>document.getElementById('role-btn-'+r)?.classList.remove('selected'));
 }
 function closeRoleModal(){ document.getElementById('role-overlay').classList.add('hidden'); }
 
@@ -1859,8 +1772,8 @@ function selectRole(role){
     } else {
       const pinWrap = document.getElementById('role-pin-wrap');
       const pinLabel = document.getElementById('role-pin-label');
-      const roleNames = {owner:'Owner',hr:'HR/AGENCY',rssrsh:'RSS/RSH'};
-      pinLabel.textContent = `Enter ${roleNames[role]||role} Password`;
+      const names = {owner:'Owner',hr:'HR/AGENCY',rssrsh:'RSS/RSH'};
+      pinLabel.textContent = `Enter ${names[role]||role} Password`;
       document.getElementById('role-pin-input').value='';
       document.getElementById('role-pin-error').textContent='';
       pinWrap.classList.add('show');
@@ -1877,8 +1790,7 @@ function onPinInput(){
 
 function confirmRolePin(){
   const pin = document.getElementById('role-pin-input').value;
-  const pins = loadRolePins();
-  const correct = pins[_pendingRole];
+  const correct = loadRolePins()[_pendingRole];
   if(pin === correct){
     applyRole(_pendingRole);
     closeRoleModal();
@@ -1889,63 +1801,38 @@ function confirmRolePin(){
   }
 }
 
-// Password manager — Owner only
 function openPwManager(){
   if(currentRole!=='owner'){toast('Only Owner can manage passwords.','error');return;}
-  const pins=loadRolePins();
   document.getElementById('pw-hr').value='';
   document.getElementById('pw-rssrsh').value='';
   document.getElementById('pw-manager-msg').textContent='';
   document.getElementById('pw-manager-overlay').classList.add('open');
 }
-function closePwManager(){document.getElementById('pw-manager-overlay').classList.remove('open');}
+function closePwManager(){ document.getElementById('pw-manager-overlay').classList.remove('open'); }
 function savePwManager(){
-  const hrPw=document.getElementById('pw-hr').value.trim();
-  const supPw=document.getElementById('pw-rssrsh').value.trim();
+  const hrPw = document.getElementById('pw-hr').value.trim();
+  const rshPw = document.getElementById('pw-rssrsh').value.trim();
   if(hrPw) localStorage.setItem('pin_hr', hrPw);
-  if(supPw) localStorage.setItem('pin_rssrsh', supPw);
-  document.getElementById('pw-manager-msg').textContent='✓ Passwords updated successfully!';
-  setTimeout(()=>closePwManager(),1200);
+  if(rshPw) localStorage.setItem('pin_rssrsh', rshPw);
+  document.getElementById('pw-manager-msg').textContent = '✓ Passwords updated!';
+  setTimeout(()=>closePwManager(), 1200);
 }
 
 const ROLE_META = {
-  owner:  { label:'Owner',     icon:'OWN',  bodyClass:'' },
-  hr:     { label:'HR/AGENCY', icon:'HR',   bodyClass:'' },
-  rssrsh: { label:'RSS/RSH',   icon:'RSS',  bodyClass:'role-rssrsh' },
-  viewer: { label:'Viewer',    icon:'VIEW', bodyClass:'role-viewer' },
+  owner:  { label:'Owner',    bodyClass:'' },
+  hr:     { label:'HR/AGENCY',bodyClass:'' },
+  rssrsh: { label:'RSS/RSH',  bodyClass:'role-rssrsh' },
+  viewer: { label:'Viewer',   bodyClass:'role-viewer' },
 };
 
 function canWrite(){
-  return currentRole === 'owner' || currentRole === 'hr' || currentRole === 'rssrsh';
+  return ['owner','hr','rssrsh'].includes(currentRole);
 }
 function canDeleteRecords(){
-  return currentRole === 'owner' || currentRole === 'hr';
-}
-function canViewSensitive(){
-  return currentRole === 'owner' || currentRole === 'hr';
-}
-const SENSITIVE_FIELD_KEYS = ['dob','mobile','email','address','sss','philhealth','pagibig','tin','basicWage','bankName','bankAccount'];
-function lockSensitiveFormFields(){
-  if(canViewSensitive()) return;
-  SENSITIVE_FIELD_KEYS.forEach(k=>{
-    const el=document.getElementById('f_'+k);
-    if(!el) return;
-    el.disabled = true;
-    el.setAttribute('data-sensitive-locked','1');
-    const field=el.closest('.field');
-    if(field){ field.classList.add('form-sensitive-control','is-locked'); }
-  });
-}
-function protectSensitiveDataBeforeSave(data){
-  if(canViewSensitive()) return data;
-  const oldEmp = editingId ? employees.find(e=>String(e.infinixId)===String(editingId)) : null;
-  SENSITIVE_FIELD_KEYS.forEach(k=>{
-    data[k] = oldEmp ? (oldEmp[k] || '') : '';
-  });
-  return data;
+  return ['owner','hr'].includes(currentRole);
 }
 function denyWrite(){
-  toast('You need HR/AGENCY, RSS/RSH, or Owner access to edit records.','error');
+  toast('Viewer access is read-only. Switch roles to edit records.','error');
 }
 function actionIconSVG(name){
   const icons={
@@ -1971,7 +1858,6 @@ function applyRole(role){
   if(indicator) indicator.style.display='none';
   const roleLabel = document.getElementById('user-role-label');
   if(roleLabel) roleLabel.textContent = meta.label;
-  // Show/hide manage passwords button for Owner
   const pwBtn = document.getElementById('pw-manager-btn');
   if(pwBtn) pwBtn.style.display = (role==='owner') ? 'flex' : 'none';
   if(detailEmpId) openDetailPanel(detailEmpId);
@@ -2147,7 +2033,7 @@ function showLoginScreen(showWaiting){
   document.getElementById('app').style.display='none';
   if(showWaiting)hideGoogleButton();else{showGoogleButton();setLoginStatus('','');}
 }
-function signIn(){doLogin();}
+
 function signOut(){
   if(accessToken){try{google.accounts.oauth2.revoke(accessToken);}catch(e){}}
   localStorage.removeItem('hr_user');
@@ -2349,18 +2235,6 @@ function normalizeRegion(region){
   if(s.includes('MINDANAO'))return 'MINDANAO';
   return raw.toUpperCase();
 }
-function prettyRegionName(region){
-  const r=normalizeRegion(region);
-  const map={
-    'NCR':'NCR',
-    'NORTH LUZON':'North Luzon',
-    'CENTRAL LUZON':'Central Luzon',
-    'SOUTH LUZON':'South Luzon',
-    'VISAYAS':'Visayas',
-    'MINDANAO':'Mindanao'
-  };
-  return map[r]||String(region||r||'').toLowerCase().replace(/\w/g,m=>m.toUpperCase());
-}
 function normalizeDeployStatus(status){
   const raw=String(status||'').trim();
   const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
@@ -2382,11 +2256,7 @@ function getTargetSheet(status,deploymentStatus){
   return null;
 }
 
-async function getSheetIdByName(sheetName){
-  const meta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
-  const sheet=meta.result.sheets.find(s=>s.properties.title===sheetName);
-  return sheet ? sheet.properties.sheetId : null;
-}
+
 async function writeLog(empId,name,action,from,to){
   try{
     await gapi.client.sheets.spreadsheets.values.append({
@@ -2688,9 +2558,15 @@ function dashSearch(q){
   showView('active');
 }
 
-// ============================================================
-// RING SVG HELPER
-// ============================================================
+
+function prettyRegionName(region){
+  const map={
+    'NCR':'NCR','NORTH LUZON':'North Luzon','CENTRAL LUZON':'Central Luzon',
+    'SOUTH LUZON':'South Luzon','VISAYAS':'Visayas','MINDANAO':'Mindanao'
+  };
+  return map[normalizeRegion(region)] || String(region||'');
+}
+
 // ============================================================
 // DASHBOARD
 // ============================================================
@@ -2819,10 +2695,11 @@ function renderDashboard(){
       <div>
         <div class="charts-row">
 
-          <!-- DOUGHNUT + STATUS TABLE -->
+          <!-- UPGRADED DOUGHNUT + STATUS TABLE -->
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Status Breakdown</div>
             <div style="display:flex;align-items:center;gap:16px;flex:1;min-height:0">
+              <!-- Doughnut with center label -->
               <div style="position:relative;width:150px;height:150px;flex-shrink:0">
                 <canvas id="chart-status"></canvas>
                 <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
@@ -2830,6 +2707,7 @@ function renderDashboard(){
                   <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px">TOTAL</div>
                 </div>
               </div>
+              <!-- Status table -->
               <div style="flex:1;min-width:0">
                 <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:3px 10px;align-items:center">
                   <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border)"></div>
@@ -2850,13 +2728,43 @@ function renderDashboard(){
             </div>
           </div>
 
-          <!-- BAR CHART — Active Promoters by Region -->
+          <!-- UPGRADED BAR CHART — data labels, no Y-axis, top region highlighted -->
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Active Promoters by Region</div>
             <div class="chart-wrap" style="flex:1"><canvas id="chart-region"></canvas></div>
           </div>
 
         </div>
+
+        <!-- COMPLETION SUMMARY ROW -->
+        <div class="completion-row">
+          ${[
+            {label:'Deployment',done:deployed,total:activeTotal,color:'#4ecb71'},
+            {label:'QR Scanned',done:scanned,total:activeTotal,color:'#2EC4BE'},
+            {label:'Contract',done:contractSent,total:activeTotal,color:'#f5c842'},
+            {label:'Requirements',done:reqComplete,total:activeTotal,color:'#D7FEFA'},
+            {label:'Has Bank',done:activeTotal-missingBank,total:activeTotal,color:'#a07ac4'},
+            {label:'Has Gov IDs',done:activeTotal-missingGovIds,total:activeTotal,color:'#e8a24a'},
+          ].map(({label,done,total:tot,color})=>{
+            const pct=tot?Math.round(done/tot*100):0;
+            const circ=2*Math.PI*20;
+            return`<div class="completion-card glass-card">
+              <div class="cc-ring">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <circle class="cc-ring-track" cx="24" cy="24" r="20" stroke-dasharray="${circ}"/>
+                  <circle class="cc-ring-fill" cx="24" cy="24" r="20" stroke="${color}"
+                    stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct/100)}"/>
+                </svg>
+                <div class="cc-pct" style="color:${color}">${pct}%</div>
+              </div>
+              <div>
+                <div class="cc-val">${done}<span style="font-size:11px;font-weight:400;color:var(--text3)">/${tot}</span></div>
+                <div class="cc-label">${label}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+
       </div>
       <div class="dash-right">
         <div class="recent-card glass-card">
@@ -2895,7 +2803,7 @@ function renderDashboard(){
     const tickColor=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
     Chart.defaults.color=tickColor;
 
-    // DOUGHNUT — clean, thicker, no gaps
+    // DOUGHNUT — clean with center total label
     const ctxS=document.getElementById('chart-status');
     if(ctxS){
       if(_charts.status)_charts.status.destroy();
@@ -2919,32 +2827,20 @@ function renderDashboard(){
           cutout:'72%',
           plugins:{
             legend:{display:false},
-            tooltip:{
-              callbacks:{
-                label:ctx=>`${ctx.label}: ${ctx.raw} (${total?Math.round(ctx.raw/total*100):0}%)`
-              }
-            }
+            tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} (${total?Math.round(ctx.raw/total*100):0}%)`}}
           }
         }
       });
     }
 
-    // BAR CHART — horizontal bars with full region names
+    // BAR CHART — horizontal so full region names always fit
     const ctxR=document.getElementById('chart-region');
     if(ctxR){
       if(_charts.region)_charts.region.destroy();
       const rEntries=Object.entries(regions).sort((a,b)=>b[1]-a[1]);
       const maxVal=rEntries.length?rEntries[0][1]:0;
-      const barColors=rEntries.map(([,c])=>
-        c===maxVal
-          ? (isDark?'rgba(46,196,190,0.90)':'rgba(13,122,118,0.85)')
-          : (isDark?'rgba(46,196,190,0.28)':'rgba(13,122,118,0.28)')
-      );
-      const barBorders=rEntries.map(([,c])=>
-        c===maxVal
-          ? (isDark?'rgba(46,196,190,1)':'rgba(13,122,118,1)')
-          : (isDark?'rgba(46,196,190,0.55)':'rgba(13,122,118,0.55)')
-      );
+      const barColors=rEntries.map(([,c])=>c===maxVal?(isDark?'rgba(46,196,190,0.90)':'rgba(13,122,118,0.85)'):(isDark?'rgba(46,196,190,0.28)':'rgba(13,122,118,0.28)'));
+      const barBorders=rEntries.map(([,c])=>c===maxVal?(isDark?'rgba(46,196,190,1)':'rgba(13,122,118,1)'):(isDark?'rgba(46,196,190,0.55)':'rgba(13,122,118,0.55)'));
       _charts.region=new Chart(ctxR,{
         type:'bar',
         indexAxis:'y',
@@ -2956,19 +2852,19 @@ function renderDashboard(){
             backgroundColor:barColors,
             borderColor:barBorders,
             borderWidth:1.5,
-            borderRadius:10,
+            borderRadius:8,
             borderSkipped:false,
-            barPercentage:0.68,
-            categoryPercentage:0.74
+            barPercentage:0.65,
+            categoryPercentage:0.75
           }]
         },
         options:{
           responsive:true,
           maintainAspectRatio:false,
-          layout:{padding:{top:26,right:12,bottom:18,left:8}},
+          layout:{padding:{top:8,right:36,bottom:8,left:4}},
           plugins:{
             legend:{display:false},
-            tooltip:{callbacks:{label:ctx=>`${ctx.raw} active promoters`}},
+            tooltip:{callbacks:{label:ctx=>`${ctx.raw} active promoters`}}
           },
           scales:{
             x:{
@@ -2976,12 +2872,12 @@ function renderDashboard(){
               max:maxVal?Math.ceil(maxVal*1.22):10,
               grid:{color:gridColor},
               border:{display:false},
-              ticks:{font:{size:10,weight:'700'},color:tickColor,precision:0}
+              ticks:{font:{size:10,weight:'600'},color:tickColor,precision:0}
             },
             y:{
               grid:{display:false},
               border:{display:false},
-              ticks:{font:{size:11,weight:'800'},color:tickColor,autoSkip:false}
+              ticks:{font:{size:11,weight:'700'},color:tickColor,autoSkip:false}
             }
           },
           animation:{
@@ -2992,13 +2888,13 @@ function renderDashboard(){
                 const meta=chart.getDatasetMeta(i);
                 meta.data.forEach((bar,idx)=>{
                   const val=dataset.data[idx];
-                  if(val===undefined||val===null)return;
+                  if(!val)return;
                   ctx2.save();
                   ctx2.font='800 12px Poppins, sans-serif';
                   ctx2.fillStyle=isDark?'rgba(255,255,255,0.92)':'rgba(26,34,34,0.85)';
                   ctx2.textAlign='left';
                   ctx2.textBaseline='middle';
-                  ctx2.fillText(val, Math.min(bar.x+8, chart.chartArea.right-24), bar.y);
+                  ctx2.fillText(val, Math.min(bar.x+7, chart.chartArea.right-20), bar.y);
                   ctx2.restore();
                 });
               });
@@ -3143,6 +3039,7 @@ function renderEmployeeTable(type){
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
           ${filterStatus?`<button class="btn btn-ghost btn-sm" onclick="filterStatus=null;currentPage=1;renderView()">Clear Status</button>`:''}
           ${missingFieldFilter?`<button class="btn btn-ghost btn-sm" onclick="missingFieldFilter=null;currentPage=1;renderView()">Clear Filter</button>`:''}
+          ${colDropHTML}
         </div>
       </div>
       <div class="filter-bar">
@@ -3355,7 +3252,7 @@ function doBulkStatusChange(){
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
-  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   const ids=[...selectedIds];if(ids.length===0)return;
   document.getElementById('confirm-title').textContent='Bulk Delete';
   document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
@@ -3387,7 +3284,7 @@ function closeDetailPanel(){document.getElementById('detail-panel').classList.re
 function dpEdit(){
   if(!canWrite()){denyWrite();return;}const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
-  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
   if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
@@ -3477,8 +3374,8 @@ function buildDetailHTML(e){
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Payroll</div>
-      ${rowSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
-      ${rowSensitive('Bank',esc(e.bankName))}
+      ${row('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
+      ${row('Bank',esc(e.bankName))}
       ${rowSensitive('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
     </div>
     <div class="detail-section">
@@ -3585,16 +3482,16 @@ function getFormHTML(emp){
     <div class="field"><label>Middle Name</label>${inp('middleName','text','Santos')}</div>
   </div>
   <div class="form-grid">
-    <div class="field form-sensitive-control"><label>Date of Birth</label>${dateInp('dob')}</div>
+    <div class="field"><label>Date of Birth</label>${dateInp('dob')}</div>
     <div class="field"><label>Gender</label>${sel('gender',['','Male','Female','N/A'])}</div>
     <div class="field"><label>Marital Status</label>${sel('maritalStatus',['','Single','Married'])}</div>
-    <div class="field form-sensitive-control"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDupMobile()"')}
+    <div class="field"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDupMobile()"')}
       <div class="dup-warning" id="dup-warning-mobile">⚠ This mobile number is already used by another employee.</div>
     </div>
-    <div class="field form-full form-sensitive-control"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDupEmail()"')}
+    <div class="field form-full"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDupEmail()"')}
       <div class="dup-warning" id="dup-warning-email">⚠ This email is already used by another employee.</div>
     </div>
-    <div class="field form-full form-sensitive-control"><label>Address</label>${inp('address','text','Complete address')}</div>
+    <div class="field form-full"><label>Address</label>${inp('address','text','Complete address')}</div>
   </div>
 
   <div class="section-label">Store &amp; Deployment</div>
@@ -3618,17 +3515,17 @@ function getFormHTML(emp){
 
   <div class="section-label">Government Numbers</div>
   <div class="form-grid cols3">
-    <div class="field form-sensitive-control"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
-    <div class="field form-sensitive-control"><label>PhilHealth Number</label>${inp('philhealth','text','XXXX-XXXX-XXXX')}</div>
-    <div class="field form-sensitive-control"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
-    <div class="field form-sensitive-control"><label>TIN Number</label>${inp('tin','text','XXX-XXX-XXX-XXX')}</div>
+    <div class="field"><label>SSS Number</label>${inp('sss','text','XX-XXXXXXX-X')}</div>
+    <div class="field"><label>PhilHealth Number</label>${inp('philhealth','text','XXXX-XXXX-XXXX')}</div>
+    <div class="field"><label>Pag-IBIG Number</label>${inp('pagibig','text','XXXX-XXXX-XXXX')}</div>
+    <div class="field"><label>TIN Number</label>${inp('tin','text','XXX-XXX-XXX-XXX')}</div>
   </div>
 
   <div class="section-label">Payroll &amp; Banking</div>
   <div class="form-grid">
-    <div class="field form-sensitive-control"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
-    <div class="field form-sensitive-control"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
-    <div class="field form-sensitive-control"><label>Bank Account Number</label>${inp('bankAccount','text','Account number','oninput="checkDupBank()"')}
+    <div class="field"><label>Basic Wage Rate (PHP)</label>${inp('basicWage','text','0.00')}</div>
+    <div class="field"><label>Bank Name</label>${sel('bankName',BANK_OPTIONS)}</div>
+    <div class="field"><label>Bank Account Number</label>${inp('bankAccount','text','Account number','oninput="checkDupBank()"')}
       <div class="dup-warning" id="dup-warning-bank">⚠ This bank account number is already used by another employee.</div>
     </div>
   </div>
@@ -3761,7 +3658,6 @@ function openAddModal(){
   document.getElementById('modal-title').textContent='Add New Employee';
   document.getElementById('modal-save-btn').textContent='Save Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(null);
-  lockSensitiveFormFields();
   document.getElementById('modal-overlay').classList.add('open');
 }
 function openEditModal(id){
@@ -3771,7 +3667,6 @@ function openEditModal(id){
   document.getElementById('modal-title').textContent=`Edit — ${esc(emp.fullName||emp.firstName+' '+emp.lastName)}`;
   document.getElementById('modal-save-btn').textContent='Update Employee';
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
-  lockSensitiveFormFields();
   document.getElementById('modal-overlay').classList.add('open');
   if(emp.storeId&&storeCacheLoaded){
     const found=lookupStore(emp.storeId);
@@ -3793,7 +3688,7 @@ function openEditModal(id){
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 async function saveEmployee(){
   if(!canWrite()){denyWrite();return;}
-  const data=protectSensitiveDataBeforeSave(gatherForm());
+  const data=gatherForm();
   if(!validate(data)){toast('Please fix the errors in the form.','error');return;}
 
   // Extra confirmation for high-impact statuses
@@ -3825,7 +3720,7 @@ async function saveEmployee(){
   finally{showLoading(false);}
 }
 function confirmDelete(id,name){
-  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   document.getElementById('confirm-title').textContent='Delete Employee?';
   document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
   document.getElementById('confirm-ok').textContent='Delete';
@@ -3834,7 +3729,7 @@ function confirmDelete(id,name){
 }
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function doDelete(id){
-  if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
+  if(!canDeleteRecords()){toast('Only HR can delete records.','error');return;}
   showLoading(true,'Deleting employee...');
   try{
     const result=await apiDeleteEmployee(id);
