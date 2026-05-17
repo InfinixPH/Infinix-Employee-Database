@@ -62,7 +62,40 @@ function roleEmailAllowed(row){
   if(!email || ['any','all','shared','owner','hr','agency','hr/agency','rss','rsh','rss/rsh'].includes(email)) return true;
   return !!me && email === me;
 }
-async function validateRolePassword(role, pin){\n  const rows = await getRoleRows();\n  const hashedInput = await sha256(pin);\n  const match = rows.find(row => {\n    if(row.role !== role) return false;\n    if(row.status !== 'ACTIVE') return false;\n    if(!roleEmailAllowed(row)) return false;\n    const stored = String(row.pin||'').trim();\n    if(isHashed(stored)) {\n      // Normal path: compare hash to hash\n      return stored === hashedInput;\n    } else {\n      // Migration path: legacy plaintext — compare directly\n      return stored === String(pin);\n    }\n  });\n  if(match){\n    // Auto-migrate: if the stored value was plaintext, upgrade it to a hash now\n    if(!isHashed(String(match.pin||'').trim())) {\n      try {\n        await gapi.client.sheets.spreadsheets.values.update({\n          spreadsheetId: SHEET_ID,\n          range: `'${ROLE_LOG_SHEET}'!C${match.row}`,\n          valueInputOption: 'RAW',\n          resource: { values: [[hashedInput]] }\n        });\n      } catch(e) { console.warn('Password migration failed:', e); }\n    }\n    getRoleRows._lastHash = hashedInput;\n    await stampRoleLogin(match.row);\n    return true;\n  }\n  return false;\n}
+async function validateRolePassword(role, pin){
+  const rows = await getRoleRows();
+  const hashedInput = await sha256(pin);
+  const match = rows.find(row => {
+    if(row.role !== role) return false;
+    if(row.status !== 'ACTIVE') return false;
+    if(!roleEmailAllowed(row)) return false;
+    const stored = String(row.pin||'').trim();
+    if(isHashed(stored)){
+      // Normal path: compare hash to hash
+      return stored === hashedInput;
+    } else {
+      // Migration path: legacy plaintext — compare directly
+      return stored === String(pin);
+    }
+  });
+  if(match){
+    // Auto-migrate: if stored value was plaintext, upgrade it to a hash now
+    if(!isHashed(String(match.pin||'').trim())){
+      try{
+        await gapi.client.sheets.spreadsheets.values.update({
+          spreadsheetId: SHEET_ID,
+          range: `'${ROLE_LOG_SHEET}'!C${match.row}`,
+          valueInputOption: 'RAW',
+          resource: { values: [[hashedInput]] }
+        });
+      }catch(e){ console.warn('Password migration failed:', e); }
+    }
+    getRoleRows._lastHash = hashedInput;
+    await stampRoleLogin(match.row);
+    return true;
+  }
+  return false;
+}
 async function stampRoleLogin(rowNumber){
   try{
     const email = currentUser?.email || '';
