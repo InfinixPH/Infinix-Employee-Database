@@ -1,0 +1,9 @@
+# Secret config — contains Google OAuth Client ID and Sheet ID
+config.js
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
