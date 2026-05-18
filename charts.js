@@ -167,7 +167,7 @@ function renderDashboard(){
 
     <!-- CHARTS + SIDE PANEL -->
     <div class="dash-grid">
-      <div style="display:flex;flex-direction:column;min-width:0">
+      <div style="display:flex;flex-direction:column;min-width:0;align-self:stretch">
         <div class="charts-row">
 
           <!-- DOUGHNUT + STATUS TABLE -->
@@ -254,7 +254,7 @@ function renderDashboard(){
 
         </div>
         <!-- ANNOUNCEMENTS -->
-        <div class="glass-card" style="margin-top:14px;padding:16px 18px">
+        <div class="glass-card" style="margin-top:14px;padding:16px 18px;flex:1">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--moss-green);opacity:0.8">📢 Announcements</div>
             ${canViewSensitive()?`<button class="btn btn-ghost btn-sm" onclick="openAnnouncementManager()" style="font-size:10px;padding:3px 10px">+ Manage</button>`:''}
