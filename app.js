@@ -10,6 +10,7 @@ const INACTIVE_SHEET      = 'Inactive';
 const LOG_SHEET           = 'Log';
 const STORE_DETAILS_SHEET = 'Store Details';
 const ROLE_LOG_SHEET      = 'Role Logs';
+const ANNOUNCEMENTS_SHEET = 'Announcements';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated','Backout'];
@@ -339,7 +340,7 @@ function _onAuthReady(resp){
     if(!gapi.client.sheets) await gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
     showApp();
     if(!window._headersChecked){window._headersChecked=true;await ensureHeaders();}
-    await Promise.all([loadData(),loadStoreDetails()]);
+    await Promise.all([loadData(),loadStoreDetails(),loadAnnouncements()]);
   })();
 }
 
@@ -432,6 +433,7 @@ async function ensureHeaders(){
     await chk(INACTIVE_SHEET,HEADERS,`A1:${SHEET_LAST_COL}1`);
     await chk(LOG_SHEET,LOG_HEADERS,'A1:H1');
     await chk(ROLE_LOG_SHEET,ROLE_LOG_HEADERS,'A1:E1');
+    await chk(ANNOUNCEMENTS_SHEET,['ID','Title','Body','PostedBy','Timestamp','Active'],'A1:F1');
   }catch(e){console.warn('Header setup:',e);}
 }
 
@@ -1803,3 +1805,160 @@ function showLoading(v,text='Loading...'){
   const t=document.getElementById('loading-text');if(t)t.textContent=text;
 }
 
+
+// ============================================================
+// ANNOUNCEMENTS
+// ============================================================
+let announcementsCache = [];
+
+async function loadAnnouncements(){
+  try{
+    const res = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${ANNOUNCEMENTS_SHEET}!A2:F`
+    });
+    const rows = res.result.values || [];
+    announcementsCache = rows
+      .filter(r => String(r[5]||'').trim().toUpperCase() === 'TRUE')
+      .map(r => ({ id:r[0]||'', title:r[1]||'', body:r[2]||'', postedBy:r[3]||'', timestamp:r[4]||'' }))
+      .reverse(); // newest first
+    renderAnnouncementsList();
+  } catch(e){ console.warn('Announcements load error:', e); }
+}
+
+function renderAnnouncementsList(){
+  const el = document.getElementById('announcements-list');
+  if(!el) return;
+  if(!announcementsCache.length){
+    el.innerHTML = `<div style="font-size:12px;color:var(--text3);font-style:italic">No announcements at this time.</div>`;
+    return;
+  }
+  el.innerHTML = announcementsCache.map(a => `
+    <div class="ann-item">
+      <div class="ann-title">${esc(a.title)}</div>
+      <div class="ann-body">${esc(a.body)}</div>
+      <div class="ann-meta">Posted by ${esc(a.postedBy)} &middot; ${esc(a.timestamp)}</div>
+    </div>
+  `).join('');
+}
+
+function openAnnouncementManager(){
+  if(!canViewSensitive()){ toast('Only HR/AGENCY or Owner can manage announcements.','error'); return; }
+  loadAllAnnouncementsForManager().then(rows => {
+    const listHtml = rows.length ? rows.map((r,i) => `
+      <div class="ann-mgr-row glass-card" id="ann-mgr-${i}">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(r[1]||'')}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc((r[2]||'').substring(0,80))}${(r[2]||'').length>80?'…':''}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px">By ${esc(r[3]||'')} &middot; ${esc(r[4]||'')}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;${String(r[5]||'').toUpperCase()==='TRUE'?'background:rgba(78,203,113,0.15);color:var(--success)':'background:rgba(224,92,92,0.12);color:var(--danger)'}">
+            ${String(r[5]||'').toUpperCase()==='TRUE'?'ACTIVE':'HIDDEN'}
+          </span>
+          <button class="btn btn-sm" onclick="toggleAnnouncement(${i+2}, '${String(r[5]||'').toUpperCase()==='TRUE'?'FALSE':'TRUE'}')" style="font-size:10px;padding:3px 8px">
+            ${String(r[5]||'').toUpperCase()==='TRUE'?'Hide':'Show'}
+          </button>
+          <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(224,92,92,0.12);color:var(--danger);border-color:rgba(224,92,92,0.3)" onclick="deleteAnnouncement(${i+2})">Delete</button>
+        </div>
+      </div>`).join('') 
+      : `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:8px 0">No announcements yet.</div>`;
+
+    const modal = document.createElement('div');
+    modal.id = 'ann-modal-overlay';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `
+      <div class="glass-card" style="width:100%;max-width:620px;max-height:85vh;display:flex;flex-direction:column;padding:24px;gap:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div style="font-size:14px;font-weight:800;color:var(--text)">📢 Manage Announcements</div>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ann-modal-overlay').remove()">✕ Close</button>
+        </div>
+        <!-- ADD NEW -->
+        <div style="background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.15);border-radius:10px;padding:14px;flex-shrink:0">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--moss-green);margin-bottom:10px">New Announcement</div>
+          <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
+          <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
+          <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
+          <button class="btn btn-primary btn-sm" onclick="addAnnouncement()" style="margin-top:8px">Post Announcement</button>
+        </div>
+        <!-- LIST -->
+        <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);flex-shrink:0">Existing Announcements</div>
+          ${listHtml}
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  });
+}
+
+async function loadAllAnnouncementsForManager(){
+  try{
+    const res = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${ANNOUNCEMENTS_SHEET}!A2:F`
+    });
+    return res.result.values || [];
+  } catch(e){ return []; }
+}
+
+async function addAnnouncement(){
+  const title = document.getElementById('ann-new-title').value.trim();
+  const body  = document.getElementById('ann-new-body').value.trim();
+  if(!title){ toast('Please enter a title.','error'); return; }
+  if(!body){  toast('Please enter a message.','error'); return; }
+  const id = 'ANN-' + Date.now();
+  const ts = new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const postedBy = (document.getElementById('ann-new-poster').value.trim()) || currentUser?.name || currentRole || 'HR';
+  try{
+    await gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID,
+      range: `${ANNOUNCEMENTS_SHEET}!A:F`,
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      resource: { values: [[id, title, body, postedBy, ts, 'TRUE']] }
+    });
+    toast('Announcement posted!','success');
+    document.getElementById('ann-modal-overlay').remove();
+    await loadAnnouncements();
+  } catch(e){ toast('Failed to post announcement.','error'); console.error(e); }
+}
+
+async function toggleAnnouncement(rowNum, newVal){
+  try{
+    await gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `${ANNOUNCEMENTS_SHEET}!F${rowNum}`,
+      valueInputOption: 'RAW',
+      resource: { values: [[newVal]] }
+    });
+    toast(`Announcement ${newVal==='TRUE'?'shown':'hidden'}.`,'success');
+    document.getElementById('ann-modal-overlay').remove();
+    await loadAnnouncements();
+  } catch(e){ toast('Failed to update announcement.','error'); }
+}
+
+async function deleteAnnouncement(rowNum){
+  if(!confirm('Delete this announcement permanently?')) return;
+  try{
+    await gapi.client.sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      resource: {
+        requests:[{
+          deleteDimension:{
+            range:{ sheetId: await getSheetId(ANNOUNCEMENTS_SHEET), dimension:'ROWS', startIndex: rowNum-1, endIndex: rowNum }
+          }
+        }]
+      }
+    });
+    toast('Announcement deleted.','success');
+    document.getElementById('ann-modal-overlay').remove();
+    await loadAnnouncements();
+  } catch(e){ toast('Failed to delete announcement.','error'); console.error(e); }
+}
+
+async function getSheetId(sheetName){
+  const res = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+  const sheet = (res.result.sheets||[]).find(s=>s.properties.title===sheetName);
+  return sheet ? sheet.properties.sheetId : 0;
+}
