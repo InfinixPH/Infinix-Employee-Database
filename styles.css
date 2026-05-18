@@ -1649,3 +1649,11 @@ canvas {
     font-size: 10px !important;
   }
 }
+
+/* Announcements */
+.ann-item { padding: 10px 12px; background: rgba(46,196,190,0.05); border: 1px solid rgba(46,196,190,0.12); border-radius: 8px; margin-bottom: 8px; }
+.ann-item:last-child { margin-bottom: 0; }
+.ann-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.ann-body { font-size: 11px; color: var(--text2); line-height: 1.5; }
+.ann-meta { font-size: 10px; color: var(--text3); margin-top: 5px; }
+.ann-mgr-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; }
