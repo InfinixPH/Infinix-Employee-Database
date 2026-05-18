@@ -75,7 +75,7 @@ function renderDashboard(){
       .catch(()=>{});
   }
 
-  const deployPct=activeSheetRows.length?Math.round(deployed/activeSheetRows.length*100):0;
+  const deployPct=activeSheetRows.length?Math.floor(deployed/activeSheetRows.length*100):0;
   const scanPct=activeTotal?Math.round(scanned/activeTotal*100):0;
   const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
 
