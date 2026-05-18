@@ -49,8 +49,8 @@ function renderDashboard(){
   const activeEmployees=activePromotersOnly();
   const activeTotal=activeEmployees.length;
 
-  const deployed=activeEmployees.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
   const activeSheetRows=employees.filter(e=>e._sheet===ACTIVE_SHEET);
+  const deployed=activeSheetRows.filter(e=>normalizeDeployStatus(e.deploymentStatusColL)==='DEPLOYED').length;
   const notDeployed=activeSheetRows.filter(e=>isNotYetDeployedColL(e.deploymentStatusColL)).length;
   const scanned=activeEmployees.filter(e=>e.qrStatus==='SCANNED').length;
   const notScanned=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
@@ -62,7 +62,7 @@ function renderDashboard(){
   const missingRequirements=activeEmployees.filter(e=>!requirementsComplete(e)).length;
   const reqComplete=activeTotal-missingRequirements;
   const missingInfinixId=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim()).length;
-  const missingStore=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment)).length;
+  const missingStore=activeSheetRows.filter(e=>isMissing(e.storeAssignment)).length;
 
   const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region);if(rr)regions[rr]=(regions[rr]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,6);
@@ -75,7 +75,7 @@ function renderDashboard(){
       .catch(()=>{});
   }
 
-  const deployPct=activeTotal?Math.round(deployed/activeTotal*100):0;
+  const deployPct=activeSheetRows.length?Math.round(deployed/activeSheetRows.length*100):0;
   const scanPct=activeTotal?Math.round(scanned/activeTotal*100):0;
   const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
 
@@ -580,4 +580,3 @@ function renderTracker(){
 Chart.defaults.color = "#d7f7ff";
 Chart.defaults.font.family = "Poppins";
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
-
