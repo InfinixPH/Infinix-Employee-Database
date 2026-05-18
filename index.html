@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinix Employee Database</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+
+<div class="ambient-1"></div>
+<div class="ambient-2"></div>
+<div class="ambient-3"></div>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:36px;font-weight:900;color:var(--tan);letter-spacing:3px">INFINIX</span>
+    </div>
+    <div class="login-title">HR System</div>
+    <div class="login-sub">Employee Database<br>Sign in with your Google account to continue.</div>
+    <div class="login-waiting" id="login-waiting">
+      <div class="spinner"></div>
+      <p>Checking session…</p>
+    </div>
+    <button class="btn-google" id="btn-google-signin" style="display:none" onclick="doLogin()">
+      <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.8 0 6.9 5.4 3 13.3l7.8 6C12.8 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.9.9 7.5 2.5 10.8l8.3-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.1 0-11.2-4-13-9.4l-8.3 6.1C6.9 42.6 14.8 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="login-status" id="login-status"></div>
+    <div class="login-note">Access restricted to authorized Infinix HR personnel only.</div>
+  </div>
+</div>
+
+<!-- ROLE SELECT MODAL -->
+<div class="role-overlay hidden" id="role-overlay">
+  <div class="role-modal role-modal-premium">
+    <div class="role-modal-kicker">
+      <span class="role-lock-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      </span>
+      Access Mode
+    </div>
+    <h2>Select Your Role</h2>
+    <p>Choose how you want to view and manage employee records.</p>
+    <div class="role-btn-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
+      <button class="role-btn" id="role-btn-owner" onclick="selectRole('owner')">
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </span>
+        <span>Owner</span>
+      </button>
+      <button class="role-btn" id="role-btn-hr" onclick="selectRole('hr')">
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/><path d="M12 11l2 10-2 2-2-2 2-10"/></svg>
+        </span>
+        <span>HR/AGENCY</span>
+      </button>
+      <button class="role-btn" id="role-btn-rssrsh" onclick="selectRole('rssrsh')">
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span>RSS/RSH</span>
+      </button>
+      <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
+        <span class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>
+        <span>Viewer</span>
+      </button>
+    </div>
+    <div class="role-pin-wrap" id="role-pin-wrap">
+      <div class="role-pin-label" id="role-pin-label">Enter PIN</div>
+      <input class="role-pin-input" type="password" id="role-pin-input" maxlength="8" placeholder="••••" oninput="onPinInput()" onkeydown="if(event.key==='Enter')confirmRolePin()">
+      <div class="role-pin-error" id="role-pin-error"></div>
+      <button class="btn btn-primary role-confirm-btn" onclick="confirmRolePin()">Confirm</button>
+      <button class="role-reveal-btn" onclick="selectRole(null)">← Choose a different role</button>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER PASSWORD MANAGER MODAL -->
+<div class="overlay" id="pw-manager-overlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2>🔑 Manage Passwords</h2>
+      <button class="modal-close" onclick="closePwManager()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6">Set passwords for HR/AGENCY and RSS/RSH roles. Viewer has no password (open read-only access).</p>
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">HR/AGENCY Password</label>
+        <input type="password" id="pw-hr" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:block;font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px">RSS/RSH Password</label>
+        <input type="password" id="pw-rssrsh" maxlength="16" placeholder="New password" class="role-pin-input" style="letter-spacing:2px">
+      </div>
+      <div id="pw-manager-msg" style="font-size:11px;min-height:16px;color:var(--success)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePwManager()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePwManager()">Save Passwords</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;width:100%;height:100vh;flex-direction:row">
+
+<div class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">
+      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:18px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
+    </div>
+    <div class="brand-sub">Employee Database</div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="showView('dashboard')" id="nav-dashboard">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></span>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('active')" id="nav-active">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h2"/><circle cx="19" cy="16" r="3"/><path d="M22 22l-2-2"/></svg></span>
+      Active
+      <span class="nav-badge" id="badge-active">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('inactive')" id="nav-inactive">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><line x1="18" y1="9" x2="23" y2="9"/></svg></span>
+      Inactive
+      <span class="nav-badge" id="badge-inactive">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('tracker')" id="nav-tracker">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 16 4-5 4 3 4-6"/></svg></span>
+      Deployment Tracker
+    </div>
+    <div class="nav-item" onclick="showView('log')" id="nav-log">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M9 16h6M9 8h2"/><path d="M5 4h10l4 4v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg></span>
+      Activity Log
+    </div>
+
+    <div class="nav-section">Filter by Status</div>
+  </div>
+  <div class="status-filters" id="status-filters"></div>
+
+  <div class="sidebar-footer">
+    <button id="pw-manager-btn" onclick="openPwManager()" title="Manage role passwords" style="display:none;width:100%;margin-bottom:8px;align-items:center;gap:7px;padding:7px 11px;background:rgba(46,196,190,0.08);border:1px solid rgba(46,196,190,0.18);border-radius:var(--radius-sm);cursor:pointer;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:var(--teal-deep)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Manage Passwords
+    </button>
+    <div class="user-pill">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Loading...</div>
+        <div class="user-role-badge" id="user-role-display" onclick="openRoleModal()" title="Change role">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="user-role-label">Viewer</span>
+        </div>
+      </div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle light/dark" style="width:26px;height:26px;border-radius:6px;flex-shrink:0">
+        <svg id="theme-icon-dark" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-light" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="btn-signout" onclick="signOut()" title="Sign out">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="offline-banner" id="offline-banner">Connection issue — data may be stale. <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button></div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">Overview</div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap" id="topbar-search-wrap">
+        <span class="search-icon" id="topbar-search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" id="search-input" placeholder="Search name, ID, store…" oninput="onSearch()">
+      </div>
+      <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span>Refresh</span>
+      </button>
+      <button class="btn btn-primary write-action" onclick="openAddModal()">+ Add Employee</button>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-panel-header">
+    <h3 id="dp-title">Employee Details</h3>
+    <button class="detail-panel-close" onclick="closeDetailPanel()">✕</button>
+  </div>
+  <div class="detail-panel-body" id="dp-body"></div>
+  <div class="detail-panel-footer">
+    <button class="btn btn-primary" style="flex:1" id="dp-edit-btn" onclick="dpEdit()">Edit</button>
+    <button class="btn btn-danger" id="dp-delete-btn" onclick="dpDelete()">Delete</button>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add New Employee</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveEmployee()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="confirm-overlay">
+  <div class="modal confirm-modal">
+    <div class="confirm-body">
+      <h3 id="confirm-title">Confirm Action</h3>
+      <p id="confirm-msg"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading" style="display:none">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Loading...</div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="config.js?v=4"></script>
+<script src="roles.js?v=4"></script>
+<script src="charts.js?v=4"></script>
+<script src="app.js?v=4"></script>
+</body>
+</html>
