@@ -167,7 +167,7 @@ function renderDashboard(){
 
     <!-- CHARTS + SIDE PANEL -->
     <div class="dash-grid">
-      <div>
+      <div style="display:flex;flex-direction:column;min-width:0">
         <div class="charts-row">
 
           <!-- DOUGHNUT + STATUS TABLE -->
