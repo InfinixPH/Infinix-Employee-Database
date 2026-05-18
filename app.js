@@ -1871,7 +1871,7 @@ function openAnnouncementManager(){
       <div class="glass-card" style="width:100%;max-width:620px;max-height:85vh;display:flex;flex-direction:column;padding:24px;gap:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
           <div style="font-size:14px;font-weight:800;color:var(--text)">📢 Manage Announcements</div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ann-modal-overlay').remove()">✕ Close</button>
+          <button id="ann-close-btn" class="btn btn-ghost btn-sm">✕ Close</button>
         </div>
         <!-- ADD NEW -->
         <div style="background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.15);border-radius:10px;padding:14px;flex-shrink:0">
@@ -1879,7 +1879,7 @@ function openAnnouncementManager(){
           <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
           <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
           <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
-          <button class="btn btn-primary btn-sm" onclick="addAnnouncement()" style="margin-top:8px">Post Announcement</button>
+          <button id="ann-post-btn" class="btn btn-primary btn-sm" style="margin-top:8px">Post Announcement</button>
         </div>
         <!-- LIST -->
         <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px">
@@ -1889,6 +1889,8 @@ function openAnnouncementManager(){
       </div>`;
     document.body.appendChild(modal);
     modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+    document.getElementById('ann-close-btn').addEventListener('click', () => modal.remove());
+    document.getElementById('ann-post-btn').addEventListener('click', addAnnouncement);
   });
 }
 
