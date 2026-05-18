@@ -253,6 +253,16 @@ function renderDashboard(){
           </div>
 
         </div>
+        <!-- ANNOUNCEMENTS -->
+        <div class="glass-card" style="margin-top:14px;padding:16px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--moss-green);opacity:0.8">📢 Announcements</div>
+            ${canViewSensitive()?`<button class="btn btn-ghost btn-sm" onclick="openAnnouncementManager()" style="font-size:10px;padding:3px 10px">+ Manage</button>`:''}
+          </div>
+          <div id="announcements-list">
+            <div style="font-size:12px;color:var(--text3);font-style:italic">No announcements at this time.</div>
+          </div>
+        </div>
       </div>
       <div class="dash-right">
         <div class="recent-card glass-card">
