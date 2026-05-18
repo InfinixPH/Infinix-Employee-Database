@@ -1844,54 +1844,75 @@ function renderAnnouncementsList(){
 
 function openAnnouncementManager(){
   if(!canViewSensitive()){ toast('Only HR/AGENCY or Owner can manage announcements.','error'); return; }
-  loadAllAnnouncementsForManager().then(rows => {
-    const listHtml = rows.length ? rows.map((r,i) => `
-      <div class="ann-mgr-row glass-card" id="ann-mgr-${i}">
+
+  // Build and show the modal immediately — don't wait for the API call
+  const modal = document.createElement('div');
+  modal.id = 'ann-modal-overlay';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div class="glass-card" style="width:100%;max-width:620px;max-height:85vh;display:flex;flex-direction:column;padding:24px;gap:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">📢 Manage Announcements</div>
+        <button id="ann-close-btn" class="btn btn-ghost btn-sm">✕ Close</button>
+      </div>
+      <!-- ADD NEW -->
+      <div style="background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.15);border-radius:10px;padding:14px;flex-shrink:0">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--moss-green);margin-bottom:10px">New Announcement</div>
+        <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
+        <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
+        <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
+        <button id="ann-post-btn" class="btn btn-primary btn-sm" style="margin-top:8px">Post Announcement</button>
+      </div>
+      <!-- LIST — populated asynchronously -->
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);flex-shrink:0">Existing Announcements</div>
+        <div id="ann-mgr-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12px;color:var(--text3);font-style:italic;padding:8px 0">Loading…</div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  document.getElementById('ann-close-btn').addEventListener('click', () => modal.remove());
+  document.getElementById('ann-post-btn').addEventListener('click', addAnnouncement);
+
+  // Now fetch and populate the list
+  renderManagerList();
+}
+
+// Builds the existing-announcements list inside the open manager modal.
+// Called on open, and again after every add / toggle / delete so the
+// modal stays open and the list refreshes in-place.
+async function renderManagerList(){
+  const listEl = document.getElementById('ann-mgr-list');
+  if(!listEl) return;
+  try{
+    const rows = await loadAllAnnouncementsForManager();
+    if(!rows.length){
+      listEl.innerHTML = `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:8px 0">No announcements yet.</div>`;
+      return;
+    }
+    listEl.innerHTML = rows.map((r,i) => `
+      <div class="ann-mgr-row glass-card" id="ann-mgr-${i}" style="display:flex;align-items:flex-start;gap:12px;padding:10px 12px">
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(r[1]||'')}</div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc((r[2]||'').substring(0,80))}${(r[2]||'').length>80?'…':''}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:3px">By ${esc(r[3]||'')} &middot; ${esc(r[4]||'')}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
+        <div style="display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end">
           <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;${String(r[5]||'').toUpperCase()==='TRUE'?'background:rgba(78,203,113,0.15);color:var(--success)':'background:rgba(224,92,92,0.12);color:var(--danger)'}">
             ${String(r[5]||'').toUpperCase()==='TRUE'?'ACTIVE':'HIDDEN'}
           </span>
-          <button class="btn btn-sm" onclick="toggleAnnouncement(${i+2}, '${String(r[5]||'').toUpperCase()==='TRUE'?'FALSE':'TRUE'}')" style="font-size:10px;padding:3px 8px">
+          <button class="btn btn-sm" onclick="toggleAnnouncement(${i+2},'${String(r[5]||'').toUpperCase()==='TRUE'?'FALSE':'TRUE'}')" style="font-size:10px;padding:3px 8px">
             ${String(r[5]||'').toUpperCase()==='TRUE'?'Hide':'Show'}
           </button>
-          <button class="btn btn-sm" style="font-size:10px;padding:3px 8px;background:rgba(224,92,92,0.12);color:var(--danger);border-color:rgba(224,92,92,0.3)" onclick="deleteAnnouncement(${i+2})">Delete</button>
+          <button class="btn btn-sm" onclick="deleteAnnouncement(${i+2})" style="font-size:10px;padding:3px 8px;background:rgba(224,92,92,0.12);color:var(--danger);border:1px solid rgba(224,92,92,0.3)">Delete</button>
         </div>
-      </div>`).join('') 
-      : `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:8px 0">No announcements yet.</div>`;
-
-    const modal = document.createElement('div');
-    modal.id = 'ann-modal-overlay';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-    modal.innerHTML = `
-      <div class="glass-card" style="width:100%;max-width:620px;max-height:85vh;display:flex;flex-direction:column;padding:24px;gap:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-          <div style="font-size:14px;font-weight:800;color:var(--text)">📢 Manage Announcements</div>
-          <button id="ann-close-btn" class="btn btn-ghost btn-sm">✕ Close</button>
-        </div>
-        <!-- ADD NEW -->
-        <div style="background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.15);border-radius:10px;padding:14px;flex-shrink:0">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--moss-green);margin-bottom:10px">New Announcement</div>
-          <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
-          <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
-          <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
-          <button id="ann-post-btn" class="btn btn-primary btn-sm" style="margin-top:8px">Post Announcement</button>
-        </div>
-        <!-- LIST -->
-        <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);flex-shrink:0">Existing Announcements</div>
-          ${listHtml}
-        </div>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
-    document.getElementById('ann-close-btn').addEventListener('click', () => modal.remove());
-    document.getElementById('ann-post-btn').addEventListener('click', addAnnouncement);
-  });
+      </div>`).join('');
+  } catch(e){
+    listEl.innerHTML = `<div style="font-size:12px;color:var(--danger);padding:8px 0">⚠ Could not load announcements — please close and reopen the manager.</div>`;
+    console.error('Announcement manager list error:', e);
+  }
 }
 
 async function loadAllAnnouncementsForManager(){
@@ -1921,8 +1942,12 @@ async function addAnnouncement(){
       resource: { values: [[id, title, body, postedBy, ts, 'TRUE']] }
     });
     toast('Announcement posted!','success');
-    document.getElementById('ann-modal-overlay').remove();
+    // Clear form fields and refresh list in-place (keep modal open)
+    document.getElementById('ann-new-title').value = '';
+    document.getElementById('ann-new-body').value = '';
+    document.getElementById('ann-new-poster').value = '';
     await loadAnnouncements();
+    renderManagerList();
   } catch(e){ toast('Failed to post announcement.','error'); console.error(e); }
 }
 
@@ -1935,8 +1960,8 @@ async function toggleAnnouncement(rowNum, newVal){
       resource: { values: [[newVal]] }
     });
     toast(`Announcement ${newVal==='TRUE'?'shown':'hidden'}.`,'success');
-    document.getElementById('ann-modal-overlay').remove();
     await loadAnnouncements();
+    renderManagerList(); // refresh list in-place, keep modal open
   } catch(e){ toast('Failed to update announcement.','error'); }
 }
 
@@ -1954,8 +1979,8 @@ async function deleteAnnouncement(rowNum){
       }
     });
     toast('Announcement deleted.','success');
-    document.getElementById('ann-modal-overlay').remove();
     await loadAnnouncements();
+    renderManagerList(); // refresh list in-place, keep modal open
   } catch(e){ toast('Failed to delete announcement.','error'); console.error(e); }
 }
 
