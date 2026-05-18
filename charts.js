@@ -483,6 +483,8 @@ function renderDashboard(){
     }
 
   },80);
+  // Re-render announcements after DOM is ready
+  setTimeout(()=>{ if(typeof renderAnnouncementsList==='function') renderAnnouncementsList(); },100);
 }
 
 // ============================================================
