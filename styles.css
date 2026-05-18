@@ -714,7 +714,8 @@ body::before {
 .dash-grid > div:first-child .charts-row { flex: 1; }
 
 /* Right column sidebar */
-.dash-right { display: flex; flex-direction: column; gap: 12px; }
+.dash-right { display: flex; flex-direction: column; gap: 12px; align-self: stretch; }
+.dash-right .recent-card { flex: 1; }
 
 /* Recently updated mini-table */
 .recent-card { padding: 16px; }
