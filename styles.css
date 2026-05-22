@@ -1730,16 +1730,10 @@ html, body {
 /* ============================================================
    SEARCH AUTOCOMPLETE DROPDOWN — glassmorphism
    ============================================================ */
-.topbar-center {
-  position: relative;
-}
 
 .search-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
-  z-index: 9999;
+  position: fixed;
+  z-index: 99999;
   background: rgba(14, 18, 18, 0.82);
   backdrop-filter: blur(40px) saturate(1.8);
   -webkit-backdrop-filter: blur(40px) saturate(1.8);
