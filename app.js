@@ -104,8 +104,24 @@ function toggleTheme(){
   if(currentView==='dashboard') renderDashboard();
 }
 function updateThemeIcon(theme){
-  document.getElementById('theme-icon-dark').style.display=theme==='dark'?'':'none';
-  document.getElementById('theme-icon-light').style.display=theme==='light'?'':'none';
+  // Support both sidebar (old) and topbar (new) theme icons
+  ['theme-icon-dark','theme-icon-light'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=(id==='theme-icon-dark'?theme==='dark':theme==='light')?'':'none';
+  });
+}
+
+// Relative time helper — e.g. "2m ago", "3h ago", "5d ago"
+function timeAgo(dateStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr);
+  if(isNaN(d.getTime())) return '';
+  const diff=Math.floor((Date.now()-d.getTime())/1000);
+  if(diff<60) return 'just now';
+  if(diff<3600) return Math.floor(diff/60)+'m ago';
+  if(diff<86400) return Math.floor(diff/3600)+'h ago';
+  if(diff<604800) return Math.floor(diff/86400)+'d ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 initTheme();
 
@@ -983,11 +999,9 @@ function showView(v){
 }
 
 function renderView(){
-  const si=document.getElementById('search-input');
-  const sicon=document.getElementById('topbar-search-icon');
-  if(currentView==='dashboard'){si.style.display='none';if(sicon)sicon.style.display='none';}
-  else if(currentView==='active'||currentView==='inactive'){si.style.display='';if(sicon)sicon.style.display='';}
-  else{si.style.display='none';if(sicon)sicon.style.display='none';}
+  // Search is always in topbar center — always visible
+  const sw=document.getElementById('topbar-search-wrap');
+  if(sw) sw.style.visibility=(currentView==='active'||currentView==='inactive'||currentView==='dashboard')?'visible':'hidden';
 
   if(currentView==='dashboard')renderDashboard();
   else if(currentView==='active')renderEmployeeTable('active');
@@ -1827,19 +1841,8 @@ async function loadAnnouncements(){
 }
 
 function renderAnnouncementsList(){
-  const el = document.getElementById('announcements-list');
-  if(!el) return;
-  if(!announcementsCache.length){
-    el.innerHTML = `<div style="font-size:12px;color:var(--text3);font-style:italic">No announcements at this time.</div>`;
-    return;
-  }
-  el.innerHTML = announcementsCache.map(a => `
-    <div class="ann-item">
-      <div class="ann-title">${esc(a.title)}</div>
-      <div class="ann-body">${esc(a.body)}</div>
-      <div class="ann-meta">Posted by ${esc(a.postedBy)} &middot; ${esc(a.timestamp)}</div>
-    </div>
-  `).join('');
+  // Announcement display moved to carousel — renderAnnouncementCarousel handles the DOM
+  if(typeof renderAnnouncementCarousel === 'function') renderAnnouncementCarousel();
 }
 
 function openAnnouncementManager(){
@@ -1988,4 +1991,142 @@ async function getSheetId(sheetName){
   const res = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
   const sheet = (res.result.sheets||[]).find(s=>s.properties.title===sheetName);
   return sheet ? sheet.properties.sheetId : 0;
+}
+
+// ============================================================
+// VIEW ALL — Birthdays + Recently Updated modals
+// ============================================================
+function viewAllBirthdays(){
+  const all = getBirthdaysThisMonth();
+  const modal = document.createElement('div');
+  modal.id = 'bday-all-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  const rows = all.length === 0
+    ? `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:16px 0;text-align:center">No birthdays this month.</div>`
+    : all.map(({emp, day, daysUntil}) => {
+        const isToday = daysUntil === 0;
+        const d = new Date(emp.dob);
+        const dateLabel = d.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+        const timeLabel = isToday ? '🎉 Today!' : daysUntil > 0 ? `in ${daysUntil} day${daysUntil!==1?'s':''}` : `${Math.abs(daysUntil)} day${Math.abs(daysUntil)!==1?'s':''} ago`;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="width:34px;height:34px;border-radius:50%;background:${isToday?'rgba(245,200,66,0.15)':'rgba(46,196,190,0.1)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${isToday?'🎉':'🎂'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(emp.fullName||'')}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(dateLabel)}${emp.region?` · ${esc(emp.region)}`:''}</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:${isToday?'var(--warning)':'var(--text3)'};white-space:nowrap">${timeLabel}</div>
+        </div>`;
+      }).join('');
+  modal.innerHTML = `
+    <div class="glass-card" style="width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;padding:24px;gap:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">🎂 Birthdays This Month</div>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('bday-all-modal').remove()">✕ Close</button>
+      </div>
+      <div style="overflow-y:auto;flex:1">${rows}</div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function viewAllRecentlyUpdated(){
+  const recent = [...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,20);
+  const modal = document.createElement('div');
+  modal.id = 'recent-all-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  const rows = recent.map(e => {
+    const initials = ((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
+    const empLogs = logCache ? [...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse() : [];
+    const statusLog = empLogs.find(r=>{
+      const action=r[3]||'', from=r[4]||'', to=r[5]||'';
+      if(action==='Added') return true;
+      return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
+    });
+    let changeDesc = '', logTs = '';
+    if(statusLog){
+      const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
+      logTs = statusLog[0]||'';
+      if(action==='Added') changeDesc='New employee added';
+      else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
+      else if(to && to!=='—') changeDesc='Status set to '+to;
+      else changeDesc=action;
+    }
+    const ago = timeAgo(logTs||e.lastUpdated);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="document.getElementById('recent-all-modal').remove();openDetailPanel('${esc(e.infinixId)}')">
+      <div class="rr-avatar">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(e.fullName||'')}</div>
+        ${changeDesc?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${esc(changeDesc)}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        ${badgeHTML(e.status)}
+        ${ago?`<div style="font-size:10px;color:var(--text3)">${ago}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  modal.innerHTML = `
+    <div class="glass-card" style="width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;padding:24px;gap:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">🕐 Recently Updated</div>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('recent-all-modal').remove()">✕ Close</button>
+      </div>
+      <div style="overflow-y:auto;flex:1">${rows}</div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+// Announcement carousel state
+let _annIdx = 0;
+function renderAnnouncementCarousel(){
+  const wrap = document.getElementById('ann-carousel-wrap');
+  if(!wrap) return;
+  const list = announcementsCache;
+  if(!list.length){
+    wrap.innerHTML = `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:8px 0">No announcements at this time.</div>`;
+    return;
+  }
+  _annIdx = Math.max(0, Math.min(_annIdx, list.length-1));
+  const a = list[_annIdx];
+  const dots = list.map((_,i)=>`<span style="width:6px;height:6px;border-radius:50%;background:${i===_annIdx?'var(--moss-green)':'rgba(136,144,99,0.3)'};display:inline-block;cursor:pointer;transition:background .2s" onclick="annGoTo(${i})"></span>`).join('');
+  wrap.innerHTML = `
+    <div style="flex:1;min-width:0;padding:0 4px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.3">${esc(a.title)}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5">${esc(a.body)}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">Posted by ${esc(a.postedBy)} · ${esc(a.timestamp)}</div>
+    </div>
+    ${list.length > 1 ? `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;padding-left:8px">
+      <button onclick="annPrev()" style="background:none;border:1px solid var(--border);border-radius:6px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:10px">▲</button>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:center">${dots.replace(/display:inline-block/g,'display:block')}</div>
+      <button onclick="annNext()" style="background:none;border:1px solid var(--border);border-radius:6px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:10px">▼</button>
+    </div>` : ''}`;
+}
+function annPrev(){ _annIdx=(_annIdx-1+announcementsCache.length)%announcementsCache.length; renderAnnouncementCarousel(); }
+function annNext(){ _annIdx=(_annIdx+1)%announcementsCache.length; renderAnnouncementCarousel(); }
+function annGoTo(i){ _annIdx=i; renderAnnouncementCarousel(); }
+
+function viewAllAnnouncements(){
+  const list = announcementsCache;
+  const modal = document.createElement('div');
+  modal.id = 'ann-all-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  const rows = list.length === 0
+    ? `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:16px 0;text-align:center">No announcements at this time.</div>`
+    : list.map(a => `
+        <div style="padding:14px;background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.12);border-radius:10px;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(a.title)}</div>
+          <div style="font-size:11.5px;color:var(--text2);margin-top:5px;line-height:1.6">${esc(a.body)}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px">Posted by ${esc(a.postedBy)} · ${esc(a.timestamp)}</div>
+        </div>`).join('');
+  modal.innerHTML = `
+    <div class="glass-card" style="width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;padding:24px;gap:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">📢 Announcements</div>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ann-all-modal').remove()">✕ Close</button>
+      </div>
+      <div style="overflow-y:auto;flex:1">${rows}</div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
 }
