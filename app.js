@@ -952,6 +952,15 @@ function renderSearchDropdown(suggestions, q) {
   if (!dd) return;
   if (!suggestions.length) { closeSearchDropdown(); return; }
 
+  // Position under the search input
+  const input = document.getElementById('search-input');
+  if (input) {
+    const rect = input.getBoundingClientRect();
+    dd.style.top    = (rect.bottom + 8) + 'px';
+    dd.style.left   = rect.left + 'px';
+    dd.style.width  = rect.width + 'px';
+  }
+
   const STATUS_DOT = { Active:'#4ecb71', Floating:'#f5c842', Resigned:'#e8a24a', AWOL:'#e05c5c', Terminated:'#a07ac4', Backout:'#e05c5c' };
   _searchSuggestionIndex = -1;
 
