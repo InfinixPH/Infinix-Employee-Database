@@ -82,6 +82,9 @@ function renderDashboard(){
   const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile,missingInfinixId,missingStore].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
+    <!-- OUTER LAYOUT: left main | right panel -->
+    <div class="dash-layout">
+    <div class="dash-main">
     <!-- HERO KPI ROW -->
     <div class="dash-hero">
       <div class="dash-hero-card glass-card">
@@ -157,10 +160,8 @@ function renderDashboard(){
       </div>
     </div>
 
-    <!-- CHARTS + SIDE PANEL -->
-    <div class="dash-grid">
-      <div style="display:flex;flex-direction:column;min-width:0;align-self:stretch">
-        <div class="charts-row">
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
 
           <!-- DOUGHNUT + STATUS TABLE -->
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
@@ -244,9 +245,9 @@ function renderDashboard(){
             })()}
           </div>
 
-        </div>
-      </div>
-      <div class="dash-right">
+    </div><!-- /charts-row -->
+    </div><!-- /dash-main -->
+    <div class="dash-right">
 
         <!-- ANNOUNCEMENTS CAROUSEL -->
         <div class="ann-card glass-card">
@@ -328,8 +329,8 @@ function renderDashboard(){
               </div>`;
             }).join('')}
         </div>
-      </div>
-    </div>`;
+      </div><!-- /dash-right -->
+    </div><!-- /dash-layout -->`;
 
   setTimeout(()=>{
     const isDark=document.documentElement.getAttribute('data-theme')!=='light';
