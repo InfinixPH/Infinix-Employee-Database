@@ -9,31 +9,31 @@ function renderRecentlyUpdated(recent){
   el.innerHTML=recent.map(e=>{
     const initials=((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
     const empLogs=logCache?[...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse():[];
-    // Find the most recent log entry that is a status change
     const statusLog=empLogs.find(r=>{
-      const action=r[3]||'';
-      const from=r[4]||'';
-      const to=r[5]||'';
+      const action=r[3]||'', from=r[4]||'', to=r[5]||'';
       if(action==='Added') return true;
       return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
     });
-    let changeDesc='';
+    let changeDesc='', logTs='';
     if(statusLog){
-      const action=statusLog[3]||'';
-      const from=statusLog[4]||'';
-      const to=statusLog[5]||'';
+      const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
+      logTs=statusLog[0]||'';
       if(action==='Added') changeDesc='New employee added';
       else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
       else if(to && to!=='—') changeDesc='Status set to '+to;
       else changeDesc=action;
     }
+    const ago=timeAgo(logTs||e.lastUpdated);
     return`<div class="recent-row" onclick="openDetailPanel('${esc(e.infinixId)}')">
       <div class="rr-avatar">${initials}</div>
       <div class="rr-info">
         <div class="rr-name">${esc(e.fullName||'')}</div>
         ${changeDesc?`<div class="rr-change">${esc(changeDesc)}</div>`:''}
       </div>
-      <div class="rr-badge">${badgeHTML(e.status)}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <div class="rr-badge">${badgeHTML(e.status)}</div>
+        ${ago?`<div class="rr-time">${ago}</div>`:''}
+      </div>
     </div>`;
   }).join('')||`<div style="font-size:12px;color:var(--text3);padding:8px 0">No recent status changes.</div>`;
 }
@@ -82,14 +82,6 @@ function renderDashboard(){
   const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile,missingInfinixId,missingStore].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
-    <!-- DASHBOARD SEARCH -->
-    <div class="dash-search-wrap">
-      <span class="dash-search-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </span>
-      <input type="text" id="dash-search-input" placeholder="Search employees by name, ID, or store…" onkeydown="if(event.key==='Enter')dashSearch(this.value)">
-    </div>
-
     <!-- HERO KPI ROW -->
     <div class="dash-hero">
       <div class="dash-hero-card glass-card">
@@ -253,61 +245,86 @@ function renderDashboard(){
           </div>
 
         </div>
-        <!-- ANNOUNCEMENTS -->
-        <div class="glass-card" style="margin-top:14px;padding:16px 18px;flex:1">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--moss-green);opacity:0.8">📢 Announcements</div>
-            ${canViewSensitive()?`<button class="btn btn-ghost btn-sm" onclick="openAnnouncementManager()" style="font-size:10px;padding:3px 10px">+ Manage</button>`:''}
+      </div>
+      <div class="dash-right">
+
+        <!-- ANNOUNCEMENTS CAROUSEL -->
+        <div class="ann-card glass-card">
+          <div class="dash-right-header">
+            <span class="drh-icon">📢</span>
+            <span class="drh-title">Announcements</span>
+            <div style="margin-left:auto;display:flex;gap:6px">
+              ${canViewSensitive()?`<button class="btn btn-ghost btn-sm drh-action" onclick="openAnnouncementManager()">+ Manage</button>`:''}
+              <button class="btn btn-ghost btn-sm drh-action" onclick="viewAllAnnouncements()">View all</button>
+            </div>
           </div>
-          <div id="announcements-list">
+          <div id="ann-carousel-wrap" style="display:flex;align-items:flex-start;gap:4px;min-height:60px">
             <div style="font-size:12px;color:var(--text3);font-style:italic">No announcements at this time.</div>
           </div>
         </div>
-      </div>
-      <div class="dash-right">
+
+        <!-- RECENTLY UPDATED -->
         <div class="recent-card glass-card">
-          <h4>Recently Updated</h4>
+          <div class="dash-right-header">
+            <span class="drh-icon">🕐</span>
+            <span class="drh-title">Recently Updated</span>
+            <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllRecentlyUpdated()">View all</button>
+          </div>
           <div id="recent-updated-list">
           ${recent.map(e=>{
             const initials=((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
-            // Show only status changes for this employee
             const empLogs=logCache?[...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse():[];
             const statusLog=empLogs.find(r=>{
               const action=r[3]||''; const from=r[4]||''; const to=r[5]||'';
               if(action==='Added') return true;
               return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
             });
-            let changeDesc='';
+            let changeDesc='', logTs='';
             if(statusLog){
               const action=statusLog[3]||''; const from=statusLog[4]||''; const to=statusLog[5]||'';
+              logTs=statusLog[0]||'';
               if(action==='Added') changeDesc='New employee added';
               else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
               else if(to && to!=='—') changeDesc='Status set to '+to;
               else changeDesc=action;
             }
+            const ago=timeAgo(logTs||e.lastUpdated);
             return`<div class="recent-row" onclick="openDetailPanel('${esc(e.infinixId)}')">
               <div class="rr-avatar">${initials}</div>
               <div class="rr-info">
                 <div class="rr-name">${esc(e.fullName||'')}</div>
                 ${changeDesc?`<div class="rr-change">${esc(changeDesc)}</div>`:''}
               </div>
-              <div class="rr-badge">${badgeHTML(e.status)}</div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+                <div class="rr-badge">${badgeHTML(e.status)}</div>
+                ${ago?`<div class="rr-time">${ago}</div>`:''}
+              </div>
             </div>`;
-          }).join('')||`<div style="font-size:12px;color:var(--text3);padding:8px 0">No recent status changes.</div>`}
+          }).join('')||`<div style="font-size:12px;color:var(--text3);padding:8px 0">No recent updates.</div>`}
           </div>
         </div>
+
+        <!-- BIRTHDAYS THIS MONTH -->
         <div class="birthday-card glass-card">
-          <h4>🎂 Birthdays This Month</h4>
+          <div class="dash-right-header">
+            <span class="drh-icon">🎂</span>
+            <span class="drh-title">Birthdays This Month</span>
+            <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllBirthdays()">View all</button>
+          </div>
           ${birthdays.length===0
             ?`<div style="font-size:12px;color:var(--text3)">No birthdays this month.</div>`
             :birthdays.map(({emp,day,daysUntil})=>{
               const isToday=daysUntil===0;
+              const d=new Date(emp.dob);
+              const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+              const timeLabel=isToday?'<b style="color:var(--warning)">Today!</b>':daysUntil>0?`in ${daysUntil}d`:`${Math.abs(daysUntil)}d ago`;
               return`<div class="bday-item ${isToday?'bday-today':''}" onclick="openDetailPanel('${esc(emp.infinixId)}')">
                 <span class="bday-icon">${isToday?'🎉':'🎂'}</span>
-                <div style="min-width:0">
+                <div style="flex:1;min-width:0">
                   <div class="bday-name">${esc(emp.fullName||'')}</div>
-                  <div class="bday-date">${isToday?'<b style="color:var(--warning)">Today!</b>':daysUntil>0?`in ${daysUntil} day${daysUntil!==1?'s':''}`:`${Math.abs(daysUntil)} day${Math.abs(daysUntil)!==1?'s':''} ago`} · ${esc(emp.storeAssignment||emp.region||'')}</div>
+                  <div class="bday-date">${esc(dateStr)}${emp.region?' · '+esc(emp.region):''}</div>
                 </div>
+                <div style="font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0">${timeLabel}</div>
               </div>`;
             }).join('')}
         </div>
@@ -483,8 +500,11 @@ function renderDashboard(){
     }
 
   },80);
-  // Re-render announcements after DOM is ready
-  setTimeout(()=>{ if(typeof renderAnnouncementsList==='function') renderAnnouncementsList(); },100);
+  // Re-render right panel after DOM is ready
+  setTimeout(()=>{
+    if(typeof renderAnnouncementCarousel==='function') renderAnnouncementCarousel();
+    if(typeof renderRecentlyUpdated==='function') renderRecentlyUpdated(recent);
+  },120);
 }
 
 // ============================================================
