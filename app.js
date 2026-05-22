@@ -168,6 +168,12 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// Close search dropdown when clicking outside
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('topbar-search-wrap');
+  if (wrap && !wrap.contains(e.target)) closeSearchDropdown();
+});
+
 // ============================================================
 // PREMIUM — FORM DRAFT AUTOSAVE
 // ============================================================
@@ -890,12 +896,149 @@ function filteredEmployees(type){
   return sortEmployees(list);
 }
 
-function onSearch(){
-  const q=(document.getElementById('search-input')?.value||'').trim();
-  if(currentView==='dashboard'){if(q)showView('active');return;}
-  if(currentView!=='active'&&currentView!=='inactive'){if(q)showView('active');return;}
-  currentPage=1;selectedIds.clear();
-  renderTableRows(currentView==='inactive'?'inactive':'active');
+// ============================================================
+// SEARCH AUTOCOMPLETE — debounced, fuzzy, glassmorphism dropdown
+// ============================================================
+let _searchDebounce = null;
+let _searchSuggestionIndex = -1;
+
+function fuzzyMatch(str, query) {
+  str = str.toLowerCase();
+  query = query.toLowerCase();
+  if (str.includes(query)) return { match: true, score: str.indexOf(query) === 0 ? 100 : 50 };
+  // character-by-character fuzzy
+  let si = 0, qi = 0, score = 0;
+  while (si < str.length && qi < query.length) {
+    if (str[si] === query[qi]) { score += (si === qi ? 3 : 1); qi++; }
+    si++;
+  }
+  return { match: qi === query.length, score };
+}
+
+function getSearchSuggestions(q) {
+  if (!q || q.length < 1) return [];
+  const results = [];
+  for (const e of employees) {
+    const fields = [
+      { v: e.fullName || '', type: 'name' },
+      { v: String(e.infinixId || ''), type: 'id' },
+      { v: e.storeAssignment || '', type: 'store' },
+      { v: e.storeId || '', type: 'store' },
+    ];
+    let best = { match: false, score: -1 };
+    let matchType = '';
+    for (const f of fields) {
+      if (!f.v) continue;
+      const r = fuzzyMatch(f.v, q);
+      if (r.match && r.score > best.score) { best = r; matchType = f.type; }
+    }
+    if (best.match) results.push({ emp: e, score: best.score, matchType });
+  }
+  results.sort((a, b) => b.score - a.score);
+  return results.slice(0, 5);
+}
+
+function highlightMatch(text, query) {
+  if (!text || !query) return esc(text);
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return esc(text);
+  return esc(text.slice(0, idx)) +
+    `<mark style="background:rgba(46,196,190,0.25);color:var(--teal-deep);border-radius:2px;padding:0 1px">${esc(text.slice(idx, idx + query.length))}</mark>` +
+    esc(text.slice(idx + query.length));
+}
+
+function renderSearchDropdown(suggestions, q) {
+  let dd = document.getElementById('search-dropdown');
+  if (!dd) return;
+  if (!suggestions.length) { closeSearchDropdown(); return; }
+
+  const STATUS_DOT = { Active:'#4ecb71', Floating:'#f5c842', Resigned:'#e8a24a', AWOL:'#e05c5c', Terminated:'#a07ac4', Backout:'#e05c5c' };
+  _searchSuggestionIndex = -1;
+
+  dd.innerHTML = suggestions.map((s, i) => {
+    const e = s.emp;
+    const initials = ((e.firstName || e.fullName || '?')[0] || '?').toUpperCase();
+    const dot = STATUS_DOT[e.status] || 'var(--text3)';
+    const subLabel = s.matchType === 'id' ? `ID: ${esc(String(e.infinixId))}` :
+                     s.matchType === 'store' ? `Store: ${esc(e.storeAssignment || e.storeId || '')}` :
+                     esc(e.storeAssignment || String(e.infinixId) || '');
+    return `<div class="sd-item" data-id="${esc(String(e.infinixId))}" data-idx="${i}"
+      onmousedown="selectSearchSuggestion('${esc(String(e.infinixId))}')"
+      onmouseenter="highlightSuggestion(${i})">
+      <div class="sd-avatar">${initials}</div>
+      <div class="sd-info">
+        <div class="sd-name">${highlightMatch(e.fullName || '', q)}</div>
+        <div class="sd-sub">${subLabel}</div>
+      </div>
+      <div class="sd-right">
+        <span class="sd-status-dot" style="background:${dot}"></span>
+        <span class="sd-status-label" style="color:${dot}">${esc(e.status||'')}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  dd.classList.add('open');
+}
+
+function closeSearchDropdown() {
+  const dd = document.getElementById('search-dropdown');
+  if (dd) dd.classList.remove('open');
+  _searchSuggestionIndex = -1;
+}
+
+function highlightSuggestion(idx) {
+  document.querySelectorAll('.sd-item').forEach((el, i) => {
+    el.classList.toggle('sd-active', i === idx);
+  });
+  _searchSuggestionIndex = idx;
+}
+
+function selectSearchSuggestion(id) {
+  closeSearchDropdown();
+  document.getElementById('search-input').value = '';
+  openDetailPanel(id);
+}
+
+function onSearch() {
+  clearTimeout(_searchDebounce);
+  const q = (document.getElementById('search-input')?.value || '').trim();
+  if (!q) { closeSearchDropdown(); return; }
+  _searchDebounce = setTimeout(() => {
+    const suggestions = getSearchSuggestions(q);
+    renderSearchDropdown(suggestions, q);
+  }, 300);
+}
+
+function onSearchKeydown(e) {
+  const dd = document.getElementById('search-dropdown');
+  const items = dd ? dd.querySelectorAll('.sd-item') : [];
+  if (!dd || !dd.classList.contains('open') || !items.length) {
+    if (e.key === 'Enter') {
+      // no dropdown — do nothing
+    }
+    return;
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = Math.min(_searchSuggestionIndex + 1, items.length - 1);
+    highlightSuggestion(next);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = Math.max(_searchSuggestionIndex - 1, 0);
+    highlightSuggestion(prev);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (_searchSuggestionIndex >= 0 && items[_searchSuggestionIndex]) {
+      const id = items[_searchSuggestionIndex].dataset.id;
+      selectSearchSuggestion(id);
+    } else if (items.length > 0) {
+      const id = items[0].dataset.id;
+      selectSearchSuggestion(id);
+    }
+  } else if (e.key === 'Escape') {
+    closeSearchDropdown();
+    document.getElementById('search-input').blur();
+  }
 }
 function onFilterChange(){currentPage=1;selectedIds.clear();renderTableRows(currentView==='inactive'?'inactive':'active');}
 function resetFilters(){filterRegion='';filterDeployStatus='';filterQR='';filterContractStatus='';missingFieldFilter=null;document.querySelectorAll('.filter-bar select').forEach(s=>s.value='');onFilterChange();}
