@@ -694,7 +694,7 @@ body::before {
 }
 
 /* Pending actions redesigned */
-.pending-section { margin-bottom: 14px; }
+.pending-section { margin-bottom: 0; }
 .pending-title {
   font-size: 9px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 2px; color: var(--moss-green); opacity: 0.7;
