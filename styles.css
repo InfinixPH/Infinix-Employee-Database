@@ -357,11 +357,11 @@ body::before {
   gap: 0;
 }
 
-/* FIX: Single definitive rule for sidebar logo — compact like photo 2 */
+/* FIX: Single definitive rule for sidebar logo */
 .brand-logo img {
-  height: 44px;
+  height: 80px;
   width: auto;
-  max-width: 160px;
+  max-width: 220px;
   object-fit: contain;
   display: block;
   filter: brightness(0) invert(1);
