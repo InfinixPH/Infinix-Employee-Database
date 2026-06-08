@@ -272,36 +272,7 @@ function renderDashboard(){
             <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllRecentlyUpdated()">View all</button>
           </div>
           <div id="recent-updated-list">
-          ${recent.map(e=>{
-            const initials=((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
-            const empLogs=logCache?[...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse():[];
-            const statusLog=empLogs.find(r=>{
-              const action=r[3]||''; const from=r[4]||''; const to=r[5]||'';
-              if(action==='Added') return true;
-              return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
-            });
-            let changeDesc='', logTs='';
-            if(statusLog){
-              const action=statusLog[3]||''; const from=statusLog[4]||''; const to=statusLog[5]||'';
-              logTs=statusLog[0]||'';
-              if(action==='Added') changeDesc='New employee added';
-              else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
-              else if(to && to!=='—') changeDesc='Status set to '+to;
-              else changeDesc=action;
-            }
-            const ago=timeAgo(logTs||e.lastUpdated);
-            return`<div class="recent-row" onclick="openDetailPanel('${esc(e.infinixId)}')">
-              <div class="rr-avatar">${initials}</div>
-              <div class="rr-info">
-                <div class="rr-name">${esc(e.fullName||'')}</div>
-                ${changeDesc?`<div class="rr-change">${esc(changeDesc)}</div>`:''}
-              </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-                <div class="rr-badge">${badgeHTML(e.status)}</div>
-                ${ago?`<div class="rr-time">${ago}</div>`:''}
-              </div>
-            </div>`;
-          }).join('')||`<div style="font-size:12px;color:var(--text3);padding:8px 0">No recent updates.</div>`}
+            <div style="font-size:12px;color:var(--text3);padding:8px 0">Loading…</div>
           </div>
         </div>
 
@@ -501,11 +472,11 @@ function renderDashboard(){
     }
 
   },80);
-  // Re-render right panel after DOM is ready
+  // Render right panel widgets after charts settle
   setTimeout(()=>{
     if(typeof renderAnnouncementCarousel==='function') renderAnnouncementCarousel();
     if(typeof renderRecentlyUpdated==='function') renderRecentlyUpdated(recent);
-  },120);
+  },100);
 }
 
 // ============================================================
@@ -605,11 +576,6 @@ function renderTracker(){
     </div>`;
 }
 
-// ============================================================
-
-
-/* ===== PREMIUM CHART GLOW ===== */
-
-Chart.defaults.color = "#d7f7ff";
+// Chart global defaults — color is overridden per-render for theme support
 Chart.defaults.font.family = "Poppins";
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
