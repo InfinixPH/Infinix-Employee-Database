@@ -119,9 +119,13 @@
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Poppins',sans-serif;font-size:18px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:22px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
+    <div class="sidebar-clock" id="sidebar-clock-wrap">
+      <span id="sidebar-clock">--:--:--</span>
+      <span id="sidebar-date"></span>
+    </div>
   </div>
 
   <div class="nav">
@@ -182,10 +186,7 @@
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-sub" id="topbar-sub">Overview</div>
     </div>
-    <div class="topbar-datetime" id="topbar-datetime">
-      <span id="topbar-clock">--:--</span>
-      <span id="topbar-date" style="opacity:.55;font-size:10px;margin-left:6px"></span>
-    </div>
+
     <div class="topbar-center" id="topbar-search-wrap">
       <span class="search-icon" id="topbar-search-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -260,26 +261,32 @@
 </div>
 
 <style>
-/* ─── PREMIUM TOPBAR DATETIME ─── */
-.topbar-datetime {
-  display: flex; align-items: center; gap: 4px;
-  flex-shrink: 0; margin: 0 8px;
+/* ─── SIDEBAR CLOCK ─── */
+.sidebar-clock {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 10px;
   background: rgba(0,255,224,0.05);
   border: 1px solid rgba(0,255,224,0.10);
   border-radius: 10px;
-  padding: 5px 14px;
+  padding: 6px 14px;
 }
-#topbar-clock {
+#sidebar-clock {
   font-family: 'Poppins', sans-serif;
-  font-size: 14px; font-weight: 700;
+  font-size: 15px; font-weight: 700;
   color: #00FFE0;
   letter-spacing: 1px;
   text-shadow: 0 0 12px rgba(0,255,224,0.50);
 }
-#topbar-date {
+#sidebar-date {
   font-family: 'Poppins', sans-serif;
-  font-size: 10px; color: rgba(232,255,252,0.50);
+  font-size: 10px; color: rgba(232,255,252,0.55);
 }
+[data-theme="light"] .sidebar-clock {
+  background: rgba(10,138,133,0.07);
+  border-color: rgba(10,138,133,0.15);
+}
+[data-theme="light"] #sidebar-clock { color: #0a8a85; text-shadow: none; }
+[data-theme="light"] #sidebar-date { color: rgba(26,34,34,0.55); }
 
 /* ─── ROLE MODAL PREMIUM btn grid fix ─── */
 .role-modal-premium .role-btn-grid { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
@@ -347,6 +354,25 @@
 .chart-title { color: #00FFE0; text-shadow: 0 0 12px rgba(0,255,224,0.25); }
 .detail-section-title { color: #00FFE0; }
 .dhc-label { color: rgba(0,255,224,0.50); }
+
+/* Light mode: strip all glow from these elements */
+[data-theme="light"] .section-heading,
+[data-theme="light"] .drh-title,
+[data-theme="light"] .section-label,
+[data-theme="light"] .pending-title,
+[data-theme="light"] .kf-label-top,
+[data-theme="light"] .tracker-region-name,
+[data-theme="light"] .chart-title,
+[data-theme="light"] .detail-section-title {
+  color: #076e6a !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .dhc-label { color: rgba(26,34,34,0.55) !important; }
+[data-theme="light"] .filter-label { color: #076e6a !important; }
+[data-theme="light"] thead th { color: #076e6a !important; text-shadow: none !important; }
+[data-theme="light"] .td-id { color: #076e6a !important; text-shadow: none !important; }
+[data-theme="light"] .btn-primary { color: #076e6a !important; text-shadow: none !important; }
+[data-theme="light"] #sidebar-clock { color: #076e6a !important; text-shadow: none !important; }
 
 /* ─── DSR card left border glow ─── */
 .dsr-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.50), 0 0 20px rgba(0,255,224,0.06); }
@@ -416,8 +442,8 @@ thead th.sort-desc::after { color: #00FFE0; }
     var ss = String(now.getSeconds()).padStart(2,'0');
     var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var clockEl = document.getElementById('topbar-clock');
-    var dateEl  = document.getElementById('topbar-date');
+    var clockEl = document.getElementById('sidebar-clock');
+    var dateEl  = document.getElementById('sidebar-date');
     if(clockEl) clockEl.textContent = hh+':'+mm+':'+ss;
     if(dateEl)  dateEl.textContent  = days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate();
   }
