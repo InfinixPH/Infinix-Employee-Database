@@ -119,11 +119,11 @@
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Poppins',sans-serif;font-size:32px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
+      <span style="display:none;font-family:'Poppins',sans-serif;font-size:26px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
     <div class="sidebar-clock" id="sidebar-clock-wrap">
-      <span id="sidebar-clock">--:--:--</span>
+      <span id="sidebar-clock">--:--:-- <span class="clock-ampm">AM</span></span>
       <span id="sidebar-date"></span>
     </div>
   </div>
@@ -263,30 +263,45 @@
 <style>
 /* ─── SIDEBAR CLOCK ─── */
 .sidebar-clock {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  margin-top: 10px;
-  background: rgba(0,255,224,0.05);
-  border: 1px solid rgba(0,255,224,0.10);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, rgba(0,255,224,0.06) 0%, rgba(0,184,160,0.03) 100%);
+  border: 1px solid rgba(0,255,224,0.13);
   border-radius: 10px;
-  padding: 6px 14px;
+  padding: 9px 14px 8px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 12px rgba(0,0,0,0.30);
 }
 #sidebar-clock {
   font-family: 'Poppins', sans-serif;
-  font-size: 15px; font-weight: 700;
+  font-size: 18px; font-weight: 700;
+  color: #E8FFFC;
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+#sidebar-clock .clock-ampm {
+  font-size: 10px; font-weight: 600;
   color: #00FFE0;
   letter-spacing: 1px;
-  text-shadow: 0 0 12px rgba(0,255,224,0.50);
+  margin-left: 4px;
+  opacity: 0.85;
 }
 #sidebar-date {
   font-family: 'Poppins', sans-serif;
-  font-size: 10px; color: rgba(232,255,252,0.55);
+  font-size: 10px;
+  color: rgba(232,255,252,0.45);
+  letter-spacing: 0.3px;
+  margin-top: 2px;
 }
 [data-theme="light"] .sidebar-clock {
-  background: rgba(10,138,133,0.07);
-  border-color: rgba(10,138,133,0.15);
+  background: linear-gradient(135deg, rgba(10,138,133,0.07) 0%, rgba(10,138,133,0.03) 100%);
+  border-color: rgba(10,138,133,0.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 8px rgba(10,138,133,0.08);
 }
-[data-theme="light"] #sidebar-clock { color: #0a8a85; text-shadow: none; }
-[data-theme="light"] #sidebar-date { color: rgba(26,34,34,0.55); }
+[data-theme="light"] #sidebar-clock { color: #1a2222 !important; text-shadow: none !important; }
+[data-theme="light"] #sidebar-clock .clock-ampm { color: #076e6a !important; }
+[data-theme="light"] #sidebar-date { color: rgba(26,34,34,0.45); }
 
 /* ─── ROLE MODAL PREMIUM btn grid fix ─── */
 .role-modal-premium .role-btn-grid { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
@@ -433,19 +448,28 @@ thead th.sort-desc::after { color: #00FFE0; }
 </style>
 
 <script>
-// Real-time clock
+// Real-time clock — PH Time (UTC+8), 12hr format
 (function(){
   function updateClock(){
     var now = new Date();
-    var hh = String(now.getHours()).padStart(2,'0');
-    var mm = String(now.getMinutes()).padStart(2,'0');
-    var ss = String(now.getSeconds()).padStart(2,'0');
-    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    // Convert to PH time (UTC+8)
+    var phOffset = 8 * 60;
+    var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    var ph = new Date(utc + (phOffset * 60000));
+
+    var rawHr = ph.getHours();
+    var ampm  = rawHr >= 12 ? 'PM' : 'AM';
+    var hr    = rawHr % 12 || 12;
+    var mm    = String(ph.getMinutes()).padStart(2,'0');
+    var ss    = String(ph.getSeconds()).padStart(2,'0');
+
+    var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
     var clockEl = document.getElementById('sidebar-clock');
     var dateEl  = document.getElementById('sidebar-date');
-    if(clockEl) clockEl.textContent = hh+':'+mm+':'+ss;
-    if(dateEl)  dateEl.textContent  = days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate();
+    if(clockEl) clockEl.innerHTML = String(hr).padStart(2,'0')+':'+mm+':'+ss+' <span class="clock-ampm">'+ampm+'</span>';
+    if(dateEl)  dateEl.textContent = days[ph.getDay()]+', '+months[ph.getMonth()]+' '+ph.getDate();
   }
   updateClock();
   setInterval(updateClock, 1000);
