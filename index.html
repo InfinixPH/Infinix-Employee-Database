@@ -122,10 +122,6 @@
       <span style="display:none;font-family:'Poppins',sans-serif;font-size:26px;font-weight:900;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
     <div class="brand-sub">Employee Database</div>
-    <div class="sidebar-clock" id="sidebar-clock-wrap">
-      <span id="sidebar-clock">--:--:-- <span class="clock-ampm">AM</span></span>
-      <span id="sidebar-date"></span>
-    </div>
   </div>
 
   <div class="nav">
@@ -448,32 +444,7 @@ thead th.sort-desc::after { color: #00FFE0; }
 </style>
 
 <script>
-// Real-time clock — PH Time (UTC+8), 12hr format
-(function(){
-  function updateClock(){
-    var now = new Date();
-    // Convert to PH time (UTC+8)
-    var phOffset = 8 * 60;
-    var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-    var ph = new Date(utc + (phOffset * 60000));
 
-    var rawHr = ph.getHours();
-    var ampm  = rawHr >= 12 ? 'PM' : 'AM';
-    var hr    = rawHr % 12 || 12;
-    var mm    = String(ph.getMinutes()).padStart(2,'0');
-    var ss    = String(ph.getSeconds()).padStart(2,'0');
-
-    var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-    var clockEl = document.getElementById('sidebar-clock');
-    var dateEl  = document.getElementById('sidebar-date');
-    if(clockEl) clockEl.innerHTML = String(hr).padStart(2,'0')+':'+mm+':'+ss+' <span class="clock-ampm">'+ampm+'</span>';
-    if(dateEl)  dateEl.textContent = days[ph.getDay()]+', '+months[ph.getMonth()]+' '+ph.getDate();
-  }
-  updateClock();
-  setInterval(updateClock, 1000);
-})();
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
