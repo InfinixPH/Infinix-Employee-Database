@@ -359,9 +359,9 @@ body::before {
 
 /* FIX: Single definitive rule for sidebar logo */
 .brand-logo img {
-  height: 80px;
+  height: 52px;
   width: auto;
-  max-width: 220px;
+  max-width: 200px;
   object-fit: contain;
   display: block;
   filter: brightness(0) invert(1);
