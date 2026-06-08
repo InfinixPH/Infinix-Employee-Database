@@ -182,6 +182,10 @@
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-sub" id="topbar-sub">Overview</div>
     </div>
+    <div class="topbar-datetime" id="topbar-datetime">
+      <span id="topbar-clock">--:--</span>
+      <span id="topbar-date" style="opacity:.55;font-size:10px;margin-left:6px"></span>
+    </div>
     <div class="topbar-center" id="topbar-search-wrap">
       <span class="search-icon" id="topbar-search-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -255,6 +259,172 @@
   <div class="loading-text" id="loading-text">Loading...</div>
 </div>
 
+<style>
+/* ─── PREMIUM TOPBAR DATETIME ─── */
+.topbar-datetime {
+  display: flex; align-items: center; gap: 4px;
+  flex-shrink: 0; margin: 0 8px;
+  background: rgba(0,255,224,0.05);
+  border: 1px solid rgba(0,255,224,0.10);
+  border-radius: 10px;
+  padding: 5px 14px;
+}
+#topbar-clock {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px; font-weight: 700;
+  color: #00FFE0;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(0,255,224,0.50);
+}
+#topbar-date {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px; color: rgba(232,255,252,0.50);
+}
+
+/* ─── ROLE MODAL PREMIUM btn grid fix ─── */
+.role-modal-premium .role-btn-grid { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+
+/* ─── BRAND SUB glow ─── */
+.brand-sub {
+  font-size: 9px; color: #00FFE0;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  margin-top: 12px; font-weight: 700; opacity: 0.65;
+  text-shadow: 0 0 10px rgba(0,255,224,0.35);
+}
+
+/* ─── NAV section color ─── */
+.nav-section {
+  font-size: 8.5px; color: #00FFE0;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  padding: 0 8px; margin: 16px 0 5px;
+  font-weight: 700; opacity: 0.45;
+}
+
+/* ─── USER ROLE BADGE glow ─── */
+.user-role-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9px; font-weight: 700; color: #00FFE0;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px;
+  cursor: pointer; width: fit-content; padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(0,255,224,0.08);
+  border: 1px solid rgba(0,255,224,0.16);
+}
+.user-role-badge:hover { border-color: rgba(0,255,224,0.36); background: rgba(0,255,224,0.15); }
+
+/* ─── NAV active badge ─── */
+.nav-item.active .nav-badge {
+  background: rgba(0,255,224,0.14);
+  border-color: rgba(0,255,224,0.30);
+  color: #00FFE0;
+}
+
+/* ─── PAGINATION active page ─── */
+.page-btn.active {
+  background: rgba(0,255,224,0.18); border-color: rgba(0,255,224,0.40);
+  color: #00FFE0; font-weight: 800;
+  box-shadow: 0 0 12px rgba(0,255,224,0.20);
+}
+
+/* ─── FILTER BAR background ─── */
+.filter-bar {
+  background: rgba(0,255,224,0.03);
+  border-bottom: 1px solid rgba(0,255,224,0.07);
+}
+.filter-bar select {
+  background: rgba(0,255,224,0.03);
+  border-color: rgba(0,255,224,0.08);
+}
+.filter-label { color: #00FFE0; }
+
+/* ─── SECTION HEADING color ─── */
+.section-heading { color: #00FFE0; }
+.drh-title { color: #00FFE0; }
+.section-label { color: #00FFE0; }
+.pending-title { color: #00FFE0; }
+.kf-label-top { color: rgba(0,255,224,0.55); }
+.tracker-region-name { color: #00FFE0; }
+.chart-title { color: #00FFE0; text-shadow: 0 0 12px rgba(0,255,224,0.25); }
+.detail-section-title { color: #00FFE0; }
+.dhc-label { color: rgba(0,255,224,0.50); }
+
+/* ─── DSR card left border glow ─── */
+.dsr-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.50), 0 0 20px rgba(0,255,224,0.06); }
+
+/* ─── Pending grid card border ─── */
+.pending-card:hover { border-color: rgba(0,255,224,0.18) !important; }
+
+/* ─── SPINNER accent ─── */
+.spinner { border-top-color: #00FFE0; }
+
+/* ─── TOAST border upgrade ─── */
+.toast { border-color: rgba(0,255,224,0.18); }
+.toast.success { border-color: rgba(0,230,118,0.40); color: #00E676; }
+.toast.error   { border-color: rgba(255,82,82,0.38); color: #FF5252; }
+
+/* ─── TABLE SORT arrows ─── */
+thead th.sort-asc::after { color: #00FFE0; }
+thead th.sort-desc::after { color: #00FFE0; }
+
+/* ─── MODAL header ─── */
+.modal-header { background: rgba(0,255,224,0.03); }
+
+/* ─── PC ICON default cyan tint ─── */
+.pc-icon {
+  color: #00FFE0;
+  background: linear-gradient(135deg, rgba(0,255,224,0.13), rgba(0,184,160,0.05)) !important;
+  border: 1px solid rgba(0,255,224,0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 0 18px rgba(0,255,224,0.08);
+}
+.pc-icon.warn { color: #FFD740; background: linear-gradient(135deg, rgba(255,215,64,0.15), rgba(255,215,64,0.04)) !important; border-color: rgba(255,215,64,0.22); }
+.pc-icon.danger { color: #FF5252; background: linear-gradient(135deg, rgba(255,82,82,0.15), rgba(255,82,82,0.04)) !important; border-color: rgba(255,82,82,0.22); }
+
+/* ─── USER AVATAR glow ─── */
+.user-avatar {
+  background: linear-gradient(135deg, rgba(0,255,224,0.40), rgba(0,184,160,0.18));
+  border: 1px solid rgba(0,255,224,0.45);
+  color: #00FFE0;
+  box-shadow: 0 0 16px rgba(0,255,224,0.22);
+}
+
+/* ─── SF dot glow ─── */
+.sf-dot { box-shadow: 0 0 5px currentColor; }
+
+/* ─── DHC progress bars glow ─── */
+.dhc-progress { background: rgba(255,255,255,0.04); }
+
+/* ─── TABLE header row background ─── */
+.table-head { background: rgba(0,255,224,0.04); }
+
+/* ─── CHART patch overrides ─── */
+.chart-card table thead th { color: rgba(0,255,224,0.60) !important; }
+.chart-card table tbody tr:hover { background: rgba(0,255,224,0.05) !important; }
+.chart-card:has(#chart-status) canvas {
+  filter: drop-shadow(0 0 10px rgba(0,230,118,.30)) drop-shadow(0 0 18px rgba(255,215,64,.10)) !important;
+}
+#chart-sparkline { filter: drop-shadow(0 0 10px rgba(0,230,118,.22)) !important; }
+.chart-card:has(#chart-region) canvas { filter: drop-shadow(0 0 12px rgba(0,255,224,.22)) !important; }
+</style>
+
+<script>
+// Real-time clock
+(function(){
+  function updateClock(){
+    var now = new Date();
+    var hh = String(now.getHours()).padStart(2,'0');
+    var mm = String(now.getMinutes()).padStart(2,'0');
+    var ss = String(now.getSeconds()).padStart(2,'0');
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var clockEl = document.getElementById('topbar-clock');
+    var dateEl  = document.getElementById('topbar-date');
+    if(clockEl) clockEl.textContent = hh+':'+mm+':'+ss;
+    if(dateEl)  dateEl.textContent  = days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+})();
+</script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="config.js?v=14"></script>
