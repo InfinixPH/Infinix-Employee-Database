@@ -298,12 +298,53 @@ body::before {
 [data-theme="light"] .nav-section { color: var(--teal); }
 [data-theme="light"] .user-name { color: rgba(26,34,34,0.90); }
 [data-theme="light"] .user-role-badge { color: var(--teal); }
-[data-theme="light"] .btn-signout { color: rgba(26,34,34,0.45); }
+[data-theme="light"] .btn-primary {
+  background: rgba(10,138,133,0.15);
+  color: #076e6a;
+  border-color: rgba(10,138,133,0.40);
+  box-shadow: 0 2px 8px rgba(10,138,133,0.12);
+}
+[data-theme="light"] .btn-primary:hover {
+  background: rgba(10,138,133,0.25);
+  border-color: rgba(10,138,133,0.60);
+  box-shadow: 0 4px 16px rgba(10,138,133,0.20);
+}
 [data-theme="light"] .sidebar-footer { border-top-color: rgba(10,138,133,0.12); }
+
+/* ─── LIGHT MODE: FIX ALL GLOWING / UNREADABLE TEAL TEXT ─── */
+[data-theme="light"] thead th {
+  color: #076e6a !important;
+  text-shadow: none !important;
+  opacity: 1;
+}
+[data-theme="light"] .td-id {
+  color: #076e6a !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .section-heading,
+[data-theme="light"] .drh-title,
+[data-theme="light"] .section-label,
+[data-theme="light"] .pending-title,
+[data-theme="light"] .tracker-region-name,
+[data-theme="light"] .chart-title,
+[data-theme="light"] .detail-section-title,
+[data-theme="light"] .filter-label,
+[data-theme="light"] .filter-active-count,
+[data-theme="light"] .bulk-count,
+[data-theme="light"] .kf-label-top,
+[data-theme="light"] .tracker-region-bar {
+  color: #076e6a !important;
+  text-shadow: none !important;
+  opacity: 1;
+}
+[data-theme="light"] .tracker-region-bar { background: #076e6a !important; }
+[data-theme="light"] .dhc-label { color: rgba(26,34,34,0.55) !important; }
+[data-theme="light"] .chart-title,
+[data-theme="light"] .pending-title { opacity: 0.85; }
 
 /* FIX: Sidebar brand area — clean, fixed height, no overflow */
 .brand {
-  padding: 22px 16px 18px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
   background: rgba(255,255,255,0.02);
@@ -316,11 +357,11 @@ body::before {
   gap: 0;
 }
 
-/* FIX: Single definitive rule for sidebar logo — 40px, clean */
+/* FIX: Single definitive rule for sidebar logo — compact like photo 2 */
 .brand-logo img {
-  height: 110px;
+  height: 44px;
   width: auto;
-  max-width: 190px;
+  max-width: 160px;
   object-fit: contain;
   display: block;
   filter: brightness(0) invert(1);
@@ -334,7 +375,7 @@ body::before {
 .brand-sub {
   font-size: 9px; color: var(--moss-green);
   letter-spacing: 2.5px; text-transform: uppercase;
-  margin-top: 12px; font-weight: 700; opacity: 0.7;
+  margin-top: 5px; font-weight: 700; opacity: 0.7;
 }
 
 .nav { flex: 1; padding: 10px 8px; overflow-y: auto; overflow-x: hidden; }
