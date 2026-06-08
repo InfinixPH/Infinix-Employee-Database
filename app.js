@@ -126,20 +126,14 @@ function timeAgo(dateStr){
 initTheme();
 
 // ============================================================
-// PREMIUM — SIDEBAR COLLAPSE
+// SIDEBAR INIT
 // ============================================================
-let sidebarCollapsed = false;
 function initSidebar(){
-  // Sidebar collapse removed — no-op
-  // Clear any previously saved collapsed state
   localStorage.removeItem('hr_sidebar_collapsed');
-  const sidebar=document.getElementById('sidebar');
-  if(sidebar) sidebar.classList.remove('collapsed');
 }
-function toggleSidebar(){}
 
 // ============================================================
-// PREMIUM — KEYBOARD SHORTCUTS
+// KEYBOARD SHORTCUTS
 // ============================================================
 document.addEventListener('keydown', e => {
   // Ctrl+K or Cmd+K — focus search
@@ -175,7 +169,7 @@ document.addEventListener('click', e => {
 });
 
 // ============================================================
-// PREMIUM — FORM DRAFT AUTOSAVE
+// FORM DRAFT AUTOSAVE
 // ============================================================
 const DRAFT_KEY = 'hr_form_draft';
 function saveDraft(){
@@ -750,7 +744,7 @@ async function apiUpdateEmployee(data){
   const oldStatus=emp.status||'Active';
   if(normalizeDeployStatus(data.deploymentStatus)==='BACKOUT'){data.deploymentStatus='BACKOUT';data.status='-';}
   const newStatus=data.status||'Active';
-  const oldSheet=emp._sheet||getTargetSheet(oldStatus);
+  const oldSheet=emp._sheet||getTargetSheet(oldStatus,emp.deploymentStatus)||ACTIVE_SHEET;
   const newSheet=getTargetSheet(newStatus,data.deploymentStatus)||oldSheet;
 
   // Staleness check: re-read the sheet row and compare lastUpdated.
@@ -1011,7 +1005,14 @@ function selectSearchSuggestion(id) {
 function onSearch() {
   clearTimeout(_searchDebounce);
   const q = (document.getElementById('search-input')?.value || '').trim();
-  if (!q) { closeSearchDropdown(); return; }
+  if (!q) {
+    closeSearchDropdown();
+    if(currentView==='active'||currentView==='inactive'){
+      currentPage=1;
+      renderTableRows(currentView==='inactive'?'inactive':'active');
+    }
+    return;
+  }
   _searchDebounce = setTimeout(() => {
     const suggestions = getSearchSuggestions(q);
     renderSearchDropdown(suggestions, q);
@@ -1022,9 +1023,6 @@ function onSearchKeydown(e) {
   const dd = document.getElementById('search-dropdown');
   const items = dd ? dd.querySelectorAll('.sd-item') : [];
   if (!dd || !dd.classList.contains('open') || !items.length) {
-    if (e.key === 'Enter') {
-      // no dropdown — do nothing
-    }
     return;
   }
   if (e.key === 'ArrowDown') {
@@ -1356,7 +1354,12 @@ function renderPagination(total,totalPages){
     </div>`;
 }
 
-function goPage(p){currentPage=p;renderTableRows(currentView==='inactive'?'inactive':'active');}
+function goPage(p){
+  const list=filteredEmployees(currentView==='inactive'?'inactive':'active');
+  const totalPages=Math.max(1,Math.ceil(list.length/pageSize));
+  currentPage=Math.max(1,Math.min(p,totalPages));
+  renderTableRows(currentView==='inactive'?'inactive':'active');
+}
 function changePageSize(s){pageSize=s;currentPage=1;renderTableRows(currentView==='inactive'?'inactive':'active');}
 
 // ============================================================
@@ -1460,7 +1463,7 @@ function dpDelete(){
   if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   if(!detailEmpId)return;
   const emp=employees.find(e=>String(e.infinixId)===String(detailEmpId));
-  if(emp)confirmDelete(detailEmpId,emp.fullName||emp.firstName+' '+emp.lastName);
+  if(emp)confirmDelete(detailEmpId,emp.fullName||`${emp.firstName||''} ${emp.lastName||''}`.trim());
 }
 
 function buildDetailHTML(e){
