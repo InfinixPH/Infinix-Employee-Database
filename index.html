@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=15">
+<link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 
@@ -206,18 +206,11 @@
 
 </div><!-- /app -->
 
-<!-- DETAIL PANEL -->
-<div class="detail-panel" id="detail-panel">
-  <div class="detail-panel-header">
-    <h3 id="dp-title">Employee Details</h3>
-    <button class="detail-panel-close" onclick="closeDetailPanel()">✕</button>
-  </div>
-  <div class="detail-panel-body" id="dp-body"></div>
-  <div class="detail-panel-footer">
-    <button class="btn btn-primary" style="flex:1" id="dp-edit-btn" onclick="dpEdit()">Edit</button>
-    <button class="btn btn-danger" id="dp-delete-btn" onclick="dpDelete()">Delete</button>
-  </div>
-</div>
+<!-- DETAIL PANEL BACKDROP -->
+<div class="dp-backdrop" id="dp-backdrop" onclick="closeDetailPanel()"></div>
+
+<!-- DETAIL PANEL — contents injected dynamically by buildDetailHTML() -->
+<div class="detail-panel" id="detail-panel"></div>
 
 <!-- ADD/EDIT MODAL -->
 <div class="overlay" id="modal-overlay">
@@ -445,9 +438,9 @@ thead th.sort-desc::after { color: #00FFE0; }
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
-<script src="config.js?v=15"></script>
-<script src="roles.js?v=15"></script>
-<script src="charts.js?v=15"></script>
-<script src="app.js?v=15"></script>
+<script src="config.js?v=16"></script>
+<script src="roles.js?v=16"></script>
+<script src="charts.js?v=16"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>
