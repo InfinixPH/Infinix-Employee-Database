@@ -77,29 +77,13 @@ function renderDashboard(){
   const missingQR=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const birthdayWeekCount=bdayWeek.length;
 
-  // Contract monitor calculations
+  // Contract expiry — used in Action Center
   const today=new Date(); today.setHours(0,0,0,0);
   const d30=new Date(today); d30.setDate(d30.getDate()+30);
-  const d60=new Date(today); d60.setDate(d60.getDate()+60);
-  const contractExpired=activeEmployees.filter(e=>{
-    if(!e.contractEndDate)return false;
-    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
-    return d<today;
-  }).length;
   const contractSoon30=activeEmployees.filter(e=>{
     if(!e.contractEndDate)return false;
     const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
     return d>=today && d<=d30;
-  }).length;
-  const contractSoon60=activeEmployees.filter(e=>{
-    if(!e.contractEndDate)return false;
-    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
-    return d>d30 && d<=d60;
-  }).length;
-  const contractOk=activeEmployees.filter(e=>{
-    if(!e.contractEndDate)return false;
-    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
-    return d>d60;
   }).length;
 
   // Pre-load log cache for recently updated section (non-blocking, render updates when done)
@@ -112,8 +96,6 @@ function renderDashboard(){
   const deployPct=activeSheetRows.length?parseFloat((deployed/activeSheetRows.length*100).toFixed(2)):0;
   const scanPct=activeTotal?Math.round(scanned/activeTotal*100):0;
   const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
-
-  const pendingCount=[notDeployed,notScanned,contractPending,missingRequirements,missingGovIds,missingBank,missingMobile,missingInfinixId,missingStore].filter(v=>v>0).length;
 
   document.getElementById('content').innerHTML=`
     <!-- OUTER LAYOUT: left main | right panel -->
@@ -181,7 +163,9 @@ function renderDashboard(){
       </div>
       <div class="action-grid">
         <div class="ac-card glass-card ac-warn" onclick="drillDown('missingRequirements')">
-          <div class="ac-icon ac-icon-warn">📋</div>
+          <div class="ac-icon ac-icon-warn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1.5"/><path d="M9 12h6M9 16h4"/></svg>
+          </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingRequirements}</div>
             <div class="ac-label">Missing Requirements</div>
@@ -190,7 +174,9 @@ function renderDashboard(){
           <div class="ac-arrow">→</div>
         </div>
         <div class="ac-card glass-card ac-info" onclick="drillDown('notDeployed')">
-          <div class="ac-icon ac-icon-info">🚀</div>
+          <div class="ac-icon ac-icon-info">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 7 4 11.5 4 14a8 8 0 0 0 16 0c0-2.5-2.5-7-8-12Z"/><path d="M12 22v-4"/><path d="M9 18h6"/></svg>
+          </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--accent)">${notDeployed}</div>
             <div class="ac-label">Not Yet Deployed</div>
@@ -199,7 +185,9 @@ function renderDashboard(){
           <div class="ac-arrow">→</div>
         </div>
         <div class="ac-card glass-card ac-danger" onclick="drillDown('backout')">
-          <div class="ac-icon ac-icon-danger">⚠️</div>
+          <div class="ac-icon ac-icon-danger">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--danger)">${backoutCount}</div>
             <div class="ac-label">Backout Cases</div>
@@ -208,7 +196,9 @@ function renderDashboard(){
           <div class="ac-arrow">→</div>
         </div>
         <div class="ac-card glass-card ac-warn" onclick="drillDown('notScanned')">
-          <div class="ac-icon ac-icon-warn">📱</div>
+          <div class="ac-icon ac-icon-warn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3"/><path d="M12 3v.01"/><path d="M12 14v.01"/><path d="M7 12h3"/><path d="M3 12v.01"/><path d="M14 12h.01"/></svg>
+          </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingQR}</div>
             <div class="ac-label">Missing QR Status</div>
@@ -217,7 +207,9 @@ function renderDashboard(){
           <div class="ac-arrow">→</div>
         </div>
         <div class="ac-card glass-card ac-danger" onclick="drillDown('contractExpiring')">
-          <div class="ac-icon ac-icon-danger">📄</div>
+          <div class="ac-icon ac-icon-danger">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--danger)">${contractSoon30}</div>
             <div class="ac-label">Contracts Expiring</div>
@@ -226,7 +218,9 @@ function renderDashboard(){
           <div class="ac-arrow">→</div>
         </div>
         <div class="ac-card glass-card ac-purple" onclick="viewAllBirthdays()">
-          <div class="ac-icon ac-icon-purple">🎂</div>
+          <div class="ac-icon ac-icon-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4a1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1"/></svg>
+          </div>
           <div class="ac-body">
             <div class="ac-count" style="color:#CE93D8">${birthdayWeekCount}</div>
             <div class="ac-label">Birthdays This Week</div>
@@ -234,28 +228,6 @@ function renderDashboard(){
           </div>
           <div class="ac-arrow">→</div>
         </div>
-      </div>
-    </div>
-
-    <!-- PENDING ACTIONS -->
-    <div class="pending-section">
-      <div class="pending-title">
-        <span>Pending Actions</span>
-        <div class="pending-title-line"></div>
-        <span style="font-size:9px;opacity:.55">Active promoters only · click to filter</span>
-        ${pendingCount>0?`<span style="background:var(--danger-bg);border:1px solid rgba(224,92,92,0.3);color:var(--danger);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">${pendingCount} issue${pendingCount!==1?'s':''}</span>`:`<span style="background:var(--success-bg);border:1px solid rgba(78,203,113,0.3);color:var(--success);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">All clear</span>`}
-      </div>
-      <div class="pending-grid">
-        ${notDeployed>0?`<div class="pending-card glass-card" onclick="drillDown('notDeployed')"><div class="pc-icon warn">${actionIconSVG('rocket')}</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${notDeployed}</div><div class="pc-label">Not Yet Deployed</div></div></div>`:''}
-        ${notScanned>0?`<div class="pending-card glass-card" onclick="drillDown('notScanned')"><div class="pc-icon">${actionIconSVG('phone')}</div><div class="pc-body"><div class="pc-num" style="color:var(--teal-deep)">${notScanned}</div><div class="pc-label">QR Not Scanned</div></div></div>`:''}
-        ${contractPending>0?`<div class="pending-card glass-card" onclick="drillDown('contractPending')"><div class="pc-icon warn">${actionIconSVG('file')}</div><div class="pc-body"><div class="pc-num" style="color:#f5c842">${contractPending}</div><div class="pc-label">Contract Pending</div></div></div>`:''}
-        ${missingRequirements>0?`<div class="pending-card glass-card" onclick="drillDown('missingRequirements')"><div class="pc-icon danger">${actionIconSVG('alert')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingRequirements}</div><div class="pc-label">Reqs Incomplete</div></div></div>`:''}
-        ${missingGovIds>0?`<div class="pending-card glass-card" onclick="drillDown('missingGovIds')"><div class="pc-icon danger">${actionIconSVG('id')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingGovIds}</div><div class="pc-label">Missing Gov IDs</div></div></div>`:''}
-        ${missingBank>0?`<div class="pending-card glass-card" onclick="drillDown('missingBank')"><div class="pc-icon danger">${actionIconSVG('bank')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingBank}</div><div class="pc-label">Missing Bank Acct</div></div></div>`:''}
-        ${missingMobile>0?`<div class="pending-card glass-card" onclick="drillDown('missingMobile')"><div class="pc-icon danger">${actionIconSVG('phone')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingMobile}</div><div class="pc-label">Missing Mobile</div></div></div>`:''}
-        ${missingInfinixId>0?`<div class="pending-card glass-card" onclick="drillDown('missingInfinixId')"><div class="pc-icon danger">${actionIconSVG('id')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingInfinixId}</div><div class="pc-label">No Infinix ID</div></div></div>`:''}
-        ${missingStore>0?`<div class="pending-card glass-card" onclick="drillDown('missingStore')"><div class="pc-icon danger">${actionIconSVG('store')}</div><div class="pc-body"><div class="pc-num" style="color:var(--danger)">${missingStore}</div><div class="pc-label">No Store Assignment</div></div></div>`:''}
-        ${pendingCount===0?`<div class="pending-card ok-card glass-card" style="border-left-color:var(--success);grid-column:1/-1"><div class="pc-icon">${actionIconSVG('check')}</div><div class="pc-body"><div class="pc-num" style="color:var(--success);font-size:14px">All Clear</div><div class="pc-label">All active records are complete</div></div></div>`:''}
       </div>
     </div>
 
@@ -351,7 +323,7 @@ function renderDashboard(){
         <!-- ANNOUNCEMENTS CAROUSEL -->
         <div class="ann-card glass-card">
           <div class="dash-right-header">
-            <span class="drh-icon">📢</span>
+            <span class="drh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3Z"/><path d="M9.78 21a1.99 1.99 0 0 0 4.45 0"/></svg></span>
             <span class="drh-title">Announcements</span>
             <div style="margin-left:auto;display:flex;gap:6px">
               ${canViewSensitive()?`<button class="btn btn-ghost btn-sm drh-action" onclick="openAnnouncementManager()">+ Manage</button>`:''}
@@ -366,7 +338,7 @@ function renderDashboard(){
         <!-- RECENTLY UPDATED -->
         <div class="recent-card glass-card">
           <div class="dash-right-header">
-            <span class="drh-icon">🕐</span>
+            <span class="drh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
             <span class="drh-title">Recently Updated</span>
             <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllRecentlyUpdated()">View all</button>
           </div>
@@ -378,7 +350,7 @@ function renderDashboard(){
         <!-- BIRTHDAYS WIDGET (tabbed: Today / This Week / This Month) -->
         <div class="birthday-card glass-card bday-widget">
           <div class="dash-right-header">
-            <span class="drh-icon">🎂</span>
+            <span class="drh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4a1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1"/></svg></span>
             <span class="drh-title">Upcoming Birthdays</span>
             <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllBirthdays()">View all</button>
           </div>
@@ -393,52 +365,6 @@ function renderDashboard(){
           <div id="bday-list-today">${renderBdayList(bdayToday)}</div>
           <div id="bday-list-week" style="display:none">${renderBdayList(bdayWeek)}</div>
           <div id="bday-list-month" style="display:none">${renderBdayList(bdayMonth)}</div>
-        </div>
-
-        <!-- CONTRACT MONITOR -->
-        <div class="glass-card contract-widget">
-          <div class="dash-right-header">
-            <span class="drh-icon">📄</span>
-            <span class="drh-title">Contract Monitoring</span>
-          </div>
-          <div class="contract-bands">
-            <div class="contract-band cb-expired" onclick="drillDown('contractExpired')">
-              <div class="cb-dot red"></div>
-              <div class="cb-info">
-                <div class="cb-label">Expired Contracts</div>
-                <div class="cb-sub">Past end date</div>
-              </div>
-              <div class="cb-count red">${contractExpired}</div>
-              <div class="cb-arrow">›</div>
-            </div>
-            <div class="contract-band cb-soon30" onclick="drillDown('contractExpiring')">
-              <div class="cb-dot orange"></div>
-              <div class="cb-info">
-                <div class="cb-label">Expiring in 30 Days</div>
-                <div class="cb-sub">Needs renewal soon</div>
-              </div>
-              <div class="cb-count orange">${contractSoon30}</div>
-              <div class="cb-arrow">›</div>
-            </div>
-            <div class="contract-band cb-soon60" onclick="drillDown('contractSoon60')">
-              <div class="cb-dot yellow"></div>
-              <div class="cb-info">
-                <div class="cb-label">Expiring in 60 Days</div>
-                <div class="cb-sub">Plan ahead</div>
-              </div>
-              <div class="cb-count yellow">${contractSoon60}</div>
-              <div class="cb-arrow">›</div>
-            </div>
-            <div class="contract-band cb-ok" onclick="drillDown('contractOk')">
-              <div class="cb-dot green"></div>
-              <div class="cb-info">
-                <div class="cb-label">Active Contracts</div>
-                <div class="cb-sub">More than 60 days left</div>
-              </div>
-              <div class="cb-count green">${contractOk}</div>
-              <div class="cb-arrow">›</div>
-            </div>
-          </div>
         </div>
 
       </div><!-- /dash-right -->
