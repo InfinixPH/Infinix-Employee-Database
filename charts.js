@@ -66,7 +66,41 @@ function renderDashboard(){
 
   const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region);if(rr)regions[rr]=(regions[rr]||0)+1;});
   const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,6);
-  const birthdays=getBirthdaysThisMonth().slice(0,5);
+
+  // Birthday data for upgraded widget
+  const bdayToday=getBirthdaysToday();
+  const bdayWeek=getBirthdaysThisWeek();
+  const bdayMonth=getBirthdaysThisMonth();
+
+  // Action Center calculations
+  const backoutCount=employees.filter(e=>isBackoutDeployment(e.deploymentStatus)||isBackoutDeployment(e.deploymentStatusColL)).length;
+  const missingQR=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
+  const birthdayWeekCount=bdayWeek.length;
+
+  // Contract monitor calculations
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d30=new Date(today); d30.setDate(d30.getDate()+30);
+  const d60=new Date(today); d60.setDate(d60.getDate()+60);
+  const contractExpired=activeEmployees.filter(e=>{
+    if(!e.contractEndDate)return false;
+    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
+    return d<today;
+  }).length;
+  const contractSoon30=activeEmployees.filter(e=>{
+    if(!e.contractEndDate)return false;
+    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
+    return d>=today && d<=d30;
+  }).length;
+  const contractSoon60=activeEmployees.filter(e=>{
+    if(!e.contractEndDate)return false;
+    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
+    return d>d30 && d<=d60;
+  }).length;
+  const contractOk=activeEmployees.filter(e=>{
+    if(!e.contractEndDate)return false;
+    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
+    return d>d60;
+  }).length;
 
   // Pre-load log cache for recently updated section (non-blocking, render updates when done)
   if(!logCache){
@@ -136,6 +170,71 @@ function renderDashboard(){
           <div class="dsr-bar"><div class="dsr-bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div></div>
         </div>`;
       }).join('')}
+    </div>
+
+    <!-- ACTION CENTER -->
+    <div class="action-center-section">
+      <div class="action-center-title">
+        <span>Action Center</span>
+        <div class="action-center-title-line"></div>
+        <span style="font-size:9px;opacity:.55">Click any card to filter</span>
+      </div>
+      <div class="action-grid">
+        <div class="ac-card glass-card ac-warn" onclick="drillDown('missingRequirements')">
+          <div class="ac-icon ac-icon-warn">📋</div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:var(--warning)">${missingRequirements}</div>
+            <div class="ac-label">Missing Requirements</div>
+            <div class="ac-sub">Incomplete submissions</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac-card glass-card ac-info" onclick="drillDown('notDeployed')">
+          <div class="ac-icon ac-icon-info">🚀</div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:var(--accent)">${notDeployed}</div>
+            <div class="ac-label">Not Yet Deployed</div>
+            <div class="ac-sub">Awaiting deployment</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac-card glass-card ac-danger" onclick="drillDown('backout')">
+          <div class="ac-icon ac-icon-danger">⚠️</div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:var(--danger)">${backoutCount}</div>
+            <div class="ac-label">Backout Cases</div>
+            <div class="ac-sub">Requires follow-up</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac-card glass-card ac-warn" onclick="drillDown('notScanned')">
+          <div class="ac-icon ac-icon-warn">📱</div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:var(--warning)">${missingQR}</div>
+            <div class="ac-label">Missing QR Status</div>
+            <div class="ac-sub">Not yet scanned</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac-card glass-card ac-danger" onclick="drillDown('contractExpiring')">
+          <div class="ac-icon ac-icon-danger">📄</div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:var(--danger)">${contractSoon30}</div>
+            <div class="ac-label">Contracts Expiring</div>
+            <div class="ac-sub">Within 30 days</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac-card glass-card ac-purple" onclick="viewAllBirthdays()">
+          <div class="ac-icon ac-icon-purple">🎂</div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:#CE93D8">${birthdayWeekCount}</div>
+            <div class="ac-label">Birthdays This Week</div>
+            <div class="ac-sub">Upcoming celebrations</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+      </div>
     </div>
 
     <!-- PENDING ACTIONS -->
@@ -276,30 +375,72 @@ function renderDashboard(){
           </div>
         </div>
 
-        <!-- BIRTHDAYS THIS MONTH -->
-        <div class="birthday-card glass-card">
+        <!-- BIRTHDAYS WIDGET (tabbed: Today / This Week / This Month) -->
+        <div class="birthday-card glass-card bday-widget">
           <div class="dash-right-header">
             <span class="drh-icon">🎂</span>
-            <span class="drh-title">Birthdays This Month</span>
+            <span class="drh-title">Upcoming Birthdays</span>
             <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllBirthdays()">View all</button>
           </div>
-          ${birthdays.length===0
-            ?`<div style="font-size:12px;color:var(--text3)">No birthdays this month.</div>`
-            :birthdays.map(({emp,day,daysUntil})=>{
-              const isToday=daysUntil===0;
-              const d=new Date(emp.dob);
-              const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-              const timeLabel=isToday?'<b style="color:var(--warning)">Today!</b>':daysUntil>0?`in ${daysUntil}d`:`${Math.abs(daysUntil)}d ago`;
-              return`<div class="bday-item ${isToday?'bday-today':''}" onclick="openDetailPanel('${esc(emp.infinixId)}')">
-                <span class="bday-icon">${isToday?'🎉':'🎂'}</span>
-                <div style="flex:1;min-width:0">
-                  <div class="bday-name">${esc(emp.fullName||'')}</div>
-                  <div class="bday-date">${esc(dateStr)}${emp.region?' · '+esc(emp.region):''}</div>
-                </div>
-                <div style="font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0">${timeLabel}</div>
-              </div>`;
-            }).join('')}
+          <div class="bday-tabs" id="bday-tabs">
+            <button class="bday-tab-btn active" onclick="switchBdayTab('today',this)">Today${bdayToday.length?` <span style="background:rgba(245,200,66,0.2);color:#f5c842;border-radius:20px;padding:0 5px;font-size:8px">${bdayToday.length}</span>`:''}
+            </button>
+            <button class="bday-tab-btn" onclick="switchBdayTab('week',this)">This Week${bdayWeek.length?` <span style="background:var(--accent-dim);color:var(--accent);border-radius:20px;padding:0 5px;font-size:8px">${bdayWeek.length}</span>`:''}
+            </button>
+            <button class="bday-tab-btn" onclick="switchBdayTab('month',this)">This Month${bdayMonth.length?` <span style="background:var(--surface2);color:var(--text2);border-radius:20px;padding:0 5px;font-size:8px">${bdayMonth.length}</span>`:''}
+            </button>
+          </div>
+          <div id="bday-list-today">${renderBdayList(bdayToday)}</div>
+          <div id="bday-list-week" style="display:none">${renderBdayList(bdayWeek)}</div>
+          <div id="bday-list-month" style="display:none">${renderBdayList(bdayMonth)}</div>
         </div>
+
+        <!-- CONTRACT MONITOR -->
+        <div class="glass-card contract-widget">
+          <div class="dash-right-header">
+            <span class="drh-icon">📄</span>
+            <span class="drh-title">Contract Monitoring</span>
+          </div>
+          <div class="contract-bands">
+            <div class="contract-band cb-expired" onclick="drillDown('contractExpired')">
+              <div class="cb-dot red"></div>
+              <div class="cb-info">
+                <div class="cb-label">Expired Contracts</div>
+                <div class="cb-sub">Past end date</div>
+              </div>
+              <div class="cb-count red">${contractExpired}</div>
+              <div class="cb-arrow">›</div>
+            </div>
+            <div class="contract-band cb-soon30" onclick="drillDown('contractExpiring')">
+              <div class="cb-dot orange"></div>
+              <div class="cb-info">
+                <div class="cb-label">Expiring in 30 Days</div>
+                <div class="cb-sub">Needs renewal soon</div>
+              </div>
+              <div class="cb-count orange">${contractSoon30}</div>
+              <div class="cb-arrow">›</div>
+            </div>
+            <div class="contract-band cb-soon60" onclick="drillDown('contractSoon60')">
+              <div class="cb-dot yellow"></div>
+              <div class="cb-info">
+                <div class="cb-label">Expiring in 60 Days</div>
+                <div class="cb-sub">Plan ahead</div>
+              </div>
+              <div class="cb-count yellow">${contractSoon60}</div>
+              <div class="cb-arrow">›</div>
+            </div>
+            <div class="contract-band cb-ok" onclick="drillDown('contractOk')">
+              <div class="cb-dot green"></div>
+              <div class="cb-info">
+                <div class="cb-label">Active Contracts</div>
+                <div class="cb-sub">More than 60 days left</div>
+              </div>
+              <div class="cb-count green">${contractOk}</div>
+              <div class="cb-arrow">›</div>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /dash-right -->
     </div><!-- /dash-layout -->`;
 
@@ -574,6 +715,65 @@ function renderTracker(){
         </table>
       </div>
     </div>`;
+}
+
+// ============================================================
+// BIRTHDAY HELPERS
+// ============================================================
+function getBirthdaysToday(){
+  const now=new Date();
+  const m=now.getMonth(), d=now.getDate();
+  return employees.filter(e=>{
+    if(!e.dob)return false;
+    const bd=new Date(e.dob);
+    return !isNaN(bd)&&bd.getMonth()===m&&bd.getDate()===d;
+  }).map(emp=>{
+    const bd=new Date(emp.dob);
+    return{emp,day:bd.getDate(),daysUntil:0};
+  });
+}
+
+function getBirthdaysThisWeek(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  const end=new Date(now); end.setDate(end.getDate()+7);
+  const result=[];
+  employees.forEach(e=>{
+    if(!e.dob)return;
+    const bd=new Date(e.dob);
+    if(isNaN(bd))return;
+    const thisYear=new Date(now.getFullYear(),bd.getMonth(),bd.getDate());
+    const diff=Math.round((thisYear-now)/(1000*60*60*24));
+    if(diff>=0&&diff<7) result.push({emp:e,day:bd.getDate(),daysUntil:diff});
+  });
+  return result.sort((a,b)=>a.daysUntil-b.daysUntil);
+}
+
+function renderBdayList(list){
+  if(!list||!list.length) return`<div class="bday-empty">None at this time.</div>`;
+  return list.slice(0,6).map(({emp,daysUntil})=>{
+    const isToday=daysUntil===0;
+    const bd=new Date(emp.dob);
+    const dateStr=bd.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const timeLabel=isToday?'<span class="bday-today-badge">🎉 Today!</span>':daysUntil===1?'Tomorrow':`in ${daysUntil}d`;
+    const initials=((emp.firstName||emp.fullName||'?')[0]||'?').toUpperCase();
+    return`<div class="bday-item${isToday?' bday-today':''}" onclick="openDetailPanel('${esc(emp.infinixId)}')">
+      <div class="bday-avatar">${isToday?'🎉':initials}</div>
+      <div style="flex:1;min-width:0">
+        <div class="bday-name">${esc(emp.fullName||'')}</div>
+        <div class="bday-date">${esc(dateStr)}${emp.storeAssignment?' · '+esc(emp.storeAssignment):''}</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0">${timeLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+function switchBdayTab(tab, btn){
+  ['today','week','month'].forEach(t=>{
+    const el=document.getElementById('bday-list-'+t);
+    if(el)el.style.display=t===tab?'':'none';
+  });
+  document.querySelectorAll('.bday-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
 }
 
 // Chart global defaults — color is overridden per-render for theme support
