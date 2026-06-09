@@ -3,6 +3,40 @@
 // ============================================================
 const STATUS_SET = new Set(['Active','Floating','Resigned','AWOL','Terminated','Backout','-']);
 
+/**
+ * Derive the 6 most recently-changed employees from the activity log.
+ * Returns [] when logCache is not yet loaded (widget stays as loading placeholder).
+ * Falls back to employees[].lastUpdated only when log has no matching entries.
+ */
+function buildRecentFromLog(){
+  // If log not loaded yet, return nothing — widget will be filled when log arrives
+  if(!logCache) return [];
+
+  // Walk log entries (most-recent first) and pick unique employees in order
+  const seen = new Set();
+  const ordered = [];
+  // logCache rows: [timestamp, infinixId, name, action, from, to, by, detail]
+  const sorted = [...logCache].sort((a,b)=>new Date(b[0]||0)-new Date(a[0]||0));
+  for(const row of sorted){
+    const id = String(row[1]||'').trim();
+    if(!id || seen.has(id)) continue;
+    const emp = employees.find(e=>String(e.infinixId).trim()===id);
+    if(!emp) continue;
+    seen.add(id);
+    ordered.push(emp);
+    if(ordered.length >= 6) break;
+  }
+
+  // If log is loaded but has no usable entries, fall back to lastUpdated field
+  if(!ordered.length){
+    return [...employees]
+      .filter(e=>e.lastUpdated)
+      .sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0))
+      .slice(0,6);
+  }
+  return ordered;
+}
+
 function renderRecentlyUpdated(recent){
   const el=document.getElementById('recent-updated-list');
   if(!el||!recent)return;
@@ -65,8 +99,6 @@ function renderDashboard(){
   const missingStore=activeSheetRows.filter(e=>isMissing(e.storeAssignment)).length;
 
   const regions={};activeEmployees.forEach(e=>{const rr=normalizeRegion(e.region);if(rr)regions[rr]=(regions[rr]||0)+1;});
-  const recent=[...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,6);
-
   // Birthday data for upgraded widget
   const bdayToday=getBirthdaysToday();
   const bdayWeek=getBirthdaysThisWeek();
@@ -89,7 +121,10 @@ function renderDashboard(){
   // Pre-load log cache for recently updated section (non-blocking, render updates when done)
   if(!logCache){
     gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:H`})
-      .then(r=>{logCache=r.result.values||[];renderRecentlyUpdated(recent);})
+      .then(r=>{
+        logCache=r.result.values||[];
+        renderRecentlyUpdated(buildRecentFromLog());
+      })
       .catch(()=>{});
   }
 
@@ -587,7 +622,7 @@ function renderDashboard(){
   // Render right panel widgets after charts settle
   setTimeout(()=>{
     if(typeof renderAnnouncementCarousel==='function') renderAnnouncementCarousel();
-    if(typeof renderRecentlyUpdated==='function') renderRecentlyUpdated(recent);
+    if(typeof renderRecentlyUpdated==='function') renderRecentlyUpdated(buildRecentFromLog());
   },100);
 }
 
