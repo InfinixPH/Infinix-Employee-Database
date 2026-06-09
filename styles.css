@@ -908,27 +908,28 @@ tbody td { padding: 10px 13px; font-size: 12.5px; white-space: nowrap; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
 .td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
 
-/* BADGES */
+/* BADGES — compact solid-fill chips */
 .badge {
   display: inline-flex; align-items: center;
-  padding: 2px 9px; border-radius: 20px;
-  font-size: 10px; font-weight: 700; white-space: nowrap;
-  border: 1px solid transparent; letter-spacing: 0.3px; text-transform: uppercase;
+  padding: 1px 7px; border-radius: 4px;
+  font-size: 9.5px; font-weight: 700; white-space: nowrap;
+  border: 1px solid transparent; letter-spacing: 0.4px; text-transform: uppercase;
+  height: 20px; line-height: 1;
 }
-.b-Active      { background: rgba(0,230,118,0.14); color: #00E676; border-color: rgba(0,230,118,0.30); box-shadow: 0 0 8px rgba(0,230,118,0.15); }
-.b-Floating    { background: rgba(255,215,64,0.14); color: #FFD740; border-color: rgba(255,215,64,0.30); }
-.b-Resigned    { background: rgba(255,171,64,0.12); color: #FFAB40; border-color: rgba(255,171,64,0.24); }
-.b-AWOL        { background: rgba(255,82,82,0.14);  color: #FF5252; border-color: rgba(255,82,82,0.28); }
-.b-Terminated  { background: rgba(206,147,216,0.12); color: #CE93D8; border-color: rgba(206,147,216,0.24); }
-.b-Backout     { background: rgba(255,82,82,0.14);  color: #FF5252; border-color: rgba(255,82,82,0.28); }
-.b-DEPLOYED    { background: rgba(0,230,118,0.14); color: #00E676; border-color: rgba(0,230,118,0.30); box-shadow: 0 0 8px rgba(0,230,118,0.15); }
-.b-NOT-YET-DEPLOYED { background: rgba(255,215,64,0.14); color: #FFD740; border-color: rgba(255,215,64,0.30); }
-.b-BACKOUT     { background: rgba(255,82,82,0.14);  color: #FF5252; border-color: rgba(255,82,82,0.28); }
-.b-SCANNED     { background: rgba(0,255,224,0.12); color: #00FFE0; border-color: rgba(0,255,224,0.24); }
-.b-NOT-SCANNED { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
-.b-SENT        { background: rgba(0,230,118,0.14); color: #00E676; border-color: rgba(0,230,118,0.30); }
-.b-NOT-YET-SENT{ background: rgba(255,215,64,0.14); color: #FFD740; border-color: rgba(255,215,64,0.30); }
-.b-none        { background: rgba(255,255,255,0.04); color: var(--text3); border-color: rgba(255,255,255,0.08); }
+.b-Active      { background: rgba(0,230,118,0.18); color: #00E676; border-color: rgba(0,230,118,0.35); }
+.b-Floating    { background: rgba(255,215,64,0.18); color: #FFD740; border-color: rgba(255,215,64,0.35); }
+.b-Resigned    { background: rgba(255,171,64,0.16); color: #FFAB40; border-color: rgba(255,171,64,0.30); }
+.b-AWOL        { background: rgba(255,82,82,0.18);  color: #FF5252; border-color: rgba(255,82,82,0.35); }
+.b-Terminated  { background: rgba(206,147,216,0.16); color: #CE93D8; border-color: rgba(206,147,216,0.30); }
+.b-Backout     { background: rgba(255,82,82,0.18);  color: #FF5252; border-color: rgba(255,82,82,0.35); }
+.b-DEPLOYED    { background: rgba(0,230,118,0.18); color: #00E676; border-color: rgba(0,230,118,0.35); }
+.b-NOT-YET-DEPLOYED { background: rgba(255,215,64,0.18); color: #FFD740; border-color: rgba(255,215,64,0.35); }
+.b-BACKOUT     { background: rgba(255,82,82,0.18);  color: #FF5252; border-color: rgba(255,82,82,0.35); }
+.b-SCANNED     { background: rgba(0,255,224,0.15); color: #00FFE0; border-color: rgba(0,255,224,0.30); }
+.b-NOT-SCANNED { background: rgba(255,255,255,0.06); color: var(--text3); border-color: rgba(255,255,255,0.10); }
+.b-SENT        { background: rgba(0,230,118,0.18); color: #00E676; border-color: rgba(0,230,118,0.35); }
+.b-NOT-YET-SENT{ background: rgba(255,215,64,0.18); color: #FFD740; border-color: rgba(255,215,64,0.35); }
+.b-none        { background: rgba(255,255,255,0.06); color: var(--text3); border-color: rgba(255,255,255,0.10); }
 
 /* ============================================================
    PAGINATION
@@ -2263,8 +2264,7 @@ html, body {
 /* Section spacing improvements */
 .dash-main > * + * { margin-top: 0; }
 
-/* Better badge sizing */
-.badge { letter-spacing: 0.3px; }
+/* Better badge sizing — handled by the chip redesign above */
 
 /* Scrollbar polish for detail panel */
 .detail-panel-body {
@@ -2282,3 +2282,115 @@ html, body {
 [data-theme="light"] .detail-panel { background: rgba(240,244,244,0.96); border-left-color: rgba(10,138,133,0.18); }
 [data-theme="light"] .dp-backdrop { background: rgba(20,30,30,0.35); }
 [data-theme="light"] .bday-tab-btn.active { background: rgba(10,138,133,0.10); border-color: rgba(10,138,133,0.25); color: var(--accent); }
+
+/* ============================================================
+   FEATURE 1: SHIMMER SKELETON LOADERS
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: -700px 0; }
+  100% { background-position: 700px 0; }
+}
+.skeleton-base {
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(0,255,224,0.04) 25%, rgba(0,255,224,0.10) 50%, rgba(0,255,224,0.04) 75%);
+  background-size: 700px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+[data-theme="light"] .skeleton-base {
+  background: linear-gradient(90deg, rgba(10,138,133,0.06) 25%, rgba(10,138,133,0.14) 50%, rgba(10,138,133,0.06) 75%);
+  background-size: 700px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+.skeleton-row td { padding: 10px 13px; }
+.sk-cell { height: 14px; border-radius: 4px; }
+.sk-name { width: 130px; }
+.sk-id   { width: 72px; }
+.sk-badge { width: 56px; height: 20px; border-radius: 4px; }
+.sk-short { width: 80px; }
+.sk-med   { width: 100px; }
+
+/* Dashboard skeleton cards */
+.skeleton-kpi-card {
+  padding: 14px 16px 12px; position: relative; overflow: hidden;
+}
+.skeleton-kpi-card .sk-label { width: 70px; height: 10px; margin-bottom: 10px; }
+.skeleton-kpi-card .sk-value { width: 55px; height: 30px; margin-bottom: 6px; }
+.skeleton-kpi-card .sk-sub   { width: 100px; height: 10px; }
+
+/* ============================================================
+   FEATURE 7: EMPTY STATES
+   ============================================================ */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 24px; text-align: center; gap: 12px;
+}
+.empty-state svg { opacity: 0.25; color: var(--accent); }
+.es-title {
+  font-size: 14px; font-weight: 700; color: var(--text2); margin-top: 4px;
+}
+.es-sub {
+  font-size: 12px; color: var(--text3); max-width: 280px; line-height: 1.6;
+}
+/* Log empty state */
+.log-empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 24px; text-align: center; gap: 10px;
+}
+.log-empty-state svg { opacity: 0.22; color: var(--accent); }
+.log-empty-title { font-size: 13px; font-weight: 700; color: var(--text2); }
+.log-empty-sub   { font-size: 11.5px; color: var(--text3); }
+
+/* ============================================================
+   FEATURE 2: QUICK ACTION BUTTONS IN DETAIL PANEL
+   ============================================================ */
+.dp-quick-actions {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  background: rgba(0,255,224,0.02); flex-shrink: 0;
+}
+.dp-qa-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 700; font-family: 'Poppins', sans-serif;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(0,255,224,0.25);
+  background: rgba(0,255,224,0.07); color: var(--accent);
+}
+.dp-qa-btn:hover { background: rgba(0,255,224,0.15); border-color: rgba(0,255,224,0.45); transform: translateY(-1px); }
+.dp-qa-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.dp-qa-btn.done { background: rgba(0,230,118,0.12); color: var(--success); border-color: rgba(0,230,118,0.30); }
+
+/* ============================================================
+   FEATURE 4: TREND INDICATORS ON KPI CARDS
+   ============================================================ */
+.dhc-trend-row {
+  display: flex; align-items: center; gap: 5px; margin-top: 5px;
+}
+.dhc-trend-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9.5px; font-weight: 700; padding: 1px 6px;
+  border-radius: 4px; letter-spacing: 0.2px;
+}
+.dhc-trend-chip.up   { background: rgba(0,230,118,0.14); color: #00E676; }
+.dhc-trend-chip.down { background: rgba(255,82,82,0.14);  color: #FF5252; }
+.dhc-trend-chip.flat { background: rgba(255,255,255,0.05); color: var(--text3); }
+.dhc-trend-label {
+  font-size: 9px; color: var(--text3);
+}
+
+/* Light mode badge fix */
+[data-theme="light"] .b-Active      { background: rgba(0,150,80,0.12);  color: #0a7040; border-color: rgba(0,150,80,0.28); }
+[data-theme="light"] .b-Floating    { background: rgba(180,130,0,0.12); color: #7a5500; border-color: rgba(180,130,0,0.28); }
+[data-theme="light"] .b-Resigned    { background: rgba(180,90,0,0.12);  color: #7a3d00; border-color: rgba(180,90,0,0.25); }
+[data-theme="light"] .b-AWOL        { background: rgba(180,40,40,0.12); color: #8a1f1f; border-color: rgba(180,40,40,0.28); }
+[data-theme="light"] .b-Terminated  { background: rgba(120,60,160,0.12); color: #5a2a80; border-color: rgba(120,60,160,0.25); }
+[data-theme="light"] .b-Backout,
+[data-theme="light"] .b-BACKOUT     { background: rgba(180,40,40,0.12); color: #8a1f1f; border-color: rgba(180,40,40,0.28); }
+[data-theme="light"] .b-DEPLOYED    { background: rgba(0,150,80,0.12);  color: #0a7040; border-color: rgba(0,150,80,0.28); }
+[data-theme="light"] .b-NOT-YET-DEPLOYED { background: rgba(180,130,0,0.12); color: #7a5500; border-color: rgba(180,130,0,0.28); }
+[data-theme="light"] .b-SCANNED     { background: rgba(10,138,133,0.12); color: #076e6a; border-color: rgba(10,138,133,0.28); }
+[data-theme="light"] .b-NOT-SCANNED { background: rgba(0,0,0,0.05); color: rgba(26,34,34,0.45); border-color: rgba(0,0,0,0.12); }
+[data-theme="light"] .b-SENT        { background: rgba(0,150,80,0.12);  color: #0a7040; border-color: rgba(0,150,80,0.28); }
+[data-theme="light"] .b-NOT-YET-SENT{ background: rgba(180,130,0,0.12); color: #7a5500; border-color: rgba(180,130,0,0.28); }
+[data-theme="light"] .b-none        { background: rgba(0,0,0,0.05); color: rgba(26,34,34,0.45); border-color: rgba(0,0,0,0.10); }
