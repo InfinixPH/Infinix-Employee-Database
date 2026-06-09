@@ -910,10 +910,6 @@ function filteredEmployees(type){
     else if(missingFieldFilter==='missingInfinixId')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim());
     else if(missingFieldFilter==='missingStore')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment));
     else if(missingFieldFilter==='backout')list=employees.filter(e=>isBackoutDeployment(e.deploymentStatus)||isBackoutDeployment(e.deploymentStatusColL));
-    else if(missingFieldFilter==='contractExpired'){const now=new Date();now.setHours(0,0,0,0);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d<now;});}
-    else if(missingFieldFilter==='contractExpiring'){const now=new Date();now.setHours(0,0,0,0);const d30=new Date(now);d30.setDate(d30.getDate()+30);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>=now&&d<=d30;});}
-    else if(missingFieldFilter==='contractSoon60'){const now=new Date();now.setHours(0,0,0,0);const d30=new Date(now);d30.setDate(d30.getDate()+30);const d60=new Date(now);d60.setDate(d60.getDate()+60);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>d30&&d<=d60;});}
-    else if(missingFieldFilter==='contractOk'){const now=new Date();now.setHours(0,0,0,0);const d60=new Date(now);d60.setDate(d60.getDate()+60);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>d60;});}
   }
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
@@ -1220,7 +1216,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment',backout:'Backout Cases',contractExpired:'Expired Contracts',contractExpiring:'Contracts Expiring (30 Days)',contractSoon60:'Contracts Expiring (60 Days)',contractOk:'Active Contracts (60d+)'};
+    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment',backout:'Backout Cases'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
@@ -1645,7 +1641,6 @@ function buildDetailHTML(e){
           ${field('Deploy Status',e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):'')}
           ${field('Deploy Date',esc(e.deploymentDate))}
           ${field('Contract',badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')))}
-          ${field('Contract End',esc(e.contractEndDate))}
           ${field('Status Date',esc(e.statusDate))}
           ${field('Remarks',esc(e.statusRemarks))}
         </div>
@@ -2186,26 +2181,6 @@ async function doDelete(id){
 function buildNotifications(){
   const notifs = [];
   const today = new Date(); today.setHours(0,0,0,0);
-  const in7 = new Date(today); in7.setDate(in7.getDate()+7);
-
-  // Contracts expiring within 7 days
-  const expiringContracts = employees.filter(e=>{
-    if(!e.contractEndDate) return false;
-    const d = new Date(e.contractEndDate); d.setHours(0,0,0,0);
-    return d >= today && d <= in7;
-  });
-  expiringContracts.forEach(e=>{
-    const d = new Date(e.contractEndDate);
-    const daysLeft = Math.round((d-today)/(1000*60*60*24));
-    notifs.push({
-      group:'contract', color:'var(--danger)',
-      title: esc(e.fullName||e.firstName||e.infinixId),
-      sub: `Contract expires ${daysLeft===0?'today':'in '+daysLeft+' day'+(daysLeft!==1?'s':'')}`,
-      id: e.infinixId
-    });
-  });
-
-  // Today's birthdays
   const bdaysToday = getBirthdaysToday ? getBirthdaysToday() : [];
   bdaysToday.forEach(({emp})=>{
     notifs.push({
@@ -2258,10 +2233,10 @@ function renderNotifDrawer(){
     return;
   }
 
-  const groups = {contract:[], birthday:[], requirements:[]};
+  const groups = {birthday:[], requirements:[]};
   notifs.forEach(n=>{ if(groups[n.group]) groups[n.group].push(n); });
-  const groupLabels = {contract:'Contracts Expiring (7 Days)', birthday:'Birthdays Today', requirements:'Missing Requirements'};
-  const groupColors = {contract:'var(--danger)', birthday:'var(--warning)', requirements:'var(--text3)'};
+  const groupLabels = {birthday:'Birthdays Today', requirements:'Missing Requirements'};
+  const groupColors = {birthday:'var(--warning)', requirements:'var(--text3)'};
 
   let html = '';
   Object.keys(groups).forEach(g=>{
