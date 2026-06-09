@@ -879,6 +879,11 @@ function filteredEmployees(type){
     else if(missingFieldFilter==='missingRequirements')list=list.filter(e=>!requirementsComplete(e));
     else if(missingFieldFilter==='missingInfinixId')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim());
     else if(missingFieldFilter==='missingStore')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment));
+    else if(missingFieldFilter==='backout')list=employees.filter(e=>isBackoutDeployment(e.deploymentStatus)||isBackoutDeployment(e.deploymentStatusColL));
+    else if(missingFieldFilter==='contractExpired'){const now=new Date();now.setHours(0,0,0,0);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d<now;});}
+    else if(missingFieldFilter==='contractExpiring'){const now=new Date();now.setHours(0,0,0,0);const d30=new Date(now);d30.setDate(d30.getDate()+30);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>=now&&d<=d30;});}
+    else if(missingFieldFilter==='contractSoon60'){const now=new Date();now.setHours(0,0,0,0);const d30=new Date(now);d30.setDate(d30.getDate()+30);const d60=new Date(now);d60.setDate(d60.getDate()+60);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>d30&&d<=d60;});}
+    else if(missingFieldFilter==='contractOk'){const now=new Date();now.setHours(0,0,0,0);const d60=new Date(now);d60.setDate(d60.getDate()+60);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>d60;});}
   }
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
@@ -1185,7 +1190,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment'};
+    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment',backout:'Backout Cases',contractExpired:'Expired Contracts',contractExpiring:'Contracts Expiring (30 Days)',contractSoon60:'Contracts Expiring (60 Days)',contractOk:'Active Contracts (60d+)'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
@@ -1450,13 +1455,32 @@ function doBulkDelete(){
 function openDetailPanel(id){
   const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)return;
   detailEmpId=id;
-  document.getElementById('dp-title').textContent=emp.fullName||`${emp.firstName} ${emp.lastName}`;
-  document.getElementById('dp-body').innerHTML=buildDetailHTML(emp);
-  document.getElementById('detail-panel').classList.add('open');
+  const panel=document.getElementById('detail-panel');
+  const backdrop=document.getElementById('dp-backdrop');
+  panel.innerHTML=buildDetailHTML(emp);
+  panel.classList.add('open');
+  if(backdrop)backdrop.classList.add('open');
   document.body.classList.add('panel-open');
   loadEmployeeAudit(id);
+  // activate first tab
+  switchDpTab('info');
 }
-function closeDetailPanel(){document.getElementById('detail-panel').classList.remove('open');document.body.classList.remove('panel-open');detailEmpId=null;}
+function closeDetailPanel(){
+  const panel=document.getElementById('detail-panel');
+  const backdrop=document.getElementById('dp-backdrop');
+  panel.classList.remove('open');
+  if(backdrop)backdrop.classList.remove('open');
+  document.body.classList.remove('panel-open');
+  detailEmpId=null;
+}
+function switchDpTab(tab){
+  document.querySelectorAll('.dp-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.dp-tab').forEach(t=>t.classList.remove('active'));
+  const pane=document.getElementById('dp-pane-'+tab);
+  const btn=document.querySelector(`.dp-tab[data-tab="${tab}"]`);
+  if(pane)pane.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
 function dpEdit(){
   if(!canWrite()){denyWrite();return;}const id=detailEmpId;if(!id)return;closeDetailPanel();openEditModal(id);}
 function dpDelete(){
@@ -1467,107 +1491,205 @@ function dpDelete(){
 }
 
 function buildDetailHTML(e){
-  const row=(label,val)=>`<div class="detail-row"><div class="detail-label">${esc(label)}</div><div class="detail-val">${val||'—'}</div></div>`;
-  const rowSensitive=(label,val)=>`<div class="detail-row"><div class="detail-label">${esc(label)}</div><div class="detail-val sensitive">${val||'—'}</div></div>`;
+  const field=(label,val,full=false)=>`<div class="dp-field${full?' dp-field-full':''}"><div class="dp-field-label">${esc(label)}</div><div class="dp-field-val${val?'':' muted'}">${val||'—'}</div></div>`;
+  const fieldSensitive=(label,val,full=false)=>`<div class="dp-field${full?' dp-field-full':''}"><div class="dp-field-label">${esc(label)}</div><div class="dp-field-val sensitive${val?'':' muted'}">${val||'—'}</div></div>`;
+  const missing=v=>`<span style="color:var(--danger);font-size:10px">⚠ Missing</span>`;
 
-  let bdayNote='';
+  // Profile completion checks
+  const checks=[
+    {label:'Employment Status', done:!!e.status&&e.status!=='-'},
+    {label:'Deployment Status', done:e.deploymentStatus==='DEPLOYED'},
+    {label:'QR Scanned',        done:e.qrStatus==='SCANNED'},
+    {label:'Contract Sent',     done:e.contractStatus==='SENT'},
+    {label:'Mobile Number',     done:!isMissing(e.mobile)},
+    {label:'Email Address',     done:!isMissing(e.email)},
+    {label:'SSS Number',        done:!isMissing(e.sss)},
+    {label:'PhilHealth',        done:!isMissing(e.philhealth)},
+    {label:'Pag-IBIG',          done:!isMissing(e.pagibig)},
+    {label:'Bank Account',      done:!isMissing(e.bankAccount)},
+    {label:'Date of Birth',     done:!isMissing(e.dob)},
+    {label:'Region Assigned',   done:!isMissing(e.region)},
+  ];
+  const doneCount=checks.filter(c=>c.done).length;
+  const pct=Math.round(doneCount/checks.length*100);
+  const barClass=pct===100?'':'pct>=60?\'warn\':\'danger\'';
+  const barColorStr=pct===100?'var(--success)':pct>=60?'var(--warning)':'var(--danger)';
+
+  // Birthday banner
+  let bdayBanner='';
   if(e.dob){
-    const d=new Date(e.dob);const now=new Date();
-    if(!isNaN(d)&&d.getMonth()===now.getMonth()){
-      const diff=d.getDate()-now.getDate();
-      if(diff===0)bdayNote=`<div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:10px">🎉 Birthday today!</div>`;
-      else if(diff>0&&diff<=7)bdayNote=`<div style="background:rgba(46,196,190,0.08);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--teal-deep);margin-bottom:10px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
+    const bd=new Date(e.dob); const now=new Date();
+    if(!isNaN(bd)){
+      const thisYear=new Date(now.getFullYear(),bd.getMonth(),bd.getDate());
+      const diff=Math.round((thisYear-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/(1000*60*60*24));
+      if(diff===0) bdayBanner=`<div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:12px">🎉 Birthday today! Happy Birthday, ${esc(e.firstName||'!')}!</div>`;
+      else if(diff>0&&diff<=7) bdayBanner=`<div style="background:rgba(0,255,224,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
     }
   }
 
-  const checks = [
-    { label: 'Employment Status',  done: !!e.status && e.status !== '-' },
-    { label: 'Deployment Status',  done: e.deploymentStatus === 'DEPLOYED' },
-    { label: 'QR Scanned',         done: e.qrStatus === 'SCANNED' },
-    { label: 'Contract Sent',      done: e.contractStatus === 'SENT' },
-    { label: 'Mobile Number',      done: !isMissing(e.mobile) },
-    { label: 'Email Address',      done: !isMissing(e.email) },
-    { label: 'SSS Number',         done: !isMissing(e.sss) },
-    { label: 'PhilHealth',         done: !isMissing(e.philhealth) },
-    { label: 'Pag-IBIG',           done: !isMissing(e.pagibig) },
-    { label: 'Bank Account',       done: !isMissing(e.bankAccount) },
-    { label: 'Date of Birth',      done: !isMissing(e.dob) },
-    { label: 'Region Assigned',    done: !isMissing(e.region) },
-  ];
-  const doneCount = checks.filter(c => c.done).length;
-  const pct = Math.round(doneCount / checks.length * 100);
-  const barColor = pct === 100 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+  // Status dot color
+  const statusColors={'Active':'var(--success)','Floating':'#FFD740','Resigned':'#FFAB40','AWOL':'var(--danger)','Terminated':'#CE93D8','Backout':'#FF7043'};
+  const statusDotColor=statusColors[e.status]||'var(--text3)';
 
-  const onboardingHTML = `
-    <div class="detail-section">
-      <div class="detail-section-title">Profile Completion</div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="flex:1;height:7px;background:rgba(136,144,99,0.12);border-radius:4px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${barColor};border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+  // Avatar initials
+  const initials=((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
+
+  // HERO HEADER
+  const hero=`
+    <div class="dp-hero">
+      <div class="dp-avatar-wrap">
+        <div class="dp-avatar">${initials}</div>
+        <div class="dp-status-dot-hero" style="background:${statusDotColor}"></div>
+      </div>
+      <div class="dp-hero-info">
+        <div class="dp-hero-name">${esc(e.fullName||`${e.firstName||''} ${e.lastName||''}`.trim())}</div>
+        <div class="dp-hero-id">${esc(e.infinixId||'No ID')}</div>
+        <div class="dp-hero-badges">
+          ${badgeHTML(e.status)}
+          ${e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):''}
         </div>
-        <span style="font-size:13px;font-weight:800;color:${barColor};min-width:36px;text-align:right">${pct}%</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px">
-        ${checks.map(c=>`
-          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:${c.done?'var(--text2)':'var(--danger)'}">
-            <span style="width:14px;height:14px;border-radius:50%;background:${c.done?'var(--success-bg)':'var(--danger-bg)'};border:1px solid ${c.done?'rgba(122,184,148,0.3)':'rgba(196,122,122,0.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px">${c.done?'✓':'!'}</span>
-            ${esc(c.label)}
-          </div>`).join('')}
+      <button class="dp-close-btn" onclick="closeDetailPanel()">✕</button>
+    </div>`;
+
+  // TABS
+  const tabs=`
+    <div class="dp-tabs">
+      <button class="dp-tab active" data-tab="info" onclick="switchDpTab('info')">Profile</button>
+      <button class="dp-tab" data-tab="reqs" onclick="switchDpTab('reqs')">Requirements</button>
+      <button class="dp-tab" data-tab="notes" onclick="switchDpTab('notes')">Notes</button>
+      <button class="dp-tab" data-tab="audit" onclick="switchDpTab('audit')">Audit</button>
+    </div>`;
+
+  // PANE: Profile Info
+  const paneInfo=`
+    <div class="dp-pane active" id="dp-pane-info">
+      ${bdayBanner}
+      <div class="dp-section">
+        <div class="dp-section-title">📋 Employment</div>
+        <div class="dp-grid">
+          ${field('Status',badgeHTML(e.status))}
+          ${field('QR Status',badgeHTML(e.qrStatus||'NOT SCANNED',(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')))}
+          ${field('Deploy Status',e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):'')}
+          ${field('Deploy Date',esc(e.deploymentDate))}
+          ${field('Contract',badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')))}
+          ${field('Contract End',esc(e.contractEndDate))}
+          ${field('Status Date',esc(e.statusDate))}
+          ${field('Remarks',esc(e.statusRemarks))}
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">👤 Personal</div>
+        <div class="dp-grid">
+          ${field('First Name',esc(e.firstName))}
+          ${field('Last Name',esc(e.lastName))}
+          ${field('Middle Name',esc(e.middleName))}
+          ${field('Gender',esc(e.gender))}
+          ${field('Marital Status',esc(e.maritalStatus))}
+          ${fieldSensitive('Date of Birth',esc(e.dob))}
+          ${fieldSensitive('Mobile',esc(e.mobile))}
+          ${fieldSensitive('Email',esc(e.email))}
+          ${fieldSensitive('Address',esc(e.address),true)}
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">📍 Assignment</div>
+        <div class="dp-grid">
+          ${field('Region',esc(e.region))}
+          ${field('Store',esc(e.storeAssignment))}
+          ${field('Store ID',esc(e.storeId))}
+          ${field('RSS Name',esc(e.rssName))}
+          ${field('RSS ID',esc(e.rssId))}
+          ${field('Last Updated',esc(e.lastUpdated))}
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">🏛 Government IDs</div>
+        <div class="dp-grid">
+          ${fieldSensitive('SSS',e.sss?esc(e.sss):missing())}
+          ${fieldSensitive('PhilHealth',e.philhealth?esc(e.philhealth):missing())}
+          ${fieldSensitive('Pag-IBIG',esc(e.pagibig))}
+          ${fieldSensitive('TIN',esc(e.tin))}
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">💳 Payroll</div>
+        <div class="dp-grid">
+          ${fieldSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
+          ${fieldSensitive('Bank',esc(e.bankName))}
+          ${fieldSensitive('Account No.',e.bankAccount?esc(e.bankAccount):missing())}
+        </div>
       </div>
     </div>`;
 
-  return `
-    ${bdayNote}
-    ${onboardingHTML}
-    <div class="detail-section">
-      <div class="detail-section-title">Key Info</div>
-      ${row('Infinix ID',`<span class="td-id">${esc(e.infinixId)}</span>`)}
-      ${row('Full Name',`<b>${esc(e.fullName||'')}</b>`)}
-      ${row('Status',badgeHTML(e.status))}
-      ${row('Status Date',esc(e.statusDate))}${row('Status Remarks',esc(e.statusRemarks))}
-      ${row('QR Status',badgeHTML(e.qrStatus||'NOT SCANNED',(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')))}
-      ${row('Deploy Status',badgeHTML(e.deploymentStatus,e.deploymentStatus?(e.deploymentStatus).replace(/ /g,'-'):null))}
-      ${row('Deploy Date',esc(e.deploymentDate))}
-      ${row('Contract',badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')))}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Personal</div>
-      ${row('First Name',esc(e.firstName))}${row('Last Name',esc(e.lastName))}
-      ${row('Middle Name',esc(e.middleName))}${rowSensitive('Date of Birth',esc(e.dob))}
-      ${row('Gender',esc(e.gender))}${row('Marital Status',esc(e.maritalStatus))}
-      ${rowSensitive('Mobile',esc(e.mobile))}${rowSensitive('Email',esc(e.email))}${rowSensitive('Address',esc(e.address))}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Assignment</div>
-      ${row('Region',esc(e.region))}${row('Store',esc(e.storeAssignment))}
-      ${row('Store ID',esc(e.storeId))}${row('RSS Name',esc(e.rssName))}${row('RSS ID',esc(e.rssId))}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Government IDs</div>
-      ${rowSensitive('SSS',e.sss?esc(e.sss):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-      ${rowSensitive('PhilHealth',e.philhealth?esc(e.philhealth):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-      ${rowSensitive('Pag-IBIG',esc(e.pagibig))}${rowSensitive('TIN',esc(e.tin))}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Payroll</div>
-      ${rowSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
-      ${rowSensitive('Bank',esc(e.bankName))}
-      ${rowSensitive('Account No.',e.bankAccount?esc(e.bankAccount):'<span style="color:var(--danger);font-size:10px">⚠ Missing</span>')}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Requirements</div>
-      ${REQUIREMENT_FIELDS.map(([k,label])=>row(label,e[k]?'✅ Done':'—')).join('')}
-      ${row('Progress (Required 9)',reqProgressHTML(e))}
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Notes / Remarks</div>
-      <textarea class="notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${esc(e.notes||'')}</textarea>
-      <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${esc(e.infinixId)}',document.getElementById('dp-notes-area').value)">Save Notes</button>
-    </div>
-    <div class="detail-section">
-      <div class="detail-section-title">Audit Trail</div>
-      <div id="dp-audit-inner" style="padding:6px 0;font-size:12px;color:var(--text3)">Loading…</div>
+  // PANE: Requirements
+  const reqDone=REQUIREMENT_FIELDS.filter(([k])=>e[k]).length;
+  const reqTotal=REQUIREMENT_FIELDS.length;
+  const reqPct=reqTotal?Math.round(reqDone/reqTotal*100):0;
+  const reqBarClass=reqPct===100?'':reqPct>=60?'warn':'danger';
+  const paneReqs=`
+    <div class="dp-pane" id="dp-pane-reqs">
+      <div class="dp-req-card">
+        <div class="dp-req-header">
+          <div class="dp-req-label">Requirements Completion</div>
+          <div class="dp-req-pct">${reqPct}%</div>
+        </div>
+        <div class="dp-req-bar-wrap">
+          <div class="dp-req-bar-fill${reqBarClass?' '+reqBarClass:''}" style="width:${reqPct}%"></div>
+        </div>
+        <div style="font-size:10.5px;color:var(--text3);margin-bottom:8px">${reqDone} of ${reqTotal} submitted · Required: 9</div>
+        <div class="dp-req-items">
+          ${REQUIREMENT_FIELDS.map(([k,label])=>`<span class="dp-req-chip ${e[k]?'done':'miss'}">${e[k]?'✓':'✗'} ${esc(label)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="dp-section" style="margin-top:8px">
+        <div class="dp-section-title">📊 Profile Completion</div>
+        <div class="dp-req-card" style="margin-bottom:0">
+          <div class="dp-req-header">
+            <div class="dp-req-label">Overall Profile</div>
+            <div class="dp-req-pct" style="color:${barColorStr}">${pct}%</div>
+          </div>
+          <div class="dp-req-bar-wrap">
+            <div class="dp-req-bar-fill${pct===100?'':pct>=60?' warn':' danger'}" style="width:${pct}%"></div>
+          </div>
+          <div class="dp-req-items" style="margin-top:8px">
+            ${checks.map(c=>`<span class="dp-req-chip ${c.done?'done':'miss'}">${c.done?'✓':'✗'} ${esc(c.label)}</span>`).join('')}
+          </div>
+        </div>
+      </div>
     </div>`;
+
+  // PANE: Notes
+  const paneNotes=`
+    <div class="dp-pane" id="dp-pane-notes">
+      <div class="dp-section">
+        <div class="dp-section-title">📝 Notes / Remarks</div>
+        <textarea class="dp-notes-area notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${esc(e.notes||'')}</textarea>
+        <div style="margin-top:8px;display:flex;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${esc(e.infinixId)}',document.getElementById('dp-notes-area').value)">💾 Save Notes</button>
+        </div>
+      </div>
+    </div>`;
+
+  // PANE: Audit
+  const paneAudit=`
+    <div class="dp-pane" id="dp-pane-audit">
+      <div class="dp-section">
+        <div class="dp-section-title">🕐 Audit Trail</div>
+        <div class="dp-log-list" id="dp-audit-inner">
+          <div style="font-size:12px;color:var(--text3);padding:8px 0">Loading…</div>
+        </div>
+      </div>
+    </div>`;
+
+  // FOOTER ACTIONS
+  const footer=`
+    <div class="detail-panel-footer">
+      ${canWrite()?`<button class="btn btn-ghost btn-sm write-action" id="dp-edit-btn" onclick="dpEdit()">✏ Edit</button>`:''}
+      ${canDeleteRecords()?`<button class="btn btn-danger btn-sm" id="dp-delete-btn" onclick="dpDelete()">🗑 Delete</button>`:''}
+    </div>`;
+
+  return hero+tabs+`<div class="dp-body">`+paneInfo+paneReqs+paneNotes+paneAudit+`</div>`+footer;
 }
 
 async function loadEmployeeAudit(infinixId){
@@ -1577,20 +1699,21 @@ async function loadEmployeeAudit(infinixId){
     const entries=[...logCache].filter(r=>String(r[1]||'').trim()===String(infinixId).trim()).reverse();
     const el=document.getElementById('dp-audit-inner');if(!el)return;
     if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
-    const colorMap={Added:'#4ecb71','Status Changed / Moved':'#f5c842',Deleted:'#e05c5c',Updated:'var(--moss-green)'};
-    el.innerHTML=entries.map(r=>{
+    const dotClass={Added:'added','Status Changed / Moved':'changed',Deleted:'deleted',Updated:'changed'};
+    el.innerHTML=`<div class="dp-log-list">`+entries.map(r=>{
       const action=r[3]||'Updated';
       const from=r[4]||''; const to=r[5]||'';
       const detail=r[7]||'';
-      return`<div class="audit-item">
-        <div class="audit-dot" style="background:${colorMap[action]||'rgba(136,144,99,0.5)'}"></div>
-        <div class="audit-meta"><b>${esc(action)}</b>
-          ${from&&from!=='—'?`<span style="color:var(--text3)"> · ${esc(from)} → <b style="color:var(--text)">${esc(to)}</b></span>`:''}
-          ${detail?`<div style="font-size:10.5px;color:var(--text3);margin-top:2px">${esc(detail)}</div>`:''}
-          <div class="audit-time">${esc(r[0]||'')} · by ${esc(r[6]||'')}</div>
+      return`<div class="dp-log-item">
+        <div class="dp-log-dot ${dotClass[action]||''}"></div>
+        <div class="dp-log-meta">
+          <div class="dp-log-action">${esc(action)}${from&&from!=='—'?` <span style="color:var(--text3);font-weight:400">${esc(from)} → </span><b>${esc(to)}</b>`:''}</div>
+          ${detail?`<div class="dp-log-detail">${esc(detail)}</div>`:''}
+          <div class="dp-log-detail">${esc(r[0]||'')} · ${esc(r[6]||'')}</div>
         </div>
+        <div class="dp-log-time">${esc(r[0]?r[0].split(' ')[0]:'')}</div>
       </div>`;
-    }).join('');
+    }).join('')+'</div>';
   }catch(e){const el=document.getElementById('dp-audit-inner');if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;}
 }
 
