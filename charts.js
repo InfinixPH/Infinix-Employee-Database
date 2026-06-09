@@ -1,28 +1,7 @@
 // ============================================================
 // RECENTLY UPDATED — shows STATUS changes only (Active/Resigned/AWOL/etc)
 // ============================================================
-const STATUS_SET = new Set(['Active','Floating','Resigned','AWOL','Terminated','Backout','-']);
-
-// Shared helper: builds the change description + timestamp for one employee
-// from logCache. Returns { changeDesc, ago }.
-function getRecentChangeInfo(e){
-  const empLogs=logCache?[...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse():[];
-  const statusLog=empLogs.find(r=>{
-    const action=r[3]||'', from=r[4]||'', to=r[5]||'';
-    if(action==='Added') return true;
-    return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
-  });
-  let changeDesc='', logTs='';
-  if(statusLog){
-    const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
-    logTs=statusLog[0]||'';
-    if(action==='Added') changeDesc='New employee added';
-    else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
-    else if(to && to!=='—') changeDesc='Status set to '+to;
-    else changeDesc=action;
-  }
-  return { changeDesc, ago: timeAgo(logTs||e.lastUpdated) };
-}
+// STATUS_SET and getRecentChangeInfo are defined in app.js (loaded first)
 
 function renderRecentlyUpdated(recent){
   const el=document.getElementById('recent-updated-list');
