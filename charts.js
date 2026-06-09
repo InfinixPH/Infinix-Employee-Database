@@ -1,14 +1,29 @@
 // ============================================================
 // RECENTLY UPDATED — shows STATUS changes only (Active/Resigned/AWOL/etc)
 // ============================================================
-// STATUS_SET and getRecentChangeInfo are defined in app.js (loaded first)
+const STATUS_SET = new Set(['Active','Floating','Resigned','AWOL','Terminated','Backout','-']);
 
 function renderRecentlyUpdated(recent){
   const el=document.getElementById('recent-updated-list');
   if(!el||!recent)return;
   el.innerHTML=recent.map(e=>{
     const initials=((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
-    const {changeDesc,ago}=getRecentChangeInfo(e);
+    const empLogs=logCache?[...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse():[];
+    const statusLog=empLogs.find(r=>{
+      const action=r[3]||'', from=r[4]||'', to=r[5]||'';
+      if(action==='Added') return true;
+      return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
+    });
+    let changeDesc='', logTs='';
+    if(statusLog){
+      const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
+      logTs=statusLog[0]||'';
+      if(action==='Added') changeDesc='New employee added';
+      else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
+      else if(to && to!=='—') changeDesc='Status set to '+to;
+      else changeDesc=action;
+    }
+    const ago=timeAgo(logTs||e.lastUpdated);
     return`<div class="recent-row" onclick="openDetailPanel('${esc(e.infinixId)}')">
       <div class="rr-avatar">${initials}</div>
       <div class="rr-info">
@@ -62,6 +77,15 @@ function renderDashboard(){
   const missingQR=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const birthdayWeekCount=bdayWeek.length;
 
+  // Contract expiry — used in Action Center
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d30=new Date(today); d30.setDate(d30.getDate()+30);
+  const contractSoon30=activeEmployees.filter(e=>{
+    if(!e.contractEndDate)return false;
+    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
+    return d>=today && d<=d30;
+  }).length;
+
   // Pre-load log cache for recently updated section (non-blocking, render updates when done)
   if(!logCache){
     gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:H`})
@@ -73,44 +97,49 @@ function renderDashboard(){
   const scanPct=activeTotal?Math.round(scanned/activeTotal*100):0;
   const reqPct=activeTotal?Math.round(reqComplete/activeTotal*100):0;
 
-  // Feature 4: Trend indicators derived from logCache activity
-  // Count "Added" actions in last 30 days vs prior 30 days
-  function trendHTML(current, previous, label=''){
-    if(previous===null || previous===undefined) return '';
-    const diff = current - previous;
-    if(diff > 0) return `<div class="dhc-trend up">↑ ${diff} vs last month</div>`;
-    if(diff < 0) return `<div class="dhc-trend down">↓ ${Math.abs(diff)} vs last month</div>`;
-    return `<div class="dhc-trend flat">→ No change vs last month</div>`;
+  // ── FEATURE 4: TREND INDICATORS — derive prev-month counts from logCache ──
+  // We look at log entries from last calendar month for "Added" actions
+  // to estimate workforce growth, and track deployed/scanned/req milestones.
+  function trendChip(current, prev, label='vs last month'){
+    if(prev === null) return ''; // no data
+    const delta = current - prev;
+    if(delta > 0) return `<span class="dhc-trend-chip up">↑ ${delta}</span><span class="dhc-trend-label">${label}</span>`;
+    if(delta < 0) return `<span class="dhc-trend-chip down">↓ ${Math.abs(delta)}</span><span class="dhc-trend-label">${label}</span>`;
+    return `<span class="dhc-trend-chip flat">→ same</span><span class="dhc-trend-label">${label}</span>`;
   }
-  function getLogCountLastMonth(filterFn){
-    if(!logCache || !logCache.length) return null;
-    const now = new Date();
-    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth()-1, 1);
-    let thisCount = 0, lastCount = 0;
-    logCache.forEach(r=>{
-      const ts = r[0];
-      if(!ts) return;
-      const d = new Date(ts);
-      if(isNaN(d)) return;
-      if(filterFn(r)){
-        if(d >= thisMonthStart) thisCount++;
-        else if(d >= lastMonthStart) lastCount++;
-      }
-    });
-    return { current: thisCount, previous: lastCount };
+
+  let prevTotal=null, prevDeployed=null, prevScanned=null, prevReqComplete=null;
+  if(logCache && logCache.length){
+    const now=new Date();
+    const prevMonthStart=new Date(now.getFullYear(), now.getMonth()-1, 1);
+    const prevMonthEnd=new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    // Count "Added" events in previous month
+    const addedLastMonth = logCache.filter(r=>{
+      if((r[3]||'').trim()!=='Added') return false;
+      const d=new Date(r[0]||'');
+      return !isNaN(d) && d>=prevMonthStart && d<=prevMonthEnd;
+    }).length;
+    // Count "Status Changed" to DEPLOYED last month
+    const deployedLastMonth = logCache.filter(r=>{
+      const action=(r[3]||'').trim(); const detail=(r[7]||'').toLowerCase();
+      if(action!=='Updated' && action!=='Status Changed / Moved') return false;
+      if(!detail.includes('deployment: ') && !detail.includes('deployed')) return false;
+      const d=new Date(r[0]||'');
+      return !isNaN(d) && d>=prevMonthStart && d<=prevMonthEnd;
+    }).length;
+    // Use addedLastMonth for total trend estimate (new hires vs this month)
+    const addedThisMonth = logCache.filter(r=>{
+      if((r[3]||'').trim()!=='Added') return false;
+      const d=new Date(r[0]||'');
+      return !isNaN(d) && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+    }).length;
+    if(addedLastMonth > 0 || addedThisMonth > 0){
+      // Rough prev total: current minus new this month plus last month adds
+      prevTotal = Math.max(0, total - addedThisMonth + addedLastMonth);
+    }
+    // For deployed/scanned/req: compare current total minus last-month changes
+    prevDeployed = deployedLastMonth > 0 ? Math.max(0, deployed - deployedLastMonth) : null;
   }
-  const trendAdded = getLogCountLastMonth(r=>(r[3]||'')==='Added');
-  const trendDeployed = getLogCountLastMonth(r=>{
-    const detail = (r[7]||'').toLowerCase();
-    const action = (r[3]||'');
-    return action==='Updated' && (detail.includes('deployed') || detail.includes('deployment'));
-  });
-  const trendScanned = getLogCountLastMonth(r=>(r[7]||'').toLowerCase().includes('qr'));
-  const trendReqComplete = getLogCountLastMonth(r=>{
-    const detail = (r[7]||'').toLowerCase();
-    return detail.includes('submitted');
-  });
 
   document.getElementById('content').innerHTML=`
     <!-- OUTER LAYOUT: left main | right panel -->
@@ -123,7 +152,7 @@ function renderDashboard(){
         <div class="dhc-label">Total Workforce</div>
         <div class="dhc-value" style="color:var(--text)">${total}</div>
         <div class="dhc-sub">All employment records</div>
-        ${trendAdded ? trendHTML(trendAdded.current, trendAdded.previous) : ''}
+        ${prevTotal!==null?`<div class="dhc-trend-row">${trendChip(total,prevTotal)}</div>`:''}
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:#4ecb71"></div></div>
       </div>
       <div class="dash-hero-card glass-card">
@@ -131,15 +160,21 @@ function renderDashboard(){
         <div class="dhc-label">Deployed</div>
         <div class="dhc-value" style="color:#4ecb71">${deployed}</div>
         <div class="dhc-sub">${deployPct}% of active promoters</div>
-        ${trendDeployed ? trendHTML(trendDeployed.current, trendDeployed.previous) : ''}
+        ${prevDeployed!==null?`<div class="dhc-trend-row">${trendChip(deployed,prevDeployed)}</div>`:''}
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:#4ecb71"></div></div>
+      </div>
+      <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#f5c842,transparent)"></div>
+        <div class="dhc-label">Pending Deploy</div>
+        <div class="dhc-value" style="color:#f5c842">${notDeployed}</div>
+        <div class="dhc-sub">Active sheet · Col L</div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:#f5c842"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--teal-deep),transparent)"></div>
         <div class="dhc-label">QR Scanned</div>
         <div class="dhc-value" style="color:var(--teal-deep)">${scanned}</div>
         <div class="dhc-sub">${scanPct}% of active promoters</div>
-        ${trendScanned ? trendHTML(trendScanned.current, trendScanned.previous) : ''}
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${scanPct}%;background:var(--teal-deep)"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('missingRequirements')" style="cursor:pointer">
@@ -147,11 +182,9 @@ function renderDashboard(){
         <div class="dhc-label">Req. Complete</div>
         <div class="dhc-value" style="color:var(--moss-green)">${reqComplete}</div>
         <div class="dhc-sub">${reqPct}% of active promoters</div>
-        ${trendReqComplete ? trendHTML(trendReqComplete.current, trendReqComplete.previous) : ''}
         <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${reqPct}%;background:var(--moss-green)"></div></div>
       </div>
     </div>
-
     <!-- STATUS CARDS -->
     <div class="dash-status-row">
       ${STATUSES.map(st=>{
@@ -218,6 +251,18 @@ function renderDashboard(){
           </div>
           <div class="ac-arrow">→</div>
         </div>
+        <div class="ac-card glass-card ac-danger" onclick="drillDown('contractExpiring')">
+          <div class="ac-icon ac-icon-danger">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <div class="ac-body">
+            <div class="ac-count" style="color:var(--danger)">${contractSoon30}</div>
+            <div class="ac-label">Contracts Expiring</div>
+            <div class="ac-sub">Within 30 days</div>
+          </div>
+          <div class="ac-arrow">→</div>
+        </div>
+        <div class="ac-card glass-card ac-purple" onclick="viewAllBirthdays()">
           <div class="ac-icon ac-icon-purple">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4a1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1"/></svg>
           </div>
