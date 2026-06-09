@@ -126,10 +126,44 @@ function timeAgo(dateStr){
 initTheme();
 
 // ============================================================
-// SIDEBAR INIT
+// SIDEBAR COLLAPSE — Feature 3
 // ============================================================
 function initSidebar(){
-  localStorage.removeItem('hr_sidebar_collapsed');
+  const collapsed = localStorage.getItem('hr_sidebar_collapsed') === 'true';
+  const sidebar = document.getElementById('sidebar');
+  if(sidebar && collapsed) sidebar.classList.add('collapsed');
+}
+function toggleSidebar(){
+  const sidebar = document.getElementById('sidebar');
+  if(!sidebar) return;
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  localStorage.setItem('hr_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+}
+
+// ============================================================
+// SIDEBAR CLOCK
+// ============================================================
+function updateSidebarClock(){
+  const now = new Date();
+  let h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const timeEl = document.getElementById('sidebar-clock-time');
+  const ampmEl = document.getElementById('sidebar-clock-ampm');
+  const dateEl = document.getElementById('sidebar-date');
+  if(timeEl) timeEl.textContent = `${String(h).padStart(2,'0')}:${m}:${s}`;
+  if(ampmEl) ampmEl.textContent = ampm;
+  if(dateEl){
+    const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+  }
+}
+function initSidebarClock(){
+  updateSidebarClock();
+  setInterval(updateSidebarClock, 1000);
 }
 
 // ============================================================
@@ -301,7 +335,12 @@ function exportXLSX(){
 
 // ============================================================
 function setLoginStatus(msg,type){const el=document.getElementById('login-status');if(!el)return;el.textContent=msg;el.className='login-status'+(type?' '+type:'');}
-function showGoogleButton(){document.getElementById('login-waiting').style.display='none';document.getElementById('btn-google-signin').style.display='flex';}
+function showGoogleButton(){
+  const btn=document.getElementById('btn-google-signin');
+  if(btn && typeof GOOGLE_BTN_HTML!=='undefined') btn.innerHTML=GOOGLE_BTN_HTML;
+  document.getElementById('login-waiting').style.display='none';
+  if(btn) btn.style.display='flex';
+}
 function hideGoogleButton(){document.getElementById('login-waiting').style.display='flex';document.getElementById('btn-google-signin').style.display='none';}
 
 function doLogin(){
@@ -408,6 +447,7 @@ function signOut(){
   sessionStorage.removeItem('hr_role');
   accessToken=null;currentUser=null;window._headersChecked=false;
   currentRole=null;
+  _appInited=false;
   document.body.classList.remove('role-viewer','role-rssrsh');
   showLoginScreen(false);
 }
@@ -415,6 +455,7 @@ async function fetchUserInfo(token){
   try{const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+token}});if(!r.ok)return null;return await r.json();}
   catch(e){return null;}
 }
+let _appInited=false;
 function showApp(){
   document.getElementById('login-screen').style.display='none';
   const app=document.getElementById('app');app.style.display='flex';
@@ -423,8 +464,12 @@ function showApp(){
     document.getElementById('user-avatar').textContent=initials;
     document.getElementById('user-name').textContent=currentUser.name||currentUser.email;
   }
-  initSidebar();
-  initRole();
+  if(!_appInited){
+    _appInited=true;
+    initSidebar();
+    initSidebarClock();
+    initRole();
+  }
 }
 function setOfflineBanner(visible,msg){
   const el=document.getElementById('offline-banner');
@@ -476,6 +521,7 @@ async function loadData(){
     (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
     renderSidebar();renderView();
+    refreshNotifBadge();
     toast(`${employees.length} employees loaded`,'success');
   }catch(e){
     const status = e?.result?.error?.code || e?.status;
@@ -528,7 +574,7 @@ function rowToObj(r){
     qrStatus:r[9]||'NOT SCANNED',
     deploymentDate:r[10]||'',
     deploymentStatus:normalizeDeployStatus(r[11]||''),
-    deploymentStatusColL:String(r[11]||''),
+    deploymentStatusColL:String(r[11]||''), // raw pre-normalization value — used by isNotYetDeployedColL() filters; intentionally not written back via objToRow
     rssName:r[12]||'',
     rssId:String(r[13]||''),
     basicWage:r[14]||'',
@@ -828,6 +874,24 @@ function renderSkeletonRows(count=8){
     </tr>`).join('');
 }
 
+// Feature 1: Dashboard skeleton while data loads
+function renderDashboardSkeleton(){
+  const s=(w,h)=>`<div class="skeleton skel-h" style="width:${w};height:${h}px"></div>`;
+  return `<div class="skel-dashboard">
+    <div class="skel-hero-row">
+      ${Array.from({length:4},()=>`<div class="skel-card">${s('55%',10)}${s('40%',28)}${s('70%',10)}${s('100%',4)}</div>`).join('')}
+    </div>
+    <div class="skel-status-row">
+      ${Array.from({length:6},()=>`<div class="skel-card">${s('40%',22)}${s('60%',10)}${s('100%',3)}</div>`).join('')}
+    </div>
+    <div class="skel-card" style="height:120px">${s('35%',10)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="skel-card" style="height:200px"></div>
+      <div class="skel-card" style="height:200px"></div>
+    </div>
+  </div>`;
+}
+
 
 // ============================================================
 function sortEmployees(list){
@@ -880,10 +944,6 @@ function filteredEmployees(type){
     else if(missingFieldFilter==='missingInfinixId')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && !String(e.infinixId||'').trim());
     else if(missingFieldFilter==='missingStore')list=employees.filter(e=>e._sheet===ACTIVE_SHEET && normalizeStatus(e.status)==='Active' && isMissing(e.storeAssignment));
     else if(missingFieldFilter==='backout')list=employees.filter(e=>isBackoutDeployment(e.deploymentStatus)||isBackoutDeployment(e.deploymentStatusColL));
-    else if(missingFieldFilter==='contractExpired'){const now=new Date();now.setHours(0,0,0,0);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d<now;});}
-    else if(missingFieldFilter==='contractExpiring'){const now=new Date();now.setHours(0,0,0,0);const d30=new Date(now);d30.setDate(d30.getDate()+30);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>=now&&d<=d30;});}
-    else if(missingFieldFilter==='contractSoon60'){const now=new Date();now.setHours(0,0,0,0);const d30=new Date(now);d30.setDate(d30.getDate()+30);const d60=new Date(now);d60.setDate(d60.getDate()+60);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>d30&&d<=d60;});}
-    else if(missingFieldFilter==='contractOk'){const now=new Date();now.setHours(0,0,0,0);const d60=new Date(now);d60.setDate(d60.getDate()+60);list=list.filter(e=>{if(!e.contractEndDate)return false;const d=new Date(e.contractEndDate);d.setHours(0,0,0,0);return d>d60;});}
   }
 
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
@@ -1158,7 +1218,16 @@ function renderView(){
   const sw=document.getElementById('topbar-search-wrap');
   if(sw) sw.style.visibility=(currentView==='active'||currentView==='inactive'||currentView==='dashboard')?'visible':'hidden';
 
-  if(currentView==='dashboard')renderDashboard();
+  if(currentView==='dashboard'){
+    // Show skeleton if no data yet
+    if(!employees.length && document.getElementById('loading')?.style.display==='flex'){
+      document.getElementById('topbar-title').textContent='Dashboard';
+      document.getElementById('topbar-sub').textContent='Loading…';
+      document.getElementById('content').innerHTML=renderDashboardSkeleton();
+    } else {
+      renderDashboard();
+    }
+  }
   else if(currentView==='active')renderEmployeeTable('active');
   else if(currentView==='inactive')renderEmployeeTable('inactive');
   else if(currentView==='tracker')renderTracker();
@@ -1190,7 +1259,7 @@ function renderEmployeeTable(type){
   const isActive=type==='active';
   let label=filterStatus?filterStatus+' Employees':(isActive?'Active Employees':'Inactive Employees');
   if(missingFieldFilter){
-    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment',backout:'Backout Cases',contractExpired:'Expired Contracts',contractExpiring:'Contracts Expiring (30 Days)',contractSoon60:'Contracts Expiring (60 Days)',contractOk:'Active Contracts (60d+)'};
+    const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment',backout:'Backout Cases'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
@@ -1306,9 +1375,17 @@ function renderTableRows(type){
     const q=(document.getElementById('search-input')?.value||'').trim();
     const hasFilters=activeFilterCount()>0||!!filterStatus||!!missingFieldFilter||!!q;
     const msg=hasFilters
-      ?{title:'No matches found',sub:'Try adjusting your filters or search term.',icon:`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`}
-      :{title:'No employees here',sub:'Add your first employee using the button above.',icon:`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>`};
-    tbody.innerHTML=`<tr><td colspan="20"><div class="empty-state">${msg.icon}<div class="es-title">${msg.title}</div><div class="es-sub">${msg.sub}</div></div></td></tr>`;
+      ?{
+        title:'No matches found',
+        sub:'Try adjusting your search term or clearing some filters.',
+        icon:`<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`
+      }
+      :{
+        title:'No employees here',
+        sub:'Add your first employee using the button above.',
+        icon:`<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>`
+      };
+    tbody.innerHTML=`<tr><td colspan="20"><div class="empty-state"><div class="es-icon">${msg.icon}</div><div class="es-title">${msg.title}</div><div class="es-sub">${msg.sub}</div></div></td></tr>`;
   }else{
     const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
@@ -1493,7 +1570,7 @@ function dpDelete(){
 function buildDetailHTML(e){
   const field=(label,val,full=false)=>`<div class="dp-field${full?' dp-field-full':''}"><div class="dp-field-label">${esc(label)}</div><div class="dp-field-val${val?'':' muted'}">${val||'—'}</div></div>`;
   const fieldSensitive=(label,val,full=false)=>`<div class="dp-field${full?' dp-field-full':''}"><div class="dp-field-label">${esc(label)}</div><div class="dp-field-val sensitive${val?'':' muted'}">${val||'—'}</div></div>`;
-  const missing=v=>`<span style="color:var(--danger);font-size:10px">⚠ Missing</span>`;
+  const missing=()=>`<span style="color:var(--danger);font-size:10px">⚠ Missing</span>`;
 
   // Profile completion checks
   const checks=[
@@ -1512,7 +1589,7 @@ function buildDetailHTML(e){
   ];
   const doneCount=checks.filter(c=>c.done).length;
   const pct=Math.round(doneCount/checks.length*100);
-  const barClass=pct===100?'':'pct>=60?\'warn\':\'danger\'';
+  const barClass=pct===100?'':pct>=60?'warn':'danger';
   const barColorStr=pct===100?'var(--success)':pct>=60?'var(--warning)':'var(--danger)';
 
   // Birthday banner
@@ -1562,8 +1639,29 @@ function buildDetailHTML(e){
     </div>`;
 
   // PANE: Profile Info
+  const alreadyDeployed = e.deploymentStatus === 'DEPLOYED';
+  const alreadyScanned  = e.qrStatus === 'SCANNED';
+  const alreadyContractSent = e.contractStatus === 'SENT';
+
+  const quickActions = canWrite() ? `
+    <div class="dp-quick-actions">
+      <button class="dp-quick-btn deployed" onclick="quickMarkDeployed('${esc(e.infinixId)}')" ${alreadyDeployed?'disabled':''} title="${alreadyDeployed?'Already deployed':'Mark as Deployed'}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        ${alreadyDeployed ? 'Deployed ✓' : 'Mark Deployed'}
+      </button>
+      <button class="dp-quick-btn qr" onclick="quickMarkQRScanned('${esc(e.infinixId)}')" ${alreadyScanned?'disabled':''} title="${alreadyScanned?'Already scanned':'Mark QR as Scanned'}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/></svg>
+        ${alreadyScanned ? 'QR Scanned ✓' : 'Mark QR Scanned'}
+      </button>
+      <button class="dp-quick-btn contract" onclick="quickMarkContractSent('${esc(e.infinixId)}')" ${alreadyContractSent?'disabled':''} title="${alreadyContractSent?'Contract already sent':'Mark Contract as Sent'}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><polyline points="16 13 12 17 8 13"/></svg>
+        ${alreadyContractSent ? 'Contract Sent ✓' : 'Mark Contract Sent'}
+      </button>
+    </div>` : '';
+
   const paneInfo=`
     <div class="dp-pane active" id="dp-pane-info">
+      ${quickActions}
       ${bdayBanner}
       <div class="dp-section">
         <div class="dp-section-title">📋 Employment</div>
@@ -1573,7 +1671,6 @@ function buildDetailHTML(e){
           ${field('Deploy Status',e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):'')}
           ${field('Deploy Date',esc(e.deploymentDate))}
           ${field('Contract',badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')))}
-          ${field('Contract End',esc(e.contractEndDate))}
           ${field('Status Date',esc(e.statusDate))}
           ${field('Remarks',esc(e.statusRemarks))}
         </div>
@@ -1608,8 +1705,8 @@ function buildDetailHTML(e){
         <div class="dp-grid">
           ${fieldSensitive('SSS',e.sss?esc(e.sss):missing())}
           ${fieldSensitive('PhilHealth',e.philhealth?esc(e.philhealth):missing())}
-          ${fieldSensitive('Pag-IBIG',esc(e.pagibig))}
-          ${fieldSensitive('TIN',esc(e.tin))}
+          ${fieldSensitive('Pag-IBIG',e.pagibig?esc(e.pagibig):missing())}
+          ${fieldSensitive('TIN',e.tin?esc(e.tin):missing())}
         </div>
       </div>
       <div class="dp-section">
@@ -1731,7 +1828,20 @@ async function renderLog(){
     // FIX: Use spread copy to avoid mutating logCache
     const rows=[...logCache].reverse();
     const el=document.getElementById('log-list');
-    if(!rows.length){el.innerHTML='<div class="empty-state"><div class="ei">—</div><p>No activity yet</p></div>';return;}
+    if(!rows.length){
+      el.innerHTML=`<div class="empty-state-log">
+        <div class="es-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1.5"/>
+            <path d="M9 12h6M9 16h4"/>
+          </svg>
+        </div>
+        <div class="es-title">No activity yet</div>
+        <div class="es-sub">Changes to employee records will appear here automatically.</div>
+      </div>`;
+      return;
+    }
     const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
     const svgMap={
       Added:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
@@ -2045,10 +2155,13 @@ async function saveEmployee(){
         document.getElementById('confirm-title').textContent=`⚠ Confirm: Set to ${data.status}?`;
         document.getElementById('confirm-msg').textContent=`You are about to mark ${data.firstName} ${data.lastName} as "${data.status}". This is a significant status change. Are you sure?`;
         document.getElementById('confirm-ok').textContent=`Yes, set to ${data.status}`;
-        document.getElementById('confirm-ok').onclick=()=>{closeConfirm();resolve(true);};
+        document.getElementById('confirm-ok').onclick=()=>{cleanup();closeConfirm();resolve(true);};
         const cancelBtn=document.getElementById('confirm-overlay').querySelector('.btn-ghost');
-        const origOnClick=cancelBtn.onclick;
-        cancelBtn.onclick=()=>{closeConfirm();cancelBtn.onclick=origOnClick;resolve(false);};
+        function cleanup(){
+          document.getElementById('confirm-ok').onclick=null;
+          cancelBtn.onclick=null;
+        }
+        cancelBtn.onclick=()=>{cleanup();closeConfirm();resolve(false);};
         document.getElementById('confirm-overlay').classList.add('open');
       });
       if(!proceed)return;
@@ -2095,6 +2208,199 @@ function toast(msg,type=''){
 function showLoading(v,text='Loading...'){
   const el=document.getElementById('loading');el.style.display=v?'flex':'none';
   const t=document.getElementById('loading-text');if(t)t.textContent=text;
+}
+
+// ============================================================
+// FEATURE 2: QUICK ACTION BUTTONS — Detail Panel
+// ============================================================
+async function quickMarkDeployed(infinixId){
+  if(!canWrite()){denyWrite();return;}
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  const data={...emp, deploymentStatus:'DEPLOYED', deploymentDate: emp.deploymentDate || new Date().toLocaleDateString('en-US')};
+  try{
+    showLoading(true,'Marking as Deployed…');
+    const result=await apiUpdateEmployee(data);
+    if(result.ok){
+      toast('Marked as Deployed','success');
+      await loadData();
+      openDetailPanel(infinixId);
+    } else {
+      toast(result.msg||'Update failed','error');
+    }
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{showLoading(false);}
+}
+
+async function quickMarkQRScanned(infinixId){
+  if(!canWrite()){denyWrite();return;}
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  const data={...emp, qrStatus:'SCANNED'};
+  try{
+    showLoading(true,'Marking QR as Scanned…');
+    const result=await apiUpdateEmployee(data);
+    if(result.ok){
+      toast('QR marked as Scanned','success');
+      await loadData();
+      openDetailPanel(infinixId);
+    } else {
+      toast(result.msg||'Update failed','error');
+    }
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{showLoading(false);}
+}
+
+async function quickMarkContractSent(infinixId){
+  if(!canWrite()){denyWrite();return;}
+  const emp=employees.find(e=>String(e.infinixId)===String(infinixId));
+  if(!emp)return;
+  const data={...emp, contractStatus:'SENT', contractSentDate: emp.contractSentDate || new Date().toLocaleDateString('en-US')};
+  try{
+    showLoading(true,'Marking Contract as Sent…');
+    const result=await apiUpdateEmployee(data);
+    if(result.ok){
+      toast('Contract marked as Sent','success');
+      await loadData();
+      openDetailPanel(infinixId);
+    } else {
+      toast(result.msg||'Update failed','error');
+    }
+  }catch(e){toast('Error: '+e.message,'error');}
+  finally{showLoading(false);}
+}
+
+// ============================================================
+// FEATURE 6: NOTIFICATION CENTER
+// ============================================================
+let _notifDrawerOpen = false;
+
+function buildNotifications(){
+  const items = [];
+  const now = new Date(); now.setHours(0,0,0,0);
+  const today = now;
+
+  // Today's birthdays
+  employees.forEach(e=>{
+    if(!e.dob) return;
+    const bd = new Date(e.dob);
+    if(isNaN(bd)) return;
+    const thisYear = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
+    if(thisYear.getTime() === today.getTime()){
+      items.push({
+        type:'birthday',
+        category:'birthday',
+        name: e.fullName||e.firstName,
+        desc: '🎉 Birthday today!',
+        id: e.infinixId
+      });
+    }
+  });
+
+  // 0 requirements complete (active employees)
+  activeEmps.forEach(e=>{
+    if(reqDoneCount(e)===0){
+      items.push({
+        type:'warning',
+        category:'requirements',
+        name: e.fullName||e.firstName,
+        desc: 'No requirements submitted',
+        id: e.infinixId
+      });
+    }
+  });
+
+  return items;
+}
+
+function renderNotifDrawer(){
+  const items = buildNotifications();
+  // Update count badge
+  const badge = document.getElementById('notif-count-badge');
+  if(badge){
+    if(items.length > 0){
+      badge.textContent = items.length > 99 ? '99+' : items.length;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  const scroll = document.getElementById('notif-scroll-content');
+  if(!scroll) return;
+
+  if(!items.length){
+    scroll.innerHTML = `<div class="notif-empty">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.25;margin-bottom:10px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div>All clear — no alerts right now.</div>
+    </div>`;
+    return;
+  }
+
+  const grouped = {};
+  const labels = { birthday:'Birthdays Today', requirements:'Missing Requirements' };
+  items.forEach(item=>{
+    if(!grouped[item.category]) grouped[item.category] = [];
+    grouped[item.category].push(item);
+  });
+
+  let html = '';
+  Object.entries(grouped).forEach(([cat, catItems])=>{
+    html += `<div class="notif-section-label">${esc(labels[cat]||cat)}</div>`;
+    html += catItems.map(item=>`
+      <div class="notif-item" onclick="closeNotifDrawer();openDetailPanel('${esc(item.id)}')">
+        <div class="notif-dot ${esc(item.type)}"></div>
+        <div class="notif-item-text">
+          <div class="notif-item-name">${esc(item.name)}</div>
+          <div class="notif-item-desc">${esc(item.desc)}</div>
+        </div>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;opacity:.3"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>`).join('');
+  });
+  scroll.innerHTML = html;
+}
+
+function toggleNotifDrawer(){
+  _notifDrawerOpen = !_notifDrawerOpen;
+  const drawer = document.getElementById('notif-drawer');
+  if(!drawer) return;
+  if(_notifDrawerOpen){
+    renderNotifDrawer();
+    drawer.classList.add('open');
+  } else {
+    drawer.classList.remove('open');
+  }
+}
+
+function closeNotifDrawer(){
+  _notifDrawerOpen = false;
+  document.getElementById('notif-drawer')?.classList.remove('open');
+}
+
+// Close notification drawer when clicking outside
+document.addEventListener('click', e=>{
+  if(_notifDrawerOpen){
+    const drawer = document.getElementById('notif-drawer');
+    const bell = document.getElementById('notif-bell-btn');
+    if(drawer && bell && !drawer.contains(e.target) && !bell.contains(e.target)){
+      closeNotifDrawer();
+    }
+  }
+});
+
+// Refresh notification badge whenever data loads
+function refreshNotifBadge(){
+  if(!employees.length) return;
+  const items = buildNotifications();
+  const badge = document.getElementById('notif-count-badge');
+  if(badge){
+    if(items.length > 0){
+      badge.textContent = items.length > 99 ? '99+' : items.length;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
 }
 
 
@@ -2314,22 +2620,7 @@ function viewAllRecentlyUpdated(){
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   const rows = recent.map(e => {
     const initials = ((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
-    const empLogs = logCache ? [...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse() : [];
-    const statusLog = empLogs.find(r=>{
-      const action=r[3]||'', from=r[4]||'', to=r[5]||'';
-      if(action==='Added') return true;
-      return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
-    });
-    let changeDesc = '', logTs = '';
-    if(statusLog){
-      const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
-      logTs = statusLog[0]||'';
-      if(action==='Added') changeDesc='New employee added';
-      else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
-      else if(to && to!=='—') changeDesc='Status set to '+to;
-      else changeDesc=action;
-    }
-    const ago = timeAgo(logTs||e.lastUpdated);
+    const {changeDesc,ago} = getRecentChangeInfo(e);
     return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="document.getElementById('recent-all-modal').remove();openDetailPanel('${esc(e.infinixId)}')">
       <div class="rr-avatar">${initials}</div>
       <div style="flex:1;min-width:0">
