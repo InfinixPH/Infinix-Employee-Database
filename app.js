@@ -2279,6 +2279,7 @@ function buildNotifications(){
   const items = [];
   const now = new Date(); now.setHours(0,0,0,0);
   const today = now;
+  const activeEmps = activePromotersOnly();
 
   // Today's birthdays
   employees.forEach(e=>{
@@ -2611,6 +2612,31 @@ function viewAllBirthdays(){
     </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+// ============================================================
+// RECENTLY UPDATED SHARED HELPERS
+// (defined here so both app.js and charts.js can use them)
+// ============================================================
+const STATUS_SET = new Set(['Active','Floating','Resigned','AWOL','Terminated','Backout','-']);
+
+function getRecentChangeInfo(e){
+  const empLogs=logCache?[...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse():[];
+  const statusLog=empLogs.find(r=>{
+    const action=r[3]||'', from=r[4]||'', to=r[5]||'';
+    if(action==='Added') return true;
+    return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
+  });
+  let changeDesc='', logTs='';
+  if(statusLog){
+    const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
+    logTs=statusLog[0]||'';
+    if(action==='Added') changeDesc='New employee added';
+    else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
+    else if(to && to!=='—') changeDesc='Status set to '+to;
+    else changeDesc=action;
+  }
+  return { changeDesc, ago: timeAgo(logTs||e.lastUpdated) };
 }
 
 function viewAllRecentlyUpdated(){
