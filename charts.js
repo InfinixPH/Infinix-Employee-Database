@@ -109,15 +109,6 @@ function renderDashboard(){
   const missingQR=activeEmployees.filter(e=>!e.qrStatus||e.qrStatus==='NOT SCANNED').length;
   const birthdayWeekCount=bdayWeek.length;
 
-  // Contract expiry — used in Action Center
-  const today=new Date(); today.setHours(0,0,0,0);
-  const d30=new Date(today); d30.setDate(d30.getDate()+30);
-  const contractSoon30=activeEmployees.filter(e=>{
-    if(!e.contractEndDate)return false;
-    const d=new Date(e.contractEndDate); d.setHours(0,0,0,0);
-    return d>=today && d<=d30;
-  }).length;
-
   // Pre-load log cache for recently updated section (non-blocking, render updates when done)
   if(!logCache){
     gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:H`})
@@ -283,17 +274,6 @@ function renderDashboard(){
             <div class="ac-count" style="color:var(--warning)">${missingQR}</div>
             <div class="ac-label">Missing QR Status</div>
             <div class="ac-sub">Not yet scanned</div>
-          </div>
-          <div class="ac-arrow">→</div>
-        </div>
-        <div class="ac-card glass-card ac-danger" onclick="drillDown('contractExpiring')">
-          <div class="ac-icon ac-icon-danger">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          </div>
-          <div class="ac-body">
-            <div class="ac-count" style="color:var(--danger)">${contractSoon30}</div>
-            <div class="ac-label">Contracts Expiring</div>
-            <div class="ac-sub">Within 30 days</div>
           </div>
           <div class="ac-arrow">→</div>
         </div>
