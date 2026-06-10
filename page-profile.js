@@ -327,7 +327,7 @@ function _injectProfileStyles() {
     /* Birthday banner */
     .pp-bday-banner { padding: 8px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; }
     .pp-bday-banner.warn { background: rgba(245,200,66,.1); border: 1px solid rgba(245,200,66,.3); color: var(--warning); }
-    .pp-bday-banner.info { background: rgba(0,255,224,.06); border: 1px solid var(--border); color: var(--accent); }
+    .pp-bday-banner.info { background: rgba(0,200,170,.06); border: 1px solid var(--border); color: var(--accent); }
 
     /* Panes */
     .pp-pane { display: none; }
