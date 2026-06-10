@@ -39,6 +39,11 @@
 
   --tan:            #c9b87a;
 
+  /* Aliases used in page-home.js */
+  --bg2:            rgba(14,20,20,0.95);
+  --bg3:            rgba(20,28,28,0.80);
+  --text1:          #E8FFFC;
+
   --shadow:         0 4px 32px rgba(0,0,0,0.80);
   --shadow-lg:      0 16px 72px rgba(0,0,0,0.90);
 
@@ -80,6 +85,11 @@
   --moss-green:     #0a8a85;
 
   --tan:            #7a6020;
+
+  /* Aliases used in page-home.js */
+  --bg2:            rgba(248,252,252,0.98);
+  --bg3:            rgba(235,242,242,0.90);
+  --text1:          #1a2222;
 
   --shadow:         0 4px 24px rgba(10,138,133,0.10);
   --shadow-lg:      0 12px 60px rgba(10,138,133,0.18);
@@ -388,9 +398,9 @@ body::before {
 
 /* FIX: Single definitive rule for sidebar logo */
 .brand-logo img {
-  height: 36px;
+  height: 26px;
   width: auto;
-  max-width: 180px;
+  max-width: 140px;
   object-fit: contain;
   display: block;
   filter: brightness(0) invert(1);
