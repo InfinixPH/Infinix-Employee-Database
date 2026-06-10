@@ -284,35 +284,10 @@ function renderHome() {
         <div class="ph-card ph-quickaccess-card">
           <div class="ph-card-header">
             <span class="ph-card-title"><i data-lucide="grid-2x2" style="width:14px;height:14px"></i> Quick Access</span>
-            <button class="ph-card-link">Edit</button>
+            <button class="ph-card-link" onclick="_phOpenQAEdit()">Edit</button>
           </div>
-          <div class="ph-qa-grid">
-            <div class="ph-qa-tile" onclick="Router.go('people')">
-              <div class="ph-qa-icon ph-qai-green"><i data-lucide="users" style="width:20px;height:20px"></i></div>
-              <div class="ph-qa-label">Employee<br>Database</div>
-            </div>
-            <div class="ph-qa-tile" onclick="Router.go('tracker')">
-              <div class="ph-qa-icon ph-qai-blue"><i data-lucide="map-pin" style="width:20px;height:20px"></i></div>
-              <div class="ph-qa-label">Deployment<br>Tracker</div>
-            </div>
-            <div class="ph-qa-tile" onclick="missingFieldFilter='requirements';Router.go('people')">
-              <div class="ph-qa-icon ph-qai-orange"><i data-lucide="clipboard-list" style="width:20px;height:20px"></i></div>
-              <div class="ph-qa-label">Requirements</div>
-            </div>
-            <div class="ph-qa-tile" onclick="Router.go('analytics')">
-              <div class="ph-qa-icon ph-qai-purple"><i data-lucide="bar-chart-2" style="width:20px;height:20px"></i></div>
-              <div class="ph-qa-label">Analytics &amp;<br>Reports</div>
-            </div>
-            ${canViewSensitive() ? `
-            <div class="ph-qa-tile" onclick="exportXLSX()">
-              <div class="ph-qa-icon ph-qai-teal"><i data-lucide="download" style="width:20px;height:20px"></i></div>
-              <div class="ph-qa-label">Export<br>Data</div>
-            </div>` : ''}
-            ${(typeof currentRole !== 'undefined' && currentRole === 'owner') ? `
-            <div class="ph-qa-tile" onclick="Router.go('settings')">
-              <div class="ph-qa-icon ph-qai-gray"><i data-lucide="settings" style="width:20px;height:20px"></i></div>
-              <div class="ph-qa-label">Settings</div>
-            </div>` : ''}
+          <div class="ph-qa-grid" id="ph-qa-grid">
+            <!-- populated by _qaRebuildGrid() after render -->
           </div>
         </div>
 
@@ -438,6 +413,7 @@ function renderHome() {
 
   _injectHomeStyles();
   if (typeof lucide !== 'undefined') lucide.createIcons();
+  _qaRebuildGrid();
 
   // Async: render calendar (needs events loaded first)
   _phLoadEventsAndRender();
@@ -901,6 +877,180 @@ function _phOpenAddEventDate(date) {
   }, 80);
 }
 
+// ============================================================
+// QUICK ACCESS EDIT MODAL
+// ============================================================
+const _QA_DEFAULT = [
+  { id: 'people',      label: 'Employee\nDatabase',    icon: 'users',          color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                              visible: true },
+  { id: 'tracker',     label: 'Deployment\nTracker',   icon: 'map-pin',        color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('tracker')",                             visible: true },
+  { id: 'requirements',label: 'Requirements',          icon: 'clipboard-list', color: 'rgba(255,152,0,.15)',  textColor: '#ff9800',         onclick: "missingFieldFilter='requirements';Router.go('people')", visible: true },
+  { id: 'analytics',   label: 'Analytics &\nReports',  icon: 'bar-chart-2',    color: 'rgba(139,92,246,.15)', textColor: '#8b5cf6',         onclick: "Router.go('analytics')",                           visible: true },
+  { id: 'export',      label: 'Export\nData',          icon: 'download',       color: 'rgba(0,200,170,.12)',  textColor: 'var(--accent)',   onclick: "exportXLSX()",                                     visible: true,  sensitive: true },
+  { id: 'settings',    label: 'Settings',              icon: 'settings',       color: 'rgba(255,255,255,.06)',textColor: 'var(--text2)',    onclick: "Router.go('settings')",                            visible: true,  ownerOnly: true },
+  { id: 'log',         label: 'Activity\nLog',         icon: 'activity',       color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('log')",                                 visible: false },
+  { id: 'people-add',  label: 'Add\nEmployee',         icon: 'user-plus',      color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                              visible: false },
+];
+
+function _qaGetTiles() {
+  try {
+    const saved = localStorage.getItem('ph-qa-tiles');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // merge saved order/visibility with defaults (handles new tiles added later)
+      const map = {};
+      parsed.forEach(t => map[t.id] = t);
+      return _QA_DEFAULT.map(def => ({ ...def, visible: map[def.id] !== undefined ? map[def.id].visible : def.visible }))
+        .sort((a, b) => {
+          const ai = parsed.findIndex(t => t.id === a.id);
+          const bi = parsed.findIndex(t => t.id === b.id);
+          if (ai === -1 && bi === -1) return 0;
+          if (ai === -1) return 1;
+          if (bi === -1) return -1;
+          return ai - bi;
+        });
+    }
+  } catch(e) {}
+  return _QA_DEFAULT.map(t => ({ ...t }));
+}
+
+function _qaRebuildGrid() {
+  const grid = document.querySelector('.ph-qa-grid');
+  if (!grid) return;
+  const tiles = _qaGetTiles();
+  const isOwner = typeof currentRole !== 'undefined' && currentRole === 'owner';
+  const canSensitive = canViewSensitive();
+  grid.innerHTML = tiles
+    .filter(t => t.visible)
+    .filter(t => !t.sensitive || canSensitive)
+    .filter(t => !t.ownerOnly || isOwner)
+    .map(t => `
+      <div class="ph-qa-tile" onclick="${t.onclick}">
+        <div class="ph-qa-icon" style="background:${t.color};color:${t.textColor}">
+          <i data-lucide="${t.icon}" style="width:20px;height:20px"></i>
+        </div>
+        <div class="ph-qa-label">${t.label.replace('\n','<br>')}</div>
+      </div>`).join('');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function _phOpenQAEdit() {
+  const existing = document.getElementById('ph-qa-edit-overlay');
+  if (existing) existing.remove();
+
+  let tiles = _qaGetTiles();
+  let dragSrc = null;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'ph-qa-edit-overlay';
+  overlay.className = 'ph-qa-edit-overlay';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  function renderList() {
+    const isOwner = typeof currentRole !== 'undefined' && currentRole === 'owner';
+    const canSensitive = canViewSensitive();
+    return tiles
+      .filter(t => !t.sensitive || canSensitive)
+      .filter(t => !t.ownerOnly || isOwner)
+      .map((t, i) => `
+        <div class="ph-qa-edit-row" draggable="true" data-idx="${i}" data-id="${t.id}">
+          <span class="ph-qa-edit-drag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="9" cy="5" r="1.5" fill="currentColor"/><circle cx="15" cy="5" r="1.5" fill="currentColor"/>
+              <circle cx="9" cy="12" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/>
+              <circle cx="9" cy="19" r="1.5" fill="currentColor"/><circle cx="15" cy="19" r="1.5" fill="currentColor"/>
+            </svg>
+          </span>
+          <div class="ph-qa-edit-icon" style="background:${t.color};color:${t.textColor}">
+            <i data-lucide="${t.icon}" style="width:15px;height:15px"></i>
+          </div>
+          <span class="ph-qa-edit-name">${t.label.replace('\n',' ')}</span>
+          <button class="ph-qa-edit-toggle ${t.visible ? 'on' : 'off'}" data-id="${t.id}" title="${t.visible ? 'Hide' : 'Show'}"></button>
+        </div>`).join('');
+  }
+
+  overlay.innerHTML = `
+    <div class="ph-qa-edit-box" id="ph-qa-edit-box">
+      <div class="ph-qa-edit-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Customize Quick Access
+      </div>
+      <div class="ph-qa-edit-sub">Toggle tiles on/off or drag to reorder.</div>
+      <div class="ph-qa-edit-list" id="ph-qa-edit-list">${renderList()}</div>
+      <div class="ph-qa-edit-footer">
+        <button class="ph-qa-edit-cancel" onclick="document.getElementById('ph-qa-edit-overlay').remove()">Cancel</button>
+        <button class="ph-qa-edit-save" onclick="_phSaveQAEdit()">Save</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Toggle visibility
+  overlay.addEventListener('click', e => {
+    const btn = e.target.closest('.ph-qa-edit-toggle');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const t = tiles.find(x => x.id === id);
+    if (t) { t.visible = !t.visible; btn.className = 'ph-qa-edit-toggle ' + (t.visible ? 'on' : 'off'); }
+  });
+
+  // Drag to reorder
+  overlay.addEventListener('dragstart', e => {
+    const row = e.target.closest('.ph-qa-edit-row');
+    if (!row) return;
+    dragSrc = row;
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  overlay.addEventListener('dragend', e => {
+    const row = e.target.closest('.ph-qa-edit-row');
+    if (row) row.classList.remove('dragging');
+    overlay.querySelectorAll('.ph-qa-edit-row').forEach(r => r.classList.remove('drag-over'));
+  });
+  overlay.addEventListener('dragover', e => {
+    e.preventDefault();
+    const row = e.target.closest('.ph-qa-edit-row');
+    if (!row || row === dragSrc) return;
+    overlay.querySelectorAll('.ph-qa-edit-row').forEach(r => r.classList.remove('drag-over'));
+    row.classList.add('drag-over');
+  });
+  overlay.addEventListener('drop', e => {
+    e.preventDefault();
+    const row = e.target.closest('.ph-qa-edit-row');
+    if (!row || !dragSrc || row === dragSrc) return;
+    const fromId = dragSrc.dataset.id;
+    const toId = row.dataset.id;
+    const fi = tiles.findIndex(t => t.id === fromId);
+    const ti = tiles.findIndex(t => t.id === toId);
+    if (fi < 0 || ti < 0) return;
+    const [moved] = tiles.splice(fi, 1);
+    tiles.splice(ti, 0, moved);
+    // re-render list
+    const list = document.getElementById('ph-qa-edit-list');
+    if (list) { list.innerHTML = renderList(); if (typeof lucide !== 'undefined') lucide.createIcons(); }
+    overlay.querySelectorAll('.ph-qa-edit-row').forEach(r => r.classList.remove('drag-over', 'dragging'));
+  });
+
+  // store tiles ref for save
+  overlay._tiles = tiles;
+}
+
+function _phSaveQAEdit() {
+  const overlay = document.getElementById('ph-qa-edit-overlay');
+  if (!overlay) return;
+
+  // read current toggle states from DOM before saving
+  const tiles = overlay._tiles;
+  overlay.querySelectorAll('.ph-qa-edit-toggle').forEach(btn => {
+    const t = tiles.find(x => x.id === btn.dataset.id);
+    if (t) t.visible = btn.classList.contains('on');
+  });
+
+  try { localStorage.setItem('ph-qa-tiles', JSON.stringify(tiles.map(t => ({ id: t.id, visible: t.visible })))); } catch(e) {}
+  overlay.remove();
+  _qaRebuildGrid();
+}
+
 // Scroll to calendar section when "View calendar" is clicked from Upcoming Events
 function _phScrollToCalendar() {
   const el = document.getElementById('ph-cal-section');
@@ -1116,8 +1266,9 @@ function _injectHomeStyles() {
       display: grid;
       grid-template-columns: 1fr 1.1fr 1fr;
       gap: 14px;
-      align-items: start;
+      align-items: stretch;
     }
+    .ph-row3 > .ph-card { display: flex; flex-direction: column; }
     @media (max-width: 1100px) { .ph-row3 { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 680px)  { .ph-row3 { grid-template-columns: 1fr; } }
 
@@ -1206,8 +1357,9 @@ function _injectHomeStyles() {
       display: grid;
       grid-template-columns: 1.6fr 1fr;
       gap: 14px;
-      align-items: start;
+      align-items: stretch;
     }
+    .ph-row2 > .ph-card { display: flex; flex-direction: column; }
     @media (max-width: 900px) { .ph-row2 { grid-template-columns: 1fr; } }
 
     /* ── Workforce Overview ── */
@@ -1564,6 +1716,72 @@ function _injectHomeStyles() {
     /* comp overrides */
     .comp-stat-icon { display: flex; align-items: center; margin-bottom: 2px; }
     .comp-stat-icon i, .comp-stat-icon svg { width: 18px; height: 18px; stroke-width: 2; }
+
+    /* ── Quick Access Edit Modal ── */
+    .ph-qa-edit-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      animation: phFadeIn .15s ease;
+    }
+    @keyframes phFadeIn { from { opacity:0; } to { opacity:1; } }
+    .ph-qa-edit-box {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 22px 24px; width: 380px; max-width: 95vw;
+      box-shadow: 0 16px 60px rgba(0,0,0,.5);
+      animation: phSlideUp .18s ease;
+    }
+    [data-theme="light"] .ph-qa-edit-box { background: #fff; box-shadow: 0 16px 60px rgba(0,0,0,.15); }
+    @keyframes phSlideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+    .ph-qa-edit-title {
+      font-size: 13px; font-weight: 700; color: var(--text1);
+      margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
+    }
+    .ph-qa-edit-sub { font-size: 11px; color: var(--text3); margin-bottom: 16px; }
+    .ph-qa-edit-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+    .ph-qa-edit-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 9px;
+      border: 1px solid var(--border); background: var(--bg3);
+      cursor: grab; transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    [data-theme="light"] .ph-qa-edit-row { background: #f5f9f9; }
+    .ph-qa-edit-row.dragging { opacity: .45; border-style: dashed; }
+    .ph-qa-edit-row.drag-over { border-color: var(--accent); background: var(--accent-dim); }
+    .ph-qa-edit-drag { color: var(--text3); flex-shrink: 0; cursor: grab; }
+    .ph-qa-edit-icon {
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ph-qa-edit-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text1); }
+    .ph-qa-edit-toggle {
+      width: 34px; height: 20px; border-radius: 10px; border: none; cursor: pointer;
+      position: relative; flex-shrink: 0; transition: background .2s;
+    }
+    .ph-qa-edit-toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 14px; height: 14px; border-radius: 50%; background: #fff;
+      transition: transform .2s;
+    }
+    .ph-qa-edit-toggle.on { background: var(--accent); }
+    .ph-qa-edit-toggle.on::after { transform: translateX(14px); }
+    .ph-qa-edit-toggle.off { background: var(--border2); }
+    .ph-qa-edit-footer { display: flex; justify-content: flex-end; gap: 8px; }
+    .ph-qa-edit-cancel {
+      padding: 7px 16px; font-size: 12px; font-weight: 500;
+      background: none; border: 1.5px solid var(--border2); border-radius: 7px;
+      color: var(--text2); cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: border-color .15s, color .15s;
+    }
+    .ph-qa-edit-cancel:hover { border-color: var(--accent); color: var(--accent); }
+    .ph-qa-edit-save {
+      padding: 7px 16px; font-size: 12px; font-weight: 600;
+      background: var(--accent); color: #0E1414; border: none;
+      border-radius: 7px; cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: opacity .15s;
+    }
+    .ph-qa-edit-save:hover { opacity: .85; }
   `;
   document.head.appendChild(s);
 }
