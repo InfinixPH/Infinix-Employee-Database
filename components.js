@@ -118,7 +118,7 @@ const Components = (() => {
         justify-content: center; padding: 48px 24px; gap: 8px;
         text-align: center;
       }
-      .comp-empty-icon { font-size: 40px; opacity: .6; }
+      .comp-empty-icon { font-size: 40px; opacity: .6; display: flex; align-items: center; justify-content: center; }
       .comp-empty-title { font-size: 14px; font-weight: 600; color: var(--text1); }
       .comp-empty-msg { font-size: 12px; color: var(--text3); max-width: 280px; line-height: 1.5; }
       .comp-empty-action { margin-top: 8px; }
@@ -134,7 +134,8 @@ const Components = (() => {
       }
       .comp-stat-card--clickable { cursor: pointer; }
       .comp-stat-card--clickable:hover { border-color: var(--accent); }
-      .comp-stat-icon { font-size: 18px; margin-bottom: 2px; }
+      .comp-stat-icon { display: flex; align-items: center; margin-bottom: 2px; }
+      .comp-stat-icon i, .comp-stat-icon svg { width: 18px; height: 18px; stroke-width: 2; }
       .comp-stat-val { font-size: 26px; font-weight: 700; line-height: 1; }
       .comp-stat-label { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
       .comp-stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
