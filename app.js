@@ -2208,6 +2208,18 @@ async function doDelete(id){
 // ============================================================
 // NOTIFICATION CENTER
 // ============================================================
+let _dismissedNotifKeys = new Set(JSON.parse(localStorage.getItem('infinix_notif_dismissed') || '[]'));
+
+function _notifKey(n){ return `${n.group}:${n.id||n.title}`; }
+
+function markAllNotifsRead(){
+  const notifs = buildNotifications();
+  notifs.forEach(n => _dismissedNotifKeys.add(_notifKey(n)));
+  localStorage.setItem('infinix_notif_dismissed', JSON.stringify([..._dismissedNotifKeys]));
+  renderNotifDrawer();
+  updateNotifBadge();
+}
+
 function buildNotifications(){
   const notifs = [];
   const today = new Date(); today.setHours(0,0,0,0);
@@ -2244,7 +2256,8 @@ function buildNotifications(){
 }
 
 function renderNotifDrawer(){
-  const notifs = buildNotifications();
+  const allNotifs = buildNotifications();
+  const notifs = allNotifs.filter(n => !_dismissedNotifKeys.has(_notifKey(n)));
   const badge = document.getElementById('notif-count-badge');
   if(badge){
     const total = notifs.filter(n=>n.id).length;
@@ -2271,16 +2284,21 @@ function renderNotifDrawer(){
   let html = '';
   Object.keys(groups).forEach(g=>{
     if(!groups[g].length) return;
+    // Cap requirements at 8 visible, show summary if more
+    const visible = groups[g].length > 8 ? groups[g].slice(0,8) : groups[g];
+    const overflow = groups[g].length - visible.length;
     html += `<div class="notif-group">
       <div class="notif-group-label">${groupLabels[g]} <span style="color:${groupColors[g]}">(${groups[g].length})</span></div>
-      ${groups[g].map(n=>`
+      ${visible.map(n=>`
         <div class="notif-item" ${n.id?`onclick="closeNotifDrawer();openDetailPanel('${n.id}')"`:''}>
           <div class="notif-dot" style="background:${n.color}"></div>
           <div class="notif-item-text">
             <div class="notif-item-title">${n.title}</div>
             <div class="notif-item-sub">${n.sub}</div>
           </div>
+          <button class="notif-dismiss-btn" onclick="event.stopPropagation();_dismissNotif(${JSON.stringify(_notifKey(n))})" title="Dismiss">✕</button>
         </div>`).join('')}
+      ${overflow > 0 ? `<div style="font-size:10.5px;color:var(--text3);padding:6px 4px;text-align:center">+${overflow} more — click "All read" to clear</div>` : ''}
     </div>`;
   });
   body.innerHTML = html;
@@ -2312,12 +2330,19 @@ function closeNotifDrawer(){
 
 // Update notif badge whenever data loads
 function updateNotifBadge(){
-  const notifs = buildNotifications();
+  const notifs = buildNotifications().filter(n => !_dismissedNotifKeys.has(_notifKey(n)));
   const badge = document.getElementById('notif-count-badge');
   if(!badge) return;
   const total = notifs.filter(n=>n.id).length;
   if(total > 0){ badge.textContent = total > 99 ? '99+' : total; badge.style.display = 'flex'; }
   else { badge.style.display = 'none'; }
+}
+
+function _dismissNotif(key){
+  _dismissedNotifKeys.add(key);
+  localStorage.setItem('infinix_notif_dismissed', JSON.stringify([..._dismissedNotifKeys]));
+  renderNotifDrawer();
+  updateNotifBadge();
 }
 
 // ============================================================
