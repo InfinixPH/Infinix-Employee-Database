@@ -619,6 +619,8 @@ body::before {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 16px 18px; }
+.content.page-fade { animation: pageFadeIn .18s ease; }
+@keyframes pageFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ============================================================
    OFFLINE BANNER
