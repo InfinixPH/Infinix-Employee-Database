@@ -76,7 +76,7 @@ function renderRecentlyUpdated(recent){
 // ============================================================
 function renderDashboard(){
   document.getElementById('topbar-title').textContent='Dashboard';
-  document.getElementById('topbar-sub').textContent='Overview · Active promoters only for HR metrics';
+  const _dsub=document.getElementById('topbar-sub'); if(_dsub) _dsub.textContent='Overview · Active promoters only for HR metrics';
 
   const s=getStats();
   const total=employees.length;
@@ -611,7 +611,7 @@ function renderDashboard(){
 // ============================================================
 function renderTracker(){
   document.getElementById('topbar-title').textContent='Deployment Tracker';
-  document.getElementById('topbar-sub').textContent='Active promoters only';
+  const _tsub=document.getElementById('topbar-sub'); if(_tsub) _tsub.textContent='Active promoters only';
 
   let list=employees.filter(e=>normalizeStatus(e.status)==='Active');
   if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&new Date(e.deploymentDate)>=new Date(trackerDateFrom));
