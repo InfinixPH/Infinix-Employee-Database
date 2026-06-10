@@ -265,7 +265,7 @@ const Router = (() => {
         text-decoration: none;
         transition: color .15s;
       }
-      .crumb-link:hover { color: var(--accent, #00FFE0); }
+      .crumb-link:hover { color: var(--accent, #00C8AA); }
       .crumb-sep { color: var(--text3, #888); opacity: .5; font-size: 11px; }
       .crumb-current { color: var(--text1, #eee); font-weight: 500; }
 
