@@ -1621,7 +1621,7 @@ function buildDetailHTML(e){
       const thisYear=new Date(now.getFullYear(),bd.getMonth(),bd.getDate());
       const diff=Math.round((thisYear-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/(1000*60*60*24));
       if(diff===0) bdayBanner=`<div style="background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--warning);margin-bottom:12px">🎉 Birthday today! Happy Birthday, ${esc(e.firstName||'!')}!</div>`;
-      else if(diff>0&&diff<=7) bdayBanner=`<div style="background:rgba(0,255,224,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
+      else if(diff>0&&diff<=7) bdayBanner=`<div style="background:rgba(0,200,170,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--accent);margin-bottom:12px">🎂 Birthday in ${diff} day${diff!==1?'s':''}</div>`;
     }
   }
 
