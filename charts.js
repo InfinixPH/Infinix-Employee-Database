@@ -235,7 +235,7 @@ function renderDashboard(){
       <div class="action-grid">
         <div class="ac-card glass-card ac-warn" onclick="drillDown('missingRequirements')">
           <div class="ac-icon ac-icon-warn">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1.5"/><path d="M9 12h6M9 16h4"/></svg>
+            <i data-lucide="clipboard-list" style="width:22px;height:22px;stroke-width:1.7"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingRequirements}</div>
@@ -246,7 +246,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-info" onclick="drillDown('notDeployed')">
           <div class="ac-icon ac-icon-info">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 7 4 11.5 4 14a8 8 0 0 0 16 0c0-2.5-2.5-7-8-12Z"/><path d="M12 22v-4"/><path d="M9 18h6"/></svg>
+            <i data-lucide="droplet" style="width:22px;height:22px;stroke-width:1.7"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--accent)">${notDeployed}</div>
@@ -257,7 +257,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-danger" onclick="drillDown('backout')">
           <div class="ac-icon ac-icon-danger">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <i data-lucide="alert-triangle" style="width:22px;height:22px;stroke-width:1.7"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--danger)">${backoutCount}</div>
@@ -268,7 +268,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-warn" onclick="drillDown('notScanned')">
           <div class="ac-icon ac-icon-warn">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3"/><path d="M12 3v.01"/><path d="M12 14v.01"/><path d="M7 12h3"/><path d="M3 12v.01"/><path d="M14 12h.01"/></svg>
+            <i data-lucide="qr-code" style="width:22px;height:22px;stroke-width:1.7"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingQR}</div>
@@ -279,7 +279,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-purple" onclick="viewAllBirthdays()">
           <div class="ac-icon ac-icon-purple">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4a1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1"/></svg>
+            <i data-lucide="store" style="width:22px;height:22px;stroke-width:1.7"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:#CE93D8">${birthdayWeekCount}</div>
@@ -361,7 +361,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[highest.r]||highest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--success);font-weight:700">${highest.c} promoters</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ecb71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    <i data-lucide="trending-up" style="width:14px;height:14px;stroke:#4ecb71;stroke-width:2.5"></i>
                   </div>
                 </div>
                 <div style="background:rgba(224,92,92,0.07);border:1px solid rgba(224,92,92,0.18);border-radius:8px;padding:10px 12px">
@@ -369,7 +369,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[lowest.r]||lowest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--danger);font-weight:700">${lowest.c} promoters</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e05c5c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+                    <i data-lucide="trending-down" style="width:14px;height:14px;stroke:#e05c5c;stroke-width:2.5"></i>
                   </div>
                 </div>
               </div>`;
@@ -383,7 +383,7 @@ function renderDashboard(){
         <!-- ANNOUNCEMENTS CAROUSEL -->
         <div class="ann-card glass-card">
           <div class="dash-right-header">
-            <span class="drh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3Z"/><path d="M9.78 21a1.99 1.99 0 0 0 4.45 0"/></svg></span>
+            <span class="drh-icon"><i data-lucide="bell" style="width:14px;height:14px;stroke-width:2"></i></span>
             <span class="drh-title">Announcements</span>
             <div style="margin-left:auto;display:flex;gap:6px">
               ${canViewSensitive()?`<button class="btn btn-ghost btn-sm drh-action" onclick="openAnnouncementManager()">+ Manage</button>`:''}
@@ -398,7 +398,7 @@ function renderDashboard(){
         <!-- RECENTLY UPDATED -->
         <div class="recent-card glass-card">
           <div class="dash-right-header">
-            <span class="drh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+            <span class="drh-icon"><i data-lucide="clock" style="width:14px;height:14px;stroke-width:2"></i></span>
             <span class="drh-title">Recently Updated</span>
             <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllRecentlyUpdated()">View all</button>
           </div>
@@ -410,7 +410,7 @@ function renderDashboard(){
         <!-- BIRTHDAYS WIDGET (tabbed: Today / This Week / This Month) -->
         <div class="birthday-card glass-card bday-widget">
           <div class="dash-right-header">
-            <span class="drh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4a1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1 1 1 0 0 1 1-1 1 1 0 0 0 1 1"/></svg></span>
+            <span class="drh-icon"><i data-lucide="store" style="width:14px;height:14px;stroke-width:2"></i></span>
             <span class="drh-title">Upcoming Birthdays</span>
             <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllBirthdays()">View all</button>
           </div>
