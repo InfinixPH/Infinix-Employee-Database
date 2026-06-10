@@ -53,7 +53,7 @@ function renderHome() {
           value: total,
           sub: 'All records',
           color: 'var(--accent)',
-          icon: '👥',
+          icon: '<i data-lucide="users" style="width:18px;height:18px;stroke-width:2"></i>',
           onclick: "Router.go('people')"
         })}
         ${Components.statCard({
@@ -61,7 +61,7 @@ function renderHome() {
           value: active,
           sub: `${s.Floating || 0} floating`,
           color: 'var(--success)',
-          icon: '✅',
+          icon: '<i data-lucide="user-check" style="width:18px;height:18px;stroke-width:2"></i>',
           onclick: "filterByStatus('Active');Router.go('people')"
         })}
         ${Components.statCard({
@@ -69,15 +69,15 @@ function renderHome() {
           value: deployed,
           sub: `${total - deployed} not yet`,
           color: '#378ADD',
-          icon: '🏪',
+          icon: '<i data-lucide="map-pin" style="width:18px;height:18px;stroke-width:2"></i>',
           onclick: "Router.go('tracker')"
         })}
         ${Components.statCard({
           label: 'Missing Requirements',
           value: missingReqs,
-          sub: missingReqs === 0 ? 'All complete 🎉' : 'Need attention',
+          sub: missingReqs === 0 ? 'All complete' : 'Need attention',
           color: missingReqs === 0 ? 'var(--success)' : 'var(--danger)',
-          icon: '📋',
+          icon: '<i data-lucide="clipboard-list" style="width:18px;height:18px;stroke-width:2"></i>',
           onclick: missingReqs > 0 ? "missingFieldFilter='requirements';Router.go('people')" : ''
         })}
       </div>
@@ -112,7 +112,7 @@ function renderHome() {
                       <div class="ph-recent-action">${esc(r.action)} · <span class="ph-recent-time">${esc(r.time)}</span></div>
                     </div>
                   </div>`).join('')
-              : Components.emptyState({ icon: '📝', title: 'No recent activity', message: 'Activity will appear here as records are updated.' })
+              : Components.emptyState({ icon: '<i data-lucide="activity" style="width:36px;height:36px;stroke-width:1.5;opacity:.4"></i>', title: 'No recent activity', message: 'Activity will appear here as records are updated.' })
             }
           </div>
         </div>
@@ -121,24 +121,24 @@ function renderHome() {
       <!-- Quick nav tiles -->
       <div class="ph-tiles">
         <div class="ph-tile" onclick="Router.go('analytics')">
-          <div class="ph-tile-icon">📊</div>
+          <div class="ph-tile-icon"><i data-lucide="bar-chart-2"></i></div>
           <div class="ph-tile-label">Analytics</div>
         </div>
         <div class="ph-tile" onclick="Router.go('tracker')">
-          <div class="ph-tile-icon">📍</div>
+          <div class="ph-tile-icon"><i data-lucide="map-pin"></i></div>
           <div class="ph-tile-label">Tracker</div>
         </div>
         <div class="ph-tile" onclick="Router.go('log')">
-          <div class="ph-tile-icon">📋</div>
+          <div class="ph-tile-icon"><i data-lucide="file-text"></i></div>
           <div class="ph-tile-label">Activity Log</div>
         </div>
         <div class="ph-tile" onclick="Router.go('inactive')">
-          <div class="ph-tile-icon">🗂</div>
+          <div class="ph-tile-icon"><i data-lucide="user-minus"></i></div>
           <div class="ph-tile-label">Inactive</div>
         </div>
         ${(typeof currentRole !== 'undefined' && currentRole === 'owner') ? `
         <div class="ph-tile" onclick="Router.go('settings')">
-          <div class="ph-tile-icon">⚙️</div>
+          <div class="ph-tile-icon"><i data-lucide="settings"></i></div>
           <div class="ph-tile-label">Settings</div>
         </div>` : ''}
       </div>
@@ -162,11 +162,12 @@ function renderHome() {
                   <div class="ph-recent-action">${esc(r.action)} · <span class="ph-recent-time">${esc(r.time)}</span></div>
                 </div>
               </div>`).join('')
-          : Components.emptyState({ icon: '📝', title: 'No recent activity' });
+          : Components.emptyState({ icon: '<i data-lucide="activity" style="width:36px;height:36px;stroke-width:1.5;opacity:.4"></i>', title: 'No recent activity' });
       }).catch(() => {});
   }
 
   _injectHomeStyles();
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function _buildRecentList(limit = 5) {
@@ -252,7 +253,9 @@ function _injectHomeStyles() {
       min-width: 90px; transition: border-color .18s, background .18s;
     }
     .ph-tile:hover { border-color: var(--accent); background: rgba(0,255,224,.04); }
-    .ph-tile-icon { font-size: 22px; }
+    .ph-tile-icon { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: var(--text2); }
+    .ph-tile:hover .ph-tile-icon { color: var(--accent); }
+    .ph-tile-icon i, .ph-tile-icon svg { width: 20px; height: 20px; stroke-width: 1.8; }
     .ph-tile-label { font-size: 11.5px; font-weight: 500; color: var(--text2); white-space: nowrap; }
 
     /* accent button */
