@@ -124,6 +124,10 @@ function timeAgo(dateStr){
   return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 initTheme();
+// Activate static Lucide icons in sidebar/topbar on first paint
+document.addEventListener('DOMContentLoaded', () => {
+  if(typeof lucide !== 'undefined') lucide.createIcons();
+});
 
 // ============================================================
 // SIDEBAR INIT
@@ -141,6 +145,12 @@ function toggleSidebar(){
   if(!sidebar) return;
   const isCollapsed = sidebar.classList.toggle('collapsed');
   localStorage.setItem('hr_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+  // Swap chevron direction
+  const icon = document.getElementById('sidebar-toggle-icon');
+  if(icon){
+    icon.setAttribute('data-lucide', isCollapsed ? 'chevron-right' : 'chevron-left');
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+  }
 }
 
 // ============================================================
@@ -1203,6 +1213,9 @@ function renderView(){
   else if(currentView==='tracker')renderTracker();
   else if(currentView==='log')renderLog();
   else if(currentView==='settings')renderSettingsPage();
+
+  // Activate any Lucide icons injected by page renderers
+  if(typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function drillDown(filterKey){
@@ -1267,11 +1280,11 @@ function renderEmployeeTable(type){
         ${afc>0?`<span class="filter-active-count">${afc} filter${afc!==1?'s':''} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>`:''}
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
           ${canViewSensitive()?`<button class="btn btn-export btn-sm" onclick="exportXLSX()" title="Export current view to Excel">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <i data-lucide="download" style="width:11px;height:11px;stroke-width:2.5"></i>
             Export Excel
           </button>`:''}
           <button class="btn btn-ghost btn-sm" id="bulk-toggle-btn" onclick="toggleBulkMode()" style="display:flex;align-items:center;gap:5px">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/><line x1="10" y1="13" x2="21" y2="13"/><line x1="10" y1="19" x2="21" y2="19"/></svg>
+            <i data-lucide="list" style="width:11px;height:11px;stroke-width:2.5"></i>
             Select
           </button>
         </div>
@@ -1841,10 +1854,10 @@ async function renderLog(){
     }
     const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
     const svgMap={
-      Added:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-      'Status Changed / Moved':`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
-      Deleted:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
-      Updated:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
+      Added:`<i data-lucide="plus-circle" style="width:14px;height:14px;stroke-width:2.5"></i>`,
+      'Status Changed / Moved':`<i data-lucide="refresh-cw" style="width:14px;height:14px;stroke-width:2"></i>`,
+      Deleted:`<i data-lucide="trash-2" style="width:14px;height:14px;stroke-width:2"></i>`,
+      Updated:`<i data-lucide="edit-3" style="width:14px;height:14px;stroke-width:2"></i>`
     };
     el.innerHTML=rows.map(r=>{
       const action=r[3]||'';
