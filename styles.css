@@ -461,8 +461,21 @@ body::before {
 }
 
 .icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; opacity: 0.65; }
-.icon svg { width: 100%; height: 100%; }
+.icon svg, .icon i { width: 16px; height: 16px; }
 .nav-item.active .icon { opacity: 1; }
+
+/* Lucide global sizing */
+[data-lucide] { width: 1em; height: 1em; stroke-width: 1.8; vertical-align: middle; }
+.icon [data-lucide] { width: 16px; height: 16px; }
+.sidebar-toggle-btn [data-lucide] { width: 12px; height: 12px; stroke-width: 2.5; }
+.search-icon [data-lucide] { width: 14px; height: 14px; stroke-width: 2.5; }
+.topbar-theme-btn [data-lucide] { width: 15px; height: 15px; stroke-width: 2; }
+.notif-bell-btn [data-lucide] { width: 15px; height: 15px; stroke-width: 2; }
+.btn-refresh [data-lucide] { width: 13px; height: 13px; stroke-width: 2; }
+.btn-signout [data-lucide] { width: 14px; height: 14px; stroke-width: 2; }
+.role-icon [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; }
+.role-lock-icon [data-lucide] { width: 20px; height: 20px; stroke-width: 2; }
+.user-role-badge [data-lucide] { width: 8px; height: 8px; stroke-width: 2.5; }
 
 .status-filters { padding: 0 8px 12px; }
 .sf-item {
