@@ -11,6 +11,7 @@ const LOG_SHEET           = 'Log';
 const STORE_DETAILS_SHEET = 'Store Details';
 const ROLE_LOG_SHEET      = 'Role Logs';
 const ANNOUNCEMENTS_SHEET = 'Announcements';
+const EVENTS_SHEET_APP    = 'Events'; // calendar events — mirrors EVENTS_SHEET in page-home.js
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated','Backout'];
@@ -472,6 +473,7 @@ async function ensureHeaders(){
     await chk(LOG_SHEET,LOG_HEADERS,'A1:H1');
     await chk(ROLE_LOG_SHEET,ROLE_LOG_HEADERS,'A1:E1');
     await chk(ANNOUNCEMENTS_SHEET,['ID','Title','Body','PostedBy','Timestamp','Active'],'A1:F1');
+    await chk(EVENTS_SHEET_APP,['ID','Title','Date','Note','PostedBy','Active'],'A1:F1');
   }catch(e){console.warn('Header setup:',e);}
 }
 
