@@ -66,7 +66,7 @@ const TABLE_COLUMNS = [
 // ============================================================
 let tokenClient, gapiInited=false, gisInited=false;
 let accessToken=null, currentUser=null;
-let employees=[], currentView='dashboard', filterStatus=null, editingId=null;
+let employees=[], currentView='home', filterStatus=null, editingId=null;
 let currentPage=1, pageSize=PAGE_SIZE_DEFAULT;
 let sortCol=null, sortDir=1;
 let selectedIds=new Set();
@@ -101,7 +101,7 @@ function toggleTheme(){
   document.documentElement.setAttribute('data-theme',next);
   localStorage.setItem('hr_theme',next);
   updateThemeIcon(next);
-  if(currentView==='dashboard') renderDashboard();
+  if(currentView==='dashboard'||currentView==='analytics'||currentView==='home') renderView();
 }
 function updateThemeIcon(theme){
   // Support both sidebar (old) and topbar (new) theme icons
@@ -487,7 +487,13 @@ async function loadData(){
     });
     (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
     logCache=null;selectedIds.clear();
-    renderSidebar();renderView();
+    renderSidebar();
+    // Let the router decide the view based on the current URL hash
+    if(typeof Router !== 'undefined' && window.location.hash && window.location.hash !== '#'){
+      Router.init();
+    } else {
+      renderView();
+    }
     updateNotifBadge();
     toast(`${employees.length} employees loaded`,'success');
   }catch(e){
@@ -1170,25 +1176,33 @@ function showView(v){
   currentView=v;
   bulkMode=false;
   selectedIds.clear();
-  // Always clear status filter when navigating via sidebar nav items
   filterStatus=null;
   missingFieldFilter=null;
   currentPage=1;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
+  // Map view names to nav element ids
+  const navMap={home:'nav-dashboard',dashboard:'nav-dashboard',active:'nav-active',inactive:'nav-inactive',tracker:'nav-tracker',log:'nav-log',analytics:'nav-analytics',settings:'nav-settings'};
+  const el=document.getElementById(navMap[v]||'nav-'+v);if(el)el.classList.add('active');
   renderSidebar();renderView();
 }
 
 function renderView(){
-  // Search is always in topbar center — always visible
-  const sw=document.getElementById('topbar-search-wrap');
-  if(sw) sw.style.visibility=(currentView==='active'||currentView==='inactive'||currentView==='dashboard')?'visible':'hidden';
+  // Page fade transition
+  const contentEl=document.getElementById('content');
+  if(contentEl){ contentEl.classList.remove('page-fade'); void contentEl.offsetWidth; contentEl.classList.add('page-fade'); }
 
-  if(currentView==='dashboard')renderDashboard();
+  // Search visible on table/people views only
+  const sw=document.getElementById('topbar-search-wrap');
+  if(sw) sw.style.visibility=(currentView==='active'||currentView==='inactive')?'visible':'hidden';
+
+  if(currentView==='home')renderHome();
+  else if(currentView==='dashboard')renderAnalyticsPage();
+  else if(currentView==='analytics')renderAnalyticsPage();
   else if(currentView==='active')renderEmployeeTable('active');
   else if(currentView==='inactive')renderEmployeeTable('inactive');
   else if(currentView==='tracker')renderTracker();
   else if(currentView==='log')renderLog();
+  else if(currentView==='settings')renderSettingsPage();
 }
 
 function drillDown(filterKey){
@@ -1196,17 +1210,14 @@ function drillDown(filterKey){
   filterStatus=null;
   bulkMode=false;
   selectedIds.clear();
-  currentView='active';
   currentPage=1;
-  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  document.getElementById('nav-active')?.classList.add('active');
-  renderSidebar();renderView();
+  Router.navigate('/people');
 }
 
 function dashSearch(q){
   if(!q.trim())return;
   document.getElementById('search-input').value=q;
-  showView('active');
+  Router.navigate('/people');
 }
 
 // ============================================================
@@ -1220,7 +1231,7 @@ function renderEmployeeTable(type){
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
   document.getElementById('topbar-title').textContent=label;
-  document.getElementById('topbar-sub').textContent='Click a row to view details';
+  const _sub1=document.getElementById('topbar-sub'); if(_sub1) _sub1.textContent='Click a row to view details';
 
   const afc=activeFilterCount();
   document.getElementById('content').innerHTML=`
@@ -1331,10 +1342,14 @@ function renderTableRows(type){
   if(!page.length){
     const q=(document.getElementById('search-input')?.value||'').trim();
     const hasFilters=activeFilterCount()>0||!!filterStatus||!!missingFieldFilter||!!q;
-    const msg=hasFilters
-      ?{title:'No matches found',sub:'Try adjusting your filters or search term.',icon:`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`}
-      :{title:'No employees here',sub:'Add your first employee using the button above.',icon:`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>`};
-    tbody.innerHTML=`<tr><td colspan="20"><div class="empty-state">${msg.icon}<div class="es-title">${msg.title}</div><div class="es-sub">${msg.sub}</div></div></td></tr>`;
+    const clearBtn=hasFilters?`<button class="btn btn-ghost btn-sm" onclick="resetFilters();document.getElementById('search-input').value='';renderView()">Clear all filters</button>`:'';
+    tbody.innerHTML=`<tr><td colspan="20">${
+      typeof Components!=='undefined'
+        ? Components.emptyState(hasFilters
+            ? { icon:'🔍', title:'No matches found', message:'Try adjusting your filters or search term.', action:clearBtn }
+            : { icon:'👥', title:'No employees here', message:'Add your first employee using the button above.' })
+        : `<div class="empty-state"><div class="es-title">${hasFilters?'No matches found':'No employees here'}</div></div>`
+    }</td></tr>`;
   }else{
     const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
@@ -1807,7 +1822,7 @@ async function loadEmployeeAudit(infinixId){
 // ============================================================
 async function renderLog(){
   document.getElementById('topbar-title').textContent='Activity Log';
-  document.getElementById('topbar-sub').textContent='All changes recorded automatically';
+  const _sub2=document.getElementById('topbar-sub'); if(_sub2) _sub2.textContent='All changes recorded automatically';
   document.getElementById('content').innerHTML=`<div class="table-wrap"><div class="table-head"><h3>Activity Log</h3></div><div id="log-list" style="padding:6px 18px 16px">Loading...</div></div>`;
   showLoading(true,'Loading log...');
   try{
