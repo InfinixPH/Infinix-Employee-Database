@@ -180,7 +180,7 @@
 
 <!-- Sidebar toggle -->
 <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
-  <i data-lucide="chevron-left" id="sidebar-toggle-icon"></i>
+  <i data-lucide="menu" id="sidebar-toggle-icon"></i>
 </button>
 
 <div class="main">
@@ -211,7 +211,10 @@
         <div class="notif-drawer" id="notif-drawer">
           <div class="notif-drawer-header">
             <span class="notif-drawer-title">Notifications</span>
-            <button class="btn btn-ghost btn-sm" onclick="closeNotifDrawer()">✕</button>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()" title="Mark all as read" style="font-size:10px;padding:3px 8px">✓ All read</button>
+              <button class="btn btn-ghost btn-sm" onclick="closeNotifDrawer()">✕</button>
+            </div>
           </div>
           <div class="notif-drawer-body" id="notif-drawer-body">
             <div style="font-size:12px;color:var(--text3);padding:16px;text-align:center">Loading…</div>
@@ -276,38 +279,35 @@
 <style>
 /* ─── FEATURE 3: COLLAPSIBLE SIDEBAR ─── */
 
-/* The toggle button is a fixed-position pill that always sits on the sidebar's right edge */
+/* Move toggle to topbar as a clean hamburger button */
 .sidebar-toggle-btn {
   position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  left: calc(var(--sidebar-w) - 12px); /* centred on sidebar right border */
-  width: 24px;
-  height: 48px;
-  border-radius: 0 8px 8px 0;
-  background: var(--bg-mid, #0d1a1a);
-  border: 1px solid rgba(0,255,224,0.18);
-  border-left: none;
+  top: 10px;
+  left: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text2);
-  z-index: 15;
-  transition: left .28s cubic-bezier(.4,0,.2,1), background .15s, color .15s;
-  box-shadow: 3px 0 12px rgba(0,0,0,0.45);
+  z-index: 20;
+  transition: left .28s cubic-bezier(.4,0,.2,1), background .15s, color .15s, border-color .15s;
   padding: 0;
   flex-shrink: 0;
 }
 .sidebar-toggle-btn:hover {
-  background: rgba(0,255,224,0.10);
+  background: rgba(0,255,224,0.08);
   color: var(--accent);
-  border-color: rgba(0,255,224,0.40);
+  border-color: rgba(0,255,224,0.22);
 }
 
-/* When collapsed — button moves left to edge of collapsed sidebar */
+/* When collapsed — button moves with the sidebar */
 .sidebar.collapsed ~ .sidebar-toggle-btn {
-  left: calc(52px - 12px);
+  left: 10px;
 }
 
 /* Smooth sidebar width transition */
@@ -354,13 +354,32 @@
 
 /* Light mode button */
 [data-theme="light"] .sidebar-toggle-btn {
-  background: rgba(220,232,232,0.95);
-  border-color: rgba(10,138,133,0.25);
   color: rgba(26,34,34,0.6);
 }
 [data-theme="light"] .sidebar-toggle-btn:hover {
-  background: rgba(10,138,133,0.12);
+  background: rgba(10,138,133,0.10);
   color: #076e6a;
+  border-color: rgba(10,138,133,0.22);
+}
+
+/* Override the sidebar toggle icon to be a hamburger SVG via content */
+#sidebar-toggle-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 14px;
+  transition: transform .28s;
+}
+#sidebar-toggle-icon::before,
+#sidebar-toggle-icon::after,
+.sidebar-hamburger-mid {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: opacity .2s, transform .2s;
 }
 
 /* ─── FEATURE 6: NOTIFICATION CENTER ─── */
@@ -412,6 +431,13 @@
 .notif-item-title { font-size: 12px; font-weight: 600; color: var(--text); }
 .notif-item-sub { font-size: 10.5px; color: var(--text3); margin-top: 1px; }
 .notif-empty { padding: 24px 16px; text-align: center; font-size: 12px; color: var(--text3); font-style: italic; }
+.notif-dismiss-btn {
+  background: none; border: none; cursor: pointer; color: var(--text3);
+  font-size: 10px; padding: 2px 4px; border-radius: 4px; flex-shrink: 0;
+  opacity: 0; transition: opacity .15s, background .12s;
+}
+.notif-item:hover .notif-dismiss-btn { opacity: 1; }
+.notif-dismiss-btn:hover { background: rgba(255,82,82,.15); color: var(--danger); }
 
 /* ─── SIDEBAR CLOCK ─── */
 .sidebar-clock {
@@ -465,6 +491,7 @@
   margin-top: 12px; font-weight: 700; opacity: 0.65;
   text-shadow: 0 0 10px rgba(0,255,224,0.35);
 }
+[data-theme="light"] .brand-sub { color: #076e6a; text-shadow: none; opacity: 0.8; }
 
 /* ─── NAV section color ─── */
 .nav-section {
@@ -473,6 +500,7 @@
   padding: 0 8px; margin: 16px 0 5px;
   font-weight: 700; opacity: 0.45;
 }
+[data-theme="light"] .nav-section { color: #076e6a; text-shadow: none; opacity: 0.7; }
 
 /* ─── USER ROLE BADGE glow ─── */
 .user-role-badge {
