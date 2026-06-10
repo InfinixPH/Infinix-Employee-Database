@@ -8,6 +8,12 @@ function renderHome() {
   const titleEl = document.getElementById('topbar-title');
   if (titleEl) titleEl.textContent = 'Home';
 
+  // Guard — employees array may not be ready on very first paint
+  if (typeof employees === 'undefined' || typeof getStats === 'undefined') {
+    document.getElementById('content').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)">Loading…</div>';
+    return;
+  }
+
   const s     = getStats();
   const total = employees.length;
   const active = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
@@ -130,7 +136,7 @@ function renderHome() {
           <div class="ph-tile-icon">🗂</div>
           <div class="ph-tile-label">Inactive</div>
         </div>
-        ${canManageRoles ? `
+        ${(typeof currentRole !== 'undefined' && currentRole === 'owner') ? `
         <div class="ph-tile" onclick="Router.go('settings')">
           <div class="ph-tile-icon">⚙️</div>
           <div class="ph-tile-label">Settings</div>
