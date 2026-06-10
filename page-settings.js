@@ -166,7 +166,7 @@ function _injectSettingsStyles() {
       text-transform: uppercase; letter-spacing: .5px; width: fit-content;
     }
     .ps-role-owner  { background: rgba(255,215,64,.15); color: #FFD740; border: 1px solid rgba(255,215,64,.3); }
-    .ps-role-hr     { background: rgba(0,255,224,.12); color: var(--accent); border: 1px solid rgba(0,255,224,.3); }
+    .ps-role-hr     { background: rgba(0,200,170,.12); color: var(--accent); border: 1px solid rgba(0,200,170,.3); }
     .ps-role-rssrsh { background: rgba(100,181,246,.12); color: #64B5F6; border: 1px solid rgba(100,181,246,.3); }
     .ps-role-viewer { background: rgba(150,150,150,.12); color: var(--text3); border: 1px solid var(--border); }
     .ps-role-none   { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
