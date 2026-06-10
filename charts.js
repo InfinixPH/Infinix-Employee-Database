@@ -168,8 +168,8 @@ function renderDashboard(){
   }
 
   document.getElementById('content').innerHTML=`
-    <!-- OUTER LAYOUT: left main | right panel -->
-    <div class="dash-layout">
+    <!-- ANALYTICS: full-width (announcements/birthdays/activity live on Home) -->
+    <div class="dash-layout dash-layout-full">
     <div class="dash-main">
     <!-- HERO KPI ROW -->
     <div class="dash-hero">
@@ -378,56 +378,6 @@ function renderDashboard(){
 
     </div><!-- /charts-row -->
     </div><!-- /dash-main -->
-    <div class="dash-right">
-
-        <!-- ANNOUNCEMENTS CAROUSEL -->
-        <div class="ann-card glass-card">
-          <div class="dash-right-header">
-            <span class="drh-icon"><i data-lucide="bell" style="width:14px;height:14px;stroke-width:2"></i></span>
-            <span class="drh-title">Announcements</span>
-            <div style="margin-left:auto;display:flex;gap:6px">
-              ${canViewSensitive()?`<button class="btn btn-ghost btn-sm drh-action" onclick="openAnnouncementManager()">+ Manage</button>`:''}
-              <button class="btn btn-ghost btn-sm drh-action" onclick="viewAllAnnouncements()">View all</button>
-            </div>
-          </div>
-          <div id="ann-carousel-wrap" style="display:flex;align-items:flex-start;gap:4px;min-height:60px">
-            <div style="font-size:12px;color:var(--text3);font-style:italic">No announcements at this time.</div>
-          </div>
-        </div>
-
-        <!-- RECENTLY UPDATED -->
-        <div class="recent-card glass-card">
-          <div class="dash-right-header">
-            <span class="drh-icon"><i data-lucide="clock" style="width:14px;height:14px;stroke-width:2"></i></span>
-            <span class="drh-title">Recently Updated</span>
-            <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllRecentlyUpdated()">View all</button>
-          </div>
-          <div id="recent-updated-list">
-            <div style="font-size:12px;color:var(--text3);padding:8px 0">Loading…</div>
-          </div>
-        </div>
-
-        <!-- BIRTHDAYS WIDGET (tabbed: Today / This Week / This Month) -->
-        <div class="birthday-card glass-card bday-widget">
-          <div class="dash-right-header">
-            <span class="drh-icon"><i data-lucide="store" style="width:14px;height:14px;stroke-width:2"></i></span>
-            <span class="drh-title">Upcoming Birthdays</span>
-            <button class="btn btn-ghost btn-sm drh-action" style="margin-left:auto" onclick="viewAllBirthdays()">View all</button>
-          </div>
-          <div class="bday-tabs" id="bday-tabs">
-            <button class="bday-tab-btn active" onclick="switchBdayTab('today',this)">Today${bdayToday.length?` <span style="background:rgba(245,200,66,0.2);color:#f5c842;border-radius:20px;padding:0 5px;font-size:8px">${bdayToday.length}</span>`:''}
-            </button>
-            <button class="bday-tab-btn" onclick="switchBdayTab('week',this)">This Week${bdayWeek.length?` <span style="background:var(--accent-dim);color:var(--accent);border-radius:20px;padding:0 5px;font-size:8px">${bdayWeek.length}</span>`:''}
-            </button>
-            <button class="bday-tab-btn" onclick="switchBdayTab('month',this)">This Month${bdayMonth.length?` <span style="background:var(--surface2);color:var(--text2);border-radius:20px;padding:0 5px;font-size:8px">${bdayMonth.length}</span>`:''}
-            </button>
-          </div>
-          <div id="bday-list-today">${renderBdayList(bdayToday)}</div>
-          <div id="bday-list-week" style="display:none">${renderBdayList(bdayWeek)}</div>
-          <div id="bday-list-month" style="display:none">${renderBdayList(bdayMonth)}</div>
-        </div>
-
-      </div><!-- /dash-right -->
     </div><!-- /dash-layout -->`;
 
   setTimeout(()=>{
@@ -599,11 +549,6 @@ function renderDashboard(){
     }
 
   },80);
-  // Render right panel widgets after charts settle
-  setTimeout(()=>{
-    if(typeof renderAnnouncementCarousel==='function') renderAnnouncementCarousel();
-    if(typeof renderRecentlyUpdated==='function') renderRecentlyUpdated(buildRecentFromLog());
-  },100);
 }
 
 // ============================================================
