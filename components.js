@@ -98,12 +98,12 @@ const Components = (() => {
       .comp-avatar {
         position: relative;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(0,255,224,.35), rgba(0,184,160,.15));
-        border: 1.5px solid rgba(0,255,224,.4);
-        color: var(--accent, #00FFE0);
+        background: linear-gradient(135deg, rgba(0,200,170,.35), rgba(0,184,160,.15));
+        border: 1.5px solid rgba(0,200,170,.4);
+        color: var(--accent, #00C8AA);
         display: flex; align-items: center; justify-content: center;
         font-weight: 700; letter-spacing: .5px; flex-shrink: 0;
-        box-shadow: 0 0 14px rgba(0,255,224,.18);
+        box-shadow: 0 0 14px rgba(0,200,170,.18);
         user-select: none;
       }
       .comp-avatar-dot {
@@ -186,7 +186,7 @@ const Components = (() => {
       .comp-timeline-dot {
         width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 3px;
         background: var(--accent); border: 2px solid var(--bg1, #141414);
-        box-shadow: 0 0 6px rgba(0,255,224,.4);
+        box-shadow: 0 0 6px rgba(0,200,170,.4);
       }
       .comp-timeline-body { flex: 1; min-width: 0; }
       .comp-timeline-action { font-size: 12.5px; color: var(--text1); font-weight: 500; }
