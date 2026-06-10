@@ -268,6 +268,15 @@ const Router = (() => {
       .crumb-link:hover { color: var(--accent, #00FFE0); }
       .crumb-sep { color: var(--text3, #888); opacity: .5; font-size: 11px; }
       .crumb-current { color: var(--text1, #eee); font-weight: 500; }
+
+      /* When topbar-title is hidden (Home), promote breadcrumb as the title */
+      .topbar-title:empty ~ #breadcrumb .crumb-current,
+      .topbar-title:empty + #breadcrumb .crumb-current {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        color: var(--text1, #eee);
+      }
     `;
     document.head.appendChild(style);
   }
