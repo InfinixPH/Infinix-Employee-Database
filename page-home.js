@@ -204,34 +204,49 @@ function renderHome() {
         </div>
       </div>
 
-      <!-- ── NAV TILES ── -->
-      <div class="ph-tiles-section">
-        <div class="ph-card-title ph-tiles-heading"><i data-lucide="layout-grid" style="width:13px;height:13px"></i> Quick Navigation</div>
-        <div class="ph-tiles">
-          <div class="ph-tile" onclick="Router.go('analytics')">
-            <div class="ph-tile-icon"><i data-lucide="bar-chart-2"></i></div>
-            <div class="ph-tile-label">Analytics</div>
+      <!-- ── FEATURE BANNER ── -->
+      <div class="ph-feature-banner">
+        <div class="ph-fb-hero">
+          <div class="ph-fb-hero-title">Everything you need,<br>in one place.</div>
+          <div class="ph-fb-hero-sub">Manage your workforce efficiently<br>with all the tools at your fingertips.</div>
+        </div>
+        <div class="ph-fb-actions">
+          ${canWrite() ? `
+          <div class="ph-fb-action" onclick="openAddModal()">
+            <div class="ph-fb-action-icon"><i data-lucide="user-plus"></i></div>
+            <div class="ph-fb-action-body">
+              <div class="ph-fb-action-title">Add New Employee</div>
+              <div class="ph-fb-action-sub">Create a new employee profile</div>
+            </div>
+          </div>` : ''}
+          <div class="ph-fb-action" onclick="Router.go('tracker')">
+            <div class="ph-fb-action-icon"><i data-lucide="map-pin"></i></div>
+            <div class="ph-fb-action-body">
+              <div class="ph-fb-action-title">Deployment Tracker</div>
+              <div class="ph-fb-action-sub">Track employee deployments</div>
+            </div>
           </div>
-          <div class="ph-tile" onclick="Router.go('tracker')">
-            <div class="ph-tile-icon"><i data-lucide="map-pin"></i></div>
-            <div class="ph-tile-label">Tracker</div>
+          <div class="ph-fb-action" onclick="Router.go('log')">
+            <div class="ph-fb-action-icon"><i data-lucide="file-text"></i></div>
+            <div class="ph-fb-action-body">
+              <div class="ph-fb-action-title">Activity Log</div>
+              <div class="ph-fb-action-sub">View all record changes</div>
+            </div>
           </div>
-          <div class="ph-tile" onclick="Router.go('log')">
-            <div class="ph-tile-icon"><i data-lucide="file-text"></i></div>
-            <div class="ph-tile-label">Activity Log</div>
-          </div>
-          <div class="ph-tile" onclick="Router.go('inactive')">
-            <div class="ph-tile-icon"><i data-lucide="user-minus"></i></div>
-            <div class="ph-tile-label">Inactive</div>
-          </div>
-          <div class="ph-tile" onclick="Router.go('people')">
-            <div class="ph-tile-icon"><i data-lucide="users"></i></div>
-            <div class="ph-tile-label">All People</div>
+          <div class="ph-fb-action" onclick="Router.go('analytics')">
+            <div class="ph-fb-action-icon"><i data-lucide="bar-chart-2"></i></div>
+            <div class="ph-fb-action-body">
+              <div class="ph-fb-action-title">Generate Report</div>
+              <div class="ph-fb-action-sub">Create custom reports</div>
+            </div>
           </div>
           ${(typeof currentRole !== 'undefined' && currentRole === 'owner') ? `
-          <div class="ph-tile" onclick="Router.go('settings')">
-            <div class="ph-tile-icon"><i data-lucide="settings"></i></div>
-            <div class="ph-tile-label">Settings</div>
+          <div class="ph-fb-action" onclick="Router.go('settings')">
+            <div class="ph-fb-action-icon"><i data-lucide="settings"></i></div>
+            <div class="ph-fb-action-body">
+              <div class="ph-fb-action-title">Settings</div>
+              <div class="ph-fb-action-sub">Configure the system</div>
+            </div>
           </div>` : ''}
         </div>
       </div>
@@ -763,10 +778,15 @@ function _injectHomeStyles() {
 
     /* ── Generic card ── */
     .ph-card {
-      background: var(--card, var(--bg2));
+      background: var(--bg2);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 14px 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+    [data-theme="light"] .ph-card {
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(10,138,133,.07);
     }
     .ph-card-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -774,9 +794,10 @@ function _injectHomeStyles() {
     }
     .ph-card-title {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 600; letter-spacing: .06em;
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
       text-transform: uppercase; color: var(--text3);
     }
+    [data-theme="light"] .ph-card-title { color: #076e6a; }
     .ph-card-link {
       font-size: 11.5px; color: var(--accent); background: none;
       border: none; cursor: pointer; padding: 0; font-weight: 500;
@@ -802,6 +823,7 @@ function _injectHomeStyles() {
       padding: 3px 6px; border-radius: 6px; transition: background .15s;
     }
     .ph-status-row:hover { background: rgba(255,255,255,.04); }
+    [data-theme="light"] .ph-status-row:hover { background: rgba(10,138,133,.05); }
     .ph-status-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .ph-status-name { font-size: 11.5px; color: var(--text2); min-width: 76px; }
     .ph-status-count { font-size: 11.5px; font-weight: 600; color: var(--text1); min-width: 26px; text-align: right; }
@@ -860,12 +882,14 @@ function _injectHomeStyles() {
 
     /* ── Calendar popover ── */
     .ph-cal-popover {
-      position: absolute; bottom: 8px; left: 8px; right: 8px;
-      background: var(--bg2); border: 1px solid var(--border);
+      position: relative; margin-top: 8px;
+      background: var(--bg2, rgba(14,20,20,0.98)); border: 1px solid var(--border);
       border-radius: 9px; padding: 10px 12px; z-index: 40;
       box-shadow: 0 8px 24px rgba(0,0,0,.35);
       display: flex; flex-direction: column; gap: 7px;
+      animation: phPopIn .15s ease-out;
     }
+    @keyframes phPopIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
     .ph-pop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
     .ph-pop-date   { font-size: 11px; font-weight: 700; color: var(--text1); }
     .ph-pop-close  { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 12px; padding: 0; line-height: 1; }
@@ -952,21 +976,53 @@ function _injectHomeStyles() {
     .ph-recent-action { font-size: 11px; color: var(--text3); }
     .ph-recent-time   { color: var(--accent); }
 
-    /* ── Nav tiles ── */
-    .ph-tiles-section { display: flex; flex-direction: column; gap: 8px; }
-    .ph-tiles-heading { margin-bottom: 0; }
-    .ph-tiles { display: flex; gap: 8px; flex-wrap: wrap; }
-    .ph-tile {
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
-      padding: 12px 18px; background: var(--card, var(--bg2));
-      border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
-      min-width: 80px; transition: border-color .18s, background .18s;
+    /* ── Feature Banner ── */
+    .ph-feature-banner {
+      display: flex; align-items: stretch; gap: 0;
+      background: linear-gradient(135deg, rgba(0,255,224,0.06) 0%, rgba(0,184,160,0.03) 50%, rgba(74,100,220,0.05) 100%);
+      border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden;
     }
-    .ph-tile:hover { border-color: var(--accent); background: rgba(0,255,224,.04); }
-    .ph-tile-icon { display: flex; align-items: center; justify-content: center; color: var(--text2); }
-    .ph-tile:hover .ph-tile-icon { color: var(--accent); }
-    .ph-tile-icon i, .ph-tile-icon svg { width: 18px; height: 18px; stroke-width: 1.8; }
-    .ph-tile-label { font-size: 11px; font-weight: 500; color: var(--text2); white-space: nowrap; }
+    [data-theme="light"] .ph-feature-banner {
+      background: linear-gradient(135deg, rgba(10,138,133,0.06) 0%, rgba(10,138,133,0.02) 100%);
+    }
+    .ph-fb-hero {
+      display: flex; flex-direction: column; justify-content: center; gap: 6px;
+      padding: 20px 24px; min-width: 200px; max-width: 240px;
+      background: linear-gradient(135deg, rgba(0,255,224,0.10) 0%, rgba(0,184,160,0.05) 100%);
+      border-right: 1px solid var(--border);
+    }
+    [data-theme="light"] .ph-fb-hero {
+      background: linear-gradient(135deg, rgba(10,138,133,0.12) 0%, rgba(10,138,133,0.05) 100%);
+    }
+    .ph-fb-hero-title {
+      font-size: 14px; font-weight: 800; color: var(--text1); line-height: 1.3;
+    }
+    .ph-fb-hero-sub {
+      font-size: 11px; color: var(--text3); line-height: 1.5;
+    }
+    .ph-fb-actions {
+      display: flex; flex: 1; flex-wrap: wrap;
+    }
+    .ph-fb-action {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px; cursor: pointer; flex: 1; min-width: 160px;
+      border-right: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .ph-fb-action:last-child { border-right: none; }
+    .ph-fb-action:hover { background: rgba(0,255,224,.05); }
+    [data-theme="light"] .ph-fb-action:hover { background: rgba(10,138,133,.06); }
+    .ph-fb-action-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(255,255,255,.05); border: 1px solid var(--border);
+      color: var(--accent);
+    }
+    [data-theme="light"] .ph-fb-action-icon { background: rgba(10,138,133,.08); }
+    .ph-fb-action-icon i, .ph-fb-action-icon svg { width: 16px; height: 16px; stroke-width: 1.8; }
+    .ph-fb-action-title { font-size: 12px; font-weight: 600; color: var(--text1); }
+    .ph-fb-action-sub   { font-size: 10.5px; color: var(--text3); margin-top: 1px; }
 
     /* ── Add event modal ── */
     .ph-modal-box {
