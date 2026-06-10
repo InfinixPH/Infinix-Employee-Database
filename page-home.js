@@ -36,7 +36,7 @@ function renderHome() {
       <!-- Greeting -->
       <div class="ph-greeting">
         <div class="ph-greeting-text">
-          <span class="ph-hi">${esc(greeting)}, ${esc(userName)} 👋</span>
+          <span class="ph-hi">${esc(greeting)}, ${esc(userName)} <i data-lucide="hand-metal" style="width:18px;height:18px;stroke-width:1.8;vertical-align:middle;margin-left:2px"></i></span>
           <span class="ph-date">${_formatDate(new Date())}</span>
         </div>
         <div class="ph-shortcuts">
