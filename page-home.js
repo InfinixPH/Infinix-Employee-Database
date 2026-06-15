@@ -1612,7 +1612,6 @@ function _injectHomeStyles() {
     .ph-fb-x-logo {
       font-size: 32px; font-weight: 900; color: var(--accent);
       line-height: 1; margin-bottom: 2px;
-      text-shadow: 0 0 20px rgba(0,200,170,.4);
     }
     [data-theme="light"] .ph-fb-x-logo { color: #1de3d8; }
     .ph-fb-hero-title {
