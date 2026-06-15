@@ -1786,3 +1786,260 @@ function _injectHomeStyles() {
   `;
   document.head.appendChild(s);
 }
+// ============================================================
+// PATCH: Home Page UI Polish Override
+// ============================================================
+(function injectHomePolishPatch() {
+  if (document.getElementById('page-home-polish-patch')) return;
+
+  const s = document.createElement('style');
+  s.id = 'page-home-polish-patch';
+  s.textContent = `
+    .ph-wrap {
+      padding: 24px 24px 40px !important;
+      gap: 20px !important;
+    }
+
+    .ph-card {
+      padding: 24px !important;
+      min-height: 100%;
+    }
+
+    .ph-card-header {
+      margin-bottom: 18px !important;
+    }
+
+    .ph-hero {
+      padding: 24px !important;
+      height: auto !important;
+      min-height: 240px !important;
+      align-items: center !important;
+    }
+
+    .ph-hero-left {
+      gap: 10px !important;
+    }
+
+    .ph-hero-greeting,
+    .ph-hero-name {
+      font-size: 34px !important;
+      font-weight: 850 !important;
+      line-height: 1.05 !important;
+      letter-spacing: -0.8px !important;
+    }
+
+    .ph-hero-sub {
+      font-size: 13px !important;
+      line-height: 1.5 !important;
+      color: var(--text2) !important;
+    }
+
+    .ph-hero-stats {
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(120px, 1fr)) !important;
+      gap: 10px !important;
+      margin-top: 12px !important;
+      max-width: 700px !important;
+    }
+
+    .ph-hero-stat {
+      display: grid !important;
+      grid-template-columns: 18px 1fr !important;
+      grid-template-rows: auto auto !important;
+      column-gap: 8px !important;
+      row-gap: 2px !important;
+      padding: 10px 12px !important;
+      border-radius: 12px !important;
+      background: rgba(255,255,255,.035) !important;
+      border: 1px solid var(--border) !important;
+    }
+
+    .ph-hero-stat i,
+    .ph-hero-stat svg {
+      grid-row: 1 / span 2 !important;
+      align-self: center !important;
+    }
+
+    .ph-hs-val {
+      font-size: 19px !important;
+      font-weight: 850 !important;
+      line-height: 1 !important;
+    }
+
+    .ph-hs-lbl {
+      font-size: 10.5px !important;
+      font-weight: 650 !important;
+      line-height: 1.25 !important;
+    }
+
+    .ph-row3,
+    .ph-row2,
+    .ph-row-cal {
+      align-items: stretch !important;
+    }
+
+    .ph-row3 > .ph-card {
+      min-height: 292px !important;
+    }
+
+    .ph-row2 > .ph-card {
+      min-height: 310px !important;
+    }
+
+    .ph-action-list {
+      gap: 8px !important;
+    }
+
+    .ph-action-row {
+      display: grid !important;
+      grid-template-columns: 30px minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      column-gap: 10px !important;
+      min-height: 42px !important;
+      padding: 7px 8px !important;
+      border-radius: 10px !important;
+    }
+
+    .ph-action-icon {
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 9px !important;
+    }
+
+    .ph-action-label {
+      min-width: 0 !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      line-height: 1.25 !important;
+    }
+
+    .ph-action-badge {
+      min-width: 26px !important;
+      padding: 4px 8px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      line-height: 1 !important;
+      text-align: center !important;
+    }
+
+    .ph-qa-grid {
+      gap: 12px !important;
+    }
+
+    .ph-qa-tile {
+      min-height: 104px !important;
+      padding: 16px 10px !important;
+      border-radius: 14px !important;
+      gap: 10px !important;
+    }
+
+    .ph-qa-icon {
+      width: 42px !important;
+      height: 42px !important;
+      border-radius: 13px !important;
+    }
+
+    .ph-qa-icon i,
+    .ph-qa-icon svg {
+      width: 22px !important;
+      height: 22px !important;
+    }
+
+    .ph-qa-label {
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      line-height: 1.25 !important;
+    }
+
+    .ph-feature-banner {
+      display: grid !important;
+      grid-template-columns: minmax(260px, 0.8fr) minmax(420px, 1.2fr) !important;
+      gap: 18px !important;
+      padding: 24px !important;
+      border-radius: 18px !important;
+      align-items: stretch !important;
+    }
+
+    .ph-fb-hero {
+      padding: 24px !important;
+      border-radius: 16px !important;
+    }
+
+    .ph-fb-actions {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+      align-content: stretch !important;
+    }
+
+    .ph-fb-action {
+      min-height: 86px !important;
+      padding: 16px !important;
+      border-radius: 14px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+
+    .ph-fb-action-icon {
+      width: 42px !important;
+      height: 42px !important;
+      border-radius: 13px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .ph-fb-action-title {
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      margin-bottom: 3px !important;
+    }
+
+    .ph-fb-action-sub {
+      font-size: 11px !important;
+      line-height: 1.35 !important;
+    }
+
+    @media (max-width: 980px) {
+      .ph-hero {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      .ph-hero-right {
+        display: none !important;
+      }
+
+      .ph-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+
+      .ph-feature-banner {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .ph-wrap {
+        padding: 16px !important;
+      }
+
+      .ph-card,
+      .ph-hero,
+      .ph-feature-banner {
+        padding: 18px !important;
+      }
+
+      .ph-hero-stats,
+      .ph-fb-actions {
+        grid-template-columns: 1fr !important;
+      }
+
+      .ph-hero-greeting,
+      .ph-hero-name {
+        font-size: 28px !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(s);
+})();
