@@ -107,6 +107,7 @@
 
 <div class="sidebar" id="sidebar">
   <div class="brand">
+    <div class="brand-mark" aria-hidden="true">I</div>
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
@@ -117,37 +118,37 @@
 
   <div class="nav">
     <div class="nav-section">Main</div>
-    <div class="nav-item active" onclick="Router.go('dashboard')" id="nav-dashboard">
+    <div class="nav-item active" onclick="Router.go('dashboard')" id="nav-dashboard" title="Home">
       <span class="icon"><i data-lucide="house"></i></span>
       <span class="nav-label">Home</span>
     </div>
-    <div class="nav-item" onclick="Router.go('active')" id="nav-active">
+    <div class="nav-item" onclick="Router.go('active')" id="nav-active" title="Active">
       <span class="icon"><i data-lucide="user-search"></i></span>
       <span class="nav-label">Active</span>
       <span class="nav-badge" id="badge-active">0</span>
     </div>
-    <div class="nav-item" onclick="Router.go('inactive')" id="nav-inactive">
+    <div class="nav-item" onclick="Router.go('inactive')" id="nav-inactive" title="Inactive">
       <span class="icon"><i data-lucide="user-minus"></i></span>
       <span class="nav-label">Inactive</span>
       <span class="nav-badge" id="badge-inactive">0</span>
     </div>
-    <div class="nav-item" onclick="Router.go('tracker')" id="nav-tracker">
+    <div class="nav-item" onclick="Router.go('tracker')" id="nav-tracker" title="Deployment Tracker">
       <span class="icon"><i data-lucide="map-pin"></i></span>
       <span class="nav-label">Deployment Tracker</span>
     </div>
-    <div class="nav-item" onclick="Router.go('log')" id="nav-log">
+    <div class="nav-item" onclick="Router.go('log')" id="nav-log" title="Activity Log">
       <span class="icon"><i data-lucide="file-text"></i></span>
       <span class="nav-label">Activity Log</span>
     </div>
 
     <div class="nav-section">Reports</div>
-    <div class="nav-item" onclick="Router.go('analytics')" id="nav-analytics">
+    <div class="nav-item" onclick="Router.go('analytics')" id="nav-analytics" title="Analytics">
       <span class="icon"><i data-lucide="bar-chart-2"></i></span>
       <span class="nav-label">Analytics</span>
     </div>
 
     <div class="nav-section">System</div>
-    <div class="nav-item" onclick="Router.go('settings')" id="nav-settings">
+    <div class="nav-item" onclick="Router.go('settings')" id="nav-settings" title="Settings">
       <span class="icon"><i data-lucide="settings"></i></span>
       <span class="nav-label">Settings</span>
     </div>
@@ -178,15 +179,13 @@
   </div>
 </div>
 
-<!-- Sidebar toggle -->
-<button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
-  <i data-lucide="menu" id="sidebar-toggle-icon"></i>
-</button>
-
 <div class="main">
   <div class="offline-banner" id="offline-banner">Connection issue — data may be stale. <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button></div>
   <div class="topbar">
     <div class="topbar-left">
+      <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
+        <i data-lucide="menu" id="sidebar-toggle-icon"></i>
+      </button>
       <div class="topbar-title" id="topbar-title"></div>
       <div id="breadcrumb"></div>
     </div>
@@ -279,82 +278,141 @@
 <style>
 /* ─── FEATURE 3: COLLAPSIBLE SIDEBAR ─── */
 
-/* Move toggle to topbar as a clean hamburger button */
-.sidebar-toggle-btn {
-  position: fixed;
-  top: 10px;
-  left: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: transparent;
-  border: 1px solid transparent;
-  cursor: pointer;
+/* Toggle now lives inside .topbar-left, never fixed over the logo */
+.topbar-left {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.sidebar-toggle-btn {
+  position: relative;
+  inset: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-frosted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--text2);
-  z-index: 20;
-  transition: left .28s cubic-bezier(.4,0,.2,1), background .15s, color .15s, border-color .15s;
+  z-index: 2;
+  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
   padding: 0;
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 .sidebar-toggle-btn:hover {
-  background: rgba(0,200,170,0.08);
+  background: rgba(0,200,170,0.10);
   color: var(--accent);
-  border-color: rgba(0,200,170,0.22);
-}
-
-/* When collapsed — button moves with the sidebar */
-.sidebar.collapsed ~ .sidebar-toggle-btn {
-  left: 10px;
+  border-color: rgba(0,200,170,0.26);
+  transform: translateY(-1px);
 }
 
 /* Smooth sidebar width transition */
-.sidebar { transition: width .28s cubic-bezier(.4,0,.2,1) !important; }
+.sidebar { transition: width .28s cubic-bezier(.4,0,.2,1), background .3s !important; }
 
-/* Chevron flips direction */
-#sidebar-toggle-icon { transition: transform .28s; display: block; }
-.sidebar.collapsed ~ .sidebar-toggle-btn #sidebar-toggle-icon {
-  transform: rotate(180deg);
+/* Collapsed state — 64px icon rail */
+.sidebar.collapsed {
+  width: 64px !important;
+  overflow: visible !important;
 }
-
-/* Collapsed state — hide all text, show icons only */
-.sidebar.collapsed { width: 52px !important; overflow: hidden !important; }
-
+.sidebar.collapsed .brand {
+  padding: 14px 10px;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-mark {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  color: #061414;
+  background: linear-gradient(135deg, var(--accent), #d6fff7);
+  box-shadow: 0 8px 24px rgba(0,200,170,.18);
+}
+.sidebar.collapsed .brand-mark { display: flex; }
+.sidebar.collapsed .brand-logo,
+.sidebar.collapsed .brand-sub,
+.sidebar.collapsed .nav-section,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .nav-badge,
-.sidebar.collapsed .nav-section,
-.sidebar.collapsed .brand-sub,
-.sidebar.collapsed .brand-logo,
+.sidebar.collapsed .sf-label,
+.sidebar.collapsed .sf-count,
 .sidebar.collapsed .sidebar-footer,
-.sidebar.collapsed .status-filters,
 .sidebar.collapsed .sidebar-clock,
 .sidebar.collapsed .user-info,
 .sidebar.collapsed .user-name,
 .sidebar.collapsed .user-role-badge {
-  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  width: 0;
+  max-width: 0;
+  overflow: hidden;
 }
-
-.sidebar.collapsed .nav { padding: 8px 6px; }
-.sidebar.collapsed .nav-item {
+.sidebar.collapsed .nav {
+  padding: 12px 10px;
+  overflow: visible;
+}
+.sidebar.collapsed .status-filters {
+  padding: 12px 10px 14px;
+  overflow: visible;
+}
+.sidebar.collapsed .nav-item,
+.sidebar.collapsed .sf-item {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0 auto 6px;
   justify-content: center;
-  padding: 10px 0;
   gap: 0;
-  width: 40px;
-  margin: 0 auto 2px;
+  overflow: visible;
 }
-.sidebar.collapsed .icon { opacity: 0.8; }
-.sidebar.collapsed .nav-item.active .icon { opacity: 1; }
-.sidebar.collapsed .brand {
-  padding: 12px 6px;
-  display: flex; justify-content: center; align-items: center;
-  min-height: 0;
+.sidebar.collapsed .icon,
+.sidebar.collapsed .sf-dot {
+  margin: 0;
+}
+.sidebar.collapsed .nav-item::after,
+.sidebar.collapsed .sf-item::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  transition: opacity .16s ease, transform .16s ease;
+  z-index: 100;
+}
+.sidebar.collapsed .nav-item:hover::after,
+.sidebar.collapsed .sf-item:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
 
 /* Light mode button */
 [data-theme="light"] .sidebar-toggle-btn {
   color: rgba(26,34,34,0.6);
+  background: rgba(255,255,255,0.72);
 }
 [data-theme="light"] .sidebar-toggle-btn:hover {
   background: rgba(10,138,133,0.10);
@@ -362,25 +420,8 @@
   border-color: rgba(10,138,133,0.22);
 }
 
-/* Override the sidebar toggle icon to be a hamburger SVG via content */
-#sidebar-toggle-icon {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  width: 14px;
-  transition: transform .28s;
-}
-#sidebar-toggle-icon::before,
-#sidebar-toggle-icon::after,
-.sidebar-hamburger-mid {
-  content: '';
-  display: block;
-  width: 14px;
-  height: 2px;
-  border-radius: 2px;
-  background: currentColor;
-  transition: opacity .2s, transform .2s;
-}
+#sidebar-toggle-icon { transition: transform .28s; display: block; }
+.sidebar.collapsed ~ .main #sidebar-toggle-icon { transform: rotate(180deg); }
 
 /* ─── FEATURE 6: NOTIFICATION CENTER ─── */
 .notif-wrap { position: relative; }
