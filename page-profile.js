@@ -359,7 +359,7 @@ function _injectProfileStyles() {
     .pp-id-card { padding: 12px 14px; background: var(--card, var(--bg2)); border: 1px solid var(--border); border-radius: 8px; }
     .pp-id-card.missing { border-color: rgba(229,57,53,.3); background: rgba(229,57,53,.04); }
     .pp-id-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
-    .pp-id-val { font-size: 13.5px; color: var(--text1); font-weight: 500; }
+    .pp-id-val { font-size: 14px; color: var(--text1); font-weight: 500; }
     .pp-id-val.muted { color: var(--danger); font-size: 12px; font-style: italic; font-weight: 400; }
     .pp-id-val.sensitive { filter: blur(3px); cursor: pointer; transition: filter .2s; }
     .pp-id-val.sensitive:hover { filter: none; }
