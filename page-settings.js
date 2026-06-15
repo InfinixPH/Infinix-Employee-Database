@@ -170,7 +170,7 @@ function _injectSettingsStyles() {
     .ps-role-rssrsh { background: rgba(100,181,246,.12); color: #64B5F6; border: 1px solid rgba(100,181,246,.3); }
     .ps-role-viewer { background: rgba(150,150,150,.12); color: var(--text3); border: 1px solid var(--border); }
     .ps-role-none   { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
-    .ps-role-desc   { font-size: 11.5px; color: var(--text3); max-width: 260px; }
+    .ps-role-desc   { font-size: 12px; color: var(--text3); max-width: 260px; }
 
     /* Permissions grid */
     .ps-perms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -180,7 +180,7 @@ function _injectSettingsStyles() {
     .ps-perm-icon { font-size: 13px; width: 18px; text-align: center; }
     .ps-perm-row.yes .ps-perm-icon { color: var(--success); }
     .ps-perm-row.no  .ps-perm-icon { color: var(--danger); }
-    .ps-perm-label { font-size: 12.5px; color: var(--text1); }
+    .ps-perm-label { font-size: 13px; color: var(--text1); }
 
     /* Columns grid */
     .ps-cols-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -192,7 +192,7 @@ function _injectSettingsStyles() {
 
     /* Page size */
     .ps-psize-card { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .ps-psize-label { font-size: 12.5px; color: var(--text2); flex: 1; }
+    .ps-psize-label { font-size: 13px; color: var(--text2); flex: 1; }
     .ps-psize-options { display: flex; gap: 6px; }
     .ps-psize-btn {
       padding: 6px 18px; border-radius: 20px; border: 1px solid var(--border);
@@ -205,8 +205,8 @@ function _injectSettingsStyles() {
     /* About */
     .ps-about-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .ps-about-row:last-child { border-bottom: none; }
-    .ps-about-label { font-size: 11.5px; color: var(--text3); min-width: 130px; }
-    .ps-about-val { font-size: 12.5px; color: var(--text1); }
+    .ps-about-label { font-size: 12px; color: var(--text3); min-width: 130px; }
+    .ps-about-val { font-size: 13px; color: var(--text1); }
 
     @media (max-width: 700px) {
       .ps-perms-grid { grid-template-columns: 1fr; }
