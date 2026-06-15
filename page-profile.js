@@ -319,7 +319,7 @@ function _injectProfileStyles() {
     .pp-hero-id { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 8px; letter-spacing: .5px; }
     .pp-hero-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
     .pp-hero-meta { display: flex; gap: 12px; flex-wrap: wrap; }
-    .pp-hero-meta span { font-size: 11.5px; color: var(--text3); }
+    .pp-hero-meta span { font-size: 12px; color: var(--text3); }
     .pp-hero-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
     .pp-completion { display: flex; flex-direction: column; gap: 6px; min-width: 180px; }
     .pp-hero-actions { display: flex; gap: 6px; }
@@ -337,7 +337,7 @@ function _injectProfileStyles() {
     .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
     .pp-field { padding: 11px 14px; background: var(--card, var(--bg2)); }
     .pp-field-full { grid-column: 1 / -1; }
-    .pp-field-label { font-size: 10.5px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+    .pp-field-label { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
     .pp-field-val { font-size: 13px; color: var(--text1); }
     .pp-field-val.muted { color: var(--text3); font-style: italic; }
     .pp-field-val.sensitive { filter: blur(3.5px); transition: filter .2s; cursor: pointer; }
@@ -347,7 +347,7 @@ function _injectProfileStyles() {
     .pp-notes-section { margin-top: 4px; }
     .pp-notes-area {
       width: 100%; min-height: 80px; background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 12px; color: var(--text1); font-size: 12.5px;
+      border-radius: 8px; padding: 10px 12px; color: var(--text1); font-size: 13px;
       resize: vertical; font-family: inherit;
     }
     .pp-notes-area:focus { outline: none; border-color: var(--accent); }
@@ -358,7 +358,7 @@ function _injectProfileStyles() {
     .pp-ids-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .pp-id-card { padding: 12px 14px; background: var(--card, var(--bg2)); border: 1px solid var(--border); border-radius: 8px; }
     .pp-id-card.missing { border-color: rgba(229,57,53,.3); background: rgba(229,57,53,.04); }
-    .pp-id-label { font-size: 10.5px; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+    .pp-id-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
     .pp-id-val { font-size: 13.5px; color: var(--text1); font-weight: 500; }
     .pp-id-val.muted { color: var(--danger); font-size: 12px; font-style: italic; font-weight: 400; }
     .pp-id-val.sensitive { filter: blur(3px); cursor: pointer; transition: filter .2s; }
@@ -375,7 +375,7 @@ function _injectProfileStyles() {
     .pp-req-check { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
     .pp-req-item.done .pp-req-check { color: var(--success); }
     .pp-req-item.miss .pp-req-check { color: var(--danger); }
-    .pp-req-label { font-size: 12.5px; color: var(--text1); }
+    .pp-req-label { font-size: 13px; color: var(--text1); }
 
     /* Timeline */
     .pp-timeline { padding: 4px 0; }
