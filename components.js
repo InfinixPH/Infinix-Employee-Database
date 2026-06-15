@@ -162,7 +162,7 @@ const Components = (() => {
       }
       .comp-tabs::-webkit-scrollbar { display: none; }
       .comp-tab {
-        padding: 8px 16px; font-size: 12.5px; font-weight: 500;
+        padding: 8px 16px; font-size: 13px; font-weight: 500;
         color: var(--text3); border: none; background: none; cursor: pointer;
         border-bottom: 2px solid transparent; transition: color .15s, border-color .15s;
         white-space: nowrap; display: flex; align-items: center; gap: 5px;
@@ -189,8 +189,8 @@ const Components = (() => {
         box-shadow: 0 0 6px rgba(0,200,170,.4);
       }
       .comp-timeline-body { flex: 1; min-width: 0; }
-      .comp-timeline-action { font-size: 12.5px; color: var(--text1); font-weight: 500; }
-      .comp-timeline-detail { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+      .comp-timeline-action { font-size: 13px; color: var(--text1); font-weight: 500; }
+      .comp-timeline-detail { font-size: 12px; color: var(--text3); margin-top: 2px; }
       .comp-timeline-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
       /* ── Light theme overrides ── */
