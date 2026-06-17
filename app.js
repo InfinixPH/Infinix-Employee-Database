@@ -15,7 +15,7 @@ const EVENTS_SHEET_APP    = 'Events'; // calendar events — mirrors EVENTS_SHEE
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated','Backout'];
-const STATUS_COLORS = { Active:'#4ecb71', Floating:'#f5c842', Resigned:'#e8a24a', AWOL:'#e05c5c', Terminated:'#a07ac4', Backout:'#e05c5c' };
+const STATUS_COLORS = { Active:'#2E7D32', Floating:'#D4AF37', Resigned:'#CD7F32', AWOL:'#C62828', Terminated:'#7B5EA7', Backout:'#C62828' };
 const REGIONS = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
 
 const HEADERS = [
@@ -1001,7 +1001,7 @@ function renderSearchDropdown(suggestions, q) {
     dd.style.width  = rect.width + 'px';
   }
 
-  const STATUS_DOT = { Active:'#4ecb71', Floating:'#f5c842', Resigned:'#e8a24a', AWOL:'#e05c5c', Terminated:'#a07ac4', Backout:'#e05c5c' };
+  const STATUS_DOT = { Active:'#2E7D32', Floating:'#D4AF37', Resigned:'#CD7F32', AWOL:'#C62828', Terminated:'#7B5EA7', Backout:'#C62828' };
   _searchSuggestionIndex = -1;
 
   dd.innerHTML = suggestions.map((s, i) => {
@@ -1623,7 +1623,7 @@ function buildDetailHTML(e){
   }
 
   // Status dot color
-  const statusColors={'Active':'var(--success)','Floating':'#FFD740','Resigned':'#FFAB40','AWOL':'var(--danger)','Terminated':'#CE93D8','Backout':'#FF7043'};
+  const statusColors={'Active':'var(--success)','Floating':'var(--warning)','Resigned':'#CD7F32','AWOL':'var(--danger)','Terminated':'var(--purple)','Backout':'var(--danger)'};
   const statusDotColor=statusColors[e.status]||'var(--text3)';
 
   // Avatar initials
