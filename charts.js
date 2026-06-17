@@ -235,7 +235,7 @@ function renderDashboard(){
       <div class="action-grid">
         <div class="ac-card glass-card ac-warn" onclick="drillDown('missingRequirements')">
           <div class="ac-icon ac-icon-warn">
-            <i data-lucide="clipboard-list" style="width:22px;height:22px;stroke-width:1.7"></i>
+            <i data-ix="clipboard" data-size="22"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingRequirements}</div>
@@ -246,7 +246,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-info" onclick="drillDown('notDeployed')">
           <div class="ac-icon ac-icon-info">
-            <i data-lucide="droplet" style="width:22px;height:22px;stroke-width:1.7"></i>
+            <i data-ix="droplet" data-size="22"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--accent)">${notDeployed}</div>
@@ -257,7 +257,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-danger" onclick="drillDown('backout')">
           <div class="ac-icon ac-icon-danger">
-            <i data-lucide="alert-triangle" style="width:22px;height:22px;stroke-width:1.7"></i>
+            <i data-ix="alert" data-size="22"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--danger)">${backoutCount}</div>
@@ -268,7 +268,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-warn" onclick="drillDown('notScanned')">
           <div class="ac-icon ac-icon-warn">
-            <i data-lucide="qr-code" style="width:22px;height:22px;stroke-width:1.7"></i>
+            <i data-ix="qr" data-size="22"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingQR}</div>
@@ -279,7 +279,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-purple" onclick="viewAllBirthdays()">
           <div class="ac-icon ac-icon-purple">
-            <i data-lucide="store" style="width:22px;height:22px;stroke-width:1.7"></i>
+            <i data-ix="store" data-size="22"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:#CE93D8">${birthdayWeekCount}</div>
@@ -301,7 +301,7 @@ function renderDashboard(){
               <div style="position:relative;width:150px;height:150px;flex-shrink:0">
                 <canvas id="chart-status" style="width:150px!important;height:150px!important"></canvas>
                 <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-                  <div style="font-size:26px;font-weight:900;font-family:'Poppins',sans-serif;line-height:1;color:var(--text)">${total}</div>
+                  <div style="font-size:26px;font-weight:900;font-family:'Inter', sans-serif;line-height:1;color:var(--text)">${total}</div>
                   <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px">TOTAL</div>
                 </div>
               </div>
@@ -361,7 +361,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[highest.r]||highest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--success);font-weight:700">${highest.c} promoters</span>
-                    <i data-lucide="trending-up" style="width:14px;height:14px;stroke:#4ecb71;stroke-width:2.5"></i>
+                    <i data-ix="trend-up" data-size="14" style="color:#4ecb71"></i>
                   </div>
                 </div>
                 <div style="background:rgba(224,92,92,0.07);border:1px solid rgba(224,92,92,0.18);border-radius:8px;padding:10px 12px">
@@ -369,7 +369,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[lowest.r]||lowest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--danger);font-weight:700">${lowest.c} promoters</span>
-                    <i data-lucide="trending-down" style="width:14px;height:14px;stroke:#e05c5c;stroke-width:2.5"></i>
+                    <i data-ix="trend-down" data-size="14" style="color:#e05c5c"></i>
                   </div>
                 </div>
               </div>`;
@@ -382,7 +382,7 @@ function renderDashboard(){
 
   setTimeout(()=>{
     const isDark=document.documentElement.getAttribute('data-theme')!=='light';
-    Chart.defaults.font.family='Poppins';
+    Chart.defaults.font.family='Inter';
     const gridColor=isDark?'rgba(215,254,250,0.05)':'rgba(10,138,133,0.07)';
     const tickColor=isDark?'rgba(215,254,250,0.35)':'rgba(26,34,34,0.45)';
     Chart.defaults.color=tickColor;
@@ -484,7 +484,7 @@ function renderDashboard(){
                   const val=dataset.data[idx];
                   if(!val)return;
                   ctx2.save();
-                  ctx2.font='800 12px Poppins, sans-serif';
+                  ctx2.font='800 12px Inter, sans-serif';
                   ctx2.fillStyle=isDark?'rgba(255,255,255,0.92)':'rgba(26,34,34,0.85)';
                   ctx2.textAlign='center';
                   ctx2.textBaseline='bottom';
@@ -592,7 +592,7 @@ function renderTracker(){
       <input type="date" value="${esc(trackerDateFrom)}" onchange="trackerDateFrom=this.value;renderTracker()" placeholder="From date">
       <span style="font-size:11px;color:var(--text3)">to</span>
       <input type="date" value="${esc(trackerDateTo)}" onchange="trackerDateTo=this.value;renderTracker()" placeholder="To date">
-      <select style="background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:11.5px;color:var(--text2);font-family:'Poppins',sans-serif;outline:none;" onchange="trackerRegion=this.value;renderTracker()">
+      <select style="background:var(--bg-frosted);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:11.5px;color:var(--text2);font-family:'Inter', sans-serif;outline:none;" onchange="trackerRegion=this.value;renderTracker()">
         <option value="">All Regions</option>
         ${REGIONS.map(r=>`<option value="${esc(r)}" ${trackerRegion===r?'selected':''}>${esc(r)}</option>`).join('')}
       </select>
@@ -708,5 +708,5 @@ function switchBdayTab(tab, btn){
 }
 
 // Chart global defaults — color is overridden per-render for theme support
-Chart.defaults.font.family = "Poppins";
+Chart.defaults.font.family = "Inter";
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
