@@ -17,8 +17,7 @@ function renderProfilePage(id) {
     return;
   }
 
-  const titleEl = document.getElementById('topbar-title');
-  if (titleEl) titleEl.textContent = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim();
+  // breadcrumb in router.js handles the page title for profile pages
 
   const statusColor = { Active:'var(--success)', Floating:'#FFD740', Resigned:'#FFAB40', AWOL:'var(--danger)', Terminated:'#CE93D8', Backout:'#FF7043' }[emp.status] || 'var(--text3)';
   const fullName    = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim();
@@ -70,9 +69,9 @@ function renderProfilePage(id) {
               ${emp.qrStatus === 'SCANNED' ? `<span class="badge b-SCANNED">QR ✓</span>` : ''}
             </div>
             <div class="pp-hero-meta">
-              ${emp.region ? `<span>📍 ${esc(emp.region)}</span>` : ''}
-              ${emp.storeAssignment ? `<span>🏪 ${esc(emp.storeAssignment)}</span>` : ''}
-              ${emp.rssName ? `<span>👤 ${esc(emp.rssName)}</span>` : ''}
+              ${emp.region ? `<span>${IX.icon('location',11)} ${esc(emp.region)}</span>` : ''}
+              ${emp.storeAssignment ? `<span>${IX.icon('store',11)} ${esc(emp.storeAssignment)}</span>` : ''}
+              ${emp.rssName ? `<span>${IX.icon('user',11)} ${esc(emp.rssName)}</span>` : ''}
             </div>
           </div>
         </div>
@@ -82,8 +81,8 @@ function renderProfilePage(id) {
             ${Components.progressBar(reqPct, { label: 'Requirements', showPct: true })}
           </div>
           <div class="pp-hero-actions">
-            ${canWrite() ? `<button class="btn btn-ghost btn-sm" onclick="openEditModal('${esc(emp.infinixId)}')">✏ Edit</button>` : ''}
-            <button class="btn btn-ghost btn-sm" onclick="Router.go('people')">← Back</button>
+            ${canWrite() ? `<button class="btn btn-pp-edit write-action" onclick="openEditModal('${esc(emp.infinixId)}')">${IX.icon('edit',13)} Edit</button>` : ''}
+            <button class="btn btn-pp-back" onclick="history.length>1?history.back():Router.go('people')">${IX.icon('chevron-left',13)} Back</button>
           </div>
         </div>
       </div>
@@ -92,11 +91,11 @@ function renderProfilePage(id) {
 
       <!-- TABS -->
       ${Components.tabBar([
-        { key: 'employment',  label: 'Employment',    icon: '💼' },
-        { key: 'personal',    label: 'Personal',      icon: '👤' },
-        { key: 'govids',      label: 'Gov IDs',       icon: '🏛' },
-        { key: 'requirements',label: 'Requirements',  icon: '📋', badge: reqDone < reqTotal ? (reqTotal - reqDone) : undefined },
-        { key: 'history',     label: 'History',       icon: '🕐' },
+        { key: 'employment',  label: 'Employment',    icon: 'document' },
+        { key: 'personal',    label: 'Personal',      icon: 'user' },
+        { key: 'govids',      label: 'Gov IDs',       icon: 'id-card' },
+        { key: 'requirements',label: 'Requirements',  icon: 'clipboard', badge: reqDone < reqTotal ? (reqTotal - reqDone) : undefined },
+        { key: 'history',     label: 'History',       icon: 'clock' },
       ], _profileTabKey, 'switchProfileTab')}
 
       <!-- TAB PANES -->
@@ -166,7 +165,7 @@ function _paneEmployment(e) {
       ${row('Last Updated', esc(e.lastUpdated))}
     </div>
     <div class="pp-notes-section">
-      <div class="pp-field-label" style="margin-bottom:6px">📝 Notes</div>
+      <div class="pp-field-label" style="margin-bottom:6px">${IX.icon('edit',11)} Notes</div>
       <textarea class="pp-notes-area" id="pp-notes-area" placeholder="Add notes…">${esc(e.notes || '')}</textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:6px">
         <button class="btn btn-ghost btn-sm" onclick="saveNotes('${esc(e.infinixId)}', document.getElementById('pp-notes-area').value)">💾 Save Notes</button>
@@ -177,7 +176,8 @@ function _paneEmployment(e) {
 // ── Pane: Personal ──────────────────────────────────────────
 function _panePersonal(e) {
   const row  = (label, val) => `<div class="pp-field"><div class="pp-field-label">${esc(label)}</div><div class="pp-field-val ${val ? '' : 'muted'}">${val || '—'}</div></div>`;
-  const sens = (label, val) => `<div class="pp-field"><div class="pp-field-label">${esc(label)}</div><div class="pp-field-val sensitive ${val ? '' : 'muted'}">${val || '—'}</div></div>`;
+  const _canSee = (typeof canViewSensitive === 'function') ? canViewSensitive() : false;
+  const sens = (label, val) => `<div class="pp-field"><div class="pp-field-label">${esc(label)}</div><div class="pp-field-val ${_canSee ? '' : 'sensitive'} ${val ? '' : 'muted'}">${val || '—'}</div></div>`;
   return `
     <div class="pp-grid">
       ${row('Full Name',      esc(e.fullName))}
@@ -192,18 +192,19 @@ function _panePersonal(e) {
     </div>
     <div class="pp-field pp-field-full" style="margin-top:8px">
       <div class="pp-field-label">Address</div>
-      <div class="pp-field-val sensitive ${e.address ? '' : 'muted'}">${e.address ? esc(e.address) : '—'}</div>
+      <div class="pp-field-val ${_canSee ? '' : 'sensitive'} ${e.address ? '' : 'muted'}">${e.address ? esc(e.address) : '—'}</div>
     </div>`;
 }
 
 // ── Pane: Gov IDs ───────────────────────────────────────────
 function _paneGovIds(e) {
+  const _canSee = (typeof canViewSensitive === 'function') ? canViewSensitive() : false;
   const idRow = (label, val) => {
     const missing = !val || String(val).trim() === '';
     return `
       <div class="pp-id-card ${missing ? 'missing' : ''}">
         <div class="pp-id-label">${esc(label)}</div>
-        <div class="pp-id-val sensitive ${missing ? 'muted' : ''}">${missing ? '⚠ Missing' : esc(val)}</div>
+        <div class="pp-id-val ${_canSee ? '' : 'sensitive'} ${missing ? 'muted' : ''}">${missing ? '⚠ Missing' : esc(val)}</div>
       </div>`;
   };
   const payRow = (label, val) => {
@@ -211,7 +212,7 @@ function _paneGovIds(e) {
     return `
       <div class="pp-id-card ${missing ? 'missing' : ''}">
         <div class="pp-id-label">${esc(label)}</div>
-        <div class="pp-id-val sensitive ${missing ? 'muted' : ''}">${missing ? '⚠ Missing' : esc(val)}</div>
+        <div class="pp-id-val ${_canSee ? '' : 'sensitive'} ${missing ? 'muted' : ''}">${missing ? '⚠ Missing' : esc(val)}</div>
       </div>`;
   };
   return `
@@ -265,7 +266,7 @@ function _loadAuditTrail(id) {
 
   const render = (entries) => {
     if (!entries.length) {
-      container.innerHTML = Components.emptyState({ icon: '🕐', title: 'No history yet', message: 'Changes to this employee will appear here.' });
+      container.innerHTML = Components.emptyState({ icon: IX.icon('clock', 32), title: 'No history yet', message: 'Changes to this employee will appear here.' });
       return;
     }
     container.innerHTML = `<div class="pp-timeline">` +
