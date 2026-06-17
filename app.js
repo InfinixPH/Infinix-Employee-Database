@@ -146,12 +146,9 @@ function toggleSidebar(){
   if(!sidebar) return;
   const isCollapsed = sidebar.classList.toggle('collapsed');
   localStorage.setItem('hr_sidebar_collapsed', isCollapsed ? 'true' : 'false');
-  // Swap chevron direction
-  const icon = document.getElementById('sidebar-toggle-icon');
-  if(icon){
-    icon.setAttribute('data-lucide', isCollapsed ? 'chevron-right' : 'chevron-left');
-    if(typeof lucide !== 'undefined') lucide.createIcons();
-  }
+  // IX icons: rotation is handled by CSS (.sidebar.collapsed ~ .main .ix-toggle-icon)
+  // No DOM swap needed — just ensure icons are rendered
+  if(typeof IX !== 'undefined') IX.createIcons();
 }
 
 // ============================================================
@@ -523,7 +520,7 @@ async function loadData(){
     document.getElementById('content').innerHTML=`
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;text-align:center;padding:24px">
         <div style="font-size:32px;opacity:0.4">⚠️</div>
-        <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Could Not Load Data</div>
+        <div style="font-family:'Inter',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Could Not Load Data</div>
         <div style="font-size:13px;color:var(--text2);max-width:440px;line-height:1.7">${esc(msg)}</div>
         <button class="btn btn-primary" onclick="refreshData()">Try Again</button>
         <button class="btn btn-ghost" onclick="signOut()">Sign Out &amp; Switch Account</button>
@@ -1282,11 +1279,11 @@ function renderEmployeeTable(type){
         ${afc>0?`<span class="filter-active-count">${afc} filter${afc!==1?'s':''} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>`:''}
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
           ${canViewSensitive()?`<button class="btn btn-export btn-sm" onclick="exportXLSX()" title="Export current view to Excel">
-            <i data-lucide="download" style="width:11px;height:11px;stroke-width:2.5"></i>
+            <i data-ix="download" data-size="11"></i>
             Export Excel
           </button>`:''}
           <button class="btn btn-ghost btn-sm" id="bulk-toggle-btn" onclick="toggleBulkMode()" style="display:flex;align-items:center;gap:5px">
-            <i data-lucide="list" style="width:11px;height:11px;stroke-width:2.5"></i>
+            <i data-ix="list" data-size="11"></i>
             Select
           </button>
         </div>
@@ -1308,8 +1305,8 @@ function renderEmployeeTable(type){
           <thead>
             <tr>
               <th class="td-check no-sort" id="col-check-header" style="display:none"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
+              <th class="no-sort td-actions-col">Actions</th>
               ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
-              <th class="no-sort">Actions</th>
             </tr>
           </thead>
           <tbody id="emp-tbody"></tbody>
@@ -1372,11 +1369,11 @@ function renderTableRows(type){
         <td class="td-check" style="display:${bulkMode?'':'none'}" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect(event,'${esc(e.infinixId)}',this.checked)">
         </td>
-        ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-ghost btn-sm" onclick="openEditModal('${esc(e.infinixId)}')">Edit</button>
-          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')">Delete</button>
+          <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')">${IX.icon('edit',12)} Edit</button>
+          <button class="btn btn-tbl-delete" style="margin-left:4px" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')">${IX.icon('trash',12)} Del</button>
         </td>
+        ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
       </tr>`).join('');
   }
   renderPagination(total,totalPages);
@@ -1664,7 +1661,7 @@ function buildDetailHTML(e){
     <div class="dp-pane active" id="dp-pane-info">
       ${bdayBanner}
       <div class="dp-section">
-        <div class="dp-section-title">📋 Employment</div>
+        <div class="dp-section-title">${IX.icon('document',12)} Employment</div>
         <div class="dp-grid">
           ${field('Status',badgeHTML(e.status))}
           ${field('QR Status',badgeHTML(e.qrStatus||'NOT SCANNED',(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')))}
@@ -1676,7 +1673,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">👤 Personal</div>
+        <div class="dp-section-title">${IX.icon('user',12)} Personal</div>
         <div class="dp-grid">
           ${field('First Name',esc(e.firstName))}
           ${field('Last Name',esc(e.lastName))}
@@ -1690,7 +1687,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">📍 Assignment</div>
+        <div class="dp-section-title">${IX.icon('location',12)} Assignment</div>
         <div class="dp-grid">
           ${field('Region',esc(e.region))}
           ${field('Store',esc(e.storeAssignment))}
@@ -1701,7 +1698,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">🏛 Government IDs</div>
+        <div class="dp-section-title">${IX.icon('id-card',12)} Government IDs</div>
         <div class="dp-grid">
           ${fieldSensitive('SSS',e.sss?esc(e.sss):missing())}
           ${fieldSensitive('PhilHealth',e.philhealth?esc(e.philhealth):missing())}
@@ -1710,7 +1707,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">💳 Payroll</div>
+        <div class="dp-section-title">${IX.icon('clipboard',12)} Payroll</div>
         <div class="dp-grid">
           ${fieldSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
           ${fieldSensitive('Bank',esc(e.bankName))}
@@ -1740,7 +1737,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section" style="margin-top:8px">
-        <div class="dp-section-title">📊 Profile Completion</div>
+        <div class="dp-section-title">${IX.icon('chart',12)} Profile Completion</div>
         <div class="dp-req-card" style="margin-bottom:0">
           <div class="dp-req-header">
             <div class="dp-req-label">Overall Profile</div>
@@ -1760,7 +1757,7 @@ function buildDetailHTML(e){
   const paneNotes=`
     <div class="dp-pane" id="dp-pane-notes">
       <div class="dp-section">
-        <div class="dp-section-title">📝 Notes / Remarks</div>
+        <div class="dp-section-title">${IX.icon('edit',12)} Notes / Remarks</div>
         <textarea class="dp-notes-area notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${esc(e.notes||'')}</textarea>
         <div style="margin-top:8px;display:flex;justify-content:flex-end">
           <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${esc(e.infinixId)}',document.getElementById('dp-notes-area').value)">💾 Save Notes</button>
@@ -1772,7 +1769,7 @@ function buildDetailHTML(e){
   const paneAudit=`
     <div class="dp-pane" id="dp-pane-audit">
       <div class="dp-section">
-        <div class="dp-section-title">🕐 Audit Trail</div>
+        <div class="dp-section-title">${IX.icon('clock',12)} Audit Trail</div>
         <div class="dp-log-list" id="dp-audit-inner">
           <div style="font-size:12px;color:var(--text3);padding:8px 0">Loading…</div>
         </div>
@@ -1782,8 +1779,8 @@ function buildDetailHTML(e){
   // FOOTER ACTIONS
   const footer=`
     <div class="detail-panel-footer">
-      ${canWrite()?`<button class="btn btn-ghost btn-sm write-action" id="dp-edit-btn" onclick="dpEdit()">✏ Edit</button>`:''}
-      ${canDeleteRecords()?`<button class="btn btn-danger btn-sm" id="dp-delete-btn" onclick="dpDelete()">🗑 Delete</button>`:''}
+      ${canWrite()?`<button class="btn btn-dp-edit write-action" id="dp-edit-btn" onclick="dpEdit()">${IX.icon('edit',13)} Edit</button>`:''}
+      ${canDeleteRecords()?`<button class="btn btn-dp-delete" id="dp-delete-btn" onclick="dpDelete()">${IX.icon('trash',13)} Delete</button>`:''}
     </div>`;
 
   // QUICK ACTIONS (only for write-capable roles)
@@ -1794,13 +1791,13 @@ function buildDetailHTML(e){
   const quickActions = canAct ? `
     <div class="dp-quick-actions">
       <button class="dp-qa-btn${isDeployed?' done':''}" onclick="quickAction('deployed','${esc(e.infinixId)}')" ${isDeployed?'disabled':''} title="${isDeployed?'Already deployed':'Mark as Deployed'}">
-        ${isDeployed?'✓':''} Mark Deployed
+        ${IX.icon(isDeployed?'check':'location',11)} Mark Deployed
       </button>
       <button class="dp-qa-btn${isScanned?' done':''}" onclick="quickAction('scanned','${esc(e.infinixId)}')" ${isScanned?'disabled':''} title="${isScanned?'Already scanned':'Mark QR Scanned'}">
-        ${isScanned?'✓':''} Mark QR Scanned
+        ${IX.icon(isScanned?'check':'qr',11)} Mark QR Scanned
       </button>
       <button class="dp-qa-btn${isSent?' done':''}" onclick="quickAction('contract','${esc(e.infinixId)}')" ${isSent?'disabled':''} title="${isSent?'Contract already sent':'Mark Contract Sent'}">
-        ${isSent?'✓':''} Mark Contract Sent
+        ${IX.icon(isSent?'check':'document',11)} Mark Contract Sent
       </button>
     </div>` : '';
 
@@ -1856,10 +1853,10 @@ async function renderLog(){
     }
     const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
     const svgMap={
-      Added:`<i data-lucide="plus-circle" style="width:14px;height:14px;stroke-width:2.5"></i>`,
-      'Status Changed / Moved':`<i data-lucide="refresh-cw" style="width:14px;height:14px;stroke-width:2"></i>`,
-      Deleted:`<i data-lucide="trash-2" style="width:14px;height:14px;stroke-width:2"></i>`,
-      Updated:`<i data-lucide="edit-3" style="width:14px;height:14px;stroke-width:2"></i>`
+      Added:`<i data-ix="plus-circle" data-size="14"></i>`,
+      'Status Changed / Moved':`<i data-ix="refresh" data-size="14"></i>`,
+      Deleted:`<i data-ix="trash" data-size="14"></i>`,
+      Updated:`<i data-ix="edit" data-size="14"></i>`
     };
     el.innerHTML=rows.map(r=>{
       const action=r[3]||'';
@@ -1984,7 +1981,7 @@ function getFormHTML(emp){
   <div class="section-label">Notes / Remarks</div>
   <div class="field form-full">
     <label>Notes</label>
-    <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'Poppins',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${esc(v('notes'))}</textarea>
+    <textarea id="f_notes" style="height:80px;resize:vertical;width:100%;padding:7px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12.5px;font-family:'Inter',sans-serif;color:var(--text);background:rgba(136,144,99,0.05);outline:none" placeholder="Optional remarks…">${esc(v('notes'))}</textarea>
   </div>`;
 }
 
@@ -2401,9 +2398,9 @@ function openAnnouncementManager(){
       <!-- ADD NEW -->
       <div style="background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.15);border-radius:10px;padding:14px;flex-shrink:0">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--moss-green);margin-bottom:10px">New Announcement</div>
-        <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
-        <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
-        <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Poppins',sans-serif;box-sizing:border-box">
+        <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;box-sizing:border-box">
+        <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
+        <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;box-sizing:border-box">
         <button id="ann-post-btn" class="btn btn-primary btn-sm" style="margin-top:8px">Post Announcement</button>
       </div>
       <!-- LIST — populated asynchronously -->
@@ -2607,7 +2604,7 @@ function viewAllRecentlyUpdated(){
   modal.innerHTML = `
     <div class="glass-card" style="width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;padding:24px;gap:0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
-        <div style="font-size:14px;font-weight:800;color:var(--text)">🕐 Recently Updated</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px">${IX.icon('clock',13)} Recently Updated</div>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('recent-all-modal').remove()">✕ Close</button>
       </div>
       <div style="overflow-y:auto;flex:1">${rows}</div>
