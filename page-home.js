@@ -78,22 +78,22 @@ function renderHome() {
           <!-- Inline stat pills -->
           <div class="ph-hero-stats">
             <div class="ph-hero-stat" onclick="Router.go('people')" title="View all employees">
-              <i data-lucide="users" style="width:16px;height:16px"></i>
+              <i data-ix="users" data-size="16"></i>
               <span class="ph-hs-val">${total}</span>
               <span class="ph-hs-lbl">Total Employees</span>
             </div>
             <div class="ph-hero-stat" onclick="filterByStatus('Active');Router.go('people')" title="View active employees">
-              <i data-lucide="user-check" style="width:16px;height:16px"></i>
+              <i data-ix="user-check" data-size="16"></i>
               <span class="ph-hs-val ph-hs-green">${active}</span>
               <span class="ph-hs-lbl">Active Employees</span>
             </div>
             <div class="ph-hero-stat" title="Compliance rate">
-              <i data-lucide="shield-check" style="width:16px;height:16px"></i>
+              <i data-ix="shield" data-size="16"></i>
               <span class="ph-hs-val ph-hs-blue">${compliance}%</span>
               <span class="ph-hs-lbl">Compliance Rate</span>
             </div>
             <div class="ph-hero-stat ph-hs-birthday" title="Birthdays today">
-              <i data-lucide="cake" style="width:16px;height:16px"></i>
+              <i data-ix="cake" data-size="16"></i>
               <span class="ph-hs-val ph-hs-orange">${bdayToday.length}</span>
               <span class="ph-hs-lbl">Birthday${bdayToday.length !== 1 ? 's' : ''} Today</span>
             </div>
@@ -102,10 +102,10 @@ function renderHome() {
           <!-- Action buttons -->
           <div class="ph-hero-actions">
             <button class="ph-btn-primary" onclick="Router.go('people')">
-              <i data-lucide="users" style="width:14px;height:14px"></i> View Employee Directory
+              <i data-ix="users" data-size="14"></i> View Employee Directory
             </button>
-            <button class="ph-btn-outline" onclick="Router.go('people')" style="position:relative">
-              <i data-lucide="clock" style="width:14px;height:14px"></i> Pending Actions
+            <button class="ph-btn-outline" onclick="missingFieldFilter='requirements';Router.go('people')" style="position:relative">
+              <i data-ix="clock" data-size="14"></i> Pending Actions
               ${missingReqs > 0 ? `<span class="ph-btn-badge">${missingReqs}</span>` : ''}
             </button>
           </div>
@@ -158,32 +158,32 @@ function renderHome() {
         <!-- Action Center -->
         <div class="ph-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-lucide="zap" style="width:14px;height:14px"></i> Action Center</span>
+            <span class="ph-card-title"><i data-ix="zap" data-size="14"></i> Action Center</span>
             <button class="ph-card-link" onclick="missingFieldFilter='requirements';Router.go('people')">View all</button>
           </div>
           <div class="ph-action-list">
-            <div class="ph-action-row" onclick="missingFieldFilter='requirements';Router.go('people')">
-              <div class="ph-action-icon ph-ai-red"><i data-lucide="file-x" style="width:13px;height:13px"></i></div>
+            <div class="ph-action-row" onclick="missingFieldFilter='missingRequirements';Router.go('people')">
+              <div class="ph-action-icon ph-ai-red"><i data-ix="file-x" data-size="13"></i></div>
               <span class="ph-action-label">Missing Medical Certificates</span>
               <span class="ph-action-badge ph-ab-red">${missingMedCert || missingReqs}</span>
             </div>
-            <div class="ph-action-row" onclick="missingFieldFilter='requirements';Router.go('people')">
-              <div class="ph-action-icon ph-ai-orange"><i data-lucide="id-card" style="width:13px;height:13px"></i></div>
+            <div class="ph-action-row" onclick="missingFieldFilter='missingGovIds';Router.go('people')">
+              <div class="ph-action-icon ph-ai-orange"><i data-ix="id-card" data-size="13"></i></div>
               <span class="ph-action-label">Government IDs Pending</span>
               <span class="ph-action-badge ph-ab-orange">${govIdPending || Math.max(0,missingReqs-2)}</span>
             </div>
-            <div class="ph-action-row" onclick="Router.go('tracker')">
-              <div class="ph-action-icon ph-ai-yellow"><i data-lucide="file-warning" style="width:13px;height:13px"></i></div>
+            <div class="ph-action-row" onclick="missingFieldFilter='contractPending';Router.go('people')">
+              <div class="ph-action-icon ph-ai-yellow"><i data-ix="file-warning" data-size="13"></i></div>
               <span class="ph-action-label">Contracts Expiring This Month</span>
               <span class="ph-action-badge ph-ab-yellow">7</span>
             </div>
-            <div class="ph-action-row" onclick="Router.go('tracker')">
-              <div class="ph-action-icon ph-ai-teal"><i data-lucide="map-pin" style="width:13px;height:13px"></i></div>
+            <div class="ph-action-row" onclick="missingFieldFilter='notDeployed';Router.go('people')">
+              <div class="ph-action-icon ph-ai-teal"><i data-ix="location" data-size="13"></i></div>
               <span class="ph-action-label">Not Yet Deployed</span>
               <span class="ph-action-badge ph-ab-teal">${notDeployed}</span>
             </div>
             <div class="ph-action-row" onclick="viewAllBirthdays()">
-              <div class="ph-action-icon ph-ai-purple"><i data-lucide="cake" style="width:13px;height:13px"></i></div>
+              <div class="ph-action-icon ph-ai-purple"><i data-ix="cake" data-size="13"></i></div>
               <span class="ph-action-label">Birthday Celebrants Today</span>
               <span class="ph-action-badge ph-ab-purple">${bdayToday.length}</span>
             </div>
@@ -193,7 +193,7 @@ function renderHome() {
         <!-- Upcoming Events -->
         <div class="ph-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-lucide="calendar-clock" style="width:14px;height:14px"></i> Upcoming Events</span>
+            <span class="ph-card-title"><i data-ix="cal-clock" data-size="14"></i> Upcoming Events</span>
             <button class="ph-card-link" onclick="_phScrollToCalendar()">View calendar →</button>
           </div>
           <div id="ph-events-list">
@@ -211,7 +211,7 @@ function renderHome() {
         <!-- Workforce Overview -->
         <div class="ph-card ph-workforce-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-lucide="bar-chart-2" style="width:14px;height:14px"></i> Workforce Overview</span>
+            <span class="ph-card-title"><i data-ix="chart" data-size="14"></i> Workforce Overview</span>
             <button class="ph-card-link" onclick="Router.go('analytics')">View analytics</button>
           </div>
           <div class="ph-workforce-body">
@@ -234,7 +234,7 @@ function renderHome() {
             <div class="ph-wf-metrics">
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-lucide="user-check" style="width:14px;height:14px;color:var(--success)"></i>
+                  <i data-ix="user-check" data-size="14" style="color:var(--success)"></i>
                   <span class="ph-wf-metric-label">Active Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${active} / ${total}</div>
@@ -245,7 +245,7 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-lucide="map-pin" style="width:14px;height:14px;color:#378ADD"></i>
+                  <i data-ix="location" data-size="14" style="color:#378ADD"></i>
                   <span class="ph-wf-metric-label">Deployment Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${deployed} / ${active}</div>
@@ -256,7 +256,7 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-lucide="calendar-check" style="width:14px;height:14px;color:#8B5CF6"></i>
+                  <i data-ix="cal-check" data-size="14" style="color:#8B5CF6"></i>
                   <span class="ph-wf-metric-label">Attendance Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${attendance} / ${total}</div>
@@ -267,7 +267,7 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-lucide="heart" style="width:14px;height:14px;color:#F59E0B"></i>
+                  <i data-ix="heart" data-size="14" style="color:#F59E0B"></i>
                   <span class="ph-wf-metric-label">Retention Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${active} / ${total}</div>
@@ -283,7 +283,7 @@ function renderHome() {
         <!-- Quick Access -->
         <div class="ph-card ph-quickaccess-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-lucide="grid-2x2" style="width:14px;height:14px"></i> Quick Access</span>
+            <span class="ph-card-title"><i data-ix="grid" data-size="14"></i> Quick Access</span>
             <button class="ph-card-link" onclick="_phOpenQAEdit()">Edit</button>
           </div>
           <div class="ph-qa-grid" id="ph-qa-grid">
@@ -301,13 +301,13 @@ function renderHome() {
         <!-- Smart Calendar (full width-ish) -->
         <div class="ph-card ph-cal-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-lucide="calendar" style="width:14px;height:14px"></i> <span id="ph-cal-label"></span></span>
+            <span class="ph-card-title"><i data-ix="calendar" data-size="14"></i> <span id="ph-cal-label"></span></span>
             <div style="display:flex;gap:4px;align-items:center">
               ${canViewSensitive() ? `<button class="ph-cal-add-btn" onclick="_phOpenAddEvent()" title="Add event">
-                <i data-lucide="plus" style="width:11px;height:11px"></i>
+                <i data-ix="plus" data-size="11"></i>
               </button>` : ''}
-              <button class="ph-cal-nav" onclick="_phCalPrev()"><i data-lucide="chevron-left" style="width:12px;height:12px"></i></button>
-              <button class="ph-cal-nav" onclick="_phCalNext()"><i data-lucide="chevron-right" style="width:12px;height:12px"></i></button>
+              <button class="ph-cal-nav" onclick="_phCalPrev()"><i data-ix="chevron-left" data-size="12"></i></button>
+              <button class="ph-cal-nav" onclick="_phCalNext()"><i data-ix="chevron-right" data-size="12"></i></button>
             </div>
           </div>
           <div id="ph-calendar"></div>
@@ -317,7 +317,7 @@ function renderHome() {
         <!-- Recent Activity -->
         <div class="ph-card ph-recent-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-lucide="activity" style="width:14px;height:14px"></i> Recent Activity</span>
+            <span class="ph-card-title"><i data-ix="activity" data-size="14"></i> Recent Activity</span>
             <button class="ph-card-link" onclick="Router.go('log')">View all →</button>
           </div>
           <div id="ph-recent-list">
@@ -331,14 +331,14 @@ function renderHome() {
                       <div class="ph-recent-time-row"><span class="ph-recent-time">${esc(r.time)}</span></div>
                     </div>
                   </div>`).join('')
-              : Components.emptyState({ icon: '<i data-lucide="activity" style="width:32px;height:32px;stroke-width:1.5;opacity:.3"></i>', title: 'No recent activity' })
+              : Components.emptyState({ icon: '<i data-ix="activity" data-size="32" style="opacity:.3"></i>', title: 'No recent activity' })
             }
           </div>
 
           <!-- Status Breakdown (below recent activity) -->
           <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
             <div class="ph-card-title" style="margin-bottom:10px;display:flex;align-items:center;gap:5px">
-              <i data-lucide="pie-chart" style="width:13px;height:13px"></i> Status Breakdown
+              <i data-ix="pie-chart" data-size="13"></i> Status Breakdown
             </div>
             <div class="ph-status-list">
               ${Object.entries(s).map(([st, count]) => `
@@ -371,28 +371,28 @@ function renderHome() {
         <div class="ph-fb-actions">
           ${canWrite() ? `
           <div class="ph-fb-action" onclick="openAddModal()">
-            <div class="ph-fb-action-icon"><i data-lucide="user-plus"></i></div>
+            <div class="ph-fb-action-icon"><i data-ix="user-add" data-size="18"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Add New Employee</div>
               <div class="ph-fb-action-sub">Create a new employee profile</div>
             </div>
           </div>` : ''}
           <div class="ph-fb-action" onclick="Router.go('tracker')">
-            <div class="ph-fb-action-icon"><i data-lucide="map-pin"></i></div>
+            <div class="ph-fb-action-icon"><i data-ix="location" data-size="18"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Deployment Tracker</div>
               <div class="ph-fb-action-sub">Track employee deployments</div>
             </div>
           </div>
           <div class="ph-fb-action" onclick="Router.go('log')">
-            <div class="ph-fb-action-icon"><i data-lucide="file-text"></i></div>
+            <div class="ph-fb-action-icon"><i data-ix="document" data-size="18"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Activity Log</div>
               <div class="ph-fb-action-sub">View all record changes</div>
             </div>
           </div>
           <div class="ph-fb-action" onclick="Router.go('analytics')">
-            <div class="ph-fb-action-icon"><i data-lucide="bar-chart-2"></i></div>
+            <div class="ph-fb-action-icon"><i data-ix="chart" data-size="18"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Generate Report</div>
               <div class="ph-fb-action-sub">Create custom reports</div>
@@ -400,7 +400,7 @@ function renderHome() {
           </div>
           ${(typeof currentRole !== 'undefined' && currentRole === 'owner') ? `
           <div class="ph-fb-action" onclick="Router.go('settings')">
-            <div class="ph-fb-action-icon"><i data-lucide="settings"></i></div>
+            <div class="ph-fb-action-icon"><i data-ix="setting" data-size="18"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Settings</div>
               <div class="ph-fb-action-sub">Configure the system</div>
@@ -436,7 +436,7 @@ function renderHome() {
                   <div class="ph-recent-time-row"><span class="ph-recent-time">${esc(r.time)}</span></div>
                 </div>
               </div>`).join('')
-          : Components.emptyState({ icon: '<i data-lucide="activity" style="width:32px;height:32px;stroke-width:1.5;opacity:.3"></i>', title: 'No recent activity' });
+          : Components.emptyState({ icon: '<i data-ix="activity" data-size="32" style="opacity:.3"></i>', title: 'No recent activity' });
         if (typeof lucide !== 'undefined') lucide.createIcons();
       }).catch(() => {});
   }
@@ -460,7 +460,7 @@ function _renderHomeAnnouncements() {
   if (!el) return;
   const list = announcementsCache || [];
   if (!list.length) {
-    el.innerHTML = `<div class="ph-ann-empty"><i data-lucide="bell-off" style="width:20px;height:20px;opacity:.3"></i><span>No announcements yet</span></div>`;
+    el.innerHTML = `<div class="ph-ann-empty"><i data-ix="bell-slash" data-size="20" style="opacity:.3"></i><span>No announcements yet</span></div>`;
     if (typeof lucide !== 'undefined') lucide.createIcons();
     return;
   }
@@ -510,7 +510,7 @@ function _phBdayTab(key, btn) {
 }
 
 function _renderBdayList(list) {
-  if (!list || !list.length) return `<div class="ph-bday-empty"><i data-lucide="party-popper" style="width:20px;height:20px;opacity:.25"></i><span>None</span></div>`;
+  if (!list || !list.length) return `<div class="ph-bday-empty"><i data-ix="party" data-size="20" style="opacity:.25"></i><span>None</span></div>`;
   return list.map(item => {
     // getBirthdaysToday/ThisWeek/ThisMonth return { emp, day, daysUntil } objects
     const emp  = item.emp  || item;
@@ -583,7 +583,7 @@ function _phRenderEventsList() {
     .slice(0, 6);
 
   if (!events.length) {
-    el.innerHTML = `<div class="ph-ev-empty"><i data-lucide="calendar-x" style="width:20px;height:20px;opacity:.25"></i><span>No upcoming events</span></div>`;
+    el.innerHTML = `<div class="ph-ev-empty"><i data-ix="cal-x" data-size="20" style="opacity:.25"></i><span>No upcoming events</span></div>`;
     if (typeof lucide !== 'undefined') lucide.createIcons();
     return;
   }
@@ -621,7 +621,7 @@ function _phRenderEventsList() {
         </div>
         <span class="ph-ev-tag ${tagClass}">${tagLabel}</span>
         ${canViewSensitive() ? `<button class="ph-ev-del" onclick="_phDeleteEvent('${esc(ev.id)}',${ev._row},event)" title="Remove event">
-          <i data-lucide="x" style="width:11px;height:11px"></i>
+          <i data-ix="close" data-size="11"></i>
         </button>` : ''}
       </div>`;
   }).join('');
@@ -642,7 +642,7 @@ function _phOpenAddEvent() {
     <div class="ph-modal-box">
       <div class="ph-modal-header">
         <span style="font-size:14px;font-weight:700;color:var(--text1)">
-          <i data-lucide="calendar-plus" style="width:16px;height:16px;vertical-align:-2px;margin-right:6px"></i>Add Calendar Event
+          <i data-ix="calendar-add" data-size="16" style="vertical-align:-2px;margin-right:6px"></i>Add Calendar Event
         </span>
         <button class="ph-modal-close" onclick="document.getElementById('ph-ev-modal').remove()">✕</button>
       </div>
@@ -662,7 +662,7 @@ function _phOpenAddEvent() {
       <div class="ph-modal-footer">
         <button class="ph-modal-cancel" onclick="document.getElementById('ph-ev-modal').remove()">Cancel</button>
         <button class="ph-modal-submit" onclick="_phSubmitEvent()">
-          <i data-lucide="check" style="width:13px;height:13px"></i> Save Event
+          <i data-ix="check" data-size="13"></i> Save Event
         </button>
       </div>
     </div>`;
@@ -833,7 +833,7 @@ function _phCalDayClick(day, year, month) {
   if (events.length) {
     body += events.map(ev => `
       <div class="ph-pop-event">
-        <i data-lucide="calendar-check" style="width:12px;height:12px;color:var(--accent);flex-shrink:0"></i>
+        <i data-ix="cal-check" data-size="12" style="color:var(--accent);flex-shrink:0"></i>
         <div>
           <div class="ph-pop-ev-title">${esc(ev.title)}</div>
           ${ev.note ? `<div class="ph-pop-ev-note">${esc(ev.note)}</div>` : ''}
@@ -844,7 +844,7 @@ function _phCalDayClick(day, year, month) {
   if (bdayDays.size) {
     body += [...bdayDays].map(name => `
       <div class="ph-pop-event">
-        <i data-lucide="cake" style="width:12px;height:12px;color:var(--warning);flex-shrink:0"></i>
+        <i data-ix="cake" data-size="12" style="color:var(--warning);flex-shrink:0"></i>
         <div class="ph-pop-ev-title" style="color:var(--warning)">${esc(name)} 🎉</div>
       </div>`).join('');
   }
@@ -881,14 +881,14 @@ function _phOpenAddEventDate(date) {
 // QUICK ACCESS EDIT MODAL
 // ============================================================
 const _QA_DEFAULT = [
-  { id: 'people',      label: 'Employee\nDatabase',    icon: 'users',          color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                              visible: true },
-  { id: 'tracker',     label: 'Deployment\nTracker',   icon: 'map-pin',        color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('tracker')",                             visible: true },
-  { id: 'requirements',label: 'Requirements',          icon: 'clipboard-list', color: 'rgba(255,152,0,.15)',  textColor: '#ff9800',         onclick: "missingFieldFilter='requirements';Router.go('people')", visible: true },
-  { id: 'analytics',   label: 'Analytics &\nReports',  icon: 'bar-chart-2',    color: 'rgba(139,92,246,.15)', textColor: '#8b5cf6',         onclick: "Router.go('analytics')",                           visible: true },
-  { id: 'export',      label: 'Export\nData',          icon: 'download',       color: 'rgba(0,200,170,.12)',  textColor: 'var(--accent)',   onclick: "exportXLSX()",                                     visible: true,  sensitive: true },
-  { id: 'settings',    label: 'Settings',              icon: 'settings',       color: 'rgba(255,255,255,.06)',textColor: 'var(--text2)',    onclick: "Router.go('settings')",                            visible: true,  ownerOnly: true },
-  { id: 'log',         label: 'Activity\nLog',         icon: 'activity',       color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('log')",                                 visible: false },
-  { id: 'people-add',  label: 'Add\nEmployee',         icon: 'user-plus',      color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                              visible: false },
+  { id: 'people',      label: 'Employee\nDatabase',    icon: 'users',       color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                                   visible: true },
+  { id: 'tracker',     label: 'Deployment\nTracker',   icon: 'location',    color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('tracker')",                                  visible: true },
+  { id: 'requirements',label: 'Requirements',          icon: 'clipboard',   color: 'rgba(255,152,0,.15)',  textColor: '#ff9800',         onclick: "missingFieldFilter='requirements';Router.go('people')",  visible: true },
+  { id: 'analytics',   label: 'Analytics &\nReports',  icon: 'chart',       color: 'rgba(139,92,246,.15)', textColor: '#8b5cf6',         onclick: "Router.go('analytics')",                                visible: true },
+  { id: 'export',      label: 'Export\nData',          icon: 'download',    color: 'rgba(0,200,170,.12)',  textColor: 'var(--accent)',   onclick: "exportXLSX()",                                          visible: true,  sensitive: true },
+  { id: 'settings',    label: 'Settings',              icon: 'setting',     color: 'rgba(255,255,255,.06)',textColor: 'var(--text2)',    onclick: "Router.go('settings')",                                 visible: true,  ownerOnly: true },
+  { id: 'log',         label: 'Activity\nLog',         icon: 'activity',    color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('log')",                                      visible: false },
+  { id: 'people-add',  label: 'Add\nEmployee',         icon: 'user-add',    color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "openAddModal()",                                        visible: false },
 ];
 
 function _qaGetTiles() {
@@ -926,7 +926,7 @@ function _qaRebuildGrid() {
     .map(t => `
       <div class="ph-qa-tile" onclick="${t.onclick}">
         <div class="ph-qa-icon" style="background:${t.color};color:${t.textColor}">
-          <i data-lucide="${t.icon}" style="width:20px;height:20px"></i>
+          <i data-ix="${t.icon}" data-size="20"></i>
         </div>
         <div class="ph-qa-label">${t.label.replace('\n','<br>')}</div>
       </div>`).join('');
@@ -961,7 +961,7 @@ function _phOpenQAEdit() {
             </svg>
           </span>
           <div class="ph-qa-edit-icon" style="background:${t.color};color:${t.textColor}">
-            <i data-lucide="${t.icon}" style="width:15px;height:15px"></i>
+            <i data-ix="${t.icon}" data-size="15"></i>
           </div>
           <span class="ph-qa-edit-name">${t.label.replace('\n',' ')}</span>
           <button class="ph-qa-edit-toggle ${t.visible ? 'on' : 'off'}" data-id="${t.id}" title="${t.visible ? 'Hide' : 'Show'}"></button>
