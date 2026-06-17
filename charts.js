@@ -174,27 +174,27 @@ function renderDashboard(){
     <!-- HERO KPI ROW -->
     <div class="dash-hero">
       <div class="dash-hero-card glass-card">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--success),transparent)"></div>
         <div class="dhc-label">Total Workforce</div>
         <div class="dhc-value" style="color:var(--text)">${total}</div>
         <div class="dhc-sub">All employment records</div>
         ${prevTotal!==null?`<div class="dhc-trend-row">${trendChip(total,prevTotal)}</div>`:''}
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:#4ecb71"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:100%;background:var(--success)"></div></div>
       </div>
       <div class="dash-hero-card glass-card">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#4ecb71,transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--success),transparent)"></div>
         <div class="dhc-label">Deployed</div>
-        <div class="dhc-value" style="color:#4ecb71">${deployed}</div>
+        <div class="dhc-value" style="color:var(--success)">${deployed}</div>
         <div class="dhc-sub">${deployPct}% of active promoters</div>
         ${prevDeployed!==null?`<div class="dhc-trend-row">${trendChip(deployed,prevDeployed)}</div>`:''}
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:#4ecb71"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${deployPct}%;background:var(--success)"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('notDeployed')" style="cursor:pointer">
-        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,#f5c842,transparent)"></div>
+        <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--warning),transparent)"></div>
         <div class="dhc-label">Pending Deploy</div>
-        <div class="dhc-value" style="color:#f5c842">${notDeployed}</div>
+        <div class="dhc-value" style="color:var(--warning)">${notDeployed}</div>
         <div class="dhc-sub">Active sheet · Col L</div>
-        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:#f5c842"></div></div>
+        <div class="dhc-progress"><div class="dhc-progress-fill" style="width:${activeSheetRows.length?Math.round(notDeployed/activeSheetRows.length*100):0}%;background:var(--warning)"></div></div>
       </div>
       <div class="dash-hero-card glass-card" onclick="drillDown('notScanned')" style="cursor:pointer">
         <div class="dhc-accent-bar" style="background:linear-gradient(90deg,var(--teal-deep),transparent)"></div>
@@ -282,7 +282,7 @@ function renderDashboard(){
             <i data-ix="store" data-size="22"></i>
           </div>
           <div class="ac-body">
-            <div class="ac-count" style="color:#CE93D8">${birthdayWeekCount}</div>
+            <div class="ac-count" style="color:var(--purple)">${birthdayWeekCount}</div>
             <div class="ac-label">Birthdays This Week</div>
             <div class="ac-sub">Upcoming celebrations</div>
           </div>
@@ -361,7 +361,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[highest.r]||highest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--success);font-weight:700">${highest.c} promoters</span>
-                    <i data-ix="trend-up" data-size="14" style="color:#4ecb71"></i>
+                    <i data-ix="trend-up" data-size="14" style="color:var(--success)"></i>
                   </div>
                 </div>
                 <div style="background:rgba(224,92,92,0.07);border:1px solid rgba(224,92,92,0.18);border-radius:8px;padding:10px 12px">
@@ -369,7 +369,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[lowest.r]||lowest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--danger);font-weight:700">${lowest.c} promoters</span>
-                    <i data-ix="trend-down" data-size="14" style="color:#e05c5c"></i>
+                    <i data-ix="trend-down" data-size="14" style="color:var(--danger)"></i>
                   </div>
                 </div>
               </div>`;
@@ -525,14 +525,14 @@ function renderDashboard(){
           labels:sparkData.map((_,i)=>i+1),
           datasets:[{
             data:sparkData,
-            borderColor:'#4ecb71',
+            borderColor:'#2E7D32',
             backgroundColor:grad,
             fill:true,
             tension:.42,
             borderWidth:2,
             pointRadius:0,
             pointHoverRadius:3,
-            pointBackgroundColor:'#4ecb71'
+            pointBackgroundColor:'#2E7D32'
           }]
         },
         options:{
