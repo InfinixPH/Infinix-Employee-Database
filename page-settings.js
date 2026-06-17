@@ -18,7 +18,7 @@ function renderSettingsPage() {
 
       <!-- ── Current session ── -->
       <div class="ps-section">
-        ${Components.sectionHeader('👤 Current Session')}
+        ${Components.sectionHeader('Current Session')}
         <div class="ps-card ps-session-card">
           <div class="ps-session-info">
             ${Components.avatar(
@@ -49,12 +49,12 @@ function renderSettingsPage() {
           ${_permRow('Export to Excel',         typeof canViewSensitive === 'function' ? canViewSensitive() : false)}
           ${_permRow('Manage role passwords',   isOwner)}
         </div>
-        ${isOwner ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="openPwManager()">🔑 Manage Role Passwords</button>` : ''}
+        ${isOwner ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="openPwManager()">${IX.icon('lock',13)} Manage Role Passwords</button>` : ''}
       </div>
 
       <!-- ── Table columns ── -->
       <div class="ps-section">
-        ${Components.sectionHeader('📋 Visible Table Columns', `<button class="btn btn-ghost btn-sm" onclick="_settingsResetCols()">Reset defaults</button>`)}
+        ${Components.sectionHeader('Visible Table Columns', `<button class="btn btn-ghost btn-sm" onclick="_settingsResetCols()">Reset defaults</button>`)}
         <div class="ps-cols-grid" id="ps-cols-grid">
           ${(typeof TABLE_COLUMNS !== 'undefined' ? TABLE_COLUMNS : []).map(col => `
             <label class="ps-col-row ${col.always ? 'always' : ''}">
