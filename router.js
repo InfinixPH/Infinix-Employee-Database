@@ -146,32 +146,27 @@ const Router = (() => {
     const el = document.getElementById('breadcrumb');
     if (!el) return;
 
-    // Profile route: People › [Name or ID]
+    // Profile route: People › [Name]
     const profMatch = path.match(/^\/profile\/(.+)$/);
     if (profMatch) {
       const id = profMatch[1];
       let name = id;
-      // Try to resolve name from employees array if available
       if (typeof employees !== 'undefined' && Array.isArray(employees)) {
         const emp = employees.find(e => String(e.infinixId) === String(id));
-        if (emp) {
-          name = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || id;
-        }
+        if (emp) name = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || id;
       }
       el.innerHTML = _crumbHTML([
         { label: 'People', href: '#/people' },
         { label: name },
       ]);
+      // Hide topbar-title — breadcrumb is the title now
+      const titleEl = document.getElementById('topbar-title');
+      if (titleEl) titleEl.textContent = '';
       return;
     }
 
-    // Regular route
-    const label = ROUTE_LABELS[path];
-    if (label) {
-      el.innerHTML = _crumbHTML([{ label }]);
-    } else {
-      el.innerHTML = '';
-    }
+    // All other top-level routes: clear breadcrumb, let topbar-title show
+    el.innerHTML = '';
   }
 
   function _crumbHTML(crumbs) {
