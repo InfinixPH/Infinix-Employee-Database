@@ -19,7 +19,7 @@ function renderProfilePage(id) {
 
   // breadcrumb in router.js handles the page title for profile pages
 
-  const statusColor = { Active:'var(--success)', Floating:'#FFD740', Resigned:'#FFAB40', AWOL:'var(--danger)', Terminated:'#CE93D8', Backout:'#FF7043' }[emp.status] || 'var(--text3)';
+  const statusColor = { Active:'var(--success)', Floating:'var(--warning)', Resigned:'#CD7F32', AWOL:'var(--danger)', Terminated:'var(--purple)', Backout:'var(--danger)' }[emp.status] || 'var(--text3)';
   const fullName    = emp.fullName || `${emp.firstName || ''} ${emp.lastName || ''}`.trim();
 
   // Completion metrics
