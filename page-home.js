@@ -66,7 +66,55 @@ function renderHome() {
     <div class="ph-wrap">
 
       <!-- ══════════════════════════════════════════════════════
-           HERO SECTION — Greeting + Stats + Action Buttons
+           KPI STRIP — 4 cards across the top
+      ══════════════════════════════════════════════════════ -->
+      <div class="ph-kpi-strip">
+        <div class="ph-kpi" onclick="Router.go('people')"
+             style="--ph-kpi-accent:var(--accent);--ph-kpi-bg:rgba(0,200,170,.1)">
+          <div class="ph-kpi-icon"><i class="fi fi-sr-users"></i></div>
+          <div class="ph-kpi-body">
+            <div class="ph-kpi-val">${total}</div>
+            <div class="ph-kpi-label">Total Employees</div>
+            <div class="ph-kpi-trend neu"><i class="fi fi-sr-chart-histogram"></i> All records</div>
+          </div>
+        </div>
+        <div class="ph-kpi" onclick="filterByStatus('Active');Router.go('people')"
+             style="--ph-kpi-accent:#00E676;--ph-kpi-bg:rgba(0,230,118,.1)">
+          <div class="ph-kpi-icon" style="background:rgba(0,230,118,.1);color:#00E676"><i class="fi fi-sr-user-check"></i></div>
+          <div class="ph-kpi-body">
+            <div class="ph-kpi-val" style="color:#00E676">${active}</div>
+            <div class="ph-kpi-label">Active Employees</div>
+            <div class="ph-kpi-trend ${activeRate>=70?'up':activeRate>=40?'neu':'down'}">
+              <i class="fi fi-sr-${activeRate>=70?'arrow-trend-up':activeRate>=40?'minus':'arrow-trend-down'}"></i> ${activeRate}% rate
+            </div>
+          </div>
+        </div>
+        <div class="ph-kpi" onclick="missingFieldFilter='notDeployed';Router.go('people')"
+             style="--ph-kpi-accent:#378ADD;--ph-kpi-bg:rgba(55,138,221,.1)">
+          <div class="ph-kpi-icon" style="background:rgba(55,138,221,.1);color:#378ADD"><i class="fi fi-sr-marker"></i></div>
+          <div class="ph-kpi-body">
+            <div class="ph-kpi-val" style="color:#378ADD">${deployed}</div>
+            <div class="ph-kpi-label">Deployed</div>
+            <div class="ph-kpi-trend ${deployRate>=70?'up':deployRate>=40?'neu':'down'}">
+              <i class="fi fi-sr-${deployRate>=70?'arrow-trend-up':deployRate>=40?'minus':'arrow-trend-down'}"></i> ${deployRate}% of active
+            </div>
+          </div>
+        </div>
+        <div class="ph-kpi" onclick="missingFieldFilter='requirements';Router.go('people')"
+             style="--ph-kpi-accent:#8B5CF6;--ph-kpi-bg:rgba(139,92,246,.1)">
+          <div class="ph-kpi-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6"><i class="fi fi-sr-shield"></i></div>
+          <div class="ph-kpi-body">
+            <div class="ph-kpi-val" style="color:#8B5CF6">${compliance}%</div>
+            <div class="ph-kpi-label">Compliance Rate</div>
+            <div class="ph-kpi-trend ${compliance>=80?'up':compliance>=60?'neu':'down'}">
+              <i class="fi fi-sr-${compliance>=80?'arrow-trend-up':compliance>=60?'minus':'arrow-trend-down'}"></i> ${missingReqs} pending
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           HERO SECTION — Greeting + Actions
       ══════════════════════════════════════════════════════ -->
       <div class="ph-hero">
         <div class="ph-hero-left">
@@ -75,37 +123,13 @@ function renderHome() {
           <div class="ph-hero-name">${esc(userName)}</div>
           <div class="ph-hero-sub">Here's what's happening with your workforce today.</div>
 
-          <!-- Inline stat pills -->
-          <div class="ph-hero-stats">
-            <div class="ph-hero-stat" onclick="Router.go('people')" title="View all employees">
-              <i data-ix="users" data-size="16"></i>
-              <span class="ph-hs-val">${total}</span>
-              <span class="ph-hs-lbl">Total Employees</span>
-            </div>
-            <div class="ph-hero-stat" onclick="filterByStatus('Active');Router.go('people')" title="View active employees">
-              <i data-ix="user-check" data-size="16"></i>
-              <span class="ph-hs-val ph-hs-green">${active}</span>
-              <span class="ph-hs-lbl">Active Employees</span>
-            </div>
-            <div class="ph-hero-stat" title="Compliance rate">
-              <i data-ix="shield" data-size="16"></i>
-              <span class="ph-hs-val ph-hs-blue">${compliance}%</span>
-              <span class="ph-hs-lbl">Compliance Rate</span>
-            </div>
-            <div class="ph-hero-stat ph-hs-birthday" title="Birthdays today">
-              <i data-ix="cake" data-size="16"></i>
-              <span class="ph-hs-val ph-hs-orange">${bdayToday.length}</span>
-              <span class="ph-hs-lbl">Birthday${bdayToday.length !== 1 ? 's' : ''} Today</span>
-            </div>
-          </div>
-
           <!-- Action buttons -->
           <div class="ph-hero-actions">
             <button class="ph-btn-primary" onclick="Router.go('people')">
-              <i data-ix="users" data-size="14"></i> View Employee Directory
+              <i class="fi fi-sr-users"></i> View Employee Directory
             </button>
             <button class="ph-btn-outline" onclick="missingFieldFilter='requirements';Router.go('people')" style="position:relative">
-              <i data-ix="clock" data-size="14"></i> Pending Actions
+              <i class="fi fi-sr-clock"></i> Pending Actions
               ${missingReqs > 0 ? `<span class="ph-btn-badge">${missingReqs}</span>` : ''}
             </button>
           </div>
@@ -158,32 +182,32 @@ function renderHome() {
         <!-- Action Center -->
         <div class="ph-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-ix="zap" data-size="14"></i> Action Center</span>
+            <span class="ph-card-title"><i class="fi fi-sr-bolt"></i> Action Center</span>
             <button class="ph-card-link" onclick="missingFieldFilter='requirements';Router.go('people')">View all</button>
           </div>
           <div class="ph-action-list">
             <div class="ph-action-row" onclick="missingFieldFilter='missingRequirements';Router.go('people')">
-              <div class="ph-action-icon ph-ai-red"><i data-ix="file-x" data-size="13"></i></div>
+              <div class="ph-action-icon ph-ai-red"><i class="fi fi-sr-file-delete"></i></div>
               <span class="ph-action-label">Missing Medical Certificates</span>
               <span class="ph-action-badge ph-ab-red">${missingMedCert || missingReqs}</span>
             </div>
             <div class="ph-action-row" onclick="missingFieldFilter='missingGovIds';Router.go('people')">
-              <div class="ph-action-icon ph-ai-orange"><i data-ix="id-card" data-size="13"></i></div>
+              <div class="ph-action-icon ph-ai-orange"><i class="fi fi-sr-id-card-clip-alt"></i></div>
               <span class="ph-action-label">Government IDs Pending</span>
               <span class="ph-action-badge ph-ab-orange">${govIdPending || Math.max(0,missingReqs-2)}</span>
             </div>
             <div class="ph-action-row" onclick="missingFieldFilter='contractPending';Router.go('people')">
-              <div class="ph-action-icon ph-ai-yellow"><i data-ix="file-warning" data-size="13"></i></div>
+              <div class="ph-action-icon ph-ai-yellow"><i class="fi fi-sr-file-exclamation"></i></div>
               <span class="ph-action-label">Contracts Expiring This Month</span>
               <span class="ph-action-badge ph-ab-yellow">7</span>
             </div>
             <div class="ph-action-row" onclick="missingFieldFilter='notDeployed';Router.go('people')">
-              <div class="ph-action-icon ph-ai-teal"><i data-ix="location" data-size="13"></i></div>
+              <div class="ph-action-icon ph-ai-teal"><i class="fi fi-sr-marker"></i></div>
               <span class="ph-action-label">Not Yet Deployed</span>
               <span class="ph-action-badge ph-ab-teal">${notDeployed}</span>
             </div>
             <div class="ph-action-row" onclick="viewAllBirthdays()">
-              <div class="ph-action-icon ph-ai-purple"><i data-ix="cake" data-size="13"></i></div>
+              <div class="ph-action-icon ph-ai-purple"><i class="fi fi-sr-cake-birthday"></i></div>
               <span class="ph-action-label">Birthday Celebrants Today</span>
               <span class="ph-action-badge ph-ab-purple">${bdayToday.length}</span>
             </div>
@@ -193,7 +217,7 @@ function renderHome() {
         <!-- Upcoming Events -->
         <div class="ph-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-ix="cal-clock" data-size="14"></i> Upcoming Events</span>
+            <span class="ph-card-title"><i class="fi fi-sr-calendar-clock"></i> Upcoming Events</span>
             <button class="ph-card-link" onclick="_phScrollToCalendar()">View calendar →</button>
           </div>
           <div id="ph-events-list">
@@ -211,7 +235,7 @@ function renderHome() {
         <!-- Workforce Overview -->
         <div class="ph-card ph-workforce-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-ix="chart" data-size="14"></i> Workforce Overview</span>
+            <span class="ph-card-title"><i class="fi fi-sr-chart-histogram"></i> Workforce Overview</span>
             <button class="ph-card-link" onclick="Router.go('analytics')">View analytics</button>
           </div>
           <div class="ph-workforce-body">
@@ -234,7 +258,7 @@ function renderHome() {
             <div class="ph-wf-metrics">
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-ix="user-check" data-size="14" style="color:var(--success)"></i>
+                  <i class="fi fi-sr-user-check" style="color:var(--success)"></i>
                   <span class="ph-wf-metric-label">Active Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${active} / ${total}</div>
@@ -245,7 +269,7 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-ix="location" data-size="14" style="color:#378ADD"></i>
+                  <i class="fi fi-sr-marker" style="color:#378ADD"></i>
                   <span class="ph-wf-metric-label">Deployment Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${deployed} / ${active}</div>
@@ -256,7 +280,7 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-ix="cal-check" data-size="14" style="color:#8B5CF6"></i>
+                  <i class="fi fi-sr-calendar-check" style="color:#8B5CF6"></i>
                   <span class="ph-wf-metric-label">Attendance Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${attendance} / ${total}</div>
@@ -267,7 +291,7 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i data-ix="heart" data-size="14" style="color:#F59E0B"></i>
+                  <i class="fi fi-sr-heart" style="color:#F59E0B"></i>
                   <span class="ph-wf-metric-label">Retention Rate</span>
                 </div>
                 <div class="ph-wf-metric-vals">${active} / ${total}</div>
@@ -283,7 +307,7 @@ function renderHome() {
         <!-- Quick Access -->
         <div class="ph-card ph-quickaccess-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-ix="grid" data-size="14"></i> Quick Access</span>
+            <span class="ph-card-title"><i class="fi fi-sr-apps"></i> Quick Access</span>
             <button class="ph-card-link" onclick="_phOpenQAEdit()">Edit</button>
           </div>
           <div class="ph-qa-grid" id="ph-qa-grid">
@@ -301,13 +325,13 @@ function renderHome() {
         <!-- Smart Calendar (full width-ish) -->
         <div class="ph-card ph-cal-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-ix="calendar" data-size="14"></i> <span id="ph-cal-label"></span></span>
+            <span class="ph-card-title"><i class="fi fi-sr-calendar"></i> <span id="ph-cal-label"></span></span>
             <div style="display:flex;gap:4px;align-items:center">
               ${canViewSensitive() ? `<button class="ph-cal-add-btn" onclick="_phOpenAddEvent()" title="Add event">
-                <i data-ix="plus" data-size="11"></i>
+                <i class="fi fi-sr-plus"></i>
               </button>` : ''}
-              <button class="ph-cal-nav" onclick="_phCalPrev()"><i data-ix="chevron-left" data-size="12"></i></button>
-              <button class="ph-cal-nav" onclick="_phCalNext()"><i data-ix="chevron-right" data-size="12"></i></button>
+              <button class="ph-cal-nav" onclick="_phCalPrev()"><i class="fi fi-sr-angle-left"></i></button>
+              <button class="ph-cal-nav" onclick="_phCalNext()"><i class="fi fi-sr-angle-right"></i></button>
             </div>
           </div>
           <div id="ph-calendar"></div>
@@ -317,7 +341,7 @@ function renderHome() {
         <!-- Recent Activity -->
         <div class="ph-card ph-recent-card">
           <div class="ph-card-header">
-            <span class="ph-card-title"><i data-ix="activity" data-size="14"></i> Recent Activity</span>
+            <span class="ph-card-title"><i class="fi fi-sr-pulse"></i> Recent Activity</span>
             <button class="ph-card-link" onclick="Router.go('log')">View all →</button>
           </div>
           <div id="ph-recent-list">
@@ -331,14 +355,14 @@ function renderHome() {
                       <div class="ph-recent-time-row"><span class="ph-recent-time">${esc(r.time)}</span></div>
                     </div>
                   </div>`).join('')
-              : Components.emptyState({ icon: '<i data-ix="activity" data-size="32" style="opacity:.3"></i>', title: 'No recent activity' })
+              : Components.emptyState({ icon: '<i class="fi fi-sr-pulse" style="opacity:.3"></i>', title: 'No recent activity' })
             }
           </div>
 
           <!-- Status Breakdown (below recent activity) -->
           <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
             <div class="ph-card-title" style="margin-bottom:10px;display:flex;align-items:center;gap:5px">
-              <i data-ix="pie-chart" data-size="13"></i> Status Breakdown
+              <i class="fi fi-sr-chart-pie"></i> Status Breakdown
             </div>
             <div class="ph-status-list">
               ${Object.entries(s).map(([st, count]) => `
@@ -371,28 +395,28 @@ function renderHome() {
         <div class="ph-fb-actions">
           ${canWrite() ? `
           <div class="ph-fb-action" onclick="openAddModal()">
-            <div class="ph-fb-action-icon"><i data-ix="user-add" data-size="18"></i></div>
+            <div class="ph-fb-action-icon"><i class="fi fi-sr-user-add"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Add New Employee</div>
               <div class="ph-fb-action-sub">Create a new employee profile</div>
             </div>
           </div>` : ''}
           <div class="ph-fb-action" onclick="Router.go('tracker')">
-            <div class="ph-fb-action-icon"><i data-ix="location" data-size="18"></i></div>
+            <div class="ph-fb-action-icon"><i class="fi fi-sr-marker"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Deployment Tracker</div>
               <div class="ph-fb-action-sub">Track employee deployments</div>
             </div>
           </div>
           <div class="ph-fb-action" onclick="Router.go('log')">
-            <div class="ph-fb-action-icon"><i data-ix="document" data-size="18"></i></div>
+            <div class="ph-fb-action-icon"><i class="fi fi-sr-document"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Activity Log</div>
               <div class="ph-fb-action-sub">View all record changes</div>
             </div>
           </div>
           <div class="ph-fb-action" onclick="Router.go('analytics')">
-            <div class="ph-fb-action-icon"><i data-ix="chart" data-size="18"></i></div>
+            <div class="ph-fb-action-icon"><i class="fi fi-sr-chart-histogram"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Generate Report</div>
               <div class="ph-fb-action-sub">Create custom reports</div>
@@ -400,7 +424,7 @@ function renderHome() {
           </div>
           ${(typeof currentRole !== 'undefined' && currentRole === 'owner') ? `
           <div class="ph-fb-action" onclick="Router.go('settings')">
-            <div class="ph-fb-action-icon"><i data-ix="setting" data-size="18"></i></div>
+            <div class="ph-fb-action-icon"><i class="fi fi-sr-settings"></i></div>
             <div class="ph-fb-action-body">
               <div class="ph-fb-action-title">Settings</div>
               <div class="ph-fb-action-sub">Configure the system</div>
@@ -436,7 +460,7 @@ function renderHome() {
                   <div class="ph-recent-time-row"><span class="ph-recent-time">${esc(r.time)}</span></div>
                 </div>
               </div>`).join('')
-          : Components.emptyState({ icon: '<i data-ix="activity" data-size="32" style="opacity:.3"></i>', title: 'No recent activity' });
+          : Components.emptyState({ icon: '<i class="fi fi-sr-pulse" style="opacity:.3"></i>', title: 'No recent activity' });
         if (typeof lucide !== 'undefined') lucide.createIcons();
       }).catch(() => {});
   }
@@ -460,7 +484,7 @@ function _renderHomeAnnouncements() {
   if (!el) return;
   const list = announcementsCache || [];
   if (!list.length) {
-    el.innerHTML = `<div class="ph-ann-empty"><i data-ix="bell-slash" data-size="20" style="opacity:.3"></i><span>No announcements yet</span></div>`;
+    el.innerHTML = `<div class="ph-ann-empty"><i class="fi fi-sr-bell-slash" style="opacity:.3"></i><span>No announcements yet</span></div>`;
     if (typeof lucide !== 'undefined') lucide.createIcons();
     return;
   }
@@ -510,7 +534,7 @@ function _phBdayTab(key, btn) {
 }
 
 function _renderBdayList(list) {
-  if (!list || !list.length) return `<div class="ph-bday-empty"><i data-ix="party" data-size="20" style="opacity:.25"></i><span>None</span></div>`;
+  if (!list || !list.length) return `<div class="ph-bday-empty"><i class="fi fi-sr-pennant" style="opacity:.25"></i><span>None</span></div>`;
   return list.map(item => {
     // getBirthdaysToday/ThisWeek/ThisMonth return { emp, day, daysUntil } objects
     const emp  = item.emp  || item;
@@ -583,7 +607,7 @@ function _phRenderEventsList() {
     .slice(0, 6);
 
   if (!events.length) {
-    el.innerHTML = `<div class="ph-ev-empty"><i data-ix="cal-x" data-size="20" style="opacity:.25"></i><span>No upcoming events</span></div>`;
+    el.innerHTML = `<div class="ph-ev-empty"><i class="fi fi-sr-calendar-xmark" style="opacity:.25"></i><span>No upcoming events</span></div>`;
     if (typeof lucide !== 'undefined') lucide.createIcons();
     return;
   }
@@ -621,7 +645,7 @@ function _phRenderEventsList() {
         </div>
         <span class="ph-ev-tag ${tagClass}">${tagLabel}</span>
         ${canViewSensitive() ? `<button class="ph-ev-del" onclick="_phDeleteEvent('${esc(ev.id)}',${ev._row},event)" title="Remove event">
-          <i data-ix="close" data-size="11"></i>
+          <i class="fi fi-sr-cross"></i>
         </button>` : ''}
       </div>`;
   }).join('');
@@ -642,7 +666,7 @@ function _phOpenAddEvent() {
     <div class="ph-modal-box">
       <div class="ph-modal-header">
         <span style="font-size:14px;font-weight:700;color:var(--text1)">
-          <i data-ix="calendar-add" data-size="16" style="vertical-align:-2px;margin-right:6px"></i>Add Calendar Event
+          <i class="fi fi-sr-calendar-plus" style="vertical-align:-2px;margin-right:6px"></i>Add Calendar Event
         </span>
         <button class="ph-modal-close" onclick="document.getElementById('ph-ev-modal').remove()">✕</button>
       </div>
@@ -662,7 +686,7 @@ function _phOpenAddEvent() {
       <div class="ph-modal-footer">
         <button class="ph-modal-cancel" onclick="document.getElementById('ph-ev-modal').remove()">Cancel</button>
         <button class="ph-modal-submit" onclick="_phSubmitEvent()">
-          <i data-ix="check" data-size="13"></i> Save Event
+          <i class="fi fi-sr-check"></i> Save Event
         </button>
       </div>
     </div>`;
@@ -833,7 +857,7 @@ function _phCalDayClick(day, year, month) {
   if (events.length) {
     body += events.map(ev => `
       <div class="ph-pop-event">
-        <i data-ix="cal-check" data-size="12" style="color:var(--accent);flex-shrink:0"></i>
+        <i class="fi fi-sr-calendar-check" style="color:var(--accent);flex-shrink:0"></i>
         <div>
           <div class="ph-pop-ev-title">${esc(ev.title)}</div>
           ${ev.note ? `<div class="ph-pop-ev-note">${esc(ev.note)}</div>` : ''}
@@ -844,7 +868,7 @@ function _phCalDayClick(day, year, month) {
   if (bdayDays.size) {
     body += [...bdayDays].map(name => `
       <div class="ph-pop-event">
-        <i data-ix="cake" data-size="12" style="color:var(--warning);flex-shrink:0"></i>
+        <i class="fi fi-sr-cake-birthday" style="color:var(--warning);flex-shrink:0"></i>
         <div class="ph-pop-ev-title" style="color:var(--warning)">${esc(name)} 🎉</div>
       </div>`).join('');
   }
@@ -881,14 +905,14 @@ function _phOpenAddEventDate(date) {
 // QUICK ACCESS EDIT MODAL
 // ============================================================
 const _QA_DEFAULT = [
-  { id: 'people',      label: 'Employee\nDatabase',    icon: 'users',       color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                                   visible: true },
-  { id: 'tracker',     label: 'Deployment\nTracker',   icon: 'location',    color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('tracker')",                                  visible: true },
-  { id: 'requirements',label: 'Requirements',          icon: 'clipboard',   color: 'rgba(255,152,0,.15)',  textColor: '#ff9800',         onclick: "missingFieldFilter='requirements';Router.go('people')",  visible: true },
-  { id: 'analytics',   label: 'Analytics &\nReports',  icon: 'chart',       color: 'rgba(139,92,246,.15)', textColor: '#8b5cf6',         onclick: "Router.go('analytics')",                                visible: true },
-  { id: 'export',      label: 'Export\nData',          icon: 'download',    color: 'rgba(0,200,170,.12)',  textColor: 'var(--accent)',   onclick: "exportXLSX()",                                          visible: true,  sensitive: true },
-  { id: 'settings',    label: 'Settings',              icon: 'setting',     color: 'rgba(255,255,255,.06)',textColor: 'var(--text2)',    onclick: "Router.go('settings')",                                 visible: true,  ownerOnly: true },
-  { id: 'log',         label: 'Activity\nLog',         icon: 'activity',    color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('log')",                                      visible: false },
-  { id: 'people-add',  label: 'Add\nEmployee',         icon: 'user-add',    color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "openAddModal()",                                        visible: false },
+  { id: 'people',      label: 'Employee\nDatabase',    icon: 'users',            color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "Router.go('people')",                                   visible: true },
+  { id: 'tracker',     label: 'Deployment\nTracker',   icon: 'marker',           color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('tracker')",                                  visible: true },
+  { id: 'requirements',label: 'Requirements',          icon: 'clipboard-list',   color: 'rgba(255,152,0,.15)',  textColor: '#ff9800',         onclick: "missingFieldFilter='requirements';Router.go('people')",  visible: true },
+  { id: 'analytics',   label: 'Analytics &\nReports',  icon: 'chart-histogram',  color: 'rgba(139,92,246,.15)', textColor: '#8b5cf6',         onclick: "Router.go('analytics')",                                visible: true },
+  { id: 'export',      label: 'Export\nData',          icon: 'download',         color: 'rgba(0,200,170,.12)',  textColor: 'var(--accent)',   onclick: "exportXLSX()",                                          visible: true,  sensitive: true },
+  { id: 'settings',    label: 'Settings',              icon: 'settings',         color: 'rgba(255,255,255,.06)',textColor: 'var(--text2)',    onclick: "Router.go('settings')",                                 visible: true,  ownerOnly: true },
+  { id: 'log',         label: 'Activity\nLog',         icon: 'pulse',            color: 'rgba(55,138,221,.15)', textColor: '#378ADD',         onclick: "Router.go('log')",                                      visible: false },
+  { id: 'people-add',  label: 'Add\nEmployee',         icon: 'user-add',         color: 'rgba(0,230,118,.15)',  textColor: 'var(--success)',  onclick: "openAddModal()",                                        visible: false },
 ];
 
 function _qaGetTiles() {
@@ -926,7 +950,7 @@ function _qaRebuildGrid() {
     .map(t => `
       <div class="ph-qa-tile" onclick="${t.onclick}">
         <div class="ph-qa-icon" style="background:${t.color};color:${t.textColor}">
-          <i data-ix="${t.icon}" data-size="20"></i>
+          <i class="fi fi-sr-${t.icon}" style="font-size:20px"></i>
         </div>
         <div class="ph-qa-label">${t.label.replace('\n','<br>')}</div>
       </div>`).join('');
@@ -961,7 +985,7 @@ function _phOpenQAEdit() {
             </svg>
           </span>
           <div class="ph-qa-edit-icon" style="background:${t.color};color:${t.textColor}">
-            <i data-ix="${t.icon}" data-size="15"></i>
+            <i class="fi fi-sr-${t.icon}" style="font-size:15px"></i>
           </div>
           <span class="ph-qa-edit-name">${t.label.replace('\n',' ')}</span>
           <button class="ph-qa-edit-toggle ${t.visible ? 'on' : 'off'}" data-id="${t.id}" title="${t.visible ? 'Hide' : 'Show'}"></button>
@@ -1093,953 +1117,576 @@ function _injectHomeStyles() {
   const s = document.createElement('style');
   s.id = 'page-home-styles';
   s.textContent = `
-    /* ══════════════════════════════════════════════════════
-       LAYOUT
-    ══════════════════════════════════════════════════════ */
-    .ph-wrap {
-      padding: 20px 24px 36px;
-      max-width: 1300px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
 
-    /* ══════════════════════════════════════════════════════
-       GENERIC CARD
-    ══════════════════════════════════════════════════════ */
-    .ph-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 20px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.12);
-    }
-    [data-theme="light"] .ph-card {
-      background: #fff;
-      box-shadow: 0 2px 12px rgba(10,138,133,.06);
-    }
-    .ph-card-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .ph-card-title {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 10px; font-weight: 700; letter-spacing: 1px;
-      text-transform: uppercase; color: var(--text3);
-      font-family: 'Inter', 'Poppins', sans-serif;
-      opacity: 0.75;
-    }
-    [data-theme="light"] .ph-card-title { color: #076e6a; }
-    .ph-card-link {
-      font-size: 12px; color: var(--accent); background: none;
-      border: none; cursor: pointer; padding: 0; font-weight: 500;
-    }
-    .ph-card-link:hover { opacity: .75; }
+  /* ═══════════════════════════════════════════════════════
+     LAYOUT
+  ═══════════════════════════════════════════════════════ */
+  .ph-wrap {
+    padding: 20px 24px 48px;
+    max-width: 1300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-    /* ══════════════════════════════════════════════════════
-       HERO SECTION
-    ══════════════════════════════════════════════════════ */
-    .ph-hero {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px 32px;
-      gap: 24px;
-      overflow: hidden;
-      position: relative;
-      height: 220px;
-      box-sizing: border-box;
-      box-shadow: 0 2px 16px rgba(0,0,0,.14);
-    }
-    [data-theme="light"] .ph-hero {
-      background: #fff;
-      box-shadow: 0 4px 24px rgba(10,138,133,.10);
-    }
-    .ph-hero-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-    .ph-hero-welcome {
-      font-size: 12px; font-weight: 600; color: var(--text3);
-    }
-    .ph-hero-greeting {
-      font-size: 28px; font-weight: 800; color: var(--text1); line-height: 1.1; margin-bottom: -4px;
-    }
-    .ph-hero-name {
-      font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1.1;
-    }
-    [data-theme="light"] .ph-hero-name { color: #0a8a85; }
-    .ph-hero-sub { font-size: 13px; color: var(--text3); margin-top: 4px; }
+  /* ═══════════════════════════════════════════════════════
+     KPI STRIP — 4-column top bar
+  ═══════════════════════════════════════════════════════ */
+  .ph-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .ph-kpi-strip { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 560px) { .ph-kpi-strip { grid-template-columns: 1fr; } }
 
-    /* Hero inline stat pills */
-    .ph-hero-stats {
-      display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px;
-    }
-    .ph-hero-stat {
-      display: flex; align-items: center; gap: 7px; cursor: pointer;
-      padding: 4px 0; transition: opacity .15s;
-    }
-    .ph-hero-stat:hover { opacity: .8; }
-    .ph-hero-stat i, .ph-hero-stat svg { color: var(--text3); flex-shrink: 0; }
-    .ph-hs-val { font-size: 18px; font-weight: 800; color: var(--text1); line-height: 1; }
-    .ph-hs-green { color: var(--success); }
-    [data-theme="light"] .ph-hs-green { color: #1a8a40; }
-    .ph-hs-blue  { color: #378ADD; }
-    .ph-hs-orange{ color: var(--warning); }
-    .ph-hs-lbl { font-size: 11px; color: var(--text3); line-height: 1.3; }
+  .ph-kpi {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color .2s, transform .18s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ph-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--ph-kpi-accent, var(--accent));
+    border-radius: 14px 14px 0 0;
+  }
+  .ph-kpi:hover {
+    border-color: var(--ph-kpi-accent, var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,.18);
+  }
+  [data-theme="light"] .ph-kpi { background: #fff; }
+  [data-theme="light"] .ph-kpi:hover { box-shadow: 0 8px 28px rgba(0,0,0,.09); }
 
-    /* Hero buttons */
-    .ph-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-    .ph-btn-primary {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 9px 18px; font-size: 13px; font-weight: 600;
-      background: var(--accent); color: #0E1414; border: none;
-      border-radius: 8px; cursor: pointer;
-      transition: opacity .15s, box-shadow .15s;
-      box-shadow: 0 2px 12px rgba(0,200,170,.22);
-    }
-    [data-theme="light"] .ph-btn-primary {
-      background: #0a8a85; color: #fff;
-      box-shadow: 0 2px 12px rgba(10,138,133,.3);
-    }
-    .ph-btn-primary:hover { opacity: .88; }
-    .ph-btn-outline {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 9px 18px; font-size: 13px; font-weight: 500;
-      background: none; color: var(--text2);
-      border: 1.5px solid var(--border2); border-radius: 8px; cursor: pointer;
-      transition: border-color .15s, color .15s;
-      position: relative;
-    }
-    .ph-btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-    .ph-btn-badge {
-      position: absolute; top: -6px; right: -6px;
-      background: var(--danger); color: #fff;
-      font-size: 10px; font-weight: 700;
-      padding: 2px 5px; border-radius: 10px; line-height: 1.3;
-    }
+  .ph-kpi-icon {
+    width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    background: var(--ph-kpi-bg, rgba(0,200,170,.1));
+    color: var(--ph-kpi-accent, var(--accent));
+  }
+  .ph-kpi-body { flex: 1; min-width: 0; }
+  .ph-kpi-val {
+    font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.5px;
+    color: var(--text1);
+  }
+  .ph-kpi-label {
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .6px; margin-top: 4px;
+  }
+  .ph-kpi-trend {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700; margin-top: 6px;
+    padding: 2px 7px; border-radius: 20px;
+  }
+  .ph-kpi-trend.up   { background: rgba(0,230,118,.12); color: #00E676; }
+  .ph-kpi-trend.down { background: rgba(255,82,82,.12);  color: #FF5252; }
+  .ph-kpi-trend.neu  { background: rgba(255,255,255,.06); color: var(--text3); }
+  [data-theme="light"] .ph-kpi-trend.up   { background: rgba(0,160,80,.1);  color: #1a8a40; }
+  [data-theme="light"] .ph-kpi-trend.down { background: rgba(200,50,50,.1); color: #b22222; }
+  [data-theme="light"] .ph-kpi-trend.neu  { background: rgba(0,0,0,.05); color: #888; }
 
-    /* Hero right side */
-    .ph-hero-right { flex-shrink: 0; position: relative; width: 220px; height: 150px; }
-    .ph-hero-illustration { position: relative; width: 100%; height: 100%; }
-    .ph-hero-blob {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 60% 50%, rgba(0,200,170,.12) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-    [data-theme="light"] .ph-hero-blob {
-      background: radial-gradient(ellipse at 60% 50%, rgba(10,138,133,.12) 0%, transparent 70%);
-    }
-    .ph-hero-float-card {
-      position: absolute; top: 8px; right: 0;
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 8px 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.2);
-      min-width: 100px;
-    }
-    [data-theme="light"] .ph-hero-float-card {
-      background: #fff; box-shadow: 0 4px 16px rgba(10,138,133,.12);
-    }
-    .ph-hfc-label { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-    .ph-hfc-val   { font-size: 22px; font-weight: 800; color: var(--text1); line-height: 1.2; }
-    .ph-hfc-badge { font-size: 10px; font-weight: 700; }
-    .ph-hfc-up    { color: var(--success); }
-    .ph-hero-circles {
-      position: absolute; bottom: 12px; right: 8px;
-      display: flex; align-items: center;
-    }
-    .ph-hero-circle {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent) 0%, #0099aa 100%);
-      border: 2px solid var(--bg2); color: #000;
-      font-size: 10px; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-    [data-theme="light"] .ph-hero-circle {
-      background: linear-gradient(135deg, #0a8a85 0%, #1ab5b0 100%);
-      border-color: #fff; color: #fff;
-    }
+  /* ═══════════════════════════════════════════════════════
+     HERO SECTION — greeting + illustration
+  ═══════════════════════════════════════════════════════ */
+  .ph-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 36px;
+    gap: 24px;
+    overflow: hidden;
+    position: relative;
+    min-height: 178px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.12);
+  }
+  .ph-hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(0,200,170,.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  [data-theme="light"] .ph-hero { background: #fff; box-shadow: 0 4px 24px rgba(10,138,133,.08); }
+  [data-theme="light"] .ph-hero::after { background: radial-gradient(ellipse at 80% 50%, rgba(10,138,133,.06) 0%, transparent 65%); }
 
-    /* ══════════════════════════════════════════════════════
-       ROW 1: 3-col — Celebrants · Action Center · Events
-    ══════════════════════════════════════════════════════ */
-    .ph-row3 {
-      display: grid;
-      grid-template-columns: 1fr 1.1fr 1fr;
-      gap: 16px;
-      align-items: stretch;
-    }
-    .ph-row3 > .ph-card { display: flex; flex-direction: column; }
-    @media (max-width: 1100px) { .ph-row3 { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 680px)  { .ph-row3 { grid-template-columns: 1fr; } }
+  .ph-hero-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .ph-hero-welcome { font-size: 12px; font-weight: 600; color: var(--text3); }
+  .ph-hero-greeting { font-size: 26px; font-weight: 800; color: var(--text1); line-height: 1.15; }
+  .ph-hero-name { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1.15; }
+  [data-theme="light"] .ph-hero-name { color: #0a8a85; }
+  .ph-hero-sub { font-size: 12px; color: var(--text3); margin-top: 6px; }
 
-    /* ── Action Center ── */
-    .ph-action-list { display: flex; flex-direction: column; gap: 2px; }
-    .ph-action-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 6px; border-radius: 8px; cursor: pointer;
-      transition: background .15s;
-    }
-    .ph-action-row:hover { background: rgba(255,255,255,.04); }
-    [data-theme="light"] .ph-action-row:hover { background: rgba(10,138,133,.05); }
-    .ph-action-icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
-    }
-    .ph-ai-red    { background: rgba(255,82,82,.15);  color: #ff5252; }
-    .ph-ai-orange { background: rgba(255,152,0,.15);  color: #ff9800; }
-    .ph-ai-yellow { background: rgba(255,215,64,.15); color: var(--warning); }
-    .ph-ai-teal   { background: rgba(0,200,170,.12);  color: var(--accent); }
-    .ph-ai-purple { background: rgba(139,92,246,.15); color: #8b5cf6; }
-    [data-theme="light"] .ph-ai-teal { background: rgba(10,138,133,.12); color: #0a8a85; }
-    .ph-action-label { flex: 1; font-size: 12px; color: var(--text1); }
-    .ph-action-badge {
-      font-size: 11px; font-weight: 700;
-      min-width: 22px; text-align: center;
-      padding: 2px 7px; border-radius: 20px;
-    }
-    .ph-ab-red    { background: rgba(255,82,82,.15);  color: #ff5252; }
-    .ph-ab-orange { background: rgba(255,152,0,.15);  color: #ff9800; }
-    .ph-ab-yellow { background: rgba(255,215,64,.15); color: var(--warning); }
-    .ph-ab-teal   { background: rgba(0,200,170,.12);  color: var(--accent); }
-    .ph-ab-purple { background: rgba(139,92,246,.15); color: #8b5cf6; }
-    [data-theme="light"] .ph-ab-teal { background: rgba(10,138,133,.12); color: #0a8a85; }
+  .ph-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .ph-btn-primary {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; font-size: 13px; font-weight: 600;
+    background: var(--accent); color: #071a1a; border: none;
+    border-radius: 9px; cursor: pointer;
+    transition: opacity .15s, box-shadow .15s, transform .15s;
+    box-shadow: 0 2px 16px rgba(0,200,170,.28);
+  }
+  .ph-btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,200,170,.38); }
+  .ph-btn-outline {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; font-size: 13px; font-weight: 600;
+    background: rgba(255,255,255,.05); color: var(--text2);
+    border: 1px solid var(--border2); border-radius: 9px; cursor: pointer;
+    transition: all .18s; position: relative;
+  }
+  .ph-btn-outline:hover { background: rgba(255,255,255,.09); color: var(--text1); border-color: rgba(255,255,255,.2); }
+  [data-theme="light"] .ph-btn-outline { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.12); color: #333; }
+  [data-theme="light"] .ph-btn-outline:hover { background: rgba(0,0,0,.07); }
+  .ph-btn-badge {
+    position: absolute; top: -7px; right: -7px;
+    background: var(--danger); color: #fff;
+    font-size: 9px; font-weight: 700; min-width: 16px; height: 16px;
+    border-radius: 8px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg-base);
+  }
 
-    /* ── Upcoming Events (in row1) ── */
-    .ph-ev-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 7px 4px; border-radius: 7px;
-      transition: background .15s; cursor: default;
-    }
-    .ph-ev-row:not(:last-child) { border-bottom: 1px solid var(--border); }
-    .ph-ev-today { background: rgba(0,200,170,.04); }
-    .ph-ev-date-badge {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      width: 38px; min-width: 38px; height: 42px;
-      border-radius: 8px; background: var(--bg3,rgba(255,255,255,.05));
-      border: 1px solid var(--border); flex-shrink: 0;
-    }
-    [data-theme="light"] .ph-ev-date-badge { background: #f5f9f9; }
-    .ph-ev-badge-today { background: rgba(0,200,170,.12); border-color: var(--accent); }
-    .ph-ev-badge-soon  { background: rgba(245,200,66,.10); border-color: rgba(245,200,66,.4); }
-    [data-theme="light"] .ph-ev-badge-today { background: rgba(10,138,133,.12); border-color: #0a8a85; }
-    .ph-ev-day { font-size: 15px; font-weight: 800; line-height: 1; color: var(--text1); }
-    .ph-ev-mon { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; margin-top: 1px; }
-    .ph-ev-body { flex: 1; min-width: 0; }
-    .ph-ev-title { font-size: 12px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ph-ev-note  { font-size: 11px; color: var(--text2); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ph-ev-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; }
-    .ph-ev-when  { color: var(--text3); }
-    .ph-ev-when-soon { color: var(--warning); font-weight: 600; }
-    .ph-ev-tag {
-      font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .ph-ev-tag-company { background: rgba(255,82,82,.12);  color: #ff5252; }
-    .ph-ev-tag-learn   { background: rgba(0,200,170,.12);  color: var(--accent); }
-    .ph-ev-tag-hr      { background: rgba(139,92,246,.12); color: #8b5cf6; }
-    .ph-ev-tag-design  { background: rgba(255,152,0,.12);  color: #ff9800; }
-    .ph-ev-tag-default { background: rgba(255,255,255,.06);color: var(--text3); }
-    [data-theme="light"] .ph-ev-tag-learn { background: rgba(10,138,133,.12); color: #0a8a85; }
-    .ph-ev-del {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 20px; height: 20px; border-radius: 4px; border: 1px solid transparent;
-      background: none; cursor: pointer; color: var(--text3);
-      opacity: 0; transition: opacity .15s, background .15s;
-    }
-    .ph-ev-row:hover .ph-ev-del { opacity: 1; }
-    .ph-ev-del:hover { background: rgba(224,92,92,.15); border-color: rgba(224,92,92,.4); color: var(--danger); }
-    .ph-ev-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 0; color: var(--text3); font-size: 12px; }
+  .ph-hero-right { flex-shrink: 0; }
+  .ph-hero-illustration { position: relative; width: 180px; height: 120px; }
+  .ph-hero-blob {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 55% 45%, rgba(0,200,170,.18) 0%, rgba(0,200,170,.04) 60%, transparent 80%);
+    border-radius: 50%; filter: blur(12px);
+  }
+  .ph-hero-float-card {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--bg-glass); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 10px 16px;
+    backdrop-filter: blur(20px); text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  [data-theme="light"] .ph-hero-float-card { background: rgba(255,255,255,.8); }
+  .ph-hfc-label { font-size: 9px; text-transform: uppercase; letter-spacing: .8px; color: var(--text3); font-weight: 700; }
+  .ph-hfc-val { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+  .ph-hfc-badge { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; margin-top: 3px; display: inline-block; }
+  .ph-hfc-up { background: rgba(0,230,118,.12); color: #00E676; }
+  [data-theme="light"] .ph-hfc-up { background: rgba(0,160,80,.1); color: #1a8a40; }
+  .ph-hero-circles { position: absolute; bottom: 8px; left: 10px; display: flex; }
+  .ph-hero-circle {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0,200,170,.35), rgba(0,184,160,.15));
+    border: 2px solid rgba(0,200,170,.4); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+    box-shadow: 0 0 10px rgba(0,200,170,.15);
+  }
 
-    /* ══════════════════════════════════════════════════════
-       ROW 2: Workforce Overview + Quick Access
-    ══════════════════════════════════════════════════════ */
-    .ph-row2 {
-      display: grid;
-      grid-template-columns: 1.6fr 1fr;
-      gap: 16px;
-      align-items: stretch;
-    }
-    .ph-row2 > .ph-card { display: flex; flex-direction: column; }
-    @media (max-width: 900px) { .ph-row2 { grid-template-columns: 1fr; } }
+  /* ═══════════════════════════════════════════════════════
+     GENERIC CARD
+  ═══════════════════════════════════════════════════════ */
+  .ph-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    transition: border-color .2s;
+  }
+  [data-theme="light"] .ph-card { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .ph-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .ph-card-title {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .8px;
+    text-transform: uppercase; color: var(--text3); opacity: .8;
+  }
+  [data-theme="light"] .ph-card-title { color: #076e6a; opacity: 1; }
+  .ph-card-link {
+    font-size: 12px; color: var(--accent); background: none;
+    border: none; cursor: pointer; padding: 0; font-weight: 500; opacity: .85;
+  }
+  .ph-card-link:hover { opacity: 1; }
 
-    /* ── Workforce Overview ── */
-    .ph-workforce-body {
-      display: flex; align-items: flex-start; gap: 20px;
-    }
-    .ph-gauge-wrap {
-      position: relative; flex-shrink: 0;
-      width: 110px; height: 110px;
-    }
-    .ph-gauge-svg { width: 100%; height: 100%; }
-    :root { --ph-gauge-track: rgba(255,255,255,.08); }
-    [data-theme="light"] { --ph-gauge-track: rgba(10,138,133,.10); }
-    .ph-gauge-center {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-    }
-    .ph-gauge-pct  { font-size: 20px; font-weight: 800; color: var(--text1); line-height: 1; }
-    .ph-gauge-lbl  { font-size: 10px; color: var(--text3); line-height: 1.3; margin-top: 2px; }
-    .ph-gauge-star { font-size: 10px; color: var(--warning); margin-top: 3px; font-weight: 600; }
-    .ph-wf-metrics { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
-    .ph-wf-metric  { display: flex; flex-direction: column; gap: 3px; }
-    .ph-wf-metric-top { display: flex; align-items: center; gap: 5px; }
-    .ph-wf-metric-label { font-size: 11px; color: var(--text2); font-weight: 500; }
-    .ph-wf-metric-vals  { font-size: 12px; font-weight: 700; color: var(--text1); }
-    .ph-wf-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .ph-wf-bar-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
-    .ph-wf-metric-pct { font-size: 11px; color: var(--text3); font-weight: 600; }
+  /* ═══════════════════════════════════════════════════════
+     3-COLUMN ROW (Celebrants · Actions · Events)
+  ═══════════════════════════════════════════════════════ */
+  .ph-row3 {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 1100px) { .ph-row3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 700px)  { .ph-row3 { grid-template-columns: 1fr; } }
 
-    /* ── Quick Access ── */
-    .ph-qa-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    }
-    .ph-qa-tile {
-      display: flex; flex-direction: column; align-items: center; gap: 7px;
-      padding: 12px 6px; border-radius: 10px; cursor: pointer;
-      background: var(--bg3, rgba(255,255,255,.03));
-      border: 1px solid var(--border);
-      transition: border-color .15s, background .15s;
-    }
-    [data-theme="light"] .ph-qa-tile { background: #f5f9f9; }
-    .ph-qa-tile:hover { border-color: var(--accent); background: var(--accent-dim,rgba(0,200,170,.06)); }
-    [data-theme="light"] .ph-qa-tile:hover { border-color: #0a8a85; background: rgba(10,138,133,.07); }
-    .ph-qa-icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 42px; height: 42px; border-radius: 10px;
-    }
-    .ph-qai-green  { background: rgba(0,230,118,.15);  color: var(--success); }
-    .ph-qai-blue   { background: rgba(55,138,221,.15); color: #378ADD; }
-    .ph-qai-orange { background: rgba(255,152,0,.15);  color: #ff9800; }
-    .ph-qai-purple { background: rgba(139,92,246,.15); color: #8b5cf6; }
-    .ph-qai-teal   { background: rgba(0,200,170,.12);  color: var(--accent); }
-    .ph-qai-gray   { background: rgba(255,255,255,.06);color: var(--text2); }
-    [data-theme="light"] .ph-qai-green  { background: rgba(26,138,64,.12);  color: #1a8a40; }
-    [data-theme="light"] .ph-qai-teal   { background: rgba(10,138,133,.12); color: #0a8a85; }
-    .ph-qa-label {
-      font-size: 11px; font-weight: 600; color: var(--text1);
-      text-align: center; line-height: 1.3;
-    }
+  /* ═══════════════════════════════════════════════════════
+     ACTION CENTER — card grid style
+  ═══════════════════════════════════════════════════════ */
+  .ph-action-list { display: flex; flex-direction: column; gap: 6px; }
+  .ph-action-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 10px; cursor: pointer;
+    background: rgba(255,255,255,.025);
+    border: 1px solid var(--border);
+    transition: background .15s, border-color .15s, transform .15s;
+  }
+  .ph-action-row:hover {
+    background: rgba(255,255,255,.06);
+    border-color: var(--border2);
+    transform: translateX(2px);
+  }
+  [data-theme="light"] .ph-action-row { background: rgba(0,0,0,.02); border-color: rgba(0,0,0,.08); }
+  [data-theme="light"] .ph-action-row:hover { background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.14); }
 
-    /* ══════════════════════════════════════════════════════
-       ROW 3: Calendar + Recent Activity
-    ══════════════════════════════════════════════════════ */
-    .ph-row-cal {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 16px;
-      align-items: stretch;
-    }
-    .ph-row-cal > .ph-card {
-      display: flex;
-      flex-direction: column;
-    }
-    @media (max-width: 900px) { .ph-row-cal { grid-template-columns: 1fr; } }
-    .ph-cal-card { position: relative; overflow: hidden; }
-    .ph-cal-nav {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 24px; height: 24px; border: 1px solid var(--border);
-      border-radius: 6px; background: var(--bg2); cursor: pointer; color: var(--text2);
-      transition: border-color .15s;
-    }
-    .ph-cal-nav:hover { border-color: var(--accent); color: var(--accent); }
-    .ph-cal-add-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 24px; height: 24px; border: 1px solid var(--accent);
-      border-radius: 6px; background: rgba(0,200,170,.08); cursor: pointer; color: var(--accent);
-      transition: background .15s;
-    }
-    [data-theme="light"] .ph-cal-add-btn { border-color: #0a8a85; background: rgba(10,138,133,.1); color: #0a8a85; }
-    .ph-cal-add-btn:hover { background: rgba(0,200,170,.18); }
-    .ph-cal-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 3px; margin-top: 4px;
-    }
-    .ph-cal-dayname {
-      font-size: 11px; font-weight: 700; color: var(--text3);
-      text-align: center; padding: 4px 0; text-transform: uppercase;
-    }
-    .ph-cal-cell {
-      text-align: center; font-size: 12px; padding: 6px 2px 3px;
-      border-radius: 7px; color: var(--text2); cursor: pointer;
-      transition: background .12s; position: relative;
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
-    }
-    .ph-cal-cell:hover:not(.ph-cal-empty) { background: rgba(255,255,255,.07); }
-    [data-theme="light"] .ph-cal-cell:hover:not(.ph-cal-empty) { background: rgba(10,138,133,.06); }
-    .ph-cal-empty { background: none !important; cursor: default; }
-    .ph-cal-today {
-      background: var(--accent) !important; color: #000 !important;
-      font-weight: 700; border-radius: 7px;
-    }
-    [data-theme="light"] .ph-cal-today { background: #0a8a85 !important; color: #fff !important; }
-    .ph-cal-today .ph-cal-event-dot { background: #000 !important; }
-    [data-theme="light"] .ph-cal-today .ph-cal-event-dot { background: rgba(255,255,255,.8) !important; }
-    .ph-cal-today .ph-cal-bday-dot  { background: rgba(0,0,0,.4) !important; }
-    .ph-cal-bday { color: var(--warning); font-weight: 600; }
-    .ph-cal-has-event { background: rgba(0,200,170,.07); }
-    [data-theme="light"] .ph-cal-has-event { background: rgba(10,138,133,.07); }
-    .ph-cal-dots { display: flex; justify-content: center; gap: 2px; height: 5px; }
-    .ph-cal-event-dot {
-      width: 4px; height: 4px; border-radius: 50%;
-      background: var(--accent); flex-shrink: 0;
-    }
-    [data-theme="light"] .ph-cal-event-dot { background: #0a8a85; }
-    .ph-cal-bday-dot {
-      width: 4px; height: 4px; border-radius: 50%;
-      background: var(--warning); flex-shrink: 0;
-    }
+  .ph-action-icon {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .ph-ai-red    { background: rgba(255,82,82,.12);   color: #FF5252; }
+  .ph-ai-orange { background: rgba(255,152,0,.12);   color: #FF9800; }
+  .ph-ai-yellow { background: rgba(255,215,64,.12);  color: #FFD740; }
+  .ph-ai-teal   { background: rgba(0,200,170,.12);   color: var(--accent); }
+  .ph-ai-purple { background: rgba(139,92,246,.12);  color: #8B5CF6; }
+  [data-theme="light"] .ph-ai-red    { background: rgba(220,50,50,.1);  color: #c0392b; }
+  [data-theme="light"] .ph-ai-orange { background: rgba(200,100,0,.1);  color: #e67e22; }
+  [data-theme="light"] .ph-ai-yellow { background: rgba(180,130,0,.1);  color: #b8860b; }
+  [data-theme="light"] .ph-ai-teal   { background: rgba(0,138,133,.1);  color: #0a8a85; }
+  [data-theme="light"] .ph-ai-purple { background: rgba(100,60,200,.1); color: #5b34c9; }
 
-    /* ── Calendar legend ── */
-    .ph-cal-legend {
-      display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap;
-    }
-    .ph-cal-leg-item {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 11px; color: var(--text3);
-    }
-    .ph-cal-leg-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    }
+  .ph-action-label { flex: 1; font-size: 12px; font-weight: 500; color: var(--text2); }
+  [data-theme="light"] .ph-action-label { color: #333; }
 
-    /* ── Calendar popover ── */
-    .ph-cal-popover {
-      position: relative; margin-top: 10px;
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: 10px; padding: 10px 14px; z-index: 40;
-      box-shadow: 0 8px 28px rgba(0,0,0,.32);
-      display: flex; flex-direction: column; gap: 7px;
-      animation: phPopIn .15s ease-out;
-    }
-    @keyframes phPopIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
-    .ph-pop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
-    .ph-pop-date   { font-size: 12px; font-weight: 700; color: var(--text1); }
-    .ph-pop-close  { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 12px; padding: 0; line-height: 1; transition: color .15s; }
-    .ph-pop-close:hover { color: var(--text1); }
-    .ph-pop-event  { display: flex; align-items: flex-start; gap: 8px; }
-    .ph-pop-ev-title { font-size: 12px; font-weight: 600; color: var(--text1); }
-    .ph-pop-ev-note  { font-size: 11px; color: var(--text2); margin-top: 1px; }
-    .ph-pop-ev-by    { font-size: 10px; color: var(--text3); }
+  .ph-action-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 20px; flex-shrink: 0; min-width: 26px; text-align: center;
+  }
+  .ph-ab-red    { background: rgba(255,82,82,.15);   color: #FF5252; }
+  .ph-ab-orange { background: rgba(255,152,0,.15);   color: #FF9800; }
+  .ph-ab-yellow { background: rgba(255,215,64,.12);  color: #FFD740; }
+  .ph-ab-teal   { background: rgba(0,200,170,.12);   color: var(--accent); }
+  .ph-ab-purple { background: rgba(139,92,246,.12);  color: #8B5CF6; }
+  [data-theme="light"] .ph-ab-red    { background: rgba(220,50,50,.1);  color: #c0392b; }
+  [data-theme="light"] .ph-ab-orange { background: rgba(200,100,0,.1);  color: #e67e22; }
+  [data-theme="light"] .ph-ab-yellow { background: rgba(180,130,0,.1);  color: #b8860b; }
+  [data-theme="light"] .ph-ab-teal   { background: rgba(0,138,133,.1);  color: #0a8a85; }
+  [data-theme="light"] .ph-ab-purple { background: rgba(100,60,200,.1); color: #5b34c9; }
 
-    /* ── Recent Activity ── */
-    .ph-recent-card .ph-recent-item {
-      display: flex; align-items: center; gap: 10px; padding: 7px 5px;
-      border-radius: 7px; cursor: pointer; transition: background .15s;
-    }
-    .ph-recent-card .ph-recent-item:hover { background: rgba(255,255,255,.04); }
-    [data-theme="light"] .ph-recent-card .ph-recent-item:hover { background: rgba(10,138,133,.05); }
-    .ph-recent-body   { flex: 1; min-width: 0; }
-    .ph-recent-name   { font-size: 12px; font-weight: 600; color: var(--text1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .ph-recent-action { font-size: 11px; color: var(--text2); margin-top: 1px; }
-    .ph-recent-time-row { display: flex; }
-    .ph-recent-time   { font-size: 11px; color: var(--text3); }
+  /* ═══════════════════════════════════════════════════════
+     BIRTHDAY TABS
+  ═══════════════════════════════════════════════════════ */
+  .ph-bday-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .ph-bday-tab {
+    padding: 6px 12px; font-size: 11px; font-weight: 600;
+    background: none; border: none; cursor: pointer; color: var(--text3);
+    border-bottom: 2px solid transparent; transition: color .15s, border-color .15s;
+  }
+  .ph-bday-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  [data-theme="light"] .ph-bday-tab.active { color: #0a8a85; border-bottom-color: #0a8a85; }
 
-    /* ── Status breakdown ── */
-    .ph-status-list { display: flex; flex-direction: column; gap: 5px; }
-    .ph-status-row {
-      display: flex; align-items: center; gap: 8px; cursor: pointer;
-      padding: 3px 6px; border-radius: 6px; transition: background .15s;
-    }
-    .ph-status-row:hover { background: rgba(255,255,255,.04); }
-    [data-theme="light"] .ph-status-row:hover { background: rgba(10,138,133,.05); }
-    .ph-status-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .ph-status-name { font-size: 12px; color: var(--text2); min-width: 76px; }
-    .ph-status-count { font-size: 12px; font-weight: 600; color: var(--text1); min-width: 26px; text-align: right; }
-    .ph-status-bar-wrap { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-    .ph-status-bar-fill { height: 100%; border-radius: 2px; transition: width .4s ease; }
+  .ph-bday-list { display: flex; flex-direction: column; gap: 8px; }
+  .ph-bday-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0; border-bottom: 1px solid var(--border);
+  }
+  .ph-bday-item:last-child { border-bottom: none; }
+  .ph-bday-name { font-size: 13px; font-weight: 600; color: var(--text1); }
+  .ph-bday-dept { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .ph-bday-days {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+    background: rgba(0,200,170,.1); color: var(--accent);
+  }
+  .ph-bday-days.today { background: rgba(255,152,0,.12); color: #FF9800; }
+  [data-theme="light"] .ph-bday-days { color: #0a8a85; }
+  [data-theme="light"] .ph-bday-days.today { color: #e67e22; }
+  .ph-bday-empty { font-size: 12px; color: var(--text3); font-style: italic; padding: 12px 0; }
 
-    /* ══════════════════════════════════════════════════════
-       BIRTHDAY CARD
-    ══════════════════════════════════════════════════════ */
-    .ph-bday-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
-    .ph-bday-tab {
-      flex: 1; padding: 5px 4px; font-size: 11px; font-weight: 600;
-      border: 1px solid var(--border); border-radius: 7px;
-      background: none; color: var(--text3); cursor: pointer;
-      transition: border-color .15s, color .15s, background .15s;
-      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    }
-    .ph-bday-tab:hover { border-color: var(--accent); color: var(--accent); }
-    .ph-bday-tab.active { background: rgba(0,200,170,.1); border-color: var(--accent); color: var(--accent); }
-    [data-theme="light"] .ph-bday-tab.active { background: rgba(10,138,133,.1); border-color: #0a8a85; color: #0a8a85; }
-    .ph-tab-badge {
-      font-size: 10px; font-weight: 700; padding: 1px 5px;
-      border-radius: 20px; background: var(--accent-dim,rgba(0,200,170,.15));
-      color: var(--accent); line-height: 1.4;
-    }
-    .ph-tab-badge-warn { background: rgba(245,200,66,.2); color: var(--warning); }
-    .ph-tab-badge-dim  { background: rgba(255,255,255,.08); color: var(--text2); }
-    .ph-bday-pane { display: flex; flex-direction: column; gap: 0; max-height: 200px; overflow-y: auto; }
-    .ph-bday-row {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 4px; border-radius: 7px; cursor: pointer;
-      transition: background .15s;
-    }
-    .ph-bday-row:not(:last-child) { border-bottom: 1px solid var(--border); }
-    .ph-bday-row:hover { background: rgba(255,255,255,.04); }
-    [data-theme="light"] .ph-bday-row:hover { background: rgba(10,138,133,.05); }
-    .ph-bday-info  { flex: 1; min-width: 0; }
-    .ph-bday-name  { font-size: 12px; font-weight: 600; color: var(--text1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ph-bday-store { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ph-bday-when  { font-size: 11px; color: var(--text3); white-space: nowrap; font-weight: 500; }
-    .ph-bday-when-today { color: var(--warning); font-weight: 700; }
-    .ph-bday-empty { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 20px 0; color: var(--text3); font-size: 12px; }
+  /* ═══════════════════════════════════════════════════════
+     UPCOMING EVENTS
+  ═══════════════════════════════════════════════════════ */
+  .ph-event-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .ph-event-item:last-child { border-bottom: none; }
+  .ph-event-date-box {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    background: rgba(0,200,170,.1); border: 1px solid rgba(0,200,170,.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .ph-event-month { font-size: 8px; font-weight: 700; text-transform: uppercase; color: var(--accent); letter-spacing: .5px; }
+  .ph-event-day   { font-size: 16px; font-weight: 800; color: var(--text1); line-height: 1; }
+  [data-theme="light"] .ph-event-date-box { background: rgba(0,138,133,.08); border-color: rgba(0,138,133,.18); }
+  [data-theme="light"] .ph-event-month { color: #0a8a85; }
 
-    /* ══════════════════════════════════════════════════════
-       FEATURE BANNER
-    ══════════════════════════════════════════════════════ */
-    .ph-feature-banner {
-      display: flex; align-items: stretch; gap: 0;
-      border: 1px solid var(--border); border-radius: 14px;
-      overflow: hidden;
-      background: linear-gradient(120deg,
-        rgba(0,0,0,.85) 0%,
-        rgba(0,20,18,.9) 40%,
-        rgba(0,10,22,.85) 100%
-      );
-    }
-    [data-theme="light"] .ph-feature-banner {
-      background: linear-gradient(120deg, #0d2f2d 0%, #0a1f3c 100%);
-    }
-    .ph-fb-hero {
-      display: flex; flex-direction: column; justify-content: center; gap: 8px;
-      padding: 22px 26px; min-width: 210px; max-width: 250px;
-      border-right: 1px solid rgba(255,255,255,.08);
-      position: relative; overflow: hidden;
-    }
-    .ph-fb-x-logo {
-      font-size: 32px; font-weight: 900; color: var(--accent);
-      line-height: 1; margin-bottom: 2px;
-    }
-    [data-theme="light"] .ph-fb-x-logo { color: #1de3d8; }
-    .ph-fb-hero-title {
-      font-size: 14px; font-weight: 800; color: #fff; line-height: 1.4;
-    }
-    .ph-fb-hero-sub {
-      font-size: 11px; color: rgba(255,255,255,.55); line-height: 1.5;
-    }
-    .ph-fb-explore-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 14px; font-size: 12px; font-weight: 600;
-      background: var(--accent); color: #000;
-      border: none; border-radius: 7px; cursor: pointer;
-      margin-top: 4px; width: fit-content;
-      transition: opacity .15s;
-    }
-    [data-theme="light"] .ph-fb-explore-btn { background: #1de3d8; }
-    .ph-fb-explore-btn:hover { opacity: .85; }
-    .ph-fb-actions {
-      display: flex; flex: 1; flex-wrap: wrap;
-    }
-    .ph-fb-action {
-      display: flex; align-items: center; gap: 12px;
-      padding: 16px 20px; cursor: pointer; flex: 1; min-width: 160px;
-      border-right: 1px solid rgba(255,255,255,.06);
-      transition: background .15s;
-    }
-    .ph-fb-action:last-child { border-right: none; }
-    .ph-fb-action:hover { background: rgba(255,255,255,.05); }
-    .ph-fb-action-icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
-      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
-      color: var(--accent);
-    }
-    .ph-fb-action-icon i, .ph-fb-action-icon svg { width: 17px; height: 17px; stroke-width: 1.8; }
-    .ph-fb-action-title { font-size: 12px; font-weight: 600; color: #fff; }
-    .ph-fb-action-sub   { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+  .ph-event-body  { flex: 1; min-width: 0; }
+  .ph-event-title { font-size: 13px; font-weight: 600; color: var(--text1); }
+  .ph-event-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .ph-event-tag   {
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    background: rgba(55,138,221,.12); color: #378ADD; margin-left: 4px;
+  }
+  [data-theme="light"] .ph-event-tag { background: rgba(40,100,200,.1); color: #1a5cb0; }
 
-    /* ══════════════════════════════════════════════════════
-       MODAL (Add Event)
-    ══════════════════════════════════════════════════════ */
-    .ph-modal-box {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 14px; width: 100%; max-width: 440px;
-      display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,.5);
-    }
-    .ph-modal-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
-    }
-    .ph-modal-close {
-      background: none; border: none; cursor: pointer; color: var(--text3);
-      font-size: 13px; padding: 0; line-height: 1; transition: color .15s;
-    }
-    .ph-modal-close:hover { color: var(--text1); }
-    .ph-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
-    .ph-modal-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
-    .ph-modal-input {
-      width: 100%; padding: 8px 10px; font-size: 13px;
-      background: var(--bg3, rgba(255,255,255,.05));
-      border: 1px solid var(--border); border-radius: 7px;
-      color: var(--text1); font-family: 'Inter', 'Poppins', sans-serif;
-      box-sizing: border-box; transition: border-color .15s;
-    }
-    .ph-modal-input:focus { outline: none; border-color: var(--accent); }
-    .ph-modal-footer {
-      padding: 12px 20px 16px; display: flex; justify-content: flex-end; gap: 8px;
-      border-top: 1px solid var(--border);
-    }
-    .ph-modal-cancel {
-      padding: 7px 16px; font-size: 12px; background: none;
-      border: 1px solid var(--border); border-radius: 7px;
-      color: var(--text2); cursor: pointer; font-family: 'Inter', 'Poppins', sans-serif;
-      transition: border-color .15s;
-    }
-    .ph-modal-cancel:hover { border-color: var(--accent); color: var(--accent); }
-    .ph-modal-submit {
-      padding: 7px 16px; font-size: 12px; font-weight: 600;
-      background: var(--accent); color: #000;
-      border: none; border-radius: 7px; cursor: pointer;
-      font-family: 'Inter', 'Poppins', sans-serif;
-      display: inline-flex; align-items: center; gap: 5px;
-      transition: opacity .15s;
-    }
-    .ph-modal-submit:hover { opacity: .85; }
+  /* ═══════════════════════════════════════════════════════
+     ROW 2: Workforce Overview + Quick Access
+  ═══════════════════════════════════════════════════════ */
+  .ph-row2 {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .ph-row2 { grid-template-columns: 1fr; } }
+  .ph-row2 > .ph-card { display: flex; flex-direction: column; }
 
-    /* ══════════════════════════════════════════════════════
-       ANNOUNCEMENTS (kept for async render)
-    ══════════════════════════════════════════════════════ */
-    .ph-ann-scroll { display: flex; flex-direction: column; gap: 0; max-height: 220px; overflow-y: auto; }
-    .ph-ann-item { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; }
-    .ph-ann-item-sep { border-bottom: 1px solid var(--border); }
-    .ph-ann-title { font-size: 13px; font-weight: 600; color: var(--text1); line-height: 1.4; }
-    .ph-ann-body-text {
-      font-size: 12px; color: var(--text2); line-height: 1.6;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .ph-ann-meta  { font-size: 11px; color: var(--text3); margin-top: 3px; }
-    .ph-ann-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 20px 0; color: var(--text3); font-size: 12px; }
+  /* Workforce Overview */
+  .ph-workforce-body { display: flex; gap: 24px; align-items: center; }
+  .ph-gauge-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+  .ph-gauge-svg { width: 100%; height: 100%; }
+  :root { --ph-gauge-track: rgba(255,255,255,.08); }
+  [data-theme="light"] { --ph-gauge-track: rgba(10,138,133,.10); }
+  .ph-gauge-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .ph-gauge-pct  { font-size: 20px; font-weight: 800; color: var(--text1); line-height: 1; }
+  .ph-gauge-lbl  { font-size: 9px; color: var(--text3); line-height: 1.3; margin-top: 2px; text-align: center; }
+  .ph-gauge-star { font-size: 9px; color: var(--warning); margin-top: 3px; font-weight: 700; }
 
-    /* comp overrides */
-    .comp-stat-icon { display: flex; align-items: center; margin-bottom: 2px; }
-    .comp-stat-icon i, .comp-stat-icon svg { width: 18px; height: 18px; stroke-width: 2; }
+  .ph-wf-metrics { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+  .ph-wf-metric  { display: flex; flex-direction: column; gap: 3px; }
+  .ph-wf-metric-top { display: flex; align-items: center; gap: 5px; }
+  .ph-wf-metric-top .fi { font-size: 14px; }
+  .ph-wf-metric-label { font-size: 11px; color: var(--text2); font-weight: 500; }
+  .ph-wf-metric-vals  { font-size: 12px; font-weight: 700; color: var(--text1); }
+  .ph-wf-bar-wrap { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .ph-wf-bar-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+  .ph-wf-metric-pct { font-size: 11px; color: var(--text3); font-weight: 600; }
 
-    /* ── Quick Access Edit Modal ── */
-    .ph-qa-edit-overlay {
-      position: fixed; inset: 0; z-index: 9000;
-      background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      animation: phFadeIn .15s ease;
-    }
-    @keyframes phFadeIn { from { opacity:0; } to { opacity:1; } }
-    .ph-qa-edit-box {
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: 16px; padding: 22px 24px; width: 380px; max-width: 95vw;
-      box-shadow: 0 16px 60px rgba(0,0,0,.5);
-      animation: phSlideUp .18s ease;
-    }
-    [data-theme="light"] .ph-qa-edit-box { background: #fff; box-shadow: 0 16px 60px rgba(0,0,0,.15); }
-    @keyframes phSlideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-    .ph-qa-edit-title {
-      font-size: 13px; font-weight: 700; color: var(--text1);
-      margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
-    }
-    .ph-qa-edit-sub { font-size: 11px; color: var(--text3); margin-bottom: 16px; }
-    .ph-qa-edit-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-    .ph-qa-edit-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 12px; border-radius: 9px;
-      border: 1px solid var(--border); background: var(--bg3);
-      cursor: grab; transition: border-color .15s, background .15s;
-      user-select: none;
-    }
-    [data-theme="light"] .ph-qa-edit-row { background: #f5f9f9; }
-    .ph-qa-edit-row.dragging { opacity: .45; border-style: dashed; }
-    .ph-qa-edit-row.drag-over { border-color: var(--accent); background: var(--accent-dim); }
-    .ph-qa-edit-drag { color: var(--text3); flex-shrink: 0; cursor: grab; }
-    .ph-qa-edit-icon {
-      width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ph-qa-edit-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text1); }
-    .ph-qa-edit-toggle {
-      width: 34px; height: 20px; border-radius: 10px; border: none; cursor: pointer;
-      position: relative; flex-shrink: 0; transition: background .2s;
-    }
-    .ph-qa-edit-toggle::after {
-      content: ''; position: absolute; top: 3px; left: 3px;
-      width: 14px; height: 14px; border-radius: 50%; background: #fff;
-      transition: transform .2s;
-    }
-    .ph-qa-edit-toggle.on { background: var(--accent); }
-    .ph-qa-edit-toggle.on::after { transform: translateX(14px); }
-    .ph-qa-edit-toggle.off { background: var(--border2); }
-    .ph-qa-edit-footer { display: flex; justify-content: flex-end; gap: 8px; }
-    .ph-qa-edit-cancel {
-      padding: 7px 16px; font-size: 12px; font-weight: 500;
-      background: none; border: 1.5px solid var(--border2); border-radius: 7px;
-      color: var(--text2); cursor: pointer; font-family: 'Inter', 'Poppins', sans-serif;
-      transition: border-color .15s, color .15s;
-    }
-    .ph-qa-edit-cancel:hover { border-color: var(--accent); color: var(--accent); }
-    .ph-qa-edit-save {
-      padding: 7px 16px; font-size: 12px; font-weight: 600;
-      background: var(--accent); color: #0E1414; border: none;
-      border-radius: 7px; cursor: pointer; font-family: 'Inter', 'Poppins', sans-serif;
-      transition: opacity .15s;
-    }
-    .ph-qa-edit-save:hover { opacity: .85; }
+  /* Quick Access grid */
+  .ph-qa-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .ph-qa-tile {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 14px 8px; border-radius: 12px; cursor: pointer;
+    background: rgba(255,255,255,.035); border: 1px solid var(--border);
+    transition: background .18s, border-color .18s, transform .18s;
+    text-align: center;
+  }
+  .ph-qa-tile:hover { background: rgba(255,255,255,.07); border-color: var(--border2); transform: translateY(-2px); }
+  [data-theme="light"] .ph-qa-tile { background: rgba(0,0,0,.02); }
+  [data-theme="light"] .ph-qa-tile:hover { background: rgba(0,0,0,.05); }
+
+  .ph-qa-icon {
+    width: 40px; height: 40px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .ph-qa-label {
+    font-size: 10px; font-weight: 600; color: var(--text2); line-height: 1.3;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ROW 3: Calendar + Recent Activity
+  ═══════════════════════════════════════════════════════ */
+  .ph-row-cal {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .ph-row-cal { grid-template-columns: 1fr; } }
+  .ph-row-cal > .ph-card { min-width: 0; }
+
+  /* Recent Activity */
+  .ph-recent-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background .12s; border-radius: 6px;
+  }
+  .ph-recent-item:last-child { border-bottom: none; }
+  .ph-recent-item:hover { background: var(--bg-frosted); }
+  .ph-recent-body { flex: 1; min-width: 0; }
+  .ph-recent-name { font-size: 13px; font-weight: 600; color: var(--text1); }
+  .ph-recent-action { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .ph-recent-time-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .ph-recent-time { font-size: 10px; color: var(--text3); font-style: italic; }
+
+  /* Status Breakdown */
+  .ph-status-list { display: flex; flex-direction: column; gap: 7px; }
+  .ph-status-row {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    padding: 4px 6px; border-radius: 6px; transition: background .12s;
+  }
+  .ph-status-row:hover { background: var(--bg-frosted); }
+  .ph-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 5px currentColor; }
+  .ph-status-name { font-size: 12px; color: var(--text2); font-weight: 500; min-width: 70px; }
+  .ph-status-count { font-size: 12px; font-weight: 700; color: var(--text1); min-width: 28px; text-align: right; }
+  .ph-status-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .ph-status-bar-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+
+  /* ═══════════════════════════════════════════════════════
+     CALENDAR
+  ═══════════════════════════════════════════════════════ */
+  .ph-cal-add-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border2);
+    background: rgba(0,200,170,.1); color: var(--accent); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+    transition: background .15s;
+  }
+  .ph-cal-add-btn:hover { background: rgba(0,200,170,.2); }
+  .ph-cal-nav {
+    width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--bg-frosted); color: var(--text2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+    transition: all .15s;
+  }
+  .ph-cal-nav:hover { border-color: var(--border2); color: var(--text1); }
+
+  #ph-calendar { overflow: hidden; }
+  .ph-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .ph-cal-dow {
+    font-size: 9px; font-weight: 700; text-align: center; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .5px; padding: 4px 0 6px;
+  }
+  .ph-cal-day {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: default; position: relative; color: var(--text2); transition: background .12s;
+    gap: 2px;
+  }
+  .ph-cal-day.other-month { opacity: .25; }
+  .ph-cal-day.today {
+    background: rgba(0,200,170,.15); color: var(--accent); font-weight: 700;
+    border: 1px solid rgba(0,200,170,.3);
+  }
+  [data-theme="light"] .ph-cal-day.today { background: rgba(0,138,133,.1); border-color: rgba(0,138,133,.25); color: #0a8a85; }
+  .ph-cal-day.has-event { cursor: pointer; }
+  .ph-cal-day.has-event:hover { background: rgba(255,255,255,.07); }
+  [data-theme="light"] .ph-cal-day.has-event:hover { background: rgba(0,0,0,.05); }
+  .ph-cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  .ph-cal-popover {
+    background: var(--bg-glass); border: 1px solid var(--border2); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px; color: var(--text1);
+    box-shadow: 0 8px 28px rgba(0,0,0,.5); margin-top: 6px; z-index: 10;
+    backdrop-filter: blur(20px);
+  }
+  [data-theme="light"] .ph-cal-popover { background: rgba(255,255,255,.95); }
+
+  /* ═══════════════════════════════════════════════════════
+     FEATURE BANNER
+  ═══════════════════════════════════════════════════════ */
+  .ph-feature-banner {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 18px;
+    padding: 28px 32px; display: flex; gap: 28px; overflow: hidden;
+    position: relative;
+  }
+  .ph-feature-banner::before {
+    content: '';
+    position: absolute; top: -40px; left: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,200,170,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  [data-theme="light"] .ph-feature-banner { background: #fff; }
+  .ph-fb-hero { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; min-width: 200px; }
+  .ph-fb-x-logo {
+    width: 36px; height: 36px; border-radius: 10px; font-size: 18px; font-weight: 900;
+    background: var(--accent); color: #071a1a;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 4px;
+  }
+  .ph-fb-hero-title { font-size: 18px; font-weight: 800; color: var(--text1); line-height: 1.25; }
+  .ph-fb-hero-sub { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .ph-fb-explore-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; font-size: 12px; font-weight: 600;
+    background: rgba(0,200,170,.12); color: var(--accent);
+    border: 1px solid rgba(0,200,170,.25); border-radius: 8px; cursor: pointer;
+    margin-top: 10px; transition: all .18s; width: fit-content;
+  }
+  .ph-fb-explore-btn:hover { background: rgba(0,200,170,.22); }
+  [data-theme="light"] .ph-fb-explore-btn { color: #0a8a85; }
+
+  .ph-fb-actions {
+    flex: 1; display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px; align-content: start;
+  }
+  .ph-fb-action {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 12px; cursor: pointer;
+    background: rgba(255,255,255,.03); border: 1px solid var(--border);
+    transition: all .18s;
+  }
+  .ph-fb-action:hover { background: rgba(255,255,255,.07); border-color: var(--border2); transform: translateX(2px); }
+  [data-theme="light"] .ph-fb-action { background: rgba(0,0,0,.02); }
+  [data-theme="light"] .ph-fb-action:hover { background: rgba(0,0,0,.05); }
+  .ph-fb-action-icon {
+    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+    background: rgba(0,200,170,.1); color: var(--accent); font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ph-fb-action-title { font-size: 12px; font-weight: 600; color: var(--text1); }
+  .ph-fb-action-sub   { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+  /* ═══════════════════════════════════════════════════════
+     QUICK ACCESS EDIT OVERLAY
+  ═══════════════════════════════════════════════════════ */
+  .ph-qa-edit-overlay {
+    position: fixed; inset: 0; z-index: 9900;
+    background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ph-qa-edit-modal {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 18px; padding: 24px; width: 360px; max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  }
+  [data-theme="light"] .ph-qa-edit-modal { background: #fff; }
+  .ph-qa-edit-title { font-size: 15px; font-weight: 700; color: var(--text1); margin-bottom: 4px; }
+  .ph-qa-edit-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+  .ph-qa-edit-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
+  .ph-qa-edit-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 9px; background: rgba(255,255,255,.04);
+    border: 1px solid var(--border); cursor: grab;
+  }
+  [data-theme="light"] .ph-qa-edit-row { background: rgba(0,0,0,.02); }
+  .ph-qa-edit-row.drag-over { border-color: var(--accent); background: rgba(0,200,170,.06); }
+  .ph-qa-edit-drag { color: var(--text3); cursor: grab; }
+  .ph-qa-edit-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .ph-qa-edit-name { flex: 1; font-size: 13px; color: var(--text2); }
+  .ph-qa-edit-toggle {
+    width: 34px; height: 18px; border-radius: 9px; border: none; cursor: pointer;
+    position: relative; transition: background .2s; flex-shrink: 0;
+  }
+  .ph-qa-edit-toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff;
+    transition: left .2s;
+  }
+  .ph-qa-edit-toggle.on  { background: var(--accent); }
+  .ph-qa-edit-toggle.off { background: rgba(255,255,255,.15); }
+  [data-theme="light"] .ph-qa-edit-toggle.off { background: rgba(0,0,0,.2); }
+  .ph-qa-edit-toggle.on::after  { left: 18px; }
+  .ph-qa-edit-footer { display: flex; gap: 8px; justify-content: flex-end; }
+  .ph-qa-edit-cancel { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text2); padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: background .15s; }
+  .ph-qa-edit-cancel:hover { background: rgba(255,255,255,.1); }
+  .ph-qa-edit-save { background: var(--accent); color: #071a1a; border: none; padding: 7px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity .15s; }
+  .ph-qa-edit-save:hover { opacity: .85; }
   `;
   document.head.appendChild(s);
 }
-// ============================================================
-// PATCH: Home Page UI Polish Override
-// ============================================================
-(function injectHomePolishPatch() {
-  if (document.getElementById('page-home-polish-patch')) return;
-
-  const s = document.createElement('style');
-  s.id = 'page-home-polish-patch';
-  s.textContent = `
-    .ph-wrap {
-      padding: 24px 24px 40px !important;
-      gap: 20px !important;
-    }
-
-    .ph-card {
-      padding: 24px !important;
-      min-height: 100%;
-    }
-
-    .ph-card-header {
-      margin-bottom: 18px !important;
-    }
-
-    .ph-hero {
-      padding: 24px !important;
-      height: auto !important;
-      min-height: 240px !important;
-      align-items: center !important;
-    }
-
-    .ph-hero-left {
-      gap: 10px !important;
-    }
-
-    .ph-hero-greeting,
-    .ph-hero-name {
-      font-size: 34px !important;
-      font-weight: 850 !important;
-      line-height: 1.05 !important;
-      letter-spacing: -0.8px !important;
-    }
-
-    .ph-hero-sub {
-      font-size: 13px !important;
-      line-height: 1.5 !important;
-      color: var(--text2) !important;
-    }
-
-    .ph-hero-stats {
-      display: grid !important;
-      grid-template-columns: repeat(4, minmax(120px, 1fr)) !important;
-      gap: 10px !important;
-      margin-top: 12px !important;
-      max-width: 700px !important;
-    }
-
-    .ph-hero-stat {
-      display: grid !important;
-      grid-template-columns: 18px 1fr !important;
-      grid-template-rows: auto auto !important;
-      column-gap: 8px !important;
-      row-gap: 2px !important;
-      padding: 10px 12px !important;
-      border-radius: 12px !important;
-      background: rgba(255,255,255,.035) !important;
-      border: 1px solid var(--border) !important;
-    }
-
-    .ph-hero-stat i,
-    .ph-hero-stat svg {
-      grid-row: 1 / span 2 !important;
-      align-self: center !important;
-    }
-
-    .ph-hs-val {
-      font-size: 19px !important;
-      font-weight: 850 !important;
-      line-height: 1 !important;
-    }
-
-    .ph-hs-lbl {
-      font-size: 10.5px !important;
-      font-weight: 650 !important;
-      line-height: 1.25 !important;
-    }
-
-    .ph-row3,
-    .ph-row2,
-    .ph-row-cal {
-      align-items: stretch !important;
-    }
-
-    .ph-row3 > .ph-card {
-      min-height: 292px !important;
-    }
-
-    .ph-row2 > .ph-card {
-      min-height: 310px !important;
-    }
-
-    .ph-action-list {
-      gap: 8px !important;
-    }
-
-    .ph-action-row {
-      display: grid !important;
-      grid-template-columns: 30px minmax(0, 1fr) auto !important;
-      align-items: center !important;
-      column-gap: 10px !important;
-      min-height: 42px !important;
-      padding: 7px 8px !important;
-      border-radius: 10px !important;
-    }
-
-    .ph-action-icon {
-      width: 30px !important;
-      height: 30px !important;
-      border-radius: 9px !important;
-    }
-
-    .ph-action-label {
-      min-width: 0 !important;
-      font-size: 12px !important;
-      font-weight: 600 !important;
-      line-height: 1.25 !important;
-    }
-
-    .ph-action-badge {
-      min-width: 26px !important;
-      padding: 4px 8px !important;
-      font-size: 11px !important;
-      font-weight: 800 !important;
-      line-height: 1 !important;
-      text-align: center !important;
-    }
-
-    .ph-qa-grid {
-      gap: 12px !important;
-    }
-
-    .ph-qa-tile {
-      min-height: 104px !important;
-      padding: 16px 10px !important;
-      border-radius: 14px !important;
-      gap: 10px !important;
-    }
-
-    .ph-qa-icon {
-      width: 42px !important;
-      height: 42px !important;
-      border-radius: 13px !important;
-    }
-
-    .ph-qa-icon i,
-    .ph-qa-icon svg {
-      width: 22px !important;
-      height: 22px !important;
-    }
-
-    .ph-qa-label {
-      font-size: 12px !important;
-      font-weight: 700 !important;
-      line-height: 1.25 !important;
-    }
-
-    .ph-feature-banner {
-      display: grid !important;
-      grid-template-columns: minmax(260px, 0.8fr) minmax(420px, 1.2fr) !important;
-      gap: 18px !important;
-      padding: 24px !important;
-      border-radius: 18px !important;
-      align-items: stretch !important;
-    }
-
-    .ph-fb-hero {
-      padding: 24px !important;
-      border-radius: 16px !important;
-    }
-
-    .ph-fb-actions {
-      display: grid !important;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 12px !important;
-      align-content: stretch !important;
-    }
-
-    .ph-fb-action {
-      min-height: 86px !important;
-      padding: 16px !important;
-      border-radius: 14px !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 12px !important;
-    }
-
-    .ph-fb-action-icon {
-      width: 42px !important;
-      height: 42px !important;
-      border-radius: 13px !important;
-      flex-shrink: 0 !important;
-    }
-
-    .ph-fb-action-title {
-      font-size: 13px !important;
-      font-weight: 800 !important;
-      margin-bottom: 3px !important;
-    }
-
-    .ph-fb-action-sub {
-      font-size: 11px !important;
-      line-height: 1.35 !important;
-    }
-
-    @media (max-width: 980px) {
-      .ph-hero {
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-
-      .ph-hero-right {
-        display: none !important;
-      }
-
-      .ph-hero-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      }
-
-      .ph-feature-banner {
-        grid-template-columns: 1fr !important;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .ph-wrap {
-        padding: 16px !important;
-      }
-
-      .ph-card,
-      .ph-hero,
-      .ph-feature-banner {
-        padding: 18px !important;
-      }
-
-      .ph-hero-stats,
-      .ph-fb-actions {
-        grid-template-columns: 1fr !important;
-      }
-
-      .ph-hero-greeting,
-      .ph-hero-name {
-        font-size: 28px !important;
-      }
-    }
-  `;
-
-  document.head.appendChild(s);
-})();
