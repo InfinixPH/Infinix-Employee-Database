@@ -40,7 +40,7 @@ function renderSettingsPage() {
 
       <!-- ── Role permissions ── -->
       <div class="ps-section">
-        ${Components.sectionHeader('🔐 Permissions')}
+        ${Components.sectionHeader('Permissions')}
         <div class="ps-perms-grid">
           ${_permRow('View employee records',   true)}
           ${_permRow('Edit employee data',      isWriter)}
@@ -49,7 +49,7 @@ function renderSettingsPage() {
           ${_permRow('Export to Excel',         typeof canViewSensitive === 'function' ? canViewSensitive() : false)}
           ${_permRow('Manage role passwords',   isOwner)}
         </div>
-        ${isOwner ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="openPwManager()">${IX.icon('lock',13)} Manage Role Passwords</button>` : ''}
+        ${isOwner ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="openPwManager()"><i class="fi fi-sr-lock" style="font-size:13px"></i> Manage Role Passwords</button>` : ''}
       </div>
 
       <!-- ── Table columns ── -->
@@ -71,7 +71,7 @@ function renderSettingsPage() {
 
       <!-- ── Page size ── -->
       <div class="ps-section">
-        ${Components.sectionHeader('📄 Rows Per Page')}
+        ${Components.sectionHeader('Rows Per Page')}
         <div class="ps-card ps-psize-card">
           <span class="ps-psize-label">Show this many rows per page in employee tables:</span>
           <div class="ps-psize-options" id="ps-psize-options">
@@ -82,9 +82,28 @@ function renderSettingsPage() {
         </div>
       </div>
 
+      <!-- ── Auto-refresh ── -->
+      <div class="ps-section">
+        ${Components.sectionHeader('Auto-Refresh')}
+        <div class="ps-card ps-psize-card">
+          <span class="ps-psize-label">Automatically pull fresh data from Google Sheets every:</span>
+          <div class="ps-psize-options" id="ps-refresh-options">
+            ${[
+              {label:'Off', val:0},
+              {label:'5 min', val:5},
+              {label:'15 min', val:15},
+              {label:'30 min', val:30},
+            ].map(o => `
+              <button class="ps-psize-btn ${(typeof autoRefreshInterval !== 'undefined' && autoRefreshInterval === o.val) ? 'active' : ''}"
+                      onclick="_settingsSetAutoRefresh(${o.val})">${o.label}</button>`).join('')}
+          </div>
+        </div>
+        <div class="ps-refresh-status" id="ps-refresh-status">${_autoRefreshStatusText()}</div>
+      </div>
+
       <!-- ── About ── -->
       <div class="ps-section">
-        ${Components.sectionHeader('ℹ️ About')}
+        ${Components.sectionHeader('About')}
         <div class="ps-card">
           <div class="ps-about-row"><span class="ps-about-label">App</span><span class="ps-about-val">Infinix HR Employee Database</span></div>
           <div class="ps-about-row"><span class="ps-about-label">Router version</span><span class="ps-about-val">1.0 (hash routing)</span></div>
@@ -145,6 +164,43 @@ function _settingsSetPageSize(n) {
   });
 }
 
+// ── Phase 6: Auto-refresh interval ─────────────────────────────
+let autoRefreshInterval = parseInt(localStorage.getItem('hr_auto_refresh') || '0', 10);
+let _autoRefreshTimer = null;
+
+function _settingsSetAutoRefresh(minutes) {
+  autoRefreshInterval = minutes;
+  localStorage.setItem('hr_auto_refresh', String(minutes));
+  document.querySelectorAll('#ps-refresh-options .ps-psize-btn').forEach(btn => {
+    const isMatch = (minutes === 0 && btn.textContent === 'Off') ||
+                     (minutes !== 0 && btn.textContent === minutes + ' min');
+    btn.classList.toggle('active', isMatch);
+  });
+  _restartAutoRefreshTimer();
+  const statusEl = document.getElementById('ps-refresh-status');
+  if (statusEl) statusEl.textContent = _autoRefreshStatusText();
+  toast(minutes === 0 ? 'Auto-refresh disabled' : `Auto-refresh set to every ${minutes} minutes`, 'success');
+}
+
+function _restartAutoRefreshTimer() {
+  if (_autoRefreshTimer) { clearInterval(_autoRefreshTimer); _autoRefreshTimer = null; }
+  if (autoRefreshInterval > 0) {
+    _autoRefreshTimer = setInterval(() => {
+      if (typeof refreshData === 'function') refreshData();
+    }, autoRefreshInterval * 60 * 1000);
+  }
+}
+
+function _autoRefreshStatusText() {
+  if (autoRefreshInterval === 0) return 'Auto-refresh is off — use the Refresh button manually.';
+  return `Data refreshes automatically every ${autoRefreshInterval} minutes.`;
+}
+
+// Start the timer on script load if a preference was saved
+if (typeof window !== 'undefined') {
+  setTimeout(_restartAutoRefreshTimer, 2000);
+}
+
 // ── Styles ──────────────────────────────────────────────────
 function _injectSettingsStyles() {
   if (document.getElementById('page-settings-styles')) return;
@@ -201,6 +257,16 @@ function _injectSettingsStyles() {
     }
     .ps-psize-btn:hover { border-color: var(--accent); color: var(--accent); }
     .ps-psize-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+
+    /* Phase 6: Auto-refresh status line */
+    .ps-refresh-status {
+      font-size: 11px; color: var(--text3); padding: 2px 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ps-refresh-status::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text3); flex-shrink: 0;
+    }
 
     /* About */
     .ps-about-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
