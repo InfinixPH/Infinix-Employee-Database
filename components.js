@@ -68,7 +68,7 @@ const Components = (() => {
         ${tabs.map(t => `
           <button class="comp-tab ${t.key === activeKey ? 'active' : ''}"
                   onclick="${onClickFn}('${t.key}')">
-            ${t.icon ? `<span class="comp-tab-icon">${typeof IX !== 'undefined' && IX.PATHS[t.icon] ? IX.icon(t.icon, 13) : t.icon}</span>` : ''}
+            ${t.icon ? `<span class="comp-tab-icon"><i class="fi fi-sr-${t.icon}"></i></span>` : ''}
             ${esc(t.label)}
             ${t.badge !== undefined ? `<span class="comp-tab-badge">${t.badge}</span>` : ''}
           </button>`).join('')}
