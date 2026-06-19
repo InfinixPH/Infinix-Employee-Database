@@ -67,11 +67,22 @@ function renderProfilePage(id) {
               ${badgeHTML(emp.status)}
               ${emp.deploymentStatus ? badgeHTML(emp.deploymentStatus, emp.deploymentStatus.replace(/ /g, '-')) : ''}
               ${emp.qrStatus === 'SCANNED' ? `<span class="badge b-SCANNED">QR ✓</span>` : ''}
+              ${(() => {
+                if (!emp.contractEndDate) return '';
+                const d = new Date(emp.contractEndDate);
+                if (isNaN(d)) return '';
+                const today = new Date(); today.setHours(0,0,0,0);
+                const daysLeft = Math.ceil((d - today) / (1000*60*60*24));
+                if (daysLeft < 0) return `<span class="expiry-badge expired"><i class="fi fi-sr-triangle-warning" style="font-size:10px"></i> Contract Expired</span>`;
+                if (daysLeft <= 30) return `<span class="expiry-badge expiring"><i class="fi fi-sr-clock" style="font-size:10px"></i> Contract: ${daysLeft}d left</span>`;
+                return '';
+              })()}
             </div>
+            ${emp.tags ? `<div class="pp-tags-wrap">${(emp.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map((t,i)=>`<span class="emp-tag" style="${['','nth-child(2n)','nth-child(3n)','nth-child(4n)'][i%4]?'':''}">${esc(t)}</span>`).join('')}</div>` : ''}
             <div class="pp-hero-meta">
-              ${emp.region ? `<span>${IX.icon('location',11)} ${esc(emp.region)}</span>` : ''}
-              ${emp.storeAssignment ? `<span>${IX.icon('store',11)} ${esc(emp.storeAssignment)}</span>` : ''}
-              ${emp.rssName ? `<span>${IX.icon('user',11)} ${esc(emp.rssName)}</span>` : ''}
+              ${emp.region ? `<span><i class="fi fi-sr-marker" style="font-size:11px"></i> ${esc(emp.region)}</span>` : ''}
+              ${emp.storeAssignment ? `<span><i class="fi fi-sr-shop" style="font-size:11px"></i> ${esc(emp.storeAssignment)}</span>` : ''}
+              ${emp.rssName ? `<span><i class="fi fi-sr-user" style="font-size:11px"></i> ${esc(emp.rssName)}</span>` : ''}
             </div>
           </div>
         </div>
@@ -81,9 +92,9 @@ function renderProfilePage(id) {
             ${Components.progressBar(reqPct, { label: 'Requirements', showPct: true })}
           </div>
           <div class="pp-hero-actions">
-            ${canWrite() ? `<button class="btn btn-pp-edit write-action" onclick="openEditModal('${esc(emp.infinixId)}')">${IX.icon('edit',13)} Edit</button>` : ''}
-            <button class="btn btn-pp-back" onclick="history.length>1?history.back():Router.go('people')">${IX.icon('chevron-left',13)} Back</button>
-          </div>
+            ${canWrite() ? `<button class="btn btn-pp-edit write-action" onclick="openEditModal('${esc(emp.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:13px'></i> Edit</button>` : ''}
+            <button class="btn btn-pp-back" onclick="history.length>1?history.back():Router.go('people')"><i class='fi fi-sr-angle-left' style='font-size:13px'></i> Back</button>
+            <button class="pp-print-btn" onclick="printEmployeeProfile('${esc(emp.infinixId)}')"><i class='fi fi-sr-print' style='font-size:12px'></i> Print</button>
         </div>
       </div>
 
@@ -93,8 +104,8 @@ function renderProfilePage(id) {
       ${Components.tabBar([
         { key: 'employment',  label: 'Employment',    icon: 'document' },
         { key: 'personal',    label: 'Personal',      icon: 'user' },
-        { key: 'govids',      label: 'Gov IDs',       icon: 'id-card' },
-        { key: 'requirements',label: 'Requirements',  icon: 'clipboard', badge: reqDone < reqTotal ? (reqTotal - reqDone) : undefined },
+        { key: 'govids',      label: 'Gov IDs',       icon: 'id-card-clip-alt' },
+        { key: 'requirements',label: 'Requirements',  icon: 'clipboard-list', badge: reqDone < reqTotal ? (reqTotal - reqDone) : undefined },
         { key: 'history',     label: 'History',       icon: 'clock' },
       ], _profileTabKey, 'switchProfileTab')}
 
@@ -165,7 +176,7 @@ function _paneEmployment(e) {
       ${row('Last Updated', esc(e.lastUpdated))}
     </div>
     <div class="pp-notes-section">
-      <div class="pp-field-label" style="margin-bottom:6px">${IX.icon('edit',11)} Notes</div>
+      <div class="pp-field-label" style="margin-bottom:6px"><i class="fi fi-sr-edit" style="font-size:11px"></i> Notes</div>
       <textarea class="pp-notes-area" id="pp-notes-area" placeholder="Add notes…">${esc(e.notes || '')}</textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:6px">
         <button class="btn btn-ghost btn-sm" onclick="saveNotes('${esc(e.infinixId)}', document.getElementById('pp-notes-area').value)">💾 Save Notes</button>
@@ -266,7 +277,7 @@ function _loadAuditTrail(id) {
 
   const render = (entries) => {
     if (!entries.length) {
-      container.innerHTML = Components.emptyState({ icon: IX.icon('clock', 32), title: 'No history yet', message: 'Changes to this employee will appear here.' });
+      container.innerHTML = Components.emptyState({ icon: <i class="fi fi-sr-clock" style="font-size:32px;opacity:.3"></i>, title: 'No history yet', message: 'Changes to this employee will appear here.' });
       return;
     }
     container.innerHTML = `<div class="pp-timeline">` +
