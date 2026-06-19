@@ -235,7 +235,7 @@ function renderDashboard(){
       <div class="action-grid">
         <div class="ac-card glass-card ac-warn" onclick="drillDown('missingRequirements')">
           <div class="ac-icon ac-icon-warn">
-            <i data-ix="clipboard" data-size="22"></i>
+            <i class="fi fi-sr-clipboard-list"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingRequirements}</div>
@@ -246,7 +246,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-info" onclick="drillDown('notDeployed')">
           <div class="ac-icon ac-icon-info">
-            <i data-ix="droplet" data-size="22"></i>
+            <i class="fi fi-sr-droplet"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--accent)">${notDeployed}</div>
@@ -257,7 +257,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-danger" onclick="drillDown('backout')">
           <div class="ac-icon ac-icon-danger">
-            <i data-ix="alert" data-size="22"></i>
+            <i class="fi fi-sr-triangle-warning"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--danger)">${backoutCount}</div>
@@ -268,7 +268,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-warn" onclick="drillDown('notScanned')">
           <div class="ac-icon ac-icon-warn">
-            <i data-ix="qr" data-size="22"></i>
+            <i class="fi fi-sr-qrcode"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--warning)">${missingQR}</div>
@@ -279,7 +279,7 @@ function renderDashboard(){
         </div>
         <div class="ac-card glass-card ac-purple" onclick="viewAllBirthdays()">
           <div class="ac-icon ac-icon-purple">
-            <i data-ix="store" data-size="22"></i>
+            <i class="fi fi-sr-shop"></i>
           </div>
           <div class="ac-body">
             <div class="ac-count" style="color:var(--purple)">${birthdayWeekCount}</div>
@@ -361,7 +361,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[highest.r]||highest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--success);font-weight:700">${highest.c} promoters</span>
-                    <i data-ix="trend-up" data-size="14" style="color:var(--success)"></i>
+                    <i class="fi fi-sr-arrow-trend-up" style="color:var(--success)"></i>
                   </div>
                 </div>
                 <div style="background:rgba(224,92,92,0.07);border:1px solid rgba(224,92,92,0.18);border-radius:8px;padding:10px 12px">
@@ -369,7 +369,7 @@ function renderDashboard(){
                   <div style="font-size:14px;font-weight:800;color:var(--text)">${RLABELS[lowest.r]||lowest.r}</div>
                   <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
                     <span style="font-size:11px;color:var(--danger);font-weight:700">${lowest.c} promoters</span>
-                    <i data-ix="trend-down" data-size="14" style="color:var(--danger)"></i>
+                    <i class="fi fi-sr-arrow-trend-down" style="color:var(--danger)"></i>
                   </div>
                 </div>
               </div>`;
@@ -608,17 +608,18 @@ function renderTracker(){
     <div class="tracker-region-grid">
       ${REGIONS.map(r=>{
         const rd=byRegion[r];
-        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card"><div class="tracker-region-name">${esc(r)}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
+        const isActive=trackerRegion===r;
+        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card" style="opacity:.5"><div class="tracker-region-name"><i class="fi fi-sr-marker" style="font-size:11px;margin-right:5px"></i>${esc(r)}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
         const rpct=Math.round(rd.deployed/rd.total*100);
-        return`<div class="tracker-region-card glass-card">
-          <div class="tracker-region-name">${esc(r)}</div>
+        return`<div class="tracker-region-card glass-card ${isActive?'tracker-region-active':''}" onclick="trackerRegion=trackerRegion==='${esc(r)}'?'':'${esc(r)}';renderTracker()" style="cursor:pointer" title="Click to filter by ${esc(r)}">
+          <div class="tracker-region-name"><i class="fi fi-sr-marker" style="font-size:11px;margin-right:5px;color:var(--accent)"></i>${esc(r)}</div>
           <div style="font-size:22px;font-weight:800;color:var(--text)">${rd.deployed}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${rd.total}</span></div>
           <div class="tracker-region-bar-wrap"><div class="tracker-region-bar" style="width:${rpct}%"></div></div>
           <div class="tracker-region-stats"><span style="color:var(--success)">${rpct}% deployed</span><span>${rd.notYet} pending · ${rd.backout} backout</span></div>
         </div>`;
       }).join('')}
     </div>
-    <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount</span></div>
+    <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount${trackerRegion?` — filtered to ${esc(trackerRegion)}`:''}</span></div>
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
