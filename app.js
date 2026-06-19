@@ -60,6 +60,8 @@ const TABLE_COLUMNS = [
   { key:'rssName',         label:'RSS Name',        always:false },
   { key:'bankName',        label:'Bank',            always:false },
   { key:'contractStatus',  label:'Contract',        always:false },
+  { key:'contractEndDate', label:'Contract End',    always:false },
+  { key:'tags',            label:'Tags',            always:false },
 ];
 
 // ============================================================
@@ -819,15 +821,24 @@ async function apiDeleteEmployee(infinixId){
   await writeLog(infinixId,emp.fullName||`${emp.firstName} ${emp.lastName}`,'Deleted',emp.status,'—');
   return{ok:true,msg:`${emp.fullName||emp.firstName+' '+emp.lastName} deleted.`};
 }
-async function apiBulkUpdateStatus(ids,newStatus){
+async function apiBulkUpdateStatus(ids, newStatus, newDeployStatus){
   showLoading(true,`Updating ${ids.length} employees...`);
   let ok=0,fail=0;
   for(const id of ids){
-    try{const emp=employees.find(e=>String(e.infinixId)===String(id));if(!emp)continue;const res=await apiUpdateEmployee({...emp,status:newStatus});if(res.ok)ok++;else fail++;}
+    try{
+      const emp=employees.find(e=>String(e.infinixId)===String(id));
+      if(!emp)continue;
+      const updated={...emp};
+      if(newStatus) updated.status=newStatus;
+      if(newDeployStatus) updated.deploymentStatus=newDeployStatus;
+      const res=await apiUpdateEmployee(updated);
+      if(res.ok)ok++;else fail++;
+    }
     catch(e){fail++;}
   }
   showLoading(false);
-  if(ok>0)toast(`Updated ${ok} employee(s) to ${newStatus}`,'success');
+  const label=newDeployStatus?`deployment → ${newDeployStatus}`:`status → ${newStatus}`;
+  if(ok>0)toast(`Updated ${ok} employee(s): ${label}`,'success');
   if(fail>0)toast(`${fail} update(s) failed`,'error');
   selectedIds.clear();await loadData();
 }
@@ -1279,11 +1290,11 @@ function renderEmployeeTable(type){
         ${afc>0?`<span class="filter-active-count">${afc} filter${afc!==1?'s':''} active</span><button class="btn btn-ghost btn-sm" onclick="resetFilters()">Reset</button>`:''}
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
           ${canViewSensitive()?`<button class="btn btn-export btn-sm" onclick="exportXLSX()" title="Export current view to Excel">
-            <i data-ix="download" data-size="11"></i>
+            <i class="fi fi-sr-download"></i>
             Export Excel
           </button>`:''}
           <button class="btn btn-ghost btn-sm" id="bulk-toggle-btn" onclick="toggleBulkMode()" style="display:flex;align-items:center;gap:5px">
-            <i data-ix="list" data-size="11"></i>
+            <i class="fi fi-sr-list"></i>
             Select
           </button>
         </div>
@@ -1291,11 +1302,20 @@ function renderEmployeeTable(type){
       <div class="bulk-bar hidden" id="bulk-bar">
         <span class="bulk-count" id="bulk-count">0 selected</span>
         <div class="bulk-sep"></div>
-        <span class="bulk-label">Change status to:</span>
+        <span class="bulk-label">Employment status:</span>
         <select class="bulk-status-sel" id="bulk-status-sel">
           ${STATUSES.map(st=>`<option value="${esc(st)}">${esc(st)}</option>`).join('')}
         </select>
         <button class="btn btn-primary btn-sm" onclick="doBulkStatusChange()">Apply</button>
+        <div class="bulk-sep"></div>
+        <span class="bulk-label">Deploy status:</span>
+        <select class="bulk-status-sel" id="bulk-deploy-sel">
+          <option value="NOT YET DEPLOYED">Not Yet Deployed</option>
+          <option value="DEPLOYED">Deployed</option>
+          <option value="BACKOUT">Backout</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="doBulkDeployChange()">Apply</button>
+        <div class="bulk-sep"></div>
         <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Deselect All</button>
         <button class="btn btn-danger btn-sm" onclick="doBulkDelete()">Delete Selected</button>
         <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toggleBulkMode()">✕ Cancel</button>
@@ -1349,6 +1369,22 @@ function renderTableRows(type){
     rssName:e=>`<td style="color:var(--text2)">${esc(e.rssName||'—')}</td>`,
     bankName:e=>`<td style="color:var(--text2)">${esc(e.bankName||'—')}</td>`,
     contractStatus:e=>`<td>${badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-'))}</td>`,
+    contractEndDate:e=>{
+      const d=e.contractEndDate?new Date(e.contractEndDate):null;
+      if(!d||isNaN(d)) return `<td style="color:var(--text3)">—</td>`;
+      const today=new Date(); today.setHours(0,0,0,0);
+      const daysLeft=Math.ceil((d-today)/(1000*60*60*24));
+      const label=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+      if(daysLeft<0) return `<td><span class="expiry-badge expired"><i class="fi fi-sr-triangle-warning" style="font-size:10px"></i> Expired</span></td>`;
+      if(daysLeft<=30) return `<td><span class="expiry-badge expiring"><i class="fi fi-sr-clock" style="font-size:10px"></i> ${daysLeft}d left</span></td>`;
+      return `<td style="color:var(--text2);font-size:12px">${label}</td>`;
+    },
+    tags:e=>{
+      if(!e.tags) return `<td></td>`;
+      const tagList=(e.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+      if(!tagList.length) return `<td></td>`;
+      return `<td><div class="tag-cell">${tagList.map(t=>`<span class="emp-tag">${esc(t)}</span>`).join('')}</div></td>`;
+    },
   };
 
   if(!page.length){
@@ -1365,16 +1401,17 @@ function renderTableRows(type){
   }else{
     const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
-      <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${esc(e.infinixId)}')">
+      <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${esc(e.infinixId)}')" data-id="${esc(e.infinixId)}">
         <td class="td-check" style="display:${bulkMode?'':'none'}" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect(event,'${esc(e.infinixId)}',this.checked)">
         </td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')">${IX.icon('edit',12)} Edit</button>
-          <button class="btn btn-tbl-delete" style="margin-left:4px" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')">${IX.icon('trash',12)} Del</button>
+          <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:12px'></i> Edit</button>
+          <button class="btn btn-tbl-delete" style="margin-left:4px" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:12px'></i> Del</button>
         </td>
         ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
       </tr>`).join('');
+    _attachRowPreview(tbody, page);
   }
   renderPagination(total,totalPages);
   const chkAll=document.getElementById('chk-all');
@@ -1385,6 +1422,45 @@ function renderTableRows(type){
     chkAll.indeterminate=!allSelected&&pageIds.some(id=>selectedIds.has(id));
   }
   updateBulkBar();
+}
+
+// ── Row Quick-Preview Tooltip ──────────────────────────────
+let _rpTimer=null, _rpEl=null;
+function _attachRowPreview(tbody, page){
+  if(!_rpEl){
+    _rpEl=document.createElement('div');
+    _rpEl.className='row-preview';
+    document.body.appendChild(_rpEl);
+  }
+  tbody.querySelectorAll('tr[data-id]').forEach(tr=>{
+    tr.addEventListener('mouseenter', e=>{
+      const id=tr.dataset.id;
+      const emp=page.find(x=>String(x.infinixId)===String(id));
+      if(!emp) return;
+      _rpTimer=setTimeout(()=>{
+        _rpEl.innerHTML=`
+          <div class="rp-name">${esc(emp.fullName||'—')}</div>
+          <div class="rp-divider"></div>
+          <div class="rp-row"><span class="rp-label">Status</span>${badgeHTML(emp.status)}</div>
+          <div class="rp-row"><span class="rp-label">Store</span><span class="rp-val">${esc(emp.storeAssignment||'—')}</span></div>
+          <div class="rp-row"><span class="rp-label">Region</span><span class="rp-val">${esc(emp.region||'—')}</span></div>
+          <div class="rp-row"><span class="rp-label">Deployed</span>${badgeHTML(emp.deploymentStatus||'NOT YET DEPLOYED',(emp.deploymentStatus||'NOT-YET-DEPLOYED').replace(/ /g,'-'))}</div>
+          <div class="rp-row"><span class="rp-label">Contract</span>${badgeHTML(emp.contractStatus||'NOT YET SENT',(emp.contractStatus||'NOT-YET-SENT').replace(/ /g,'-'))}</div>`;
+        const rect=tr.getBoundingClientRect();
+        const top=Math.min(rect.top, window.innerHeight-240);
+        _rpEl.style.cssText=`top:${top}px;left:${rect.right+12}px`;
+        _rpEl.classList.add('visible');
+      }, 550);
+    });
+    tr.addEventListener('mouseleave', ()=>{
+      clearTimeout(_rpTimer);
+      _rpEl.classList.remove('visible');
+    });
+    tr.addEventListener('click', ()=>{
+      clearTimeout(_rpTimer);
+      _rpEl.classList.remove('visible');
+    });
+  });
 }
 
 function renderPagination(total,totalPages){
@@ -1478,19 +1554,37 @@ function doBulkStatusChange(){
   const sel=document.getElementById('bulk-status-sel');const newStatus=sel?.value;
   if(!newStatus||selectedIds.size===0)return;
   const ids=[...selectedIds];
+  document.getElementById('confirm-icon').innerHTML='<i class="fi fi-sr-refresh"></i>';
+  document.getElementById('confirm-icon').className='confirm-icon';
   document.getElementById('confirm-title').textContent='Bulk Status Update';
   document.getElementById('confirm-msg').textContent=`Change ${ids.length} employee(s) status to "${newStatus}"?`;
   document.getElementById('confirm-ok').textContent='Update';
-  document.getElementById('confirm-ok').onclick=()=>{closeConfirm();apiBulkUpdateStatus(ids,newStatus);};
+  _setupTypeToConfirm(null, ()=>{closeConfirm();apiBulkUpdateStatus(ids,newStatus);});
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function doBulkDeployChange(){
+  if(!canWrite()){denyWrite();return;}
+  const sel=document.getElementById('bulk-deploy-sel');
+  const newDeploy=sel?.value;
+  if(!newDeploy||selectedIds.size===0)return;
+  const ids=[...selectedIds];
+  document.getElementById('confirm-icon').innerHTML='<i class="fi fi-sr-marker"></i>';
+  document.getElementById('confirm-icon').className='confirm-icon';
+  document.getElementById('confirm-title').textContent='Bulk Deployment Update';
+  document.getElementById('confirm-msg').textContent=`Set deployment status to "${newDeploy}" for ${ids.length} employee(s)?`;
+  document.getElementById('confirm-ok').textContent='Update';
+  _setupTypeToConfirm(null, ()=>{closeConfirm();apiBulkUpdateStatus(ids, null, newDeploy);});
   document.getElementById('confirm-overlay').classList.add('open');
 }
 function doBulkDelete(){
   if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   const ids=[...selectedIds];if(ids.length===0)return;
+  document.getElementById('confirm-icon').innerHTML='<i class="fi fi-sr-trash"></i>';
+  document.getElementById('confirm-icon').className='confirm-icon danger';
   document.getElementById('confirm-title').textContent='Bulk Delete';
-  document.getElementById('confirm-msg').textContent=`Permanently delete ${ids.length} employee(s)? This cannot be undone.`;
+  document.getElementById('confirm-msg').innerHTML=`Permanently delete <strong style="color:var(--danger)">${ids.length} employee(s)</strong>? This cannot be undone.`;
   document.getElementById('confirm-ok').textContent='Delete All';
-  document.getElementById('confirm-ok').onclick=async()=>{
+  _setupTypeToConfirm(`DELETE ${ids.length}`, async ()=>{
     closeConfirm();showLoading(true,`Deleting ${ids.length} employees...`);
     let ok=0,fail=0;
     for(const id of ids){try{const r=await apiDeleteEmployee(id);if(r.ok)ok++;else fail++;}catch(e){fail++;}}
@@ -1498,7 +1592,7 @@ function doBulkDelete(){
     if(ok>0)toast(`Deleted ${ok} employee(s)`,'success');
     if(fail>0)toast(`${fail} deletion(s) failed`,'error');
     selectedIds.clear();await loadData();
-  };
+  });
   document.getElementById('confirm-overlay').classList.add('open');
 }
 
@@ -1661,7 +1755,7 @@ function buildDetailHTML(e){
     <div class="dp-pane active" id="dp-pane-info">
       ${bdayBanner}
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('document',12)} Employment</div>
+        <div class="dp-section-title"><i class="fi fi-sr-document" style="font-size:12px"></i> Employment</div>
         <div class="dp-grid">
           ${field('Status',badgeHTML(e.status))}
           ${field('QR Status',badgeHTML(e.qrStatus||'NOT SCANNED',(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')))}
@@ -1673,7 +1767,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('user',12)} Personal</div>
+        <div class="dp-section-title"><i class="fi fi-sr-user" style="font-size:12px"></i> Personal</div>
         <div class="dp-grid">
           ${field('First Name',esc(e.firstName))}
           ${field('Last Name',esc(e.lastName))}
@@ -1687,7 +1781,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('location',12)} Assignment</div>
+        <div class="dp-section-title"><i class="fi fi-sr-marker" style="font-size:12px"></i> Assignment</div>
         <div class="dp-grid">
           ${field('Region',esc(e.region))}
           ${field('Store',esc(e.storeAssignment))}
@@ -1698,7 +1792,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('id-card',12)} Government IDs</div>
+        <div class="dp-section-title"><i class="fi fi-sr-id-card-clip-alt" style="font-size:12px"></i> Government IDs</div>
         <div class="dp-grid">
           ${fieldSensitive('SSS',e.sss?esc(e.sss):missing())}
           ${fieldSensitive('PhilHealth',e.philhealth?esc(e.philhealth):missing())}
@@ -1707,7 +1801,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('clipboard',12)} Payroll</div>
+        <div class="dp-section-title"><i class="fi fi-sr-clipboard-list" style="font-size:12px"></i> Payroll</div>
         <div class="dp-grid">
           ${fieldSensitive('Basic Wage',e.basicWage?'₱'+Number(e.basicWage).toLocaleString():'')}
           ${fieldSensitive('Bank',esc(e.bankName))}
@@ -1737,7 +1831,7 @@ function buildDetailHTML(e){
         </div>
       </div>
       <div class="dp-section" style="margin-top:8px">
-        <div class="dp-section-title">${IX.icon('chart',12)} Profile Completion</div>
+        <div class="dp-section-title"><i class="fi fi-sr-chart-histogram" style="font-size:12px"></i> Profile Completion</div>
         <div class="dp-req-card" style="margin-bottom:0">
           <div class="dp-req-header">
             <div class="dp-req-label">Overall Profile</div>
@@ -1757,7 +1851,7 @@ function buildDetailHTML(e){
   const paneNotes=`
     <div class="dp-pane" id="dp-pane-notes">
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('edit',12)} Notes / Remarks</div>
+        <div class="dp-section-title"><i class="fi fi-sr-edit" style="font-size:12px"></i> Notes / Remarks</div>
         <textarea class="dp-notes-area notes-area" id="dp-notes-area" placeholder="Add notes or remarks about this employee…">${esc(e.notes||'')}</textarea>
         <div style="margin-top:8px;display:flex;justify-content:flex-end">
           <button class="btn btn-ghost btn-sm notes-save-btn" onclick="saveNotes('${esc(e.infinixId)}',document.getElementById('dp-notes-area').value)">💾 Save Notes</button>
@@ -1769,7 +1863,7 @@ function buildDetailHTML(e){
   const paneAudit=`
     <div class="dp-pane" id="dp-pane-audit">
       <div class="dp-section">
-        <div class="dp-section-title">${IX.icon('clock',12)} Audit Trail</div>
+        <div class="dp-section-title"><i class="fi fi-sr-clock" style="font-size:12px"></i> Audit Trail</div>
         <div class="dp-log-list" id="dp-audit-inner">
           <div style="font-size:12px;color:var(--text3);padding:8px 0">Loading…</div>
         </div>
@@ -1779,8 +1873,8 @@ function buildDetailHTML(e){
   // FOOTER ACTIONS
   const footer=`
     <div class="detail-panel-footer">
-      ${canWrite()?`<button class="btn btn-dp-edit write-action" id="dp-edit-btn" onclick="dpEdit()">${IX.icon('edit',13)} Edit</button>`:''}
-      ${canDeleteRecords()?`<button class="btn btn-dp-delete" id="dp-delete-btn" onclick="dpDelete()">${IX.icon('trash',13)} Delete</button>`:''}
+      ${canWrite()?`<button class="btn btn-dp-edit write-action" id="dp-edit-btn" onclick="dpEdit()"><i class="fi fi-sr-edit" style="font-size:13px"></i> Edit</button>`:''}
+      ${canDeleteRecords()?`<button class="btn btn-dp-delete" id="dp-delete-btn" onclick="dpDelete()"><i class="fi fi-sr-trash" style="font-size:13px"></i> Delete</button>`:''}
     </div>`;
 
   // QUICK ACTIONS (only for write-capable roles)
@@ -1791,13 +1885,13 @@ function buildDetailHTML(e){
   const quickActions = canAct ? `
     <div class="dp-quick-actions">
       <button class="dp-qa-btn${isDeployed?' done':''}" onclick="quickAction('deployed','${esc(e.infinixId)}')" ${isDeployed?'disabled':''} title="${isDeployed?'Already deployed':'Mark as Deployed'}">
-        ${IX.icon(isDeployed?'check':'location',11)} Mark Deployed
+        <i class="fi ${isDeployed?'fi-sr-check':'fi-sr-marker'}" style="font-size:11px"></i> Mark Deployed
       </button>
       <button class="dp-qa-btn${isScanned?' done':''}" onclick="quickAction('scanned','${esc(e.infinixId)}')" ${isScanned?'disabled':''} title="${isScanned?'Already scanned':'Mark QR Scanned'}">
-        ${IX.icon(isScanned?'check':'qr',11)} Mark QR Scanned
+        <i class="fi ${isScanned?'fi-sr-check':'fi-sr-qrcode'}" style="font-size:11px"></i> Mark QR Scanned
       </button>
       <button class="dp-qa-btn${isSent?' done':''}" onclick="quickAction('contract','${esc(e.infinixId)}')" ${isSent?'disabled':''} title="${isSent?'Contract already sent':'Mark Contract Sent'}">
-        ${IX.icon(isSent?'check':'document',11)} Mark Contract Sent
+        <i class="fi ${isSent?'fi-sr-check':'fi-sr-document'}" style="font-size:11px"></i> Mark Contract Sent
       </button>
     </div>` : '';
 
@@ -1853,10 +1947,10 @@ async function renderLog(){
     }
     const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
     const svgMap={
-      Added:`<i data-ix="plus-circle" data-size="14"></i>`,
-      'Status Changed / Moved':`<i data-ix="refresh" data-size="14"></i>`,
-      Deleted:`<i data-ix="trash" data-size="14"></i>`,
-      Updated:`<i data-ix="edit" data-size="14"></i>`
+      Added:`<i class="fi fi-sr-plus"></i>`,
+      'Status Changed / Moved':`<i class="fi fi-sr-rotate-right"></i>`,
+      Deleted:`<i class="fi fi-sr-trash"></i>`,
+      Updated:`<i class="fi fi-sr-edit"></i>`
     };
     el.innerHTML=rows.map(r=>{
       const action=r[3]||'';
@@ -1914,15 +2008,17 @@ function getFormHTML(emp){
 
   <div class="section-label">Personal Information</div>
   <div class="form-grid cols3">
-    <div class="field req"><label>First Name</label>${inp('firstName','text','Juan','oninput="updateFullName()"')}</div>
-    <div class="field req"><label>Last Name</label>${inp('lastName','text','Dela Cruz','oninput="updateFullName()"')}</div>
+    <div class="field req"><label>First Name</label>${inp('firstName','text','Juan','oninput="updateFullName();checkDupName()"')}</div>
+    <div class="field req"><label>Last Name</label>${inp('lastName','text','Dela Cruz','oninput="updateFullName();checkDupName()"')}</div>
     <div class="field"><label>Middle Name</label>${inp('middleName','text','Santos')}</div>
   </div>
+  <div class="dup-warning" id="dup-warning-name" style="margin:-6px 0 8px"></div>
   <div class="form-grid">
     <div class="field form-sensitive-control"><label>Date of Birth</label>${dateInp('dob')}</div>
     <div class="field"><label>Gender</label>${sel('gender',['','Male','Female','N/A'])}</div>
     <div class="field"><label>Marital Status</label>${sel('maritalStatus',['','Single','Married'])}</div>
-    <div class="field form-sensitive-control"><label>Mobile No.</label>${inp('mobile','text','+63','oninput="checkDupMobile()"')}
+    <div class="field form-sensitive-control"><label>Mobile No.</label>${inp('mobile','text','09XXXXXXXXX','oninput="checkDupMobile()" onblur="onMobileBlur()"')}
+      <div class="field-hint" style="display:block;opacity:.65;margin-top:3px">Auto-formats to 09XXXXXXXXX on blur</div>
       <div class="dup-warning" id="dup-warning-mobile">⚠ This mobile number is already used by another employee.</div>
     </div>
     <div class="field form-full form-sensitive-control"><label>Email Address</label>${inp('email','email','juan@email.com','oninput="checkDupEmail()"')}
@@ -1971,6 +2067,14 @@ function getFormHTML(emp){
   <div class="form-grid">
     <div class="field"><label>Contract Status</label>${sel('contractStatus',['NOT YET SENT','SENT'])}</div>
     <div class="field"><label>Contract Sent Date</label>${dateInp('contractSentDate')}</div>
+    <div class="field"><label>Contract End Date <span style="color:var(--warning);font-size:10px">⚠ expiry tracked</span></label>${dateInp('contractEndDate')}</div>
+  </div>
+
+  <div class="section-label">Tags / Labels</div>
+  <div class="field form-full">
+    <label>Tags <span style="color:var(--text3);font-size:10px;font-weight:400">Comma-separated — e.g. Priority, Probation, High Risk</span></label>
+    <input id="f_tags" type="text" value="${esc(v('tags'))}" placeholder="Priority, Probation, High Risk…">
+    <div class="field-hint" style="display:block;opacity:.7;margin-top:4px">Separate tags with commas. These appear as color pills in the table and profile.</div>
   </div>
 
   <div class="section-label">Requirements Checklist</div>
@@ -1991,6 +2095,39 @@ function updateFullName(){
   const p=document.getElementById('fullname-preview');
   if(p)p.textContent=(fn+' '+ln).trim()||'— Enter First & Last Name —';
 }
+// ── Phase 5: Required-field completion progress ──────────────
+const REQUIRED_FORM_FIELDS=['firstName','lastName','infinixId','status'];
+function updateFormProgress(){
+  const fill=document.getElementById('modal-progress-fill');
+  const label=document.getElementById('modal-progress-label');
+  if(!fill||!label)return;
+  let filled=0;
+  REQUIRED_FORM_FIELDS.forEach(k=>{
+    const el=document.getElementById('f_'+k);
+    if(el&&el.value&&el.value.trim())filled++;
+  });
+  const total=REQUIRED_FORM_FIELDS.length;
+  const pct=total?Math.round(filled/total*100):0;
+  fill.style.width=pct+'%';
+  fill.style.background=pct===100?'var(--success)':pct>=50?'var(--accent)':'var(--warning)';
+  label.textContent=`${filled} of ${total} required fields`;
+}
+// ── Phase 5: Mobile number auto-format ────────────────────────
+function formatMobileNumber(raw){
+  if(!raw)return'';
+  let digits=raw.replace(/[^\d]/g,''); // strip everything except digits
+  if(digits.startsWith('63'))digits=digits.slice(2);     // strip leading 63
+  if(digits.startsWith('0'))digits=digits.slice(1);      // strip leading 0
+  if(digits.length===10&&digits.startsWith('9'))return'0'+digits;
+  return raw; // fallback: leave as-is if it doesn't match expected pattern
+}
+function onMobileBlur(){
+  const el=document.getElementById('f_mobile');
+  if(!el)return;
+  const formatted=formatMobileNumber(el.value.trim());
+  if(formatted)el.value=formatted;
+  checkDupMobile();
+}
 function validateInfinixId(){
   const val=document.getElementById('f_infinixId')?.value.trim()||'';
   const hint=document.getElementById('hint-infinixId');
@@ -2000,14 +2137,34 @@ function validateInfinixId(){
 }
 function checkDuplicate(){
   if(editingId)return;
-  const val=document.getElementById('f_infinixId')?.value.trim()||'';
+  const idVal=document.getElementById('f_infinixId')?.value.trim()||'';
   const warn=document.getElementById('dup-warning');
   if(!warn)return;
-  if(val&&employees.some(e=>String(e.infinixId).trim()===val)){
+  if(idVal&&employees.some(e=>String(e.infinixId).trim()===idVal)){
     warn.classList.add('visible');
   } else {
     warn.classList.remove('visible');
   }
+}
+function checkDupName(){
+  if(editingId)return;
+  const fn=(document.getElementById('f_firstName')?.value.trim()||'').toLowerCase();
+  const ln=(document.getElementById('f_lastName')?.value.trim()||'').toLowerCase();
+  const mob=(document.getElementById('f_mobile')?.value.trim()||'').replace(/\s/g,'');
+  const warn=document.getElementById('dup-warning-name');
+  if(!warn)return;
+  if(fn&&ln){
+    const nameDup=employees.find(e=>
+      (e.firstName||'').trim().toLowerCase()===fn &&
+      (e.lastName||'').trim().toLowerCase()===ln
+    );
+    if(nameDup){
+      warn.textContent=`⚠ An employee named "${nameDup.fullName||fn+' '+ln}" (ID: ${nameDup.infinixId}) already exists.`;
+      warn.classList.add('visible');
+      return;
+    }
+  }
+  warn.classList.remove('visible');
 }
 function checkDupMobile(){
   const val=document.getElementById('f_mobile')?.value.trim()||'';
@@ -2051,6 +2208,8 @@ function gatherForm(){
     sss:f('sss'),philhealth:f('philhealth'),pagibig:f('pagibig'),tin:f('tin'),
     basicWage:f('basicWage'),bankName:f('bankName'),bankAccount:f('bankAccount'),
     contractStatus:f('contractStatus'),contractSentDate:f('contractSentDate'),
+    contractEndDate:f('contractEndDate'),
+    tags:f('tags'),
     preEmploymentForms:c('preEmploymentForms'),jobOffer:c('jobOffer'),
     medicalCert:c('medicalCert'),govForms:c('govForms'),clearance:c('clearance'),
     idPicture:c('idPicture'),validIdCopy:c('validIdCopy'),birthCert:c('birthCert'),
@@ -2118,7 +2277,10 @@ function openAddModal(){
   }
   // Autosave draft on input
   document.getElementById('modal-body').addEventListener('input',saveDraft);
+  document.getElementById('modal-body').addEventListener('input',updateFormProgress);
   document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-body').scrollTop=0;
+  updateFormProgress();
 }
 function openEditModal(id){
   if(!canWrite()){denyWrite();return;}
@@ -2129,6 +2291,9 @@ function openEditModal(id){
   document.getElementById('modal-body').innerHTML=getFormHTML(emp);
   lockSensitiveFormFields();
   document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-body').scrollTop=0;
+  document.getElementById('modal-body').addEventListener('input',updateFormProgress);
+  updateFormProgress();
   if(emp.storeId&&storeCacheLoaded){
     const found=lookupStore(emp.storeId);
     const statusEl=document.getElementById('store-lookup-status');
@@ -2146,7 +2311,13 @@ function openEditModal(id){
     }
   }
 }
-function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  const fill=document.getElementById('modal-progress-fill');
+  const label=document.getElementById('modal-progress-label');
+  if(fill)fill.style.width='0%';
+  if(label)label.textContent='0 of 0 required fields';
+}
 async function saveEmployee(){
   if(!canWrite()){denyWrite();return;}
   // Guard: only run if the add/edit modal is actually open
@@ -2161,10 +2332,12 @@ async function saveEmployee(){
     const oldStatus=oldEmp?.status||'Active';
     if(data.status!==oldStatus){
       const proceed=await new Promise(resolve=>{
-        document.getElementById('confirm-title').textContent=`⚠ Confirm: Set to ${data.status}?`;
-        document.getElementById('confirm-msg').textContent=`You are about to mark ${data.firstName} ${data.lastName} as "${data.status}". This is a significant status change. Are you sure?`;
+        document.getElementById('confirm-icon').innerHTML='<i class="fi fi-sr-triangle-warning"></i>';
+        document.getElementById('confirm-icon').className='confirm-icon warn';
+        document.getElementById('confirm-title').textContent=`Confirm: Set to ${data.status}?`;
+        document.getElementById('confirm-msg').innerHTML=`You are about to mark <strong>${esc(data.firstName)} ${esc(data.lastName)}</strong> as "<strong style="color:var(--warning)">${esc(data.status)}</strong>". This is a significant status change. Are you sure?`;
         document.getElementById('confirm-ok').textContent=`Yes, set to ${data.status}`;
-        document.getElementById('confirm-ok').onclick=()=>{closeConfirm();resolve(true);};
+        _setupTypeToConfirm(null, ()=>{closeConfirm();resolve(true);});
         const cancelBtn=document.getElementById('confirm-overlay').querySelector('.btn-ghost');
         const origOnClick=cancelBtn.onclick;
         cancelBtn.onclick=()=>{closeConfirm();cancelBtn.onclick=origOnClick;resolve(false);};
@@ -2184,13 +2357,51 @@ async function saveEmployee(){
 }
 function confirmDelete(id,name){
   if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
+  document.getElementById('confirm-icon').innerHTML='<i class="fi fi-sr-trash"></i>';
+  document.getElementById('confirm-icon').className='confirm-icon danger';
   document.getElementById('confirm-title').textContent='Delete Employee?';
-  document.getElementById('confirm-msg').textContent=`This will permanently delete ${name} (${id}).`;
+  document.getElementById('confirm-msg').innerHTML=`This will permanently delete <strong style="color:var(--danger)">${esc(name)}</strong> (${esc(id)}). This cannot be undone.`;
   document.getElementById('confirm-ok').textContent='Delete';
-  document.getElementById('confirm-ok').onclick=()=>{closeConfirm();doDelete(id);};
+  _setupTypeToConfirm(name, ()=>{closeConfirm();doDelete(id);});
   document.getElementById('confirm-overlay').classList.add('open');
 }
-function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
+function _setupTypeToConfirm(targetText, onConfirm){
+  const wrap=document.getElementById('confirm-type-wrap');
+  const targetEl=document.getElementById('confirm-type-target');
+  const input=document.getElementById('confirm-type-input');
+  const okBtn=document.getElementById('confirm-ok');
+  if(targetText){
+    wrap.classList.remove('hidden');
+    targetEl.textContent=targetText;
+    input.value='';
+    okBtn.disabled=true;
+    okBtn.classList.add('disabled');
+    okBtn.onclick=()=>{ if(input.value.trim()===targetText.trim()) onConfirm(); };
+  } else {
+    wrap.classList.add('hidden');
+    okBtn.disabled=false;
+    okBtn.classList.remove('disabled');
+    okBtn.onclick=onConfirm;
+  }
+}
+function _checkConfirmTypeMatch(){
+  const target=document.getElementById('confirm-type-target')?.textContent||'';
+  const input=document.getElementById('confirm-type-input')?.value||'';
+  const okBtn=document.getElementById('confirm-ok');
+  if(!okBtn)return;
+  const match=input.trim()===target.trim();
+  okBtn.disabled=!match;
+  okBtn.classList.toggle('disabled',!match);
+}
+function closeConfirm(){
+  document.getElementById('confirm-overlay').classList.remove('open');
+  const wrap=document.getElementById('confirm-type-wrap');
+  if(wrap)wrap.classList.add('hidden');
+  const icon=document.getElementById('confirm-icon');
+  if(icon){icon.innerHTML='<i class="fi fi-sr-triangle-warning"></i>';icon.className='confirm-icon';}
+  const okBtn=document.getElementById('confirm-ok');
+  if(okBtn){okBtn.disabled=false;okBtn.classList.remove('disabled');}
+}
 async function doDelete(id){
   if(!canDeleteRecords()){toast('Only Owner or HR/AGENCY can delete records.','error');return;}
   showLoading(true,'Deleting employee...');
@@ -2220,6 +2431,29 @@ function markAllNotifsRead(){
 function buildNotifications(){
   const notifs = [];
   const today = new Date(); today.setHours(0,0,0,0);
+  // Contract expiry warnings
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  employees.filter(e => e.contractEndDate).forEach(e => {
+    const d = new Date(e.contractEndDate);
+    if(isNaN(d)) return;
+    const daysLeft = Math.ceil((d - today2) / (1000*60*60*24));
+    if(daysLeft < 0) {
+      notifs.push({
+        group:'contract', color:'#FF5252',
+        title: esc(e.fullName||e.infinixId),
+        sub: `Contract expired ${Math.abs(daysLeft)} day(s) ago`,
+        id: e.infinixId
+      });
+    } else if(daysLeft <= 30) {
+      notifs.push({
+        group:'contract', color:'#FFD740',
+        title: esc(e.fullName||e.infinixId),
+        sub: `Contract expires in ${daysLeft} day(s)`,
+        id: e.infinixId
+      });
+    }
+  });
+
   const bdaysToday = getBirthdaysToday ? getBirthdaysToday() : [];
   bdaysToday.forEach(({emp})=>{
     notifs.push({
@@ -2399,7 +2633,15 @@ function openAnnouncementManager(){
       <div style="background:rgba(46,196,190,0.05);border:1px solid rgba(46,196,190,0.15);border-radius:10px;padding:14px;flex-shrink:0">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--moss-green);margin-bottom:10px">New Announcement</div>
         <input id="ann-new-title" placeholder="Title" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;box-sizing:border-box">
-        <textarea id="ann-new-body" placeholder="Message body..." rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
+        <div class="ann-toolbar">
+          <button type="button" class="ann-tb-btn" onclick="_annWrapSelection('**','**')" title="Bold"><i class="fi fi-sr-bold"></i></button>
+          <button type="button" class="ann-tb-btn" onclick="_annWrapSelection('*','*')" title="Italic"><i class="fi fi-sr-italic"></i></button>
+          <button type="button" class="ann-tb-btn" onclick="_annInsertBullet()" title="Bullet point"><i class="fi fi-sr-list"></i></button>
+          <button type="button" class="ann-tb-btn" onclick="_annInsertLink()" title="Insert link"><i class="fi fi-sr-link"></i></button>
+          <span class="ann-tb-hint">Markdown: **bold**, *italic*, - bullet, [text](url)</span>
+        </div>
+        <textarea id="ann-new-body" placeholder="Message body... supports **bold**, *italic*, - bullets, [link](url)" rows="3" style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;resize:vertical;box-sizing:border-box"></textarea>
+        <div class="ann-preview" id="ann-preview"></div>
         <input id="ann-new-poster" placeholder='Posted by (e.g. "HR - Candy")' style="width:100%;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;box-sizing:border-box">
         <button id="ann-post-btn" class="btn btn-primary btn-sm" style="margin-top:8px">Post Announcement</button>
       </div>
@@ -2415,9 +2657,56 @@ function openAnnouncementManager(){
   modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
   document.getElementById('ann-close-btn').addEventListener('click', () => modal.remove());
   document.getElementById('ann-post-btn').addEventListener('click', addAnnouncement);
+  document.getElementById('ann-new-body').addEventListener('input', _annUpdatePreview);
 
   // Now fetch and populate the list
   renderManagerList();
+}
+
+// ── Phase 6: Announcement formatting toolbar helpers ──────────
+function _annUpdatePreview(){
+  const body=document.getElementById('ann-new-body')?.value||'';
+  const prev=document.getElementById('ann-preview');
+  if(!prev)return;
+  if(!body.trim()){prev.innerHTML='';prev.style.display='none';return;}
+  prev.style.display='block';
+  prev.innerHTML=`<div class="ann-preview-label">Preview</div>${parseMiniMarkdown(body)}`;
+}
+function _annWrapSelection(prefix,suffix){
+  const ta=document.getElementById('ann-new-body');
+  if(!ta)return;
+  const start=ta.selectionStart,end=ta.selectionEnd;
+  const selected=ta.value.substring(start,end)||'text';
+  ta.value=ta.value.substring(0,start)+prefix+selected+suffix+ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart=start+prefix.length;
+  ta.selectionEnd=start+prefix.length+selected.length;
+  _annUpdatePreview();
+}
+function _annInsertBullet(){
+  const ta=document.getElementById('ann-new-body');
+  if(!ta)return;
+  const start=ta.selectionStart;
+  const needsNewline=start>0&&ta.value[start-1]!=='\n';
+  const insert=(needsNewline?'\n':'')+'- ';
+  ta.value=ta.value.substring(0,start)+insert+ta.value.substring(start);
+  ta.focus();
+  ta.selectionStart=ta.selectionEnd=start+insert.length;
+  _annUpdatePreview();
+}
+function _annInsertLink(){
+  const ta=document.getElementById('ann-new-body');
+  if(!ta)return;
+  const start=ta.selectionStart,end=ta.selectionEnd;
+  const selected=ta.value.substring(start,end)||'link text';
+  const insert=`[${selected}](https://)`;
+  ta.value=ta.value.substring(0,start)+insert+ta.value.substring(end);
+  ta.focus();
+  // Select the URL part so user can paste over it
+  const urlStart=start+selected.length+3;
+  ta.selectionStart=urlStart;
+  ta.selectionEnd=urlStart+8;
+  _annUpdatePreview();
 }
 
 // Builds the existing-announcements list inside the open manager modal.
@@ -2463,6 +2752,36 @@ async function loadAllAnnouncementsForManager(){
     });
     return res.result.values || [];
   } catch(e){ return []; }
+}
+
+// ── Phase 6: Mini markdown parser for announcements ──────────
+// Supports: **bold**, *italic*, bullet lines starting with "- ",
+// and [text](url) links. Output is escaped first, then safe tags injected.
+function parseMiniMarkdown(raw){
+  if(!raw)return'';
+  let text=esc(raw); // escape first — prevents injection
+  // Links: [text](url) — only allow http(s) and mailto
+  text=text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="ann-link">$1</a>');
+  // Bold: **text**
+  text=text.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  // Italic: *text* (single asterisk, not already consumed by bold)
+  text=text.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
+  // Bullet lines: convert consecutive "- " lines into <ul><li>
+  const lines=text.split('\n');
+  let html='', inList=false;
+  lines.forEach(line=>{
+    const bulletMatch=line.match(/^\s*-\s+(.*)$/);
+    if(bulletMatch){
+      if(!inList){html+='<ul class="ann-list">';inList=true;}
+      html+=`<li>${bulletMatch[1]}</li>`;
+    } else {
+      if(inList){html+='</ul>';inList=false;}
+      html+= line.trim() ? `<p>${line}</p>` : '';
+    }
+  });
+  if(inList)html+='</ul>';
+  return html;
 }
 
 async function addAnnouncement(){
@@ -2604,7 +2923,7 @@ function viewAllRecentlyUpdated(){
   modal.innerHTML = `
     <div class="glass-card" style="width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;padding:24px;gap:0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
-        <div style="font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px">${IX.icon('clock',13)} Recently Updated</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px"><i class="fi fi-sr-clock" style="font-size:13px"></i> Recently Updated</div>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('recent-all-modal').remove()">✕ Close</button>
       </div>
       <div style="overflow-y:auto;flex:1">${rows}</div>
@@ -2629,7 +2948,7 @@ function renderAnnouncementCarousel(){
   wrap.innerHTML = `
     <div style="flex:1;min-width:0;padding:0 4px">
       <div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.3">${esc(a.title)}</div>
-      <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5">${esc(a.body)}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5" class="ann-body-rendered">${parseMiniMarkdown(a.body)}</div>
       <div style="font-size:10px;color:var(--text3);margin-top:6px">Posted by ${esc(a.postedBy)} · ${esc(a.timestamp)}</div>
     </div>
     ${list.length > 1 ? `
