@@ -4,12 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Infinix Employee Database</title>
-<!-- Inter font from rsms.me (variable + static weights) -->
+<!-- Inter font from rsms.me -->
 <link rel="preconnect" href="https://rsms.me/">
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<!-- Flaticon Uicons — Solid Rounded (free with attribution) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/solid/rounded.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body>
 
@@ -23,105 +25,11 @@
      Replaces Lucide entirely — no external CDN needed.
      ═══════════════════════════════════════════ -->
 <script>
-const IX = (() => {
-  // Iconsax-style paths (linear/outline variants)
-  const PATHS = {
-    // Navigation
-    'home':         '<path d="M9.02 2.84L3.63 7.04C2.73 7.74 2 9.23 2 10.36v7.41C2 19.92 3.93 22 6.09 22h11.82C20.07 22 22 19.92 22 17.77V10.5c0-1.21-.81-2.76-1.8-3.45l-6.21-4.33c-1.4-.97-3.65-.92-4.97.12z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18v-3" stroke-linecap="round" stroke-linejoin="round"/>',
-    'users':        '<path d="M18 7.16C17.94 7.15 17.87 7.15 17.81 7.16c-1.43-.05-2.57-1.22-2.57-2.66C15.24 3.12 16.36 2 17.81 2s2.57 1.12 2.57 2.5c-.01 1.44-1.15 2.61-2.58 2.66z" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.97 14.44c1.43.24 3.01-.01 4.11-.75 1.48-.99 1.48-2.61 0-3.6-1.11-.74-2.71-.99-4.14-.74" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.97 7.16c.06-.01.13-.01.19 0 1.43-.05 2.57-1.22 2.57-2.66C8.73 3.12 7.61 2 6.16 2S3.59 3.12 3.59 4.5c.01 1.44 1.15 2.61 2.58 2.66z" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 14.44c-1.43.24-3.01-.01-4.11-.75-1.48-.99-1.48-2.61 0-3.6C4 9.35 5.6 9.1 7.03 9.35" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14.63c-.06-.01-.13-.01-.19 0-1.43-.05-2.57-1.22-2.57-2.66C9.24 10.59 10.36 9.47 11.81 9.47s2.57 1.12 2.57 2.5c-.01 1.44-1.15 2.61-2.58 2.66z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.09 17.65c-1.48.99-1.48 2.61 0 3.6 1.68 1.12 4.43 1.12 6.11 0 1.48-.99 1.48-2.61 0-3.6-1.67-1.11-4.43-1.11-6.11 0z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'user-add':     '<path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22c0-3.31-3.85-6-8.59-6s-8.59 2.69-8.59 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 8v6M15 11h6" stroke-linecap="round"/>',
-    'user-remove':  '<path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22c0-3.31-3.85-6-8.59-6s-8.59 2.69-8.59 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 11h6" stroke-linecap="round"/>',
-    'user':         '<path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 22c0-3.31-3.85-6-8.59-6s-8.59 2.69-8.59 6" stroke-linecap="round" stroke-linejoin="round"/>',
-    'user-check':   '<path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.41 22c0-3.31 3.85-6 8.59-6 1.05 0 2.05.14 2.99.41" stroke-linecap="round" stroke-linejoin="round"/><path d="m16 22 1.5 1.5L21 18" stroke-linecap="round" stroke-linejoin="round"/>',
-    'location':     '<path d="M12 13.43a3.12 3.12 0 1 0 0-6.24 3.12 3.12 0 0 0 0 6.24z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.62 8.49c1.97-8.66 14.8-8.65 16.76.01 1.15 5.08-2.01 9.38-4.78 12.04a5.193 5.193 0 0 1-7.21 0c-2.76-2.66-5.92-6.97-4.77-12.05z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'document':     '<path d="M21 7v10c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V7c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 4.5v2c0 1.1.9 2 2 2h2M8 13h4M8 17h8" stroke-linecap="round" stroke-linejoin="round"/>',
-    'chart':        '<path d="M2 22h20" stroke-linecap="round"/><path d="M5.59 8.38 9.35 5.44l3.65 2.86 3.76-2.86" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 17.5h20" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M5 22V11.38" stroke-linecap="round"/><path d="M9.35 22V8.3" stroke-linecap="round"/><path d="M13 22V11.38" stroke-linecap="round"/><path d="M19 22V8.3" stroke-linecap="round"/>',
-    'setting':      '<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12.88V11.12c0-1.05.85-1.92 1.91-1.92 1.82 0 2.57-1.29 1.65-2.87-.52-.9-.21-2.07.7-2.59l1.73-.99c.79-.47 1.81-.19 2.28.6l.11.19c.91 1.58 2.41 1.58 3.33 0l.11-.19c.47-.79 1.49-1.07 2.28-.6l1.73.99c.91.52 1.22 1.69.7 2.59-.92 1.58-.17 2.87 1.65 2.87 1.05 0 1.92.86 1.92 1.92v1.75c0 1.05-.85 1.92-1.91 1.92-1.82 0-2.57 1.29-1.65 2.87.52.91.21 2.07-.7 2.59l-1.73.99c-.79.47-1.81.19-2.28-.6l-.11-.19c-.91-1.58-2.41-1.58-3.33 0l-.11.19c-.47.79-1.49 1.07-2.28.6l-1.73-.99c-.91-.52-1.22-1.69-.7-2.59.92-1.58.17-2.87-1.65-2.87-1.06 0-1.91-.87-1.91-1.92z" stroke-linecap="round" stroke-linejoin="round"/>',
-    // Topbar
-    'menu':         '<path d="M3 7h18M3 12h18M3 17h18" stroke-linecap="round"/>',
-    'search':       '<path d="M11.5 21a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19z" stroke-linecap="round" stroke-linejoin="round"/><path d="m22 22-2-2" stroke-linecap="round" stroke-linejoin="round"/>',
-    'sun':          '<path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM22 12h1M1 12H2M12 2V1M12 23v-1M20 20l-1-1M5 5 4 4M20 4l-1 1M5 19l-1 1" stroke-linecap="round" stroke-linejoin="round"/>',
-    'moon':         '<path d="M2.03 12.42c.36 5.15 4.73 9.34 9.96 9.58 3.75.17 7.07-1.56 9.07-4.32.64-.9-.04-2.08-1.12-1.88C14.28 16.8 8.5 12.63 9.27 5.8c.09-.82-.69-1.46-1.48-1.17C4.6 5.77 1.71 8.77 2.03 12.42z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'bell':         '<path d="M12 6.44v-.5" stroke-linecap="round"/><path d="M12 5.94c-3.31 0-6 2.69-6 6v2.5l-1.5 2.5h15l-1.5-2.5v-2.5c0-3.31-2.69-6-6-6z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.86 21c.29.5.82.84 1.43.84a1.7 1.7 0 0 0 1.43-.84" stroke-linecap="round" stroke-linejoin="round"/>',
-    'refresh':      '<path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2c2.76 0 5.26 1.12 7.07 2.93" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 7V2l-5 5" stroke-linecap="round" stroke-linejoin="round"/>',
-    'logout':       '<path d="M8.9 7.56c.31-3.6 2.16-5.07 6.21-5.07h.13c4.47 0 6.26 1.79 6.26 6.26v6.52c0 4.47-1.79 6.26-6.26 6.26h-.13c-4.02 0-5.87-1.45-6.2-4.99" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12H3.62M5.82 8.7 2.5 12l3.32 3.3" stroke-linecap="round" stroke-linejoin="round"/>',
-    'shield':       '<path d="M12 22c-.83 0-1.61-.17-2.27-.52C6.68 19.82 4 16.8 4 12.57V8.24c0-1.19.77-2.48 1.73-2.96l4.5-2.25c1.03-.51 2.53-.51 3.56 0l4.5 2.25C19.25 5.77 20 7.06 20 8.24v4.33c0 4.23-2.68 7.25-5.73 8.91-.66.35-1.44.52-2.27.52z" stroke-linecap="round" stroke-linejoin="round"/>',
-    // Role modal
-    'lock':         '<path d="M6 10V8c0-3.31 1-6 6-6s6 2.69 6 6v2M12 18.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 22H7c-4 0-5-1-5-5v-2c0-4 1-5 5-5h10c4 0 5 1 5 5v2c0 4-1 5-5 5z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'star':         '<path d="m12 2 3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.77l-6.18 3.23L7 14.13 2 9.26l6.91-1L12 2z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'eye':          '<path d="M15.58 12c0 1.98-1.6 3.58-3.58 3.58S8.42 13.98 8.42 12s1.6-3.58 3.58-3.58S15.58 10.02 15.58 12z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20.27c3.53 0 6.82-2.08 9.11-5.68.9-1.41.9-3.78 0-5.19-2.29-3.6-5.58-5.68-9.11-5.68-3.53 0-6.82 2.08-9.11 5.68-.9 1.41-.9 3.78 0 5.19 2.29 3.6 5.58 5.68 9.11 5.68z" stroke-linecap="round" stroke-linejoin="round"/>',
-    // Generic
-    'chevron-left': '<path d="m15 19-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>',
-    'chevron-right':'<path d="m9 19 7-7-7-7" stroke-linecap="round" stroke-linejoin="round"/>',
-    'chevron-down': '<path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>',
-    'close':        '<path d="m18 6-12 12M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>',
-    'check':        '<path d="m5 12 5 5L20 7" stroke-linecap="round" stroke-linejoin="round"/>',
-    'plus':         '<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
-    'download':     '<path d="M12 15V3M7.5 11l4.5 4 4.5-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" stroke-linecap="round"/>',
-    'list':         '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke-linecap="round" stroke-linejoin="round"/>',
-    'edit':         '<path d="M13.26 3.6 5.05 12.29c-.31.33-.61.98-.67 1.43l-.37 3.24c-.13 1.17.71 1.97 1.87 1.77l3.22-.55c.45-.08 1.08-.41 1.39-.75l8.21-8.69c1.42-1.5 2.06-3.21-.15-5.3-2.2-2.07-3.87-1.34-5.29.16z" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.89 5.05c.38 2.7 2.56 4.75 5.28 4.97" stroke-linecap="round" stroke-linejoin="round"/>',
-    'trash':        '<path d="M21 5.98c-3.33-.33-6.68-.5-10.02-.5-1.98 0-3.96.1-5.94.3L3 5.98M8.5 4.97l.22-1.31C8.88 2.71 9 2 10.69 2h2.62c1.69 0 1.82.75 1.97 1.67l.22 1.3M18.85 9.14l-.65 10.07C18.09 20.78 18 22 15.21 22H8.79C6 22 5.91 20.78 5.8 19.21L5.15 9.14" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.33 16.5h3.33M9.5 12.5h5" stroke-linecap="round"/>',
-    'plus-circle':  '<path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10zM8 12h8M12 16V8" stroke-linecap="round" stroke-linejoin="round"/>',
-    'refresh-2':    '<path d="M14.55 21.67C18.84 20.54 22 16.6 22 12c0-5.52-4.48-10-10-10C6.33 2 3.1 4.24 1.5 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1.5 12c0 5.52 4.48 10 10 10" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3"/><path d="M6 3v4.5H2" stroke-linecap="round" stroke-linejoin="round"/>',
-    'trend-up':     '<path d="M7 17L17 7M17 7H9M17 7v8" stroke-linecap="round" stroke-linejoin="round"/>',
-    'trend-down':   '<path d="M7 7l10 10M17 17H9M17 17V9" stroke-linecap="round" stroke-linejoin="round"/>',
-    // Quick action / home icons
-    'calendar':     '<path d="M8 2v3M16 2v3M3.5 9.09h17M21 8.5V17c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V8.5c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.69 13.7h.01M15.69 16.7h.01M11.99 13.7h.01M11.99 16.7h.01M8.29 13.7h.01M8.29 16.7h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>',
-    'calendar-add': '<path d="M8 2v3M16 2v3M3.5 9.09h17M21 8.5V17c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V8.5c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5zM16 17h-8M12 13v8" stroke-linecap="round" stroke-linejoin="round"/>',
-    'activity':     '<path d="M6.87 18.37H2M8 14l3-3 2 2 3-3 2 2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 6.5h-4M17.5 9V4" stroke-linecap="round"/><path d="M11 2H9C4 2 2 4 2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7v-2" stroke-linecap="round" stroke-linejoin="round"/>',
-    'grid':         '<path d="M9 2H5C3.34 2 2 3.34 2 5v4c0 1.66 1.34 3 3 3h4c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3zM19 2h-4c-1.66 0-3 1.34-3 3v4c0 1.66 1.34 3 3 3h4c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3zM9 12H5c-1.66 0-3 1.34-3 3v4c0 1.66 1.34 3 3 3h4c1.66 0 3-1.34 3-3v-4c0-1.66-1.34-3-3-3zM19 12h-4c-1.66 0-3 1.34-3 3v4c0 1.66 1.34 3 3 3h4c1.66 0 3-1.34 3-3v-4c0-1.66-1.34-3-3-3z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'cake':         '<path d="M3 22h18M2 22V11l4-1v12M18 22V11l4 1v10M6 22V7c0-2.76 2.69-5 6-5s6 2.24 6 5v15" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7H7M17 7h-2M9 11H7M17 11h-2M9 15H7M17 15h-2" stroke-linecap="round" stroke-linejoin="round"/>',
-    'clock':        '<path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10z" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.71 15.18 12.61 13.3c-.54-.32-.98-1.08-.98-1.71V7.51" stroke-linecap="round" stroke-linejoin="round"/>',
-    'pie-chart':    '<path d="M21.41 15.29c-1.31 3.6-4.73 6.21-8.81 6.21-5.14 0-9.3-4.16-9.3-9.3 0-4.08 2.61-7.5 6.21-8.81" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 12c0-5.52-4.48-10-10-10v10h10z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'zap':          '<path d="M6.09 13.8h5.13L9.17 22l8.74-11.8h-5.13L14.83 2 6.09 13.8z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'heart':        '<path d="M12.62 20.81c-.34.12-.9.12-1.24 0C8.48 19.82 2 15.69 2 8.69 2 5.6 4.49 3.1 7.56 3.1c1.82 0 3.43.88 4.44 2.24a5.53 5.53 0 0 1 4.44-2.24C19.51 3.1 22 5.6 22 8.69c0 7-6.48 11.13-9.38 12.12z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'file-x':       '<path d="M15 2H9C4 2 2 4 2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7V9c0-5-2-7-7-7zM9.17 14.83l5.66-5.66M14.83 14.83 9.17 9.17" stroke-linecap="round" stroke-linejoin="round"/>',
-    'file-warning': '<path d="M15 2H9C4 2 2 4 2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7V9c0-5-2-7-7-7z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10v5M12 17.01V17" stroke-linecap="round"/>',
-    'id-card':      '<path d="M17 20H7c-3 0-5-1.5-5-5V9c0-3.5 2-5 5-5h10c3 0 5 1.5 5 5v6c0 3.5-2 5-5 5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 19.97v-.47a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v.47" stroke-linecap="round" stroke-linejoin="round"/>',
-    'clipboard':    '<path d="M10.5 14h3" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.5 17.5h3" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2.75c0-.69-.56-1.25-1.25-1.25h-1.5C10.56 1.5 10 2.06 10 2.75v.5c0 .69.56 1.25 1.25 1.25h1.5c.69 0 1.25-.56 1.25-1.25v-.5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3c1.78.1 2.75 1.1 2.75 3.25v10.5C16.75 19.5 15.5 21 12 21H12c-3.5 0-4.75-1.5-4.75-4.25V6.25C7.25 4.1 8.22 3.1 10 3" stroke-linecap="round" stroke-linejoin="round"/>',
-    'droplet':      '<path d="M12 2.15s-6 5.56-6 10.2a6 6 0 0 0 12 0C18 7.71 12 2.15 12 2.15z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'alert':        '<path d="M12 7.75v5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0v0z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16.01V16" stroke-linecap="round"/>',
-    'qr':           '<path d="M6.5 6.5h.01M9 2H6c-2.21 0-4 1.79-4 4v3M15 2h3c2.21 0 4 1.79 4 4v3M6.5 17.5h.01M9 22H6c-2.21 0-4-1.79-4-4v-3M15 22h3c2.21 0 4-1.79 4-4v-3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 2h2v2H7zM7 20h2v2H7zM15 2h2v2h-2zM2 7h2v2H2zM20 7h2v2h-2zM2 15h2v2H2z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'store':        '<path d="M3.01 11.22V15.71C3.01 20.2 4.81 22 9.3 22h5.4c4.49 0 6.29-1.8 6.29-6.29v-4.49" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12c1.86 0 3.22-1.48 3-3.34L14.34 2H9.67L9 8.66C8.78 10.52 10.14 12 12 12zM18.31 12c2.07 0 3.58-1.63 3.38-3.68l-.29-2.77C21.03 4 20.03 2 16.35 2h-2.06l.72 6.9C15.18 10.77 16.79 12 18.31 12zM5.64 12c1.53 0 3.13-1.23 3.29-2.9L9.65 2H7.6C3.93 2 2.93 4 2.59 5.55L2.31 8.32C2.11 10.37 3.62 12 5.64 12z" stroke-linecap="round" stroke-linejoin="round"/>',
-    'bell-slash':   '<path d="M2 2l20 20M6 6.77V9.5l-1.5 2.5h10M9 21a2.88 2.88 0 0 0 3 0M16.5 15H3l1.5-2.5V9.5c0-3.31 2.69-6 6-6a5.98 5.98 0 0 1 4.39 1.94" stroke-linecap="round" stroke-linejoin="round"/>',
-    'party':        '<path d="M4.49 10.83 9 7.62l4.5 3.21c3.47 2.46 2.09 7.77-2.12 8.1h-4.76c-4.22-.33-5.6-5.64-2.13-8.1z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7.62V2" stroke-linecap="round"/><path d="M13 2h6M16 5V2" stroke-linecap="round"/>',
-    'cal-x':        '<path d="M8 2v3M16 2v3M3.5 9.09h17M21 8.5V17c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V8.5c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5zM9.17 14.83l5.66-5.66M14.83 14.83 9.17 9.17" stroke-linecap="round" stroke-linejoin="round"/>',
-    'cal-check':    '<path d="M8 2v3M16 2v3M3.5 9.09h17M21 8.5V17c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V8.5c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5zM8.5 15l1.5 1.5 3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/>',
-    'cal-clock':    '<path d="M8 2v3M16 2v3M3.5 9.09h17M21 8.5V14M3 14.5V8.5c0-3 1.5-5 5-5h8c1.29 0 2.42.28 3.34.78" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 18a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM19.49 18.1l-1.19-.71V15.75" stroke-linecap="round" stroke-linejoin="round"/>',
-  };
-
-  /**
-   * Returns an SVG icon string.
-   * @param {string} name   — icon name from PATHS
-   * @param {number} size   — px size (default 16)
-   * @param {string} cls    — extra class string
-   * @param {string} style  — extra inline style
-   */
-  function icon(name, size = 16, cls = '', style = '') {
-    const d = PATHS[name] || PATHS['star'];
-    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="ix-icon${cls ? ' ' + cls : ''}"${style ? ` style="${style}"` : ''}>${d}</svg>`;
-  }
-
-  /** Swap all <i data-ix="name"> placeholders in the DOM */
-  function createIcons(root = document) {
-    root.querySelectorAll('i[data-ix]').forEach(el => {
-      const name  = el.getAttribute('data-ix');
-      const size  = parseInt(el.getAttribute('data-size') || '16', 10);
-      const cls   = el.getAttribute('data-class') || '';
-      const style = el.getAttribute('style') || '';
-      const sw    = el.getAttribute('data-sw');
-      let svgStr  = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || '1.8'}" class="ix-icon${cls ? ' ' + cls : ''}"${style ? ` style="${style}"` : ''}>${PATHS[name] || PATHS['star']}</svg>`;
-      const tmp = document.createElement('span');
-      tmp.innerHTML = svgStr;
-      el.replaceWith(tmp.firstChild);
-    });
-  }
-
-  return { icon, createIcons, PATHS };
-})();
-
-// Backwards-compat shim: if anything still calls lucide.createIcons(), no-op
-window.lucide = { createIcons: () => IX.createIcons() };
+// Flaticon Uicons replaces the IX icon system.
+// Shim: any legacy lucide.createIcons() calls become no-ops.
+window.lucide = { createIcons: () => {} };
+// IX shim for any leftover IX.icon() calls (returns empty string)
+window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
 </script>
 
 <!-- LOGIN SCREEN -->
@@ -151,26 +59,26 @@ window.lucide = { createIcons: () => IX.createIcons() };
 <div class="role-overlay hidden" id="role-overlay">
   <div class="role-modal role-modal-premium">
     <div class="role-modal-kicker">
-      <span class="role-lock-icon"><i data-ix="lock" data-size="18"></i></span>
+      <span class="role-lock-icon"><i class="fi fi-sr-lock" style="font-size:18px"></i></span>
       Access Mode
     </div>
     <h2>Select Your Role</h2>
     <p>Choose how you want to view and manage employee records.</p>
     <div class="role-btn-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
       <button class="role-btn" id="role-btn-owner" onclick="selectRole('owner')">
-        <span class="role-icon"><i data-ix="star" data-size="20"></i></span>
+        <span class="role-icon"><i class="fi fi-sr-star" style="font-size:20px"></i></span>
         <span>Owner</span>
       </button>
       <button class="role-btn" id="role-btn-hr" onclick="selectRole('hr')">
-        <span class="role-icon"><i data-ix="user" data-size="20"></i></span>
+        <span class="role-icon"><i class="fi fi-sr-user" style="font-size:20px"></i></span>
         <span>HR/AGENCY</span>
       </button>
       <button class="role-btn" id="role-btn-rssrsh" onclick="selectRole('rssrsh')">
-        <span class="role-icon"><i data-ix="users" data-size="20"></i></span>
+        <span class="role-icon"><i class="fi fi-sr-users" style="font-size:20px"></i></span>
         <span>RSS/RSH</span>
       </button>
       <button class="role-btn" id="role-btn-viewer" onclick="selectRole('viewer')">
-        <span class="role-icon"><i data-ix="eye" data-size="20"></i></span>
+        <span class="role-icon"><i class="fi fi-sr-eye" style="font-size:20px"></i></span>
         <span>Viewer</span>
       </button>
     </div>
@@ -233,37 +141,37 @@ window.lucide = { createIcons: () => IX.createIcons() };
   <div class="nav">
     <div class="nav-section">Main</div>
     <div class="nav-item active" onclick="Router.go('dashboard')" id="nav-dashboard" title="Home">
-      <span class="icon"><i data-ix="home" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-home" style="font-size:15px"></i></span>
       <span class="nav-label">Home</span>
     </div>
     <div class="nav-item" onclick="Router.go('active')" id="nav-active" title="Active">
-      <span class="icon"><i data-ix="user-check" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-user-check" style="font-size:15px"></i></span>
       <span class="nav-label">Active</span>
       <span class="nav-badge" id="badge-active">0</span>
     </div>
     <div class="nav-item" onclick="Router.go('inactive')" id="nav-inactive" title="Inactive">
-      <span class="icon"><i data-ix="user-remove" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-user-minus" style="font-size:15px"></i></span>
       <span class="nav-label">Inactive</span>
       <span class="nav-badge" id="badge-inactive">0</span>
     </div>
     <div class="nav-item" onclick="Router.go('tracker')" id="nav-tracker" title="Deployment Tracker">
-      <span class="icon"><i data-ix="location" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-marker" style="font-size:15px"></i></span>
       <span class="nav-label">Deployment Tracker</span>
     </div>
     <div class="nav-item" onclick="Router.go('log')" id="nav-log" title="Activity Log">
-      <span class="icon"><i data-ix="document" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-document" style="font-size:15px"></i></span>
       <span class="nav-label">Activity Log</span>
     </div>
 
     <div class="nav-section">Reports</div>
     <div class="nav-item" onclick="Router.go('analytics')" id="nav-analytics" title="Analytics">
-      <span class="icon"><i data-ix="chart" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-chart-histogram" style="font-size:15px"></i></span>
       <span class="nav-label">Analytics</span>
     </div>
 
     <div class="nav-section">System</div>
     <div class="nav-item" onclick="Router.go('settings')" id="nav-settings" title="Settings">
-      <span class="icon"><i data-ix="setting" data-size="15"></i></span>
+      <span class="icon"><i class="fi fi-sr-settings" style="font-size:15px"></i></span>
       <span class="nav-label">Settings</span>
     </div>
 
@@ -281,12 +189,12 @@ window.lucide = { createIcons: () => IX.createIcons() };
       <div class="user-info">
         <div class="user-name" id="user-name">Loading...</div>
         <div class="user-role-badge" id="user-role-display" onclick="openRoleModal()" title="Change role">
-          <i data-ix="shield" data-size="8" data-sw="2.2"></i>
+          <i class="fi fi-sr-shield" style="font-size:8px"></i>
           <span id="user-role-label">Viewer</span>
         </div>
       </div>
       <button class="btn-signout" onclick="signOut()" title="Sign out">
-        <i data-ix="logout" data-size="14"></i>
+        <i class="fi fi-sr-sign-out-alt" style="font-size:14px"></i>
       </button>
     </div>
   </div>
@@ -297,7 +205,7 @@ window.lucide = { createIcons: () => IX.createIcons() };
   <div class="topbar">
     <div class="topbar-left">
       <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
-        <span id="sidebar-toggle-icon" class="ix-toggle-icon"><i data-ix="menu" data-size="15"></i></span>
+        <span id="sidebar-toggle-icon" class="ix-toggle-icon"><i class="fi fi-sr-menu-burger" style="font-size:15px"></i></span>
       </button>
       <!-- #7 fix: topbar-title hidden when breadcrumb has content — breadcrumb alone shows page context -->
       <div class="topbar-title" id="topbar-title"></div>
@@ -306,19 +214,19 @@ window.lucide = { createIcons: () => IX.createIcons() };
 
     <div class="topbar-center" id="topbar-search-wrap">
       <span class="search-icon" id="topbar-search-icon">
-        <i data-ix="search" data-size="14"></i>
+        <i class="fi fi-sr-search" style="font-size:14px"></i>
       </span>
       <input type="text" id="search-input" placeholder="Search employees by name, ID, or store…" oninput="onSearch()" onkeydown="onSearchKeydown(event)" autocomplete="off">
     </div>
     <div class="topbar-right">
       <button class="theme-toggle topbar-theme-btn" id="topbar-theme-toggle" onclick="toggleTheme()" title="Toggle light/dark">
-        <span id="theme-icon-dark"><i data-ix="sun" data-size="15"></i></span>
-        <span id="theme-icon-light" style="display:none"><i data-ix="moon" data-size="15"></i></span>
+        <span id="theme-icon-dark"><i class="fi fi-sr-brightness" style="font-size:15px"></i></span>
+        <span id="theme-icon-light" style="display:none"><i class="fi fi-sr-moon" style="font-size:15px"></i></span>
       </button>
       <!-- NOTIFICATION BELL -->
       <div class="notif-wrap" id="notif-wrap">
         <button class="notif-bell-btn" id="notif-bell-btn" onclick="toggleNotifDrawer()" title="Notifications">
-          <i data-ix="bell" data-size="15"></i>
+          <i class="fi fi-sr-bell" style="font-size:15px"></i>
           <span class="notif-count-badge" id="notif-count-badge" style="display:none">0</span>
         </button>
         <div class="notif-drawer" id="notif-drawer">
@@ -335,7 +243,7 @@ window.lucide = { createIcons: () => IX.createIcons() };
         </div>
       </div>
       <button class="btn btn-refresh" id="refresh-btn" onclick="refreshData()">
-        <i data-ix="refresh" data-size="13"></i>
+        <i class="fi fi-sr-rotate-right" style="font-size:13px"></i>
         <span>Refresh</span>
       </button>
       <button class="btn btn-primary write-action" onclick="openAddModal()">+ Add Employee</button>
@@ -359,6 +267,10 @@ window.lucide = { createIcons: () => IX.createIcons() };
       <h2 id="modal-title">Add New Employee</h2>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
+    <div class="modal-progress-wrap">
+      <div class="modal-progress-bar"><div class="modal-progress-fill" id="modal-progress-fill" style="width:0%"></div></div>
+      <span class="modal-progress-label" id="modal-progress-label">0 of 0 required fields</span>
+    </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -371,8 +283,13 @@ window.lucide = { createIcons: () => IX.createIcons() };
 <div class="overlay" id="confirm-overlay">
   <div class="modal confirm-modal">
     <div class="confirm-body">
+      <div class="confirm-icon" id="confirm-icon"><i class="fi fi-sr-triangle-warning"></i></div>
       <h3 id="confirm-title">Confirm Action</h3>
       <p id="confirm-msg"></p>
+      <div class="confirm-type-wrap hidden" id="confirm-type-wrap">
+        <label class="confirm-type-label">Type <strong id="confirm-type-target"></strong> to confirm</label>
+        <input type="text" id="confirm-type-input" class="confirm-type-input" autocomplete="off" oninput="_checkConfirmTypeMatch()">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
@@ -634,22 +551,7 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
 
 <script>
 // Initialize IX icons after DOM is ready, and again after each dynamic render
-document.addEventListener('DOMContentLoaded', () => IX.createIcons());
-// MutationObserver to catch dynamically injected icons
-const _ixObs = new MutationObserver(mutations => {
-  for (const m of mutations) {
-    for (const node of m.addedNodes) {
-      if (node.nodeType === 1) {
-        if (node.matches('i[data-ix]')) IX.createIcons(node.parentElement);
-        else if (node.querySelector) {
-          const found = node.querySelectorAll('i[data-ix]');
-          if (found.length) IX.createIcons(node);
-        }
-      }
-    }
-  }
-});
-_ixObs.observe(document.body, { childList: true, subtree: true });
+// Icons are now Flaticon Uicons — no boot code needed, CSS font loads automatically.
 </script>
 </body>
 </html>
