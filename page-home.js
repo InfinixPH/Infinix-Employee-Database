@@ -814,20 +814,23 @@ function _phCalRender() {
   }
   html += `</div>`;
   calEl.innerHTML = html;
-  // Append legend
-  calEl.insertAdjacentHTML('afterend', `
-    <div class="ph-cal-legend">
+
+  // Legend: render once into a dedicated persistent element instead of
+  // insertAdjacentHTML-ing a new one on every render (was creating duplicates).
+  let legendEl = calEl.parentElement?.querySelector('.ph-cal-legend');
+  if (!legendEl && calEl.parentElement) {
+    legendEl = document.createElement('div');
+    legendEl.className = 'ph-cal-legend';
+    calEl.insertAdjacentElement('afterend', legendEl);
+  }
+  if (legendEl) {
+    legendEl.innerHTML = `
       <div class="ph-cal-leg-item">
         <div class="ph-cal-leg-dot" style="background:var(--accent)"></div> HR Event
       </div>
       <div class="ph-cal-leg-item">
-        <div class="ph-cal-leg-dot" style="background:var(--warning)"></div> Birthday
-      </div>
-    </div>`);
-  // Remove old legend if re-rendering
-  const existingLegends = calEl.parentElement?.querySelectorAll('.ph-cal-legend');
-  if (existingLegends && existingLegends.length > 1) {
-    existingLegends.forEach((el, i) => { if (i > 0) el.remove(); });
+        <div class="ph-cal-leg-dot" style="background:#FF9800"></div> Birthday
+      </div>`;
   }
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
@@ -1324,10 +1327,11 @@ function _injectHomeStyles() {
     display: grid;
     grid-template-columns: 1fr 1.1fr 1fr;
     gap: 16px;
-    align-items: start;
+    align-items: stretch;
   }
   @media (max-width: 1100px) { .ph-row3 { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px)  { .ph-row3 { grid-template-columns: 1fr; } }
+  .ph-row3 > .ph-card { display: flex; flex-direction: column; height: 100%; }
 
   /* ═══════════════════════════════════════════════════════
      ACTION CENTER — card grid style
@@ -1446,10 +1450,10 @@ function _injectHomeStyles() {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 16px;
-    align-items: start;
+    align-items: stretch;
   }
   @media (max-width: 900px) { .ph-row2 { grid-template-columns: 1fr; } }
-  .ph-row2 > .ph-card { display: flex; flex-direction: column; }
+  .ph-row2 > .ph-card { display: flex; flex-direction: column; height: 100%; }
 
   /* Workforce Overview */
   .ph-workforce-body { display: flex; gap: 24px; align-items: center; }
@@ -1506,10 +1510,10 @@ function _injectHomeStyles() {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
     gap: 16px;
-    align-items: start;
+    align-items: stretch;
   }
   @media (max-width: 900px) { .ph-row-cal { grid-template-columns: 1fr; } }
-  .ph-row-cal > .ph-card { min-width: 0; }
+  .ph-row-cal > .ph-card { min-width: 0; display: flex; flex-direction: column; height: 100%; }
 
   /* Recent Activity */
   .ph-recent-item {
@@ -1556,28 +1560,58 @@ function _injectHomeStyles() {
   }
   .ph-cal-nav:hover { border-color: var(--border2); color: var(--text1); }
 
-  #ph-calendar { overflow: hidden; }
-  .ph-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .ph-cal-dow {
+  #ph-calendar { overflow: visible; }
+  .ph-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+
+  .ph-cal-dayname {
     font-size: 9px; font-weight: 700; text-align: center; color: var(--text3);
-    text-transform: uppercase; letter-spacing: .5px; padding: 4px 0 6px;
+    text-transform: uppercase; letter-spacing: .6px; padding: 0 0 8px;
+    opacity: .65;
   }
-  .ph-cal-day {
+
+  .ph-cal-cell {
     aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; border-radius: 8px; font-size: 12px; font-weight: 500;
-    cursor: default; position: relative; color: var(--text2); transition: background .12s;
-    gap: 2px;
+    justify-content: center; border-radius: 9px; font-size: 12px; font-weight: 500;
+    cursor: default; position: relative; color: var(--text2);
+    transition: background .15s, transform .15s, border-color .15s;
+    gap: 1px; border: 1px solid transparent; background: rgba(255,255,255,.02);
   }
-  .ph-cal-day.other-month { opacity: .25; }
-  .ph-cal-day.today {
-    background: rgba(0,200,170,.15); color: var(--accent); font-weight: 700;
-    border: 1px solid rgba(0,200,170,.3);
+  [data-theme="light"] .ph-cal-cell { background: rgba(0,0,0,.015); }
+  .ph-cal-cell.ph-cal-empty { background: none; cursor: default; }
+
+  .ph-cal-cell.ph-cal-today {
+    background: rgba(0,200,170,.16); color: var(--accent); font-weight: 800;
+    border: 1px solid rgba(0,200,170,.35);
+    box-shadow: 0 0 0 1px rgba(0,200,170,.1), 0 2px 8px rgba(0,200,170,.12);
   }
-  [data-theme="light"] .ph-cal-day.today { background: rgba(0,138,133,.1); border-color: rgba(0,138,133,.25); color: #0a8a85; }
-  .ph-cal-day.has-event { cursor: pointer; }
-  .ph-cal-day.has-event:hover { background: rgba(255,255,255,.07); }
-  [data-theme="light"] .ph-cal-day.has-event:hover { background: rgba(0,0,0,.05); }
-  .ph-cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+  [data-theme="light"] .ph-cal-cell.ph-cal-today {
+    background: rgba(0,138,133,.12); border-color: rgba(0,138,133,.3); color: #0a8a85;
+  }
+
+  .ph-cal-cell.ph-cal-has-event {
+    cursor: pointer; border-color: var(--border);
+  }
+  .ph-cal-cell.ph-cal-has-event:hover {
+    background: rgba(0,200,170,.08); border-color: rgba(0,200,170,.25); transform: translateY(-1px);
+  }
+  [data-theme="light"] .ph-cal-cell.ph-cal-has-event:hover { background: rgba(0,138,133,.06); }
+
+  .ph-cal-cell.ph-cal-bday:not(.ph-cal-today) { border-color: rgba(255,152,0,.25); }
+
+  .ph-cal-dots { display: flex; gap: 2px; align-items: center; justify-content: center; height: 5px; }
+  .ph-cal-event-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .ph-cal-bday-dot  { width: 4px; height: 4px; border-radius: 50%; background: #FF9800; flex-shrink: 0; }
+
+  .ph-cal-legend {
+    display: flex; gap: 16px; margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .ph-cal-leg-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text3); font-weight: 500;
+  }
+  .ph-cal-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
   .ph-cal-popover {
     background: var(--bg-glass); border: 1px solid var(--border2); border-radius: 10px;
     padding: 10px 14px; font-size: 12px; color: var(--text1);
