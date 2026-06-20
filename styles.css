@@ -714,7 +714,7 @@ body::before {
   background: rgba(224,92,92,0.16);
   border-color: rgba(224,92,92,0.38);
 }
-.btn-tbl-edit, .btn-tbl-delete { padding: 3px 9px; font-size: 11px; border-radius: 6px; }
+.btn-tbl-edit, .btn-tbl-delete { padding: 3px 7px; font-size: 10px; border-radius: 6px; gap: 3px; }
 [data-theme="light"] .btn-pp-back { color: rgba(26,34,34,0.6); background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.10); }
 [data-theme="light"] .btn-pp-back:hover { color: rgba(26,34,34,0.9); background: rgba(255,255,255,0.9); }
 
@@ -988,7 +988,7 @@ body::before {
 .table-head .rec { font-size: 12px; color: var(--text3); }
 .table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); position: relative; z-index: 1; }
 
-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; table-layout: fixed; }
 thead th {
   background: rgba(4,7,7,0.98); padding: 10px 14px; font-size: 10px; font-weight: 700;
   color: rgba(0,200,170,0.75); text-align: left;
@@ -1031,7 +1031,11 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
 .td-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
 .td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
-.td-actions-col { width: 110px; white-space: nowrap; }
+.td-actions-col { width: 116px; white-space: nowrap; }
+.td-actions-cell { display: flex; gap: 4px; align-items: center; overflow: visible !important; }
+/* table-layout:fixed requires overflow handling per-cell since column widths are now locked */
+table td, table th { overflow: hidden; text-overflow: ellipsis; }
+table td.td-check, table th.td-check { overflow: visible; }
 
 /* BADGES — compact solid-fill chips */
 .badge {
@@ -1221,7 +1225,7 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
   -webkit-backdrop-filter: blur(56px) saturate(1.8);
   border-left: 1px solid rgba(0,200,170,0.10);
   box-shadow: -12px 0 80px rgba(0,0,0,0.80), inset 1px 0 0 rgba(0,200,170,0.05);
-  z-index: 90; display: flex; flex-direction: column;
+  z-index: 200; display: flex; flex-direction: column;
   transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
 }
 .detail-panel.open { transform: translateX(0); }
@@ -1557,10 +1561,6 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
 .login-waiting .spinner { width: 24px; height: 24px; border-width: 2px; }
 .login-waiting p { font-size: 13px; color: var(--text2); }
 
-.empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
-.empty-state .ei { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
-.empty-state p { font-size: 13px; }
-
 .view-tabs {
   display: flex; gap: 2px; margin-bottom: 16px;
   background: var(--bg-frosted); border: 1px solid var(--border);
@@ -1719,12 +1719,6 @@ body.panel-open .toast { right: 440px; }
 /* 3. CONFIRM MODAL — scale entrance animation */
 .overlay.open .confirm-modal { transform: scale(1); }
 .confirm-modal { transform: scale(0.92); transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
-
-/* 4. EMPTY STATE — illustrated */
-.empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
-.empty-state svg { opacity: 0.18; margin-bottom: 14px; }
-.empty-state .es-title { font-size: 14px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
-.empty-state .es-sub { font-size: 12px; line-height: 1.7; }
 
 /* 5. COLLAPSIBLE SIDEBAR — removed */
 
@@ -2549,6 +2543,7 @@ html, body {
   padding: 48px 24px; text-align: center; gap: 12px;
 }
 .empty-state svg { opacity: 0.25; color: var(--accent); }
+.empty-state .ei { font-size: 22px; opacity: 0.4; }
 .es-title {
   font-size: 14px; font-weight: 700; color: var(--text2); margin-top: 4px;
 }
@@ -2618,377 +2613,3 @@ html, body {
 [data-theme="light"] .b-SENT        { background: rgba(0,150,80,0.12);  color: #0a7040; border-color: rgba(0,150,80,0.28); }
 [data-theme="light"] .b-NOT-YET-SENT{ background: rgba(180,130,0,0.12); color: #7a5500; border-color: rgba(180,130,0,0.28); }
 [data-theme="light"] .b-none        { background: rgba(0,0,0,0.05); color: rgba(26,34,34,0.45); border-color: rgba(0,0,0,0.10); }
-
-/* ============================================================
-   PATCH v17 — Sidebar overhaul + layout fixes (styles-first)
-   Applies after legacy/sidebar inline rules using !important.
-   ============================================================ */
-:root {
-  --sidebar-w: 260px;
-  --sidebar-collapsed-w: 64px;
-  --sidebar-pad-x: 14px;
-}
-
-/* Wider, cleaner sidebar */
-.sidebar {
-  width: var(--sidebar-w) !important;
-  min-width: var(--sidebar-w) !important;
-  overflow: visible !important;
-  transition: width .28s cubic-bezier(.4,0,.2,1), min-width .28s cubic-bezier(.4,0,.2,1), background .3s !important;
-}
-
-/* Brand stack: logo + text with real breathing room */
-.brand {
-  min-height: 92px !important;
-  padding: 20px 18px 18px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  overflow: visible !important;
-  border-bottom: 1px solid rgba(0,200,170,0.12) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012)) !important;
-}
-.brand-logo {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 0 !important;
-  width: 100% !important;
-}
-.brand-logo img {
-  height: 30px !important;
-  max-width: 160px !important;
-}
-.brand-sub {
-  margin-top: 0 !important;
-  font-size: 9px !important;
-  letter-spacing: 2.6px !important;
-  line-height: 1.25 !important;
-  white-space: nowrap !important;
-  transition: opacity .22s ease, transform .22s ease, max-width .22s ease !important;
-}
-
-/* Navigation spacing */
-.nav {
-  padding: 14px var(--sidebar-pad-x) 10px !important;
-  overflow-y: auto !important;
-  overflow-x: visible !important;
-}
-.nav-section {
-  padding: 0 10px !important;
-  margin: 18px 0 8px !important;
-  transition: opacity .22s ease, transform .22s ease, height .22s ease, margin .22s ease !important;
-}
-.nav-item {
-  min-height: 40px !important;
-  padding: 10px 12px !important;
-  gap: 12px !important;
-  border-radius: 12px !important;
-  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease !important;
-}
-.nav-item:hover { transform: translateX(2px); }
-.nav-label,
-.nav-badge,
-.sf-label,
-.sf-count,
-.user-info,
-.user-name,
-.user-role-badge,
-#pw-manager-btn {
-  transition: opacity .22s ease, transform .22s ease, max-width .22s ease !important;
-}
-.icon {
-  width: 18px !important;
-  height: 18px !important;
-}
-.icon svg,
-.icon i {
-  width: 18px !important;
-  height: 18px !important;
-}
-
-/* Clean separator before status filters */
-.status-filters {
-  position: relative !important;
-  margin: 8px 14px 14px !important;
-  padding: 16px 0 0 !important;
-  border-top: 1px solid rgba(0,200,170,0.14) !important;
-}
-.status-filters::before {
-  content: 'Status Filters';
-  display: block;
-  margin: 0 10px 8px;
-  font-family: 'Inter',sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
-  color: var(--moss-green);
-  opacity: .55;
-  white-space: nowrap;
-  transition: opacity .22s ease, transform .22s ease !important;
-}
-.sf-item {
-  min-height: 36px !important;
-  padding: 8px 10px !important;
-  border-radius: 11px !important;
-  gap: 9px !important;
-}
-.sf-dot {
-  width: 8px !important;
-  height: 8px !important;
-}
-
-/* Sidebar footer breathing room */
-.sidebar-footer {
-  padding: 14px !important;
-  border-top: 1px solid rgba(0,200,170,0.12) !important;
-}
-.user-pill {
-  min-height: 48px !important;
-  padding: 10px 12px !important;
-}
-
-/* Toggle styling: supports the future index.html move into .topbar-left */
-.sidebar-toggle-btn {
-  width: 36px !important;
-  height: 36px !important;
-  border-radius: 11px !important;
-  background: rgba(255,255,255,0.045) !important;
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  color: var(--text2) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  flex: 0 0 36px !important;
-  z-index: 120 !important;
-  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease, left .28s cubic-bezier(.4,0,.2,1) !important;
-}
-.sidebar-toggle-btn:hover {
-  background: rgba(0,200,170,0.10) !important;
-  color: var(--accent) !important;
-  border-color: rgba(0,200,170,0.24) !important;
-}
-.topbar-left .sidebar-toggle-btn,
-.topbar .sidebar-toggle-btn {
-  position: static !important;
-  inset: auto !important;
-}
-
-/* Current DOM fallback: button is still outside topbar until index.html is patched.
-   Place it in the topbar zone instead of fixed over the brand/logo area. */
-#app > .sidebar + .sidebar-toggle-btn {
-  position: absolute !important;
-  top: 10px !important;
-  left: calc(var(--sidebar-w) + 18px) !important;
-}
-#app > .sidebar.collapsed + .sidebar-toggle-btn {
-  left: calc(var(--sidebar-collapsed-w) + 14px) !important;
-}
-
-/* Give topbar-left room for the hamburger once index.html is updated */
-.topbar-left {
-  min-width: 180px !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 12px !important;
-}
-.topbar-left .topbar-title,
-.topbar-left #breadcrumb {
-  min-width: 0 !important;
-}
-
-/* Collapsed state: 64px icon rail with centered icons */
-.sidebar.collapsed {
-  width: var(--sidebar-collapsed-w) !important;
-  min-width: var(--sidebar-collapsed-w) !important;
-  overflow: visible !important;
-}
-.sidebar.collapsed .brand {
-  min-height: 72px !important;
-  padding: 14px 0 !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-.sidebar.collapsed .brand-logo,
-.sidebar.collapsed .brand-sub {
-  opacity: 0 !important;
-  max-width: 0 !important;
-  transform: translateX(-8px) !important;
-  pointer-events: none !important;
-  position: absolute !important;
-}
-.sidebar.collapsed .brand::before {
-  content: 'I';
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  font-family: 'Inter',sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: .5px;
-  color: var(--accent);
-  background: rgba(0,200,170,0.10);
-  border: 1px solid rgba(0,200,170,0.24);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px rgba(0,0,0,0.18);
-}
-.sidebar.collapsed .nav {
-  padding: 10px 10px !important;
-  overflow: visible !important;
-}
-.sidebar.collapsed .nav-section {
-  opacity: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  transform: translateX(-8px) !important;
-  pointer-events: none !important;
-}
-.sidebar.collapsed .nav-item {
-  width: 44px !important;
-  height: 44px !important;
-  min-height: 44px !important;
-  margin: 0 auto 6px !important;
-  padding: 0 !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 0 !important;
-  transform: none !important;
-  overflow: visible !important;
-}
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .nav-badge {
-  opacity: 0 !important;
-  max-width: 0 !important;
-  transform: translateX(-8px) !important;
-  pointer-events: none !important;
-  position: absolute !important;
-}
-.sidebar.collapsed .icon {
-  width: 20px !important;
-  height: 20px !important;
-  margin: 0 !important;
-  opacity: .9 !important;
-}
-.sidebar.collapsed .icon svg,
-.sidebar.collapsed .icon i {
-  width: 20px !important;
-  height: 20px !important;
-}
-.sidebar.collapsed .nav-item.active::before {
-  left: -10px !important;
-  height: 22px !important;
-}
-
-/* Collapsed nav tooltips */
-.sidebar.collapsed .nav-item::after {
-  position: absolute;
-  left: calc(100% + 12px);
-  top: 50%;
-  transform: translateY(-50%) translateX(-6px);
-  opacity: 0;
-  pointer-events: none;
-  white-space: nowrap;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: var(--bg-glass);
-  border: 1px solid var(--border2);
-  color: var(--text);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow: var(--shadow);
-  transition: opacity .16s ease, transform .16s ease;
-  z-index: 9999;
-}
-.sidebar.collapsed .nav-item:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-.sidebar.collapsed #nav-dashboard::after { content: 'Home'; }
-.sidebar.collapsed #nav-active::after { content: 'Active'; }
-.sidebar.collapsed #nav-inactive::after { content: 'Inactive'; }
-.sidebar.collapsed #nav-tracker::after { content: 'Deployment Tracker'; }
-.sidebar.collapsed #nav-log::after { content: 'Activity Log'; }
-.sidebar.collapsed #nav-analytics::after { content: 'Analytics'; }
-.sidebar.collapsed #nav-settings::after { content: 'Settings'; }
-
-/* Keep the status area visually separated when expanded; hide it cleanly when collapsed */
-.sidebar.collapsed .status-filters {
-  opacity: 0 !important;
-  max-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  pointer-events: none !important;
-  overflow: hidden !important;
-}
-.sidebar.collapsed .status-filters::before,
-.sidebar.collapsed .sf-label,
-.sidebar.collapsed .sf-count {
-  opacity: 0 !important;
-  transform: translateX(-8px) !important;
-}
-
-/* Collapsed footer: keep avatar/signout usable, hide text smoothly */
-.sidebar.collapsed .sidebar-footer {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 12px 10px !important;
-  overflow: visible !important;
-}
-.sidebar.collapsed #pw-manager-btn,
-.sidebar.collapsed .user-info,
-.sidebar.collapsed .user-name,
-.sidebar.collapsed .user-role-badge {
-  opacity: 0 !important;
-  max-width: 0 !important;
-  transform: translateX(-8px) !important;
-  pointer-events: none !important;
-  position: absolute !important;
-}
-.sidebar.collapsed .user-pill {
-  width: 44px !important;
-  height: 44px !important;
-  min-height: 44px !important;
-  padding: 0 !important;
-  justify-content: center !important;
-  gap: 0 !important;
-}
-.sidebar.collapsed .btn-signout {
-  display: none !important;
-}
-
-/* Light mode adjustments for the patch */
-[data-theme="light"] .brand {
-  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.30)) !important;
-  border-bottom-color: rgba(10,138,133,0.16) !important;
-}
-[data-theme="light"] .sidebar-toggle-btn {
-  background: rgba(255,255,255,0.70) !important;
-  border-color: rgba(10,138,133,0.14) !important;
-  color: rgba(26,34,34,0.64) !important;
-}
-[data-theme="light"] .sidebar-toggle-btn:hover {
-  background: rgba(10,138,133,0.10) !important;
-  color: #076e6a !important;
-  border-color: rgba(10,138,133,0.24) !important;
-}
-[data-theme="light"] .sidebar.collapsed .brand::before {
-  color: #076e6a;
-  background: rgba(10,138,133,0.10);
-  border-color: rgba(10,138,133,0.24);
-}
-[data-theme="light"] .sidebar.collapsed .nav-item::after {
-  background: rgba(255,255,255,0.96);
-  border-color: rgba(10,138,133,0.18);
-  color: rgba(26,34,34,0.90);
-}
