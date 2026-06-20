@@ -488,6 +488,10 @@ body::before {
   opacity: 0.9;
   box-shadow: 0 0 8px rgba(0,200,170,0.50);
 }
+.sidebar.collapsed .nav-item.active::before { display: none; }
+.sidebar.collapsed .nav-item.active {
+  box-shadow: 0 0 0 1px rgba(0,200,170,0.30), 0 2px 10px rgba(0,184,160,0.18);
+}
 
 .nav-badge {
   margin-left: auto;
@@ -988,7 +992,7 @@ body::before {
 .table-head .rec { font-size: 12px; color: var(--text3); }
 .table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); position: relative; z-index: 1; }
 
-table { width: 100%; border-collapse: collapse; min-width: 900px; table-layout: fixed; }
+table { width: 100%; border-collapse: collapse; min-width: 1900px; table-layout: fixed; }
 thead th {
   background: rgba(4,7,7,0.98); padding: 10px 14px; font-size: 10px; font-weight: 700;
   color: rgba(0,200,170,0.75); text-align: left;
@@ -1036,6 +1040,25 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
 /* table-layout:fixed requires overflow handling per-cell since column widths are now locked */
 table td, table th { overflow: hidden; text-overflow: ellipsis; }
 table td.td-check, table th.td-check { overflow: visible; }
+
+/* Explicit per-column widths so table-layout:fixed never compresses
+   headers/data unevenly. Matches TABLE_COLUMNS order in app.js. */
+.col-fullName       { width: 200px; }
+.col-infinixId       { width: 110px; }
+.col-status          { width: 110px; }
+.col-statusDate      { width: 110px; }
+.col-deploymentDate  { width: 120px; }
+.col-deploymentStatus{ width: 130px; }
+.col-requirements    { width: 110px; }
+.col-qrStatus        { width: 120px; }
+.col-region          { width: 130px; }
+.col-storeAssignment { width: 160px; }
+.col-storeId         { width: 90px; }
+.col-rssName         { width: 140px; }
+.col-bankName        { width: 130px; }
+.col-contractStatus  { width: 120px; }
+.col-contractEndDate { width: 120px; }
+.col-tags            { width: 160px; }
 
 /* BADGES — compact solid-fill chips */
 .badge {
