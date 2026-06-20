@@ -123,10 +123,10 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
 
 <div class="sidebar" id="sidebar">
   <div class="brand">
-    <!-- Collapsed state: small Infinix "X" mark -->
-    <div class="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-        <path d="M4 4L14 14M14 14L24 24M14 14L24 4M14 14L4 24" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Collapsed state: small Infinix "X" mark — click to expand sidebar -->
+    <div class="brand-mark" onclick="toggleSidebar()" title="Expand sidebar" role="button" aria-label="Expand sidebar">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+        <path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
       </svg>
     </div>
     <!-- Expanded state: logo + subtitle -->
@@ -342,17 +342,20 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
 .sidebar { transition: width .28s cubic-bezier(.4,0,.2,1), background .3s !important; }
 .sidebar.collapsed { width: 56px !important; overflow: visible !important; }
 .sidebar.collapsed .brand {
-  padding: 10px 8px; min-height: 56px;
+  padding: 12px 0 10px; min-height: 56px;
+  width: 56px;
   display: flex; align-items: center; justify-content: center;
 }
 .brand-mark {
-  display: none; width: 32px; height: 32px; border-radius: 10px;
+  display: none; width: 32px; height: 32px; border-radius: 8px;
   align-items: center; justify-content: center;
-  color: #061414;
+  color: #061414; cursor: pointer;
   background: linear-gradient(135deg, var(--accent), #d6fff7);
   box-shadow: 0 6px 18px rgba(0,200,170,.18);
+  transition: transform .18s, box-shadow .18s;
 }
-.sidebar.collapsed .brand-mark { display: flex; }
+.brand-mark:hover { transform: translateY(-1px) scale(1.04); box-shadow: 0 8px 22px rgba(0,200,170,.28); }
+.sidebar.collapsed .brand-mark { display: flex; margin: 0 auto; }
 .sidebar.collapsed .brand-logo,
 .sidebar.collapsed .brand-sub,
 .sidebar.collapsed .nav-section,
