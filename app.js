@@ -1405,9 +1405,9 @@ function renderTableRows(type){
         <td class="td-check" style="display:${bulkMode?'':'none'}" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect(event,'${esc(e.infinixId)}',this.checked)">
         </td>
-        <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:12px'></i> Edit</button>
-          <button class="btn btn-tbl-delete" style="margin-left:4px" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:12px'></i> Del</button>
+        <td onclick="event.stopPropagation()" class="td-actions-cell">
+          <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
+          <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
         </td>
         ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
       </tr>`).join('');
