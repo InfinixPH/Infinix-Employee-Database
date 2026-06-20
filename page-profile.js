@@ -277,7 +277,7 @@ function _loadAuditTrail(id) {
 
   const render = (entries) => {
     if (!entries.length) {
-      container.innerHTML = Components.emptyState({ icon: <i class="fi fi-sr-clock" style="font-size:32px;opacity:.3"></i>, title: 'No history yet', message: 'Changes to this employee will appear here.' });
+      container.innerHTML = Components.emptyState({ icon: '<i class="fi fi-sr-clock" style="font-size:32px;opacity:.3"></i>', title: 'No history yet', message: 'Changes to this employee will appear here.' });
       return;
     }
     container.innerHTML = `<div class="pp-timeline">` +
