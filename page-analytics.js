@@ -15,8 +15,30 @@ function renderAnalyticsPage() {
   const contentEl = document.getElementById('content');
   if (contentEl) contentEl.scrollTop = 0;
   _injectAnalyticsStyles();
-  // Inject new Phase 3 charts after a short delay to let renderDashboard settle
-  setTimeout(_injectPhase3Charts, 200);
+
+  // Ensure the activity log is actually loaded before computing the headcount
+  // trend chart — previously this silently used whatever (often nothing) was
+  // cached from prior navigation, producing inaccurate/empty trend data.
+  _ensureLogCacheLoaded().then(() => {
+    setTimeout(_injectPhase3Charts, 150);
+  });
+}
+
+// Actively fetch the activity log sheet if it hasn't been loaded yet this
+// session. Safe to call repeatedly — only fetches once per session unless
+// data is invalidated elsewhere (logCache = null).
+async function _ensureLogCacheLoaded() {
+  if (logCache && logCache.length) return;
+  try {
+    if (typeof gapi === 'undefined' || !gapi.client?.sheets) return;
+    const r = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
+    });
+    logCache = r.result.values || [];
+  } catch (e) {
+    console.warn('Could not load activity log for analytics:', e);
+    logCache = logCache || [];
+  }
 }
 
 // ── Phase 3: Headcount Trend + Deployment Funnel + Region Table ──
@@ -26,10 +48,22 @@ function _injectPhase3Charts() {
 
   // Compute data
   const activeEmployees = (typeof activePromotersOnly === 'function') ? activePromotersOnly() : employees;
-  const deployed   = activeEmployees.filter(e => (e.deploymentStatus||'').toUpperCase().includes('DEPLOYED') && !(e.deploymentStatus||'').toUpperCase().includes('NOT')).length;
-  const scanned    = activeEmployees.filter(e => e.qrStatus === 'SCANNED').length;
-  const contracted = activeEmployees.filter(e => e.contractStatus === 'SENT').length;
-  const total      = activeEmployees.length;
+  const total = activeEmployees.length;
+
+  const deployedList = activeEmployees.filter(e =>
+    (e.deploymentStatus||'').toUpperCase().includes('DEPLOYED') &&
+    !(e.deploymentStatus||'').toUpperCase().includes('NOT'));
+  const deployed = deployedList.length;
+
+  // QR scan and contract sent are measured WITHIN the deployed population —
+  // these stages conceptually only apply once someone is actually deployed,
+  // so this reflects true stage-to-stage funnel conversion rather than
+  // comparing every stage independently back to the full active pool
+  // (which previously made bottlenecks invisible — e.g. someone scanned
+  // but never deployed would inflate "QR Scanned" misleadingly).
+  const scannedList = deployedList.filter(e => e.qrStatus === 'SCANNED');
+  const scanned = scannedList.length;
+  const contracted = scannedList.filter(e => e.contractStatus === 'SENT').length;
 
   // Region breakdown with deploy rate
   const RORDER = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
@@ -41,29 +75,50 @@ function _injectPhase3Charts() {
     return { region: r, total: reg.length, deployed: dep, pct };
   }).filter(r => r.total > 0).sort((a,b) => b.total - a.total);
 
-  // Headcount by month from logCache (last 6 months)
+  // ── Headcount trend (last 6 months) ──────────────────────────
+  // Reconstructs actual headcount-over-time by walking the activity log
+  // chronologically and applying net +1 (Added) / -1 (Deleted) deltas,
+  // working BACKWARDS from the current total. This is accurate regardless
+  // of how far back the log goes — if the log doesn't cover a given month,
+  // that month is flagged so the chart can show it honestly instead of
+  // faking a flat line at the current total.
   const monthLabels = [];
   const monthCounts = [];
+  const monthHasData = [];
   const now = new Date();
+
+  // Sort all log entries chronologically (oldest first) once.
+  const sortedLog = (logCache || [])
+    .map(r => ({ date: new Date(r[0] || ''), action: (r[3] || '').trim() }))
+    .filter(r => !isNaN(r.date) && (r.action === 'Added' || r.action === 'Deleted'))
+    .sort((a, b) => a.date - b.date);
+
+  const earliestLogDate = sortedLog.length ? sortedLog[0].date : null;
+  const currentTotal = employees.length;
+
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthLabels.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
-    // Count employees added UP TO end of that month
-    const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
-    if (logCache && logCache.length) {
-      const addedByThen = new Set();
-      logCache.forEach(r => {
-        if ((r[3]||'').trim() === 'Added') {
-          const dt = new Date(r[0]||'');
-          if (!isNaN(dt) && dt <= endOfMonth) addedByThen.add(String(r[1]||'').trim());
-        }
-      });
-      monthCounts.push(addedByThen.size || employees.length);
-    } else {
-      // Fallback: flat line at current total
-      monthCounts.push(employees.length);
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth  = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59);
+    monthLabels.push(monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+
+    if (!earliestLogDate || endOfMonth < earliestLogDate) {
+      // No log coverage for this month at all — don't fabricate a number.
+      monthCounts.push(null);
+      monthHasData.push(false);
+      continue;
     }
+
+    // Net change from end-of-this-month to now = sum of deltas AFTER endOfMonth.
+    let netChangeAfter = 0;
+    sortedLog.forEach(r => {
+      if (r.date > endOfMonth) netChangeAfter += (r.action === 'Added' ? 1 : -1);
+    });
+    const countAtMonth = currentTotal - netChangeAfter;
+    monthCounts.push(Math.max(0, countAtMonth));
+    monthHasData.push(true);
   }
+
+  const hasAnyTrendData = monthHasData.some(Boolean);
 
   const section = document.createElement('div');
   section.id = 'phase3-charts';
@@ -75,22 +130,26 @@ function _injectPhase3Charts() {
       <div class="p3-card glass-card">
         <div class="p3-card-header">
           <span class="p3-card-title"><i class="fi fi-sr-chart-histogram"></i> Headcount Trend</span>
-          <span class="p3-card-sub">Last 6 months</span>
+          <span class="p3-card-sub">${hasAnyTrendData ? 'Reconstructed from activity log' : 'No log history available'}</span>
         </div>
-        <div class="p3-chart-wrap"><canvas id="chart-headcount"></canvas></div>
+        <div class="p3-chart-wrap">
+          ${hasAnyTrendData
+            ? `<canvas id="chart-headcount"></canvas>`
+            : `<div class="p3-no-data"><i class="fi fi-sr-info"></i> Not enough activity log history to chart a trend yet. This fills in automatically as Added/Deleted events accumulate.</div>`}
+        </div>
       </div>
 
       <!-- Deployment Funnel -->
       <div class="p3-card glass-card">
         <div class="p3-card-header">
           <span class="p3-card-title"><i class="fi fi-sr-filter"></i> Deployment Funnel</span>
-          <span class="p3-card-sub">Active promoters</span>
+          <span class="p3-card-sub" title="Each % is the conversion rate from the stage directly above it">% of previous stage</span>
         </div>
         <div class="p3-funnel">
           ${_funnelStep('Total Active', total, total, '#00C8AA')}
           ${_funnelStep('Deployed',     deployed, total, '#00E676')}
-          ${_funnelStep('QR Scanned',   scanned,  total, '#378ADD')}
-          ${_funnelStep('Contract Sent',contracted,total, '#8B5CF6')}
+          ${_funnelStep('QR Scanned (of deployed)',   scanned,  deployed, '#378ADD')}
+          ${_funnelStep('Contract Sent (of scanned)', contracted, scanned, '#8B5CF6')}
         </div>
       </div>
 
@@ -158,71 +217,75 @@ function _injectPhase3Charts() {
 
   dashMain.appendChild(section);
 
-  // Draw headcount chart
-  setTimeout(() => {
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-    const gridColor = isDark ? 'rgba(215,254,250,0.05)' : 'rgba(10,138,133,0.07)';
-    const tickColor = isDark ? 'rgba(215,254,250,0.45)' : 'rgba(26,34,34,0.55)';
+  // Draw headcount chart — only when we actually have reconstructed data
+  if (hasAnyTrendData) {
+    setTimeout(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const gridColor = isDark ? 'rgba(215,254,250,0.05)' : 'rgba(10,138,133,0.07)';
+      const tickColor = isDark ? 'rgba(215,254,250,0.45)' : 'rgba(26,34,34,0.55)';
 
-    const ctxH = document.getElementById('chart-headcount');
-    if (ctxH) {
-      if (_charts.headcount) _charts.headcount.destroy();
-      const gradCtx = ctxH.getContext('2d');
-      const grad = gradCtx.createLinearGradient(0, 0, 0, 200);
-      grad.addColorStop(0, isDark ? 'rgba(0,200,170,0.25)' : 'rgba(0,138,133,0.18)');
-      grad.addColorStop(1, 'rgba(0,200,170,0)');
-      _charts.headcount = new Chart(ctxH, {
-        type: 'line',
-        data: {
-          labels: monthLabels,
-          datasets: [{
-            label: 'Headcount',
-            data: monthCounts,
-            borderColor: '#00C8AA',
-            backgroundColor: grad,
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2.5,
-            pointRadius: 4,
-            pointBackgroundColor: '#00C8AA',
-            pointBorderColor: isDark ? '#0d1f1f' : '#fff',
-            pointBorderWidth: 2,
-            pointHoverRadius: 6,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { intersect: false, mode: 'index' },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: ctx => `${ctx.raw} employees`
+      const ctxH = document.getElementById('chart-headcount');
+      if (ctxH) {
+        if (_charts.headcount) _charts.headcount.destroy();
+        const gradCtx = ctxH.getContext('2d');
+        const grad = gradCtx.createLinearGradient(0, 0, 0, 200);
+        grad.addColorStop(0, isDark ? 'rgba(0,200,170,0.25)' : 'rgba(0,138,133,0.18)');
+        grad.addColorStop(1, 'rgba(0,200,170,0)');
+        _charts.headcount = new Chart(ctxH, {
+          type: 'line',
+          data: {
+            labels: monthLabels,
+            datasets: [{
+              label: 'Headcount',
+              data: monthCounts,
+              spanGaps: false, // months with no log coverage (null) show as a real gap, not a fake flat line
+              borderColor: '#00C8AA',
+              backgroundColor: grad,
+              fill: true,
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointBackgroundColor: '#00C8AA',
+              pointBorderColor: isDark ? '#0d1f1f' : '#fff',
+              pointBorderWidth: 2,
+              pointHoverRadius: 6,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: ctx => ctx.raw == null ? 'No data' : `${ctx.raw} employees`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                border: { display: false },
+                ticks: { font: { size: 10, weight: '600' }, color: tickColor }
+              },
+              y: {
+                beginAtZero: false,
+                grid: { color: gridColor },
+                border: { display: false },
+                ticks: { font: { size: 10, weight: '600' }, color: tickColor, precision: 0 }
               }
             }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              border: { display: false },
-              ticks: { font: { size: 10, weight: '600' }, color: tickColor }
-            },
-            y: {
-              beginAtZero: false,
-              grid: { color: gridColor },
-              border: { display: false },
-              ticks: { font: { size: 10, weight: '600' }, color: tickColor, precision: 0 }
-            }
           }
-        }
-      });
-    }
-  }, 80);
+        });
+      }
+    }, 80);
+  }
 }
 
-function _funnelStep(label, count, total, color) {
-  const pct = total ? Math.round(count / total * 100) : 0;
+function _funnelStep(label, count, ofPrevious, color) {
+  // pct = conversion rate from the previous stage (what narrows the funnel)
+  const pct = ofPrevious ? Math.round(count / ofPrevious * 100) : 0;
   const width = Math.max(pct, 18); // min width so label is always visible
   return `
     <div class="p3-funnel-step">
@@ -407,8 +470,8 @@ function _injectAnalyticsStyles() {
     .p3-funnel { display: flex; flex-direction: column; gap: 10px; }
     .p3-funnel-step { display: flex; align-items: center; gap: 10px; }
     .p3-funnel-label {
-      font-size: 11px; font-weight: 600; color: var(--text2);
-      min-width: 110px; flex-shrink: 0;
+      font-size: 10.5px; font-weight: 600; color: var(--text2);
+      min-width: 150px; flex-shrink: 0; line-height: 1.3;
     }
     .p3-funnel-bar-wrap {
       flex: 1; height: 28px; background: var(--border);
@@ -465,6 +528,14 @@ function _injectAnalyticsStyles() {
     .p3-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .p3-bar-fill { height: 100%; border-radius: 3px; transition: width .5s; }
     .p3-bar-pct  { font-size: 10px; color: var(--text3); min-width: 28px; }
+
+    /* Honest no-data state for headcount trend */
+    .p3-no-data {
+      height: 100%; display: flex; align-items: center; justify-content: center;
+      gap: 8px; text-align: center; padding: 0 20px;
+      font-size: 12px; color: var(--text3); line-height: 1.6;
+    }
+    .p3-no-data .fi { color: var(--accent); font-size: 16px; flex-shrink: 0; opacity: .7; }
 
     /* Export note */
     .p3-export-note {
