@@ -1326,7 +1326,7 @@ function renderEmployeeTable(type){
             <tr>
               <th class="td-check no-sort" id="col-check-header" style="display:none"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
               <th class="no-sort td-actions-col">Actions</th>
-              ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
+              ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th class="col-${esc(c.key)}" data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
             </tr>
           </thead>
           <tbody id="emp-tbody"></tbody>
@@ -1355,35 +1355,35 @@ function renderTableRows(type){
   if(!tbody)return;
 
   const colRender={
-    fullName:e=>`<td><div class="td-name">${esc(e.fullName||'')}</div><div class="td-sub">${esc(e.email||'')}</div></td>`,
-    infinixId:e=>`<td><span class="td-id">${esc(e.infinixId)}</span></td>`,
-    status:e=>`<td>${badgeHTML(e.status)}</td>`,
-    statusDate:e=>`<td style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>`,
-    deploymentDate:e=>`<td style="color:var(--text2);font-size:12px">${esc(e.deploymentDate||'—')}</td>`,
-    deploymentStatus:e=>`<td>${badgeHTML(e.deploymentStatus,e.deploymentStatus?e.deploymentStatus.replace(/ /g,'-'):null)}</td>`,
-    requirements:e=>`<td>${reqProgressHTML(e)}</td>`,
-    qrStatus:e=>{const qr=e.qrStatus||'NOT SCANNED';return`<td>${badgeHTML(qr,qr.replace(/ /g,'-'))}</td>`},
-    region:e=>`<td style="color:var(--text2)">${esc(e.region||'—')}</td>`,
-    storeAssignment:e=>`<td style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>`,
-    storeId:e=>`<td style="color:var(--text3);font-size:11px">${esc(e.storeId||'—')}</td>`,
-    rssName:e=>`<td style="color:var(--text2)">${esc(e.rssName||'—')}</td>`,
-    bankName:e=>`<td style="color:var(--text2)">${esc(e.bankName||'—')}</td>`,
-    contractStatus:e=>`<td>${badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-'))}</td>`,
+    fullName:e=>`<td class="col-fullName"><div class="td-name">${esc(e.fullName||'')}</div><div class="td-sub">${esc(e.email||'')}</div></td>`,
+    infinixId:e=>`<td class="col-infinixId"><span class="td-id">${esc(e.infinixId)}</span></td>`,
+    status:e=>`<td class="col-status">${badgeHTML(e.status)}</td>`,
+    statusDate:e=>`<td class="col-statusDate" style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>`,
+    deploymentDate:e=>`<td class="col-deploymentDate" style="color:var(--text2);font-size:12px">${esc(e.deploymentDate||'—')}</td>`,
+    deploymentStatus:e=>`<td class="col-deploymentStatus">${badgeHTML(e.deploymentStatus,e.deploymentStatus?e.deploymentStatus.replace(/ /g,'-'):null)}</td>`,
+    requirements:e=>`<td class="col-requirements">${reqProgressHTML(e)}</td>`,
+    qrStatus:e=>{const qr=e.qrStatus||'NOT SCANNED';return`<td class="col-qrStatus">${badgeHTML(qr,qr.replace(/ /g,'-'))}</td>`},
+    region:e=>`<td class="col-region" style="color:var(--text2)">${esc(e.region||'—')}</td>`,
+    storeAssignment:e=>`<td class="col-storeAssignment" style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>`,
+    storeId:e=>`<td class="col-storeId" style="color:var(--text3);font-size:11px">${esc(e.storeId||'—')}</td>`,
+    rssName:e=>`<td class="col-rssName" style="color:var(--text2)">${esc(e.rssName||'—')}</td>`,
+    bankName:e=>`<td class="col-bankName" style="color:var(--text2)">${esc(e.bankName||'—')}</td>`,
+    contractStatus:e=>`<td class="col-contractStatus">${badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-'))}</td>`,
     contractEndDate:e=>{
       const d=e.contractEndDate?new Date(e.contractEndDate):null;
-      if(!d||isNaN(d)) return `<td style="color:var(--text3)">—</td>`;
+      if(!d||isNaN(d)) return `<td class="col-contractEndDate" style="color:var(--text3)">—</td>`;
       const today=new Date(); today.setHours(0,0,0,0);
       const daysLeft=Math.ceil((d-today)/(1000*60*60*24));
       const label=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
-      if(daysLeft<0) return `<td><span class="expiry-badge expired"><i class="fi fi-sr-triangle-warning" style="font-size:10px"></i> Expired</span></td>`;
-      if(daysLeft<=30) return `<td><span class="expiry-badge expiring"><i class="fi fi-sr-clock" style="font-size:10px"></i> ${daysLeft}d left</span></td>`;
-      return `<td style="color:var(--text2);font-size:12px">${label}</td>`;
+      if(daysLeft<0) return `<td class="col-contractEndDate"><span class="expiry-badge expired"><i class="fi fi-sr-triangle-warning" style="font-size:10px"></i> Expired</span></td>`;
+      if(daysLeft<=30) return `<td class="col-contractEndDate"><span class="expiry-badge expiring"><i class="fi fi-sr-clock" style="font-size:10px"></i> ${daysLeft}d left</span></td>`;
+      return `<td class="col-contractEndDate" style="color:var(--text2);font-size:12px">${label}</td>`;
     },
     tags:e=>{
-      if(!e.tags) return `<td></td>`;
+      if(!e.tags) return `<td class="col-tags"></td>`;
       const tagList=(e.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
-      if(!tagList.length) return `<td></td>`;
-      return `<td><div class="tag-cell">${tagList.map(t=>`<span class="emp-tag">${esc(t)}</span>`).join('')}</div></td>`;
+      if(!tagList.length) return `<td class="col-tags"></td>`;
+      return `<td class="col-tags"><div class="tag-cell">${tagList.map(t=>`<span class="emp-tag">${esc(t)}</span>`).join('')}</div></td>`;
     },
   };
 
