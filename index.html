@@ -123,9 +123,10 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
 
 <div class="sidebar" id="sidebar">
   <div class="brand">
-    <!-- Collapsed state: small Infinix "X" mark — click to expand sidebar -->
-    <div class="brand-mark" onclick="toggleSidebar()" title="Expand sidebar" role="button" aria-label="Expand sidebar">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+    <!-- Collapsed state: static logo dot, purely decorative — no click target.
+         The single source of truth for toggling is the hamburger button in the topbar. -->
+    <div class="brand-dot" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
         <path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
       </svg>
     </div>
@@ -346,16 +347,15 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   width: 56px;
   display: flex; align-items: center; justify-content: center;
 }
-.brand-mark {
-  display: none; width: 32px; height: 32px; border-radius: 8px;
+.brand-dot {
+  display: none; width: 28px; height: 28px; border-radius: 8px;
   align-items: center; justify-content: center;
-  color: #061414; cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), #d6fff7);
-  box-shadow: 0 6px 18px rgba(0,200,170,.18);
-  transition: transform .18s, box-shadow .18s;
+  color: rgba(0,200,170,0.55);
+  background: rgba(0,200,170,0.07);
+  border: 1px solid rgba(0,200,170,0.14);
+  pointer-events: none; /* purely decorative — never intercepts clicks */
 }
-.brand-mark:hover { transform: translateY(-1px) scale(1.04); box-shadow: 0 8px 22px rgba(0,200,170,.28); }
-.sidebar.collapsed .brand-mark { display: flex; margin: 0 auto; }
+.sidebar.collapsed .brand-dot { display: flex; margin: 0 auto; }
 .sidebar.collapsed .brand-logo,
 .sidebar.collapsed .brand-sub,
 .sidebar.collapsed .nav-section,
