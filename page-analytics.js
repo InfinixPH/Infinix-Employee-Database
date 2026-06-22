@@ -118,7 +118,7 @@ function _injectPhase3Charts() {
     monthHasData.push(true);
   }
 
-  const hasAnyTrendData = monthHasData.some(Boolean);
+  const hasAnyTrendData = monthHasData.filter(Boolean).length >= 3;
 
   const section = document.createElement('div');
   section.id = 'phase3-charts';
@@ -130,12 +130,12 @@ function _injectPhase3Charts() {
       <div class="p3-card glass-card">
         <div class="p3-card-header">
           <span class="p3-card-title"><i class="fi fi-sr-chart-histogram"></i> Headcount Trend</span>
-          <span class="p3-card-sub">${hasAnyTrendData ? 'Reconstructed from activity log' : 'No log history available'}</span>
+          <span class="p3-card-sub">${hasAnyTrendData ? 'Reconstructed from activity log' : 'Limited log history'}</span>
         </div>
         <div class="p3-chart-wrap">
           ${hasAnyTrendData
             ? `<canvas id="chart-headcount"></canvas>`
-            : `<div class="p3-no-data"><i class="fi fi-sr-info"></i> Not enough activity log history to chart a trend yet. This fills in automatically as Added/Deleted events accumulate.</div>`}
+            : _renderRecentActivitySummary()}
         </div>
       </div>
 
@@ -281,6 +281,45 @@ function _injectPhase3Charts() {
       }
     }, 80);
   }
+}
+
+// Honest fallback when we don't have 3+ months of log coverage: show real
+// net change over the last 30 days (which we likely DO have data for),
+// instead of faking a 6-month line chart from incomplete data.
+function _renderRecentActivitySummary() {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
+
+  const recentLog = (logCache || [])
+    .map(r => ({ date: new Date(r[0] || ''), action: (r[3] || '').trim() }))
+    .filter(r => !isNaN(r.date) && r.date >= thirtyDaysAgo);
+
+  const added   = recentLog.filter(r => r.action === 'Added').length;
+  const deleted = recentLog.filter(r => r.action === 'Deleted').length;
+  const net     = added - deleted;
+
+  if (!logCache || !logCache.length) {
+    return `<div class="p3-no-data"><i class="fi fi-sr-info"></i> Activity log hasn't loaded yet. Visit the Activity Log page once to populate this.</div>`;
+  }
+
+  return `
+    <div class="p3-recent-summary">
+      <div class="p3-rs-row">
+        <div class="p3-rs-item">
+          <div class="p3-rs-val" style="color:#00E676">+${added}</div>
+          <div class="p3-rs-label">Added<br>(last 30 days)</div>
+        </div>
+        <div class="p3-rs-item">
+          <div class="p3-rs-val" style="color:#FF5252">−${deleted}</div>
+          <div class="p3-rs-label">Removed<br>(last 30 days)</div>
+        </div>
+        <div class="p3-rs-item">
+          <div class="p3-rs-val" style="color:${net>=0?'#00C8AA':'#FF9800'}">${net>=0?'+':''}${net}</div>
+          <div class="p3-rs-label">Net change<br>(last 30 days)</div>
+        </div>
+      </div>
+      <div class="p3-rs-note">A full 6-month trend will appear automatically once the activity log accumulates more history.</div>
+    </div>`;
 }
 
 function _funnelStep(label, count, ofPrevious, color) {
@@ -536,6 +575,20 @@ function _injectAnalyticsStyles() {
       font-size: 12px; color: var(--text3); line-height: 1.6;
     }
     .p3-no-data .fi { color: var(--accent); font-size: 16px; flex-shrink: 0; opacity: .7; }
+
+    /* Recent activity summary fallback */
+    .p3-recent-summary {
+      height: 100%; display: flex; flex-direction: column; justify-content: center;
+      gap: 16px; padding: 8px 4px;
+    }
+    .p3-rs-row { display: flex; gap: 20px; justify-content: space-around; }
+    .p3-rs-item { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+    .p3-rs-val { font-size: 26px; font-weight: 800; line-height: 1; }
+    .p3-rs-label { font-size: 10px; color: var(--text3); font-weight: 600; line-height: 1.4; }
+    .p3-rs-note {
+      font-size: 11px; color: var(--text3); text-align: center;
+      padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.5;
+    }
 
     /* Export note */
     .p3-export-note {
