@@ -123,13 +123,10 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
 
 <div class="sidebar" id="sidebar">
   <div class="brand">
-    <!-- Collapsed state: static logo dot, purely decorative — no click target.
-         The single source of truth for toggling is the hamburger button in the topbar. -->
-    <div class="brand-dot" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
-        <path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
-      </svg>
-    </div>
+    <!-- Collapsed state: tiny static brand dot, purely decorative — NOT a button,
+         NOT clickable, NOT shaped like an X. The hamburger in the topbar is the
+         single, only control for toggling the sidebar. -->
+    <div class="brand-dot" aria-hidden="true"></div>
     <!-- Expanded state: logo + subtitle -->
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
@@ -348,14 +345,11 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   display: flex; align-items: center; justify-content: center;
 }
 .brand-dot {
-  display: none; width: 28px; height: 28px; border-radius: 8px;
-  align-items: center; justify-content: center;
-  color: rgba(0,200,170,0.55);
-  background: rgba(0,200,170,0.07);
-  border: 1px solid rgba(0,200,170,0.14);
+  display: none; width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(0,200,170,0.45);
   pointer-events: none; /* purely decorative — never intercepts clicks */
 }
-.sidebar.collapsed .brand-dot { display: flex; margin: 0 auto; }
+.sidebar.collapsed .brand-dot { display: block; margin: 0 auto; }
 .sidebar.collapsed .brand-logo,
 .sidebar.collapsed .brand-sub,
 .sidebar.collapsed .nav-section,
