@@ -30,12 +30,11 @@ function renderHome() {
                                             normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
   const deployed    = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'DEPLOYED').length;
   const missingReqs = employees.filter(e => !requirementsComplete(e)).length;
-  const attendance  = employees.filter(e => normalizeStatus(e.status) === 'Active').length;
+  const backoutCount= employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
   const compliance  = total > 0 ? Math.round(((total - missingReqs) / total) * 100) : 100;
   const activeRate  = total > 0 ? Math.round((active / total) * 100) : 0;
   const deployRate  = active > 0 ? Math.round((deployed / active) * 100) : 0;
-  const retentionPct= total > 0 ? Math.round((active / total) * 100) : 0;
-  const attendRate  = total > 0 ? Math.round((attendance / total) * 100) : 0;
+  const backoutRate = total > 0 ? Math.round((backoutCount / total) * 100) : 0;
   const healthScore = Math.round((compliance + activeRate + deployRate) / 3);
 
   // Greeting
@@ -280,25 +279,25 @@ function renderHome() {
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i class="fi fi-sr-calendar-check" style="color:#8B5CF6"></i>
-                  <span class="ph-wf-metric-label">Attendance Rate</span>
+                  <i class="fi fi-sr-shield" style="color:#8B5CF6"></i>
+                  <span class="ph-wf-metric-label">Compliance Rate</span>
                 </div>
-                <div class="ph-wf-metric-vals">${attendance} / ${total}</div>
+                <div class="ph-wf-metric-vals">${total - missingReqs} / ${total}</div>
                 <div class="ph-wf-bar-wrap">
-                  <div class="ph-wf-bar-fill" style="width:${attendRate}%;background:#8B5CF6"></div>
+                  <div class="ph-wf-bar-fill" style="width:${compliance}%;background:#8B5CF6"></div>
                 </div>
-                <div class="ph-wf-metric-pct">${attendRate}%</div>
+                <div class="ph-wf-metric-pct">${compliance}%</div>
               </div>
               <div class="ph-wf-metric">
                 <div class="ph-wf-metric-top">
-                  <i class="fi fi-sr-heart" style="color:#F59E0B"></i>
-                  <span class="ph-wf-metric-label">Retention Rate</span>
+                  <i class="fi fi-sr-triangle-warning" style="color:#F59E0B"></i>
+                  <span class="ph-wf-metric-label">Backout Rate</span>
                 </div>
-                <div class="ph-wf-metric-vals">${active} / ${total}</div>
+                <div class="ph-wf-metric-vals">${backoutCount} / ${total}</div>
                 <div class="ph-wf-bar-wrap">
-                  <div class="ph-wf-bar-fill" style="width:${retentionPct}%;background:#F59E0B"></div>
+                  <div class="ph-wf-bar-fill" style="width:${Math.max(backoutRate,2)}%;background:#F59E0B"></div>
                 </div>
-                <div class="ph-wf-metric-pct">${retentionPct}%</div>
+                <div class="ph-wf-metric-pct">${backoutRate}%</div>
               </div>
             </div>
           </div>
@@ -335,6 +334,7 @@ function renderHome() {
             </div>
           </div>
           <div id="ph-calendar"></div>
+          <div id="ph-cal-popover-backdrop" class="ph-cal-popover-backdrop" style="display:none" onclick="_phCloseCalPopover()"></div>
           <div id="ph-cal-popover" class="ph-cal-popover" style="display:none"></div>
         </div>
 
@@ -534,7 +534,7 @@ function _phBdayTab(key, btn) {
 }
 
 function _renderBdayList(list) {
-  if (!list || !list.length) return `<div class="ph-bday-empty"><i class="fi fi-sr-pennant" style="opacity:.25"></i><span>None</span></div>`;
+  if (!list || !list.length) return `<div class="ph-bday-empty"><i class="fi fi-sr-pennant"></i><span>None</span></div>`;
   return list.map(item => {
     // getBirthdaysToday/ThisWeek/ThisMonth return { emp, day, daysUntil } objects
     const emp  = item.emp  || item;
@@ -607,7 +607,7 @@ function _phRenderEventsList() {
     .slice(0, 6);
 
   if (!events.length) {
-    el.innerHTML = `<div class="ph-ev-empty"><i class="fi fi-sr-calendar-xmark" style="opacity:.25"></i><span>No upcoming events</span></div>`;
+    el.innerHTML = `<div class="ph-ev-empty"><i class="fi fi-sr-calendar-xmark"></i><span>No upcoming events</span></div>`;
     if (typeof lucide !== 'undefined') lucide.createIcons();
     return;
   }
@@ -810,7 +810,7 @@ function _phCalRender() {
     const dots = hasEvent ? `<span class="ph-cal-event-dot"></span>` : '';
     const bdayDot = isBday ? `<span class="ph-cal-bday-dot"></span>` : '';
 
-    html += `<div class="${cls}" onclick="_phCalDayClick(${d},${year},${month})" title="${hasEvent ? evCount + ' event' + (evCount>1?'s':'') : ''}${isBday ? (hasEvent ? ' · ' : '') + '🎂 Birthday' : ''}">${d}<div class="ph-cal-dots">${dots}${bdayDot}</div></div>`;
+    html += `<div class="${cls}" onclick="_phCalDayClick(${d},${year},${month},this)" title="${hasEvent ? evCount + ' event' + (evCount>1?'s':'') : ''}${isBday ? (hasEvent ? ' · ' : '') + '🎂 Birthday' : ''}">${d}<div class="ph-cal-dots">${dots}${bdayDot}</div></div>`;
   }
   html += `</div>`;
   calEl.innerHTML = html;
@@ -835,8 +835,9 @@ function _phCalRender() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-function _phCalDayClick(day, year, month) {
+function _phCalDayClick(day, year, month, clickedEl) {
   const popover = document.getElementById('ph-cal-popover');
+  const backdrop = document.getElementById('ph-cal-popover-backdrop');
   if (!popover) return;
 
   const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
@@ -879,24 +880,50 @@ function _phCalDayClick(day, year, month) {
   if (!body) {
     // No events — offer to add one if HR
     body = canViewSensitive()
-      ? `<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">No events.
+      ? `<div class="ph-pop-empty">No events.
           <button class="ph-card-link" style="font-size:11px" onclick="_phOpenAddEventDate('${dateStr}')">Add one?</button></div>`
-      : `<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">No events.</div>`;
+      : `<div class="ph-pop-empty">No events.</div>`;
   }
 
   popover.innerHTML = `
     <div class="ph-pop-header">
       <span class="ph-pop-date">${dateLabel}</span>
-      <button class="ph-pop-close" onclick="document.getElementById('ph-cal-popover').style.display='none'">✕</button>
+      <button class="ph-pop-close" onclick="_phCloseCalPopover()"><i class="fi fi-sr-cross"></i></button>
     </div>
     ${body}`;
 
+  // Position as a true floating popup, anchored near the clicked day cell,
+  // clamped so it never overflows the viewport.
+  if (backdrop) backdrop.style.display = 'block';
   popover.style.display = 'block';
-  lucide && lucide.createIcons();
+
+  if (clickedEl && clickedEl.getBoundingClientRect) {
+    const rect = clickedEl.getBoundingClientRect();
+    const popW = 280; // matches CSS width
+    let left = rect.left + rect.width / 2 - popW / 2;
+    left = Math.max(12, Math.min(left, window.innerWidth - popW - 12));
+    let top = rect.bottom + 8;
+    // If it would overflow the bottom of the viewport, show it above the cell instead.
+    const estPopH = 160;
+    if (top + estPopH > window.innerHeight - 12) {
+      top = rect.top - estPopH - 8;
+    }
+    popover.style.left = `${left}px`;
+    popover.style.top = `${top}px`;
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function _phCloseCalPopover() {
+  const popover = document.getElementById('ph-cal-popover');
+  const backdrop = document.getElementById('ph-cal-popover-backdrop');
+  if (popover) popover.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
 }
 
 function _phOpenAddEventDate(date) {
-  document.getElementById('ph-cal-popover').style.display = 'none';
+  _phCloseCalPopover();
   _phOpenAddEvent();
   setTimeout(() => {
     const d = document.getElementById('ph-ev-date');
@@ -1414,7 +1441,12 @@ function _injectHomeStyles() {
   .ph-bday-days.today { background: rgba(255,152,0,.12); color: #FF9800; }
   [data-theme="light"] .ph-bday-days { color: #0a8a85; }
   [data-theme="light"] .ph-bday-days.today { color: #e67e22; }
-  .ph-bday-empty { font-size: 12px; color: var(--text3); font-style: italic; padding: 12px 0; }
+  .ph-bday-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; padding: 20px 12px; text-align: center;
+    font-size: 12px; color: var(--text3);
+  }
+  .ph-bday-empty .fi { font-size: 22px; color: var(--text3); opacity: .35; }
 
   /* ═══════════════════════════════════════════════════════
      UPCOMING EVENTS
@@ -1442,6 +1474,13 @@ function _injectHomeStyles() {
     background: rgba(55,138,221,.12); color: #378ADD; margin-left: 4px;
   }
   [data-theme="light"] .ph-event-tag { background: rgba(40,100,200,.1); color: #1a5cb0; }
+
+  .ph-ev-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; padding: 20px 12px; text-align: center;
+  }
+  .ph-ev-empty .fi { font-size: 22px; color: var(--text3); opacity: .35; }
+  .ph-ev-empty span { font-size: 12px; color: var(--text3); }
 
   /* ═══════════════════════════════════════════════════════
      ROW 2: Workforce Overview + Quick Access
@@ -1612,13 +1651,51 @@ function _injectHomeStyles() {
   }
   .ph-cal-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-  .ph-cal-popover {
-    background: var(--bg-glass); border: 1px solid var(--border2); border-radius: 10px;
-    padding: 10px 14px; font-size: 12px; color: var(--text1);
-    box-shadow: 0 8px 28px rgba(0,0,0,.5); margin-top: 6px; z-index: 10;
-    backdrop-filter: blur(20px);
+  .ph-cal-popover-backdrop {
+    position: fixed; inset: 0; z-index: 998;
+    background: rgba(0,0,0,0.25);
   }
-  [data-theme="light"] .ph-cal-popover { background: rgba(255,255,255,.95); }
+  .ph-cal-popover {
+    position: fixed; width: 280px; max-width: 90vw; z-index: 999;
+    background: var(--bg-glass); border: 1px solid var(--border2); border-radius: 12px;
+    padding: 14px 16px; font-size: 12px; color: var(--text1);
+    box-shadow: 0 16px 48px rgba(0,0,0,.55);
+    backdrop-filter: blur(28px) saturate(1.7);
+    -webkit-backdrop-filter: blur(28px) saturate(1.7);
+    animation: phPopIn .15s ease-out;
+  }
+  @keyframes phPopIn {
+    from { opacity: 0; transform: translateY(-4px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  [data-theme="light"] .ph-cal-popover { background: rgba(255,255,255,.97); }
+
+  .ph-pop-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .ph-pop-date { font-size: 13px; font-weight: 700; color: var(--text1); }
+  .ph-pop-close {
+    width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg-frosted); color: var(--text2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 10px;
+    flex-shrink: 0; transition: all .15s;
+  }
+  .ph-pop-close:hover { border-color: var(--border2); color: var(--text1); }
+
+  .ph-pop-event {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 7px 0; border-bottom: 1px solid var(--border);
+  }
+  .ph-pop-event:last-child { border-bottom: none; }
+  .ph-pop-event .fi { font-size: 14px; margin-top: 1px; }
+  .ph-pop-ev-title { font-size: 12px; font-weight: 600; color: var(--text1); }
+  .ph-pop-ev-note  { font-size: 11px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+  .ph-pop-ev-by    { font-size: 10px; color: var(--text3); margin-top: 3px; font-style: italic; }
+
+  .ph-pop-empty {
+    font-size: 11px; color: var(--text3); text-align: center; padding: 10px 0 2px;
+  }
 
   /* ═══════════════════════════════════════════════════════
      FEATURE BANNER
