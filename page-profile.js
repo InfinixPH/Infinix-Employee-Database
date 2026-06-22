@@ -95,6 +95,7 @@ function renderProfilePage(id) {
             ${canWrite() ? `<button class="btn btn-pp-edit write-action" onclick="openEditModal('${esc(emp.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:13px'></i> Edit</button>` : ''}
             <button class="btn btn-pp-back" onclick="history.length>1?history.back():Router.go('people')"><i class='fi fi-sr-angle-left' style='font-size:13px'></i> Back</button>
             <button class="pp-print-btn" onclick="printEmployeeProfile('${esc(emp.infinixId)}')"><i class='fi fi-sr-print' style='font-size:12px'></i> Print</button>
+          </div>
         </div>
       </div>
 
