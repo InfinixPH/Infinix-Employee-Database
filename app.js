@@ -1175,8 +1175,8 @@ function renderSidebar(){
   document.getElementById('badge-active').textContent=s.Active;
   document.getElementById('badge-inactive').textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
   document.getElementById('status-filters').innerHTML=STATUSES.map(st=>`
-    <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${esc(st)}')">
-      <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span>${esc(st)}
+    <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${esc(st)}')" title="${esc(st)}">
+      <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span><span class="sf-label">${esc(st)}</span>
       <span class="sf-count">${s[st]||0}</span>
     </div>`).join('');
 }
