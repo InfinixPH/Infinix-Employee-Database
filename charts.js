@@ -297,22 +297,22 @@ function renderDashboard(){
           <!-- DOUGHNUT + STATUS TABLE -->
           <div class="chart-card glass-card" style="display:flex;flex-direction:column">
             <div class="chart-title">Status Breakdown</div>
-            <div style="display:flex;align-items:center;gap:16px;min-height:0;flex-shrink:0">
-              <div style="position:relative;width:150px;height:150px;flex-shrink:0">
-                <canvas id="chart-status" style="width:150px!important;height:150px!important"></canvas>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0">
+              <div style="position:relative;width:120px;height:120px;flex-shrink:0">
+                <canvas id="chart-status" style="width:120px!important;height:120px!important"></canvas>
                 <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-                  <div style="font-size:26px;font-weight:900;font-family:'Inter', sans-serif;line-height:1;color:var(--text)">${total}</div>
+                  <div style="font-size:22px;font-weight:900;font-family:'Inter', sans-serif;line-height:1;color:var(--text)">${total}</div>
                   <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px">TOTAL</div>
                 </div>
               </div>
-              <div style="flex:1;min-width:0;overflow:hidden">
-                <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+              <div style="width:100%">
+                <table style="width:100%;border-collapse:collapse">
                   <thead>
                     <tr>
-                      <th style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:6px;border-bottom:1px solid var(--border);text-align:left;width:16px"></th>
-                      <th style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:6px;border-bottom:1px solid var(--border);text-align:left;padding-left:6px">Status</th>
-                      <th style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:6px;border-bottom:1px solid var(--border);text-align:right;width:44px">Count</th>
-                      <th style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:6px;border-bottom:1px solid var(--border);text-align:right;width:38px">%</th>
+                      <th style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:7px;border-bottom:1px solid var(--border);text-align:left;width:20px"></th>
+                      <th style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:7px;border-bottom:1px solid var(--border);text-align:left;padding-left:8px">Status</th>
+                      <th style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:7px;border-bottom:1px solid var(--border);text-align:right;width:54px">Count</th>
+                      <th style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding-bottom:7px;border-bottom:1px solid var(--border);text-align:right;width:46px">%</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -320,10 +320,10 @@ function renderDashboard(){
                     const cnt=s[st]||0;
                     const pct=total?Math.round(cnt/total*100):0;
                     return`<tr onclick="filterByStatus('${esc(st)}')" style="cursor:pointer">
-                      <td style="padding:4px 0"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${STATUS_COLORS[st]};vertical-align:middle"></span></td>
-                      <td style="font-size:11px;font-weight:600;color:var(--text2);padding:4px 0 4px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(st)}</td>
-                      <td style="font-size:12px;font-weight:800;color:${STATUS_COLORS[st]};text-align:right;padding:4px 0">${cnt}</td>
-                      <td style="font-size:11px;color:var(--text3);text-align:right;padding:4px 0 4px 4px">${pct}%</td>
+                      <td style="padding:6px 0"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${STATUS_COLORS[st]};vertical-align:middle"></span></td>
+                      <td style="font-size:12px;font-weight:600;color:var(--text2);padding:6px 0 6px 8px;white-space:nowrap">${esc(st)}</td>
+                      <td style="font-size:13px;font-weight:800;color:${STATUS_COLORS[st]};text-align:right;padding:6px 0">${cnt}</td>
+                      <td style="font-size:12px;color:var(--text3);text-align:right;padding:6px 0 6px 4px">${pct}%</td>
                     </tr>`;
                   }).join('')}
                   </tbody>
