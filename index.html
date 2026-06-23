@@ -354,7 +354,6 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
 .sidebar.collapsed .brand-sub,
 .sidebar.collapsed .nav-section,
 .sidebar.collapsed .nav-label,
-.sidebar.collapsed .nav-badge,
 .sidebar.collapsed .sf-label,
 .sidebar.collapsed .sf-count,
 .sidebar.collapsed .sidebar-footer,
@@ -365,13 +364,20 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   opacity: 0; visibility: hidden; pointer-events: none;
   width: 0; max-width: 0; overflow: hidden;
 }
+/* nav-badge must use display:none (not just width:0) so it's fully removed
+   from flex layout — a zero-width flex child still disrupts icon centering */
+.sidebar.collapsed .nav-badge { display: none; }
 .sidebar.collapsed .nav { padding: 10px 6px; overflow: visible; }
 .sidebar.collapsed .status-filters { padding: 10px 6px 12px; overflow: visible; }
 .sidebar.collapsed .nav-item,
 .sidebar.collapsed .sf-item {
   width: 40px; height: 38px; padding: 0; margin: 0 auto 4px;
-  justify-content: center; gap: 0; overflow: visible;
+  justify-content: center; align-items: center; gap: 0; overflow: visible;
+  display: flex;
 }
+/* Remove sf-label and sf-count from flex flow entirely so dot is truly centered */
+.sidebar.collapsed .sf-label,
+.sidebar.collapsed .sf-count { display: none; }
 .sidebar.collapsed .icon, .sidebar.collapsed .sf-dot { margin: 0; }
 .sidebar.collapsed .nav-item::after,
 .sidebar.collapsed .sf-item::after {
