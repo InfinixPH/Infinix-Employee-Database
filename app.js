@@ -1172,9 +1172,12 @@ function badgeHTML(val, cls){
 
 function renderSidebar(){
   const s=getStats();
-  document.getElementById('badge-active').textContent=s.Active;
-  document.getElementById('badge-inactive').textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
-  document.getElementById('status-filters').innerHTML=STATUSES.map(st=>`
+  const badgeActive = document.getElementById('badge-active');
+  const badgeInactive = document.getElementById('badge-inactive');
+  if(badgeActive) badgeActive.textContent=s.Active;
+  if(badgeInactive) badgeInactive.textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
+  const sf = document.getElementById('status-filters');
+  if(sf) sf.innerHTML=STATUSES.map(st=>`
     <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${esc(st)}')" title="${esc(st)}">
       <span class="sf-dot" style="background:${STATUS_COLORS[st]}"></span><span class="sf-label">${esc(st)}</span>
       <span class="sf-count">${s[st]||0}</span>
@@ -1201,7 +1204,7 @@ function showView(v){
   currentPage=1;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   // Map view names to nav element ids
-  const navMap={home:'nav-dashboard',dashboard:'nav-dashboard',active:'nav-active',inactive:'nav-inactive',tracker:'nav-tracker',log:'nav-log',analytics:'nav-analytics',settings:'nav-settings'};
+  const navMap={home:'nav-dashboard',dashboard:'nav-dashboard',active:'nav-active',inactive:'nav-archive-parent',archive:'nav-archive-parent',tracker:'nav-tracker',log:'nav-log',analytics:'nav-analytics',settings:'nav-settings',calendar:'nav-calendar',recruitment:'nav-recruitment'};
   const el=document.getElementById(navMap[v]||'nav-'+v);if(el)el.classList.add('active');
   renderSidebar();renderView();
 }
@@ -1213,16 +1216,20 @@ function renderView(){
 
   // Search visible on table/people views only
   const sw=document.getElementById('topbar-search-wrap');
-  if(sw) sw.style.visibility=(currentView==='active'||currentView==='inactive')?'visible':'hidden';
+  const _searchViews = ['active','inactive'];
+  if(sw) sw.style.visibility=_searchViews.includes(currentView)?'visible':'hidden';
 
   if(currentView==='home')renderHome();
   else if(currentView==='dashboard')renderAnalyticsPage();
   else if(currentView==='analytics')renderAnalyticsPage();
   else if(currentView==='active')renderEmployeeTable('active');
   else if(currentView==='inactive')renderEmployeeTable('inactive');
+  else if(currentView==='archive')renderArchivePage();
   else if(currentView==='tracker')renderTracker();
   else if(currentView==='log')renderLog();
   else if(currentView==='settings')renderSettingsPage();
+  else if(currentView==='calendar')renderCalendarPage();
+  else if(currentView==='recruitment')renderRecruitmentPage();
 
   // Activate any Lucide icons injected by page renderers
   if(typeof lucide !== 'undefined') lucide.createIcons();
@@ -1241,6 +1248,179 @@ function dashSearch(q){
   if(!q.trim())return;
   document.getElementById('search-input').value=q;
   Router.navigate('/people');
+}
+
+
+// ============================================================
+// WORKFORCE ARCHIVE PAGE
+// ============================================================
+const ARCHIVE_STATUSES = [
+  { key:'Resigned',   label:'Resigned',   color:'#CD7F32', icon:'fi-sr-user-minus' },
+  { key:'AWOL',       label:'AWOL',       color:'#C62828', icon:'fi-sr-user-cross' },
+  { key:'Floating',   label:'Floating',   color:'#D4AF37', icon:'fi-sr-user-time' },
+  { key:'Terminated', label:'Terminated', color:'#7B5EA7', icon:'fi-sr-ban' },
+  { key:'Backout',    label:'Backout',    color:'#C62828', icon:'fi-sr-arrow-left' },
+];
+
+let _archiveActiveStatus = null; // null = show all categories
+
+function renderArchivePage(statusFilter){
+  if(statusFilter !== undefined) _archiveActiveStatus = statusFilter;
+  const titleEl = document.getElementById('topbar-title');
+  if(titleEl) titleEl.textContent = 'Workforce Archive';
+
+  const stats = getStats();
+  const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
+  const countMap = { Resigned:stats.Resigned, AWOL:stats.AWOL, Floating:stats.Floating, Terminated:stats.Terminated, Backout:backoutCount };
+
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="archive-wrap">
+      <!-- Category tabs -->
+      <div class="archive-tabs">
+        <div class="archive-tab ${!_archiveActiveStatus?'active':''}" onclick="showArchiveByStatus(null)">
+          All Archive
+          <span class="archive-tab-count">${Object.values(countMap).reduce((a,b)=>a+b,0)}</span>
+        </div>
+        ${ARCHIVE_STATUSES.map(s=>`
+          <div class="archive-tab ${_archiveActiveStatus===s.key?'active':''}" onclick="showArchiveByStatus('${esc(s.key)}')" style="--tab-color:${s.color}">
+            <i class="fi ${s.icon}" style="font-size:12px"></i>
+            ${esc(s.label)}
+            <span class="archive-tab-count">${countMap[s.key]||0}</span>
+          </div>`).join('')}
+      </div>
+
+      <!-- Archive list -->
+      <div id="archive-list-wrap"></div>
+    </div>
+  `;
+
+  _renderArchiveList();
+  _injectArchiveStyles();
+}
+
+function showArchiveByStatus(status){
+  _archiveActiveStatus = status;
+  renderArchivePage(status);
+}
+
+function _renderArchiveList(){
+  const wrap = document.getElementById('archive-list-wrap');
+  if(!wrap) return;
+
+  if(_archiveActiveStatus){
+    // Single status view — show as table
+    const filtered = employees.filter(e => {
+      if(_archiveActiveStatus === 'Backout') return normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT';
+      return normalizeStatus(e.status) === _archiveActiveStatus;
+    });
+
+    const statusInfo = ARCHIVE_STATUSES.find(s => s.key === _archiveActiveStatus) || {};
+    wrap.innerHTML = `
+      <div class="table-wrap">
+        <div class="table-head">
+          <h3 style="color:${statusInfo.color||'var(--text)'}">${esc(statusInfo.label||_archiveActiveStatus)} (${filtered.length})</h3>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>Full Name</th><th>Infinix ID</th><th>Status</th>
+              <th>Status Date</th><th>Region</th><th>Store</th><th>Remarks</th>
+            </tr></thead>
+            <tbody>
+              ${filtered.length === 0
+                ? `<tr><td colspan="7"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
+                : filtered.map(e=>`<tr onclick="openDetailPanel('${esc(e.infinixId)}')" style="cursor:pointer">
+                    <td><div class="td-name">${esc(e.fullName||'')}</div></td>
+                    <td><span class="td-id">${esc(e.infinixId||'')}</span></td>
+                    <td>${badgeHTML(e.status)}</td>
+                    <td style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>
+                    <td style="color:var(--text2)">${esc(e.region||'—')}</td>
+                    <td style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>
+                    <td style="color:var(--text3);font-size:11px">${esc(e.statusRemarks||'—')}</td>
+                  </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  } else {
+    // All categories — expandable cards
+    const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
+    const countMap = { Resigned:getStats().Resigned, AWOL:getStats().AWOL, Floating:getStats().Floating, Terminated:getStats().Terminated, Backout:backoutCount };
+
+    wrap.innerHTML = `<div class="archive-categories">
+      ${ARCHIVE_STATUSES.map(s=>{
+        const count = countMap[s.key]||0;
+        return `<div class="archive-cat-card">
+          <div class="archive-cat-header" onclick="showArchiveByStatus('${esc(s.key)}')">
+            <div class="archive-cat-icon" style="background:${s.color}20;color:${s.color}">
+              <i class="fi ${s.icon}" style="font-size:16px"></i>
+            </div>
+            <div class="archive-cat-info">
+              <div class="archive-cat-name" style="color:${s.color}">${esc(s.label)}</div>
+              <div class="archive-cat-count">${count} employee${count!==1?'s':''}</div>
+            </div>
+            <div class="archive-cat-arrow">›</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+}
+
+function _injectArchiveStyles(){
+  if(document.getElementById('archive-styles')) return;
+  const s = document.createElement('style');
+  s.id = 'archive-styles';
+  s.textContent = `
+  .archive-wrap { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .archive-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .archive-tab {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 22px;
+    border: 1px solid var(--border);
+    background: var(--bg-frosted);
+    color: var(--text2); font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .archive-tab:hover { border-color: var(--border2); color: var(--text); }
+  .archive-tab.active {
+    background: rgba(0,200,170,.12);
+    border-color: rgba(0,200,170,.35);
+    color: var(--accent);
+  }
+  .archive-tab-count {
+    background: rgba(255,255,255,.08); border-radius: 10px;
+    padding: 1px 6px; font-size: 10px; font-weight: 700;
+  }
+
+  .archive-categories {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .archive-cat-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    transition: border-color .15s, transform .15s;
+  }
+  .archive-cat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .archive-cat-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px; cursor: pointer;
+  }
+  .archive-cat-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .archive-cat-info { flex: 1; }
+  .archive-cat-name { font-size: 13px; font-weight: 700; }
+  .archive-cat-count { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .archive-cat-arrow { font-size: 18px; color: var(--text3); }
+  `;
+  document.head.appendChild(s);
 }
 
 // ============================================================
