@@ -2644,3 +2644,100 @@ html, body {
 [data-theme="light"] .b-SENT        { background: rgba(0,150,80,0.12);  color: #0a7040; border-color: rgba(0,150,80,0.28); }
 [data-theme="light"] .b-NOT-YET-SENT{ background: rgba(180,130,0,0.12); color: #7a5500; border-color: rgba(180,130,0,0.28); }
 [data-theme="light"] .b-none        { background: rgba(0,0,0,0.05); color: rgba(26,34,34,0.45); border-color: rgba(0,0,0,0.10); }
+
+/* ============================================================
+   SIDEBAR REDESIGN — New nav structure
+   ============================================================ */
+
+/* Archive submenu collapse */
+.nav-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .28s cubic-bezier(.4,0,.2,1);
+}
+.nav-submenu.open {
+  max-height: 300px;
+}
+
+.nav-subitem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 14px 7px 38px;
+  border-radius: var(--radius-sm);
+  cursor: pointer; color: var(--text2);
+  font-size: 12px; font-weight: 500;
+  transition: background .15s, color .15s;
+  position: relative;
+  margin: 1px 8px;
+}
+.nav-subitem:hover { background: var(--accent-dim); color: var(--text); }
+.nav-subitem.active { color: var(--accent); background: rgba(0,200,170,0.1); }
+
+.sub-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 4px currentColor;
+}
+
+/* Chevron rotation */
+.nav-chevron {
+  margin-left: auto; color: var(--text3);
+  display: flex; align-items: center;
+  transition: transform .25s;
+  flex-shrink: 0;
+}
+.sidebar.collapsed .nav-chevron { display: none; }
+
+/* Parent item with submenu */
+.nav-item-parent { user-select: none; }
+.nav-item-parent.submenu-open { color: var(--text); }
+
+/* Settings pinned at bottom */
+.nav-item-settings {
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  border-radius: 0 !important;
+  padding: 12px 14px !important;
+  margin-bottom: 4px;
+}
+.nav-item-settings:hover { border-top-color: var(--border2); }
+
+/* Hide the status-filters section (now using archive submenu instead) */
+.status-filters[style*="display:none"] { display: none !important; }
+
+/* ── Sidebar collapse: hide submenu in collapsed state ── */
+.sidebar.collapsed .nav-submenu { display: none; }
+.sidebar.collapsed .nav-item-parent { position: relative; }
+
+/* ============================================================
+   TOP BAR — INFINIX branding update
+   ============================================================ */
+.topbar {
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ============================================================
+   HOME DASHBOARD — Reference-image layout
+   ============================================================ */
+/* Ensure smooth page transitions */
+.content { animation: none; }
+.page-fade { animation: pageFade .18s ease-out; }
+@keyframes pageFade { from { opacity: .6; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ============================================================
+   FIELD INPUT (used by calendar modal)
+   ============================================================ */
+.field-input {
+  width: 100%;
+  padding: 8px 11px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12.5px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+.field-input:focus { border-color: var(--accent); }
+[data-theme="light"] .field-input { background: rgba(255,255,255,.7); }
