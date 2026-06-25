@@ -61,6 +61,22 @@ const Router = (() => {
       pattern: /^\/profile\/(.+)$/,
       handler: (m) => _activateProfile(m[1]),
     },
+    {
+      pattern: /^\/calendar$/,
+      handler: () => _activateView('calendar'),
+    },
+    {
+      pattern: /^\/recruitment$/,
+      handler: () => _activateView('recruitment'),
+    },
+    {
+      pattern: /^\/archive$/,
+      handler: () => _activateView('archive'),
+    },
+    {
+      pattern: /^\/archive\/(.+)$/,
+      handler: (m) => _activateArchive(m[1]),
+    },
   ];
 
   // ── Default route ──────────────────────────────────────────
@@ -133,13 +149,16 @@ const Router = (() => {
 
   // ── Breadcrumb ─────────────────────────────────────────────
   const ROUTE_LABELS = {
-    '/home':      'Home',
-    '/people':    'People',
-    '/inactive':  'Inactive',
-    '/tracker':   'Deployment Tracker',
-    '/log':       'Activity Log',
-    '/analytics': 'Analytics',
-    '/settings':  'Settings',
+    '/home':        'Home',
+    '/people':      'Active Workforce',
+    '/inactive':    'Workforce Archive',
+    '/tracker':     'Deployment Tracker',
+    '/log':         'Activity Log',
+    '/analytics':   'Analytics',
+    '/settings':    'Settings',
+    '/calendar':    'Calendar',
+    '/recruitment': 'Recruitment & Training',
+    '/archive':     'Workforce Archive',
   };
 
   function _updateBreadcrumb(path) {
@@ -323,15 +342,27 @@ const Router = (() => {
    * Use this in nav-item onclick: onclick="Router.go('active')"
    * It's the same as navigate() but accepts the old view names.
    */
+  function _activateArchive(status) {
+    // First activate the archive view (sets currentView, highlights nav, renders page)
+    _activateView('archive');
+    // Then filter to the specific status after a tick to let renderArchivePage run first
+    if (status && typeof showArchiveByStatus === 'function') {
+      setTimeout(() => showArchiveByStatus(status), 0);
+    }
+  }
+
   const VIEW_TO_ROUTE = {
-    'home':      '/home',
-    'dashboard': '/home',
-    'active':    '/people',
-    'inactive':  '/inactive',
-    'tracker':   '/tracker',
-    'log':       '/log',
-    'analytics': '/analytics',
-    'settings':  '/settings',
+    'home':        '/home',
+    'dashboard':   '/home',
+    'active':      '/people',
+    'inactive':    '/archive',
+    'tracker':     '/tracker',
+    'log':         '/log',
+    'analytics':   '/analytics',
+    'settings':    '/settings',
+    'calendar':    '/calendar',
+    'recruitment': '/recruitment',
+    'archive':     '/archive',
   };
 
   function go(viewName) {
