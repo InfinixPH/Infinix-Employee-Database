@@ -569,7 +569,7 @@ function _injectHomeStyles() {
   .hd-hero {
     position: relative;
     width: 100%;
-    min-height: 260px;
+    min-height: 220px;
     background: #000;
     display: flex;
     flex-direction: column;
@@ -577,7 +577,7 @@ function _injectHomeStyles() {
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-    padding: 48px 24px 40px;
+    padding: 36px 24px 32px;
   }
 
   [data-theme="light"] .hd-hero { background: #0a0a0f; }
@@ -596,12 +596,13 @@ function _injectHomeStyles() {
   }
 
   .hd-hero-title {
-    font-size: clamp(32px, 6vw, 60px);
+    font-size: clamp(22px, 4.5vw, 52px);
     font-weight: 900;
     letter-spacing: 4px;
     color: #fff;
     text-transform: uppercase;
     line-height: 1.0;
+    white-space: nowrap;
   }
   .hd-hero-sub {
     font-size: 13px;
@@ -653,7 +654,7 @@ function _injectHomeStyles() {
     text-align: left;
   }
   .hd-kpi:not(:last-child) { border-right: none; }
-  .hd-kpi:hover { background: #1a1a1a; }
+  .hd-kpi:hover { background: #1c1c1c; }
   .hd-kpi-val {
     font-size: 28px;
     font-weight: 900;
@@ -669,8 +670,11 @@ function _injectHomeStyles() {
     margin-top: 4px;
   }
 
-  [data-theme="light"] .hd-kpi { background: #111; border-color: #222; }
-  [data-theme="light"] .hd-kpi:hover { background: #1a1a1a; }
+  /* Force dark KPI in both themes — always black like pic 3 */
+  [data-theme="light"] .hd-kpi { background: #111 !important; border-color: #222 !important; }
+  [data-theme="light"] .hd-kpi:hover { background: #1c1c1c !important; }
+  [data-theme="light"] .hd-kpi-val { color: #fff !important; }
+  [data-theme="light"] .hd-kpi-label { color: rgba(255,255,255,.5) !important; }
 
   /* ═══ SHARED CARD ════════════════════════════════════════ */
   .hd-card {
