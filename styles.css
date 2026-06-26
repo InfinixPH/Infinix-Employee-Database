@@ -377,8 +377,6 @@ body::before {
 /* ─── LIGHT MODE: PAGINATION ─── */
 [data-theme="light"] .pagination { background: rgba(255,255,255,0.80); border-top-color: rgba(0,0,0,0.07); }
 [data-theme="light"] .page-btn { background: rgba(255,255,255,0.80); border-color: rgba(0,0,0,0.12); color: rgba(26,34,34,0.65); }
-  box-shadow: 0 4px 16px rgba(10,138,133,0.20);
-}
 
 /* FIX: Sidebar brand area — compact, no overflow */
 .brand {
