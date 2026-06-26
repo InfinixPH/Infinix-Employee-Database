@@ -16,6 +16,10 @@ function renderAnalyticsPage() {
   if (contentEl) contentEl.scrollTop = 0;
   _injectAnalyticsStyles();
 
+  // Remove any stale phase3 section before loading fresh data
+  const stalePhase3 = document.getElementById('phase3-charts');
+  if (stalePhase3) stalePhase3.remove();
+
   // Ensure the activity log is actually loaded before computing the headcount
   // trend chart — previously this silently used whatever (often nothing) was
   // cached from prior navigation, producing inaccurate/empty trend data.
@@ -45,6 +49,10 @@ async function _ensureLogCacheLoaded() {
 function _injectPhase3Charts() {
   const dashMain = document.querySelector('.dash-main');
   if (!dashMain) return;
+
+  // CRITICAL: Remove any existing phase3 section to prevent duplication
+  const existing = document.getElementById('phase3-charts');
+  if (existing) existing.remove();
 
   // Compute data
   const activeEmployees = (typeof activePromotersOnly === 'function') ? activePromotersOnly() : employees;
@@ -159,35 +167,34 @@ function _injectPhase3Charts() {
     <div class="p3-card glass-card" style="margin-top:16px">
       <div class="p3-card-header" style="margin-bottom:12px">
         <span class="p3-card-title"><i class="fi fi-sr-marker"></i> Region Breakdown</span>
-        <span class="p3-card-sub">Deployment rate per region — click row to filter</span>
+        <span class="p3-card-sub">Deployment rate per region</span>
       </div>
-      <table class="p3-region-table">
+      <div style="overflow-x:auto;width:100%">
+      <table class="p3-region-table" style="min-width:100%">
           <thead>
             <tr>
-              <th style="text-align:left">Region</th>
-              <th style="text-align:center">Total</th>
-              <th style="text-align:center">Deployed</th>
-              <th style="text-align:center">Deploy Rate</th>
-              <th style="text-align:left;min-width:120px">Progress</th>
+              <th style="text-align:left;min-width:140px">Region</th>
+              <th style="text-align:center;min-width:70px">Total</th>
+              <th style="text-align:center;min-width:80px">Deployed</th>
+              <th style="text-align:center;min-width:100px">Deploy Rate</th>
+              <th style="text-align:left;min-width:140px">Progress</th>
             </tr>
           </thead>
           <tbody>
             ${regionData.map(r => `
-              <tr onclick="missingFieldFilter=null;filterByStatus('Active');Router.go('people')" style="cursor:pointer" title="Click to view ${esc(r.region)} employees">
+              <tr title="${esc(r.region)} — ${r.deployed} deployed of ${r.total}">
                 <td style="font-weight:600;color:var(--text)">${esc(r.region)}</td>
                 <td style="text-align:center"><strong>${r.total}</strong></td>
                 <td style="text-align:center"><span style="color:#00E676;font-weight:700">${r.deployed}</span></td>
                 <td style="text-align:center">
-                  <span class="p3-rate-badge ${r.pct >= 70 ? 'good' : r.pct >= 40 ? 'mid' : 'low'}">
-                    ${r.pct}%
-                  </span>
+                  <span style="color:#00E676;font-weight:700;font-size:13px">${r.deployed}</span>
                 </td>
                 <td>
                   <div style="display:flex;align-items:center;gap:8px">
-                    <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;min-width:60px">
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;min-width:80px">
                       <div style="width:${r.pct}%;height:100%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'};border-radius:3px;transition:width .4s"></div>
                     </div>
-                    <span style="font-size:10px;color:var(--text3);min-width:28px;text-align:right">${r.pct}%</span>
+                    <span style="font-size:10px;color:var(--text3);min-width:32px;text-align:right">${r.pct}%</span>
                   </div>
                 </td>
               </tr>`).join('')}
@@ -203,6 +210,7 @@ function _injectPhase3Charts() {
             </tr>
           </tfoot>
         </table>
+      </div>
     </div>
 
     <!-- EXPORT NOTE -->
@@ -532,16 +540,18 @@ function _injectAnalyticsStyles() {
     }
 
     /* Region table */
-    .p3-region-table { width: 100%; border-collapse: collapse; }
+    .p3-region-table { width: 100%; border-collapse: collapse; table-layout: auto; }
     .p3-region-table th {
       font-size: 9px; font-weight: 800; text-transform: uppercase;
       letter-spacing: 1px; color: var(--accent); opacity: .7;
       padding: 0 8px 8px; text-align: left; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
     [data-theme="light"] .p3-region-table th { color: #0a8a85; opacity: 1; }
     .p3-region-table td {
-      padding: 9px 8px; font-size: 12px; color: var(--text2);
+      padding: 10px 8px; font-size: 12px; color: var(--text2);
       border-bottom: 1px solid rgba(0,200,170,.04);
+      white-space: nowrap;
     }
     .p3-region-table tr:last-child td { border-bottom: none; }
     .p3-region-table tbody tr:hover { background: rgba(0,200,170,.04); }
@@ -550,7 +560,6 @@ function _injectAnalyticsStyles() {
       border-bottom: none; font-weight: 700; color: var(--text);
       padding-top: 10px;
     }
-    .p3-region-name { font-weight: 600; color: var(--text); }
 
     .p3-rate-badge {
       font-size: 10px; font-weight: 700; padding: 2px 8px;
