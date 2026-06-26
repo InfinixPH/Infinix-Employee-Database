@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Infinix Workforce Portal</title>
+<title>Infinix Employee Database</title>
 <!-- Inter font from rsms.me -->
 <link rel="preconnect" href="https://rsms.me/">
 <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/solid/rounded.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=18">
+<link rel="stylesheet" href="styles.css?v=18?v=18">
 </head>
 <body>
 
@@ -30,16 +30,6 @@
 window.lucide = { createIcons: () => {} };
 // IX shim for any leftover IX.icon() calls (returns empty string)
 window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
-
-// Archive submenu toggle
-function toggleArchiveMenu(e){
-  e.stopPropagation();
-  const group = document.getElementById('nav-archive-group');
-  const parent = document.getElementById('nav-archive-parent');
-  if(!group) return;
-  const expanded = group.classList.toggle('expanded');
-  parent.classList.toggle('expanded', expanded);
-}
 </script>
 
 <!-- LOGIN SCREEN -->
@@ -50,8 +40,8 @@ function toggleArchiveMenu(e){
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
       <span style="display:none;font-family:'Inter',sans-serif;font-size:32px;font-weight:800;color:var(--tan);letter-spacing:2px">INFINIX</span>
     </div>
-    <div class="login-title">Workforce Portal</div>
-    <div class="login-sub">Sign in with your Google account to continue.</div>
+    <div class="login-title">HR System</div>
+    <div class="login-sub">Employee Database<br>Sign in with your Google account to continue.</div>
     <div class="login-waiting" id="login-waiting">
       <div class="spinner"></div>
       <p>Checking session…</p>
@@ -133,11 +123,7 @@ function toggleArchiveMenu(e){
 
 <div class="sidebar" id="sidebar">
   <div class="brand">
-    <!-- Collapsed state: tiny static brand dot, purely decorative — NOT a button,
-         NOT clickable, NOT shaped like an X. The hamburger in the topbar is the
-         single, only control for toggling the sidebar. -->
     <div class="brand-dot" aria-hidden="true"></div>
-    <!-- Expanded state: logo + subtitle -->
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
@@ -147,79 +133,108 @@ function toggleArchiveMenu(e){
   </div>
 
   <div class="nav">
-    <div class="nav-section">Main</div>
+    <!-- Home -->
     <div class="nav-item active" onclick="Router.go('home')" id="nav-dashboard" title="Home">
-      <span class="icon"><i class="fi fi-sr-home" style="font-size:15px"></i></span>
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </span>
       <span class="nav-label">Home</span>
     </div>
+
+    <!-- Active Workforce -->
     <div class="nav-item" onclick="Router.go('active')" id="nav-active" title="Active Workforce">
-      <span class="icon"><i class="fi fi-sr-user-check" style="font-size:15px"></i></span>
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
       <span class="nav-label">Active Workforce</span>
       <span class="nav-badge" id="badge-active">0</span>
     </div>
 
-    <!-- Workforce Archive — collapsible parent -->
-    <div class="nav-item nav-parent" id="nav-archive-parent" title="Workforce Archive" onclick="toggleArchiveMenu(event)">
-      <span class="icon"><i class="fi fi-sr-user-minus" style="font-size:15px"></i></span>
+    <!-- Workforce Archive (collapsible) -->
+    <div class="nav-item nav-item-parent" id="nav-archive-parent" onclick="toggleArchiveMenu()" title="Workforce Archive">
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+      </span>
       <span class="nav-label">Workforce Archive</span>
       <span class="nav-badge" id="badge-inactive">0</span>
-      <span class="nav-chevron"><i class="fi fi-sr-angle-right" style="font-size:10px"></i></span>
+      <span class="nav-chevron" id="archive-chevron">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
     </div>
-    <div class="nav-sub-group" id="nav-archive-group">
-      <div class="nav-item nav-sub" onclick="Router.go('archive-resigned')" id="nav-archive-resigned" title="Resigned">
-        <span class="icon nav-sub-icon"><i class="fi fi-sr-user-slash" style="font-size:13px"></i></span>
+    <!-- Archive sub-items -->
+    <div class="nav-submenu" id="nav-archive-submenu">
+      <div class="nav-subitem" onclick="showArchiveByStatus('Resigned');Router.navigate('/archive/Resigned')" id="nav-archive-Resigned" title="Resigned">
+        <span class="sub-dot" style="background:#CD7F32"></span>
         <span class="nav-label">Resigned</span>
       </div>
-      <div class="nav-item nav-sub" onclick="Router.go('archive-awol')" id="nav-archive-awol" title="AWOL">
-        <span class="icon nav-sub-icon"><i class="fi fi-sr-user-xmark" style="font-size:13px"></i></span>
+      <div class="nav-subitem" onclick="showArchiveByStatus('AWOL');Router.navigate('/archive/AWOL')" id="nav-archive-AWOL" title="AWOL">
+        <span class="sub-dot" style="background:#C62828"></span>
         <span class="nav-label">AWOL</span>
       </div>
-      <div class="nav-item nav-sub" onclick="Router.go('archive-floating')" id="nav-archive-floating" title="Floating">
-        <span class="icon nav-sub-icon"><i class="fi fi-sr-arrows-repeat" style="font-size:13px"></i></span>
+      <div class="nav-subitem" onclick="showArchiveByStatus('Floating');Router.navigate('/archive/Floating')" id="nav-archive-Floating" title="Floating">
+        <span class="sub-dot" style="background:#D4AF37"></span>
         <span class="nav-label">Floating</span>
       </div>
-      <div class="nav-item nav-sub" onclick="Router.go('archive-terminated')" id="nav-archive-terminated" title="Terminated">
-        <span class="icon nav-sub-icon"><i class="fi fi-sr-ban" style="font-size:13px"></i></span>
+      <div class="nav-subitem" onclick="showArchiveByStatus('Terminated');Router.navigate('/archive/Terminated')" id="nav-archive-Terminated" title="Terminated">
+        <span class="sub-dot" style="background:#7B5EA7"></span>
         <span class="nav-label">Terminated</span>
       </div>
-      <div class="nav-item nav-sub" onclick="Router.go('archive-backout')" id="nav-archive-backout" title="Backout">
-        <span class="icon nav-sub-icon"><i class="fi fi-sr-undo" style="font-size:13px"></i></span>
+      <div class="nav-subitem" onclick="showArchiveByStatus('Backout');Router.navigate('/archive/Backout')" id="nav-archive-Backout" title="Backout">
+        <span class="sub-dot" style="background:#C62828"></span>
         <span class="nav-label">Backout</span>
       </div>
     </div>
 
-    <div class="nav-item" onclick="Router.go('recruitment')" id="nav-recruitment" title="Recruitment &amp; Training">
-      <span class="icon"><i class="fi fi-sr-handshake" style="font-size:15px"></i></span>
-      <span class="nav-label">Recruitment &amp; Training</span>
+    <!-- Recruitment & Training -->
+    <div class="nav-item" onclick="Router.go('recruitment')" id="nav-recruitment" title="Recruitment & Training">
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      </span>
+      <span class="nav-label">Recruitment & Training</span>
     </div>
+
+    <!-- Deployment Tracker -->
     <div class="nav-item" onclick="Router.go('tracker')" id="nav-tracker" title="Deployment Tracker">
-      <span class="icon"><i class="fi fi-sr-marker" style="font-size:15px"></i></span>
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
       <span class="nav-label">Deployment Tracker</span>
     </div>
+
+    <!-- Calendar -->
     <div class="nav-item" onclick="Router.go('calendar')" id="nav-calendar" title="Calendar">
-      <span class="icon"><i class="fi fi-sr-calendar" style="font-size:15px"></i></span>
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </span>
       <span class="nav-label">Calendar</span>
     </div>
+
+    <!-- Activity Log -->
     <div class="nav-item" onclick="Router.go('log')" id="nav-log" title="Activity Log">
-      <span class="icon"><i class="fi fi-sr-document" style="font-size:15px"></i></span>
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </span>
       <span class="nav-label">Activity Log</span>
     </div>
 
-    <div class="nav-section">Reports</div>
+    <!-- Analytics -->
     <div class="nav-item" onclick="Router.go('analytics')" id="nav-analytics" title="Analytics">
-      <span class="icon"><i class="fi fi-sr-chart-histogram" style="font-size:15px"></i></span>
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </span>
       <span class="nav-label">Analytics</span>
     </div>
-
-    <div class="nav-section">System</div>
-    <div class="nav-item" onclick="Router.go('settings')" id="nav-settings" title="Settings">
-      <span class="icon"><i class="fi fi-sr-settings" style="font-size:15px"></i></span>
-      <span class="nav-label">Settings</span>
-    </div>
   </div>
-  <div class="status-filters" id="status-filters"></div>
+  <div class="status-filters" id="status-filters" style="display:none"></div>
 
   <div class="sidebar-footer">
+    <!-- Settings pinned at bottom -->
+    <div class="nav-item nav-item-settings" onclick="Router.go('settings')" id="nav-settings" title="Settings">
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </span>
+      <span class="nav-label">Settings</span>
+    </div>
     <button id="pw-manager-btn" onclick="openPwManager()" title="Manage role passwords" style="display:none;width:100%;margin-bottom:8px;align-items:center;gap:7px;padding:6px 10px;background:rgba(46,196,190,0.08);border:1px solid rgba(46,196,190,0.18);border-radius:var(--radius-sm);cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--teal-deep)">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Manage Passwords
@@ -584,22 +599,44 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="config.js?v=17"></script>
-<script src="roles.js?v=18"></script>
+<script src="roles.js?v=17"></script>
 <script src="charts.js?v=17"></script>
 <script src="components.js?v=2"></script>
-<script src="page-home.js?v=2"></script>
+<script src="page-home.js?v=3"></script>
 <script src="page-profile.js?v=2"></script>
 <script src="page-analytics.js?v=2"></script>
 <script src="page-settings.js?v=2"></script>
-<script src="page-archive.js?v=1"></script>
-<script src="page-calendar.js?v=1"></script>
-<script src="page-recruitment.js?v=1"></script>
-<script src="router.js?v=3"></script>
+<script src="page-calendar.js?v=2"></script>
+<script src="page-recruitment.js?v=2"></script>
+<script src="router.js?v=4"></script>
 <script src="app.js?v=18"></script>
 
 <script>
 // Initialize IX icons after DOM is ready, and again after each dynamic render
 // Icons are now Flaticon Uicons — no boot code needed, CSS font loads automatically.
+
+// ── Archive submenu toggle ────────────────────────────────────
+function toggleArchiveMenu(){
+  const submenu = document.getElementById('nav-archive-submenu');
+  const chevron = document.getElementById('archive-chevron');
+  const parent  = document.getElementById('nav-archive-parent');
+  if(!submenu) return;
+  const isOpen = submenu.classList.toggle('open');
+  if(chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+  if(parent)  parent.classList.toggle('submenu-open', isOpen);
+}
+
+// Persist archive submenu state across views
+function _restoreArchiveSubmenu(){
+  const open = sessionStorage.getItem('archive_menu_open') === 'true';
+  if(open){
+    const submenu = document.getElementById('nav-archive-submenu');
+    const chevron = document.getElementById('archive-chevron');
+    if(submenu){ submenu.classList.add('open'); }
+    if(chevron){ chevron.style.transform = 'rotate(180deg)'; }
+  }
+}
+document.addEventListener('DOMContentLoaded', _restoreArchiveSubmenu);
 </script>
 </body>
 </html>
