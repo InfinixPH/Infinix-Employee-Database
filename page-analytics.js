@@ -161,21 +161,20 @@ function _injectPhase3Charts() {
         <span class="p3-card-title"><i class="fi fi-sr-marker"></i> Region Breakdown</span>
         <span class="p3-card-sub">Deployment rate per region — click row to filter</span>
       </div>
-      <div style="overflow-x:hidden">
-        <table class="p3-region-table" style="width:100%;table-layout:fixed">
+      <table class="p3-region-table">
           <thead>
             <tr>
-              <th style="width:35%">Region</th>
-              <th style="width:15%;text-align:center">Total</th>
-              <th style="width:15%;text-align:center">Deployed</th>
-              <th style="width:15%;text-align:center">Deploy Rate</th>
-              <th style="width:20%">Progress</th>
+              <th style="text-align:left">Region</th>
+              <th style="text-align:center">Total</th>
+              <th style="text-align:center">Deployed</th>
+              <th style="text-align:center">Deploy Rate</th>
+              <th style="text-align:left;min-width:120px">Progress</th>
             </tr>
           </thead>
           <tbody>
             ${regionData.map(r => `
               <tr onclick="missingFieldFilter=null;filterByStatus('Active');Router.go('people')" style="cursor:pointer" title="Click to view ${esc(r.region)} employees">
-                <td><span class="p3-region-name">${esc(r.region)}</span></td>
+                <td style="font-weight:600;color:var(--text)">${esc(r.region)}</td>
                 <td style="text-align:center"><strong>${r.total}</strong></td>
                 <td style="text-align:center"><span style="color:#00E676;font-weight:700">${r.deployed}</span></td>
                 <td style="text-align:center">
@@ -184,11 +183,11 @@ function _injectPhase3Charts() {
                   </span>
                 </td>
                 <td>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">
-                      <div style="width:${r.pct}%;height:100%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'};border-radius:3px"></div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;min-width:60px">
+                      <div style="width:${r.pct}%;height:100%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'};border-radius:3px;transition:width .4s"></div>
                     </div>
-                    <span style="font-size:10px;color:var(--text3);min-width:26px">${r.pct}%</span>
+                    <span style="font-size:10px;color:var(--text3);min-width:28px;text-align:right">${r.pct}%</span>
                   </div>
                 </td>
               </tr>`).join('')}
@@ -204,7 +203,6 @@ function _injectPhase3Charts() {
             </tr>
           </tfoot>
         </table>
-      </div>
     </div>
 
     <!-- EXPORT NOTE -->
