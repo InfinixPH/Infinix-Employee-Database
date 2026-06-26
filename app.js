@@ -1175,7 +1175,7 @@ function renderSidebar(){
   const badgeActive = document.getElementById('badge-active');
   const badgeInactive = document.getElementById('badge-inactive');
   if(badgeActive) badgeActive.textContent=s.Active;
-  if(badgeInactive) badgeInactive.textContent=employees.filter(e=>normalizeStatus(e.status)!=='Active' || normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
+  const _s=getStats(); if(badgeInactive) badgeInactive.textContent=(_s.Floating||0)+(_s.Resigned||0)+(_s.AWOL||0)+(_s.Terminated||0)+(_s.Backout||0);
   const sf = document.getElementById('status-filters');
   if(sf) sf.innerHTML=STATUSES.map(st=>`
     <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${esc(st)}')" title="${esc(st)}">
@@ -1336,13 +1336,18 @@ function _renderArchiveList(){
         <div class="table-scroll">
           <table>
             <thead><tr>
+              ${canWrite()?'<th class="no-sort td-actions-col">Actions</th>':''}
               <th>Full Name</th><th>Infinix ID</th><th>Status</th>
               <th>Status Date</th><th>Region</th><th>Store</th><th>Remarks</th>
             </tr></thead>
             <tbody>
               ${filtered.length === 0
-                ? `<tr><td colspan="7"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
+                ? `<tr><td colspan="${canWrite()?8:7}"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
                 : filtered.map(e=>`<tr onclick="openDetailPanel('${esc(e.infinixId)}')" style="cursor:pointer">
+                    ${canWrite()?`<td onclick="event.stopPropagation()" class="td-actions-cell">
+                      <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
+                      <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
+                    </td>`:''}
                     <td><div class="td-name">${esc(e.fullName||'')}</div></td>
                     <td><span class="td-id">${esc(e.infinixId||'')}</span></td>
                     <td>${badgeHTML(e.status)}</td>
