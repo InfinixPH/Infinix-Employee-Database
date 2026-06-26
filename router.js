@@ -28,21 +28,55 @@ const Router = (() => {
   // ── Route definitions ──────────────────────────────────────
   // Each entry: { pattern: RegExp, handler: fn(matches) }
   const routes = [
-    { pattern: /^\/home$/, handler: () => _activateView('home') },
-    { pattern: /^\/people$/, handler: () => _activateView('active') },
-    { pattern: /^\/inactive$/, handler: () => _activateView('inactive') },
-    { pattern: /^\/archive\/resigned$/, handler: () => _activateView('archive-resigned') },
-    { pattern: /^\/archive\/awol$/, handler: () => _activateView('archive-awol') },
-    { pattern: /^\/archive\/floating$/, handler: () => _activateView('archive-floating') },
-    { pattern: /^\/archive\/terminated$/, handler: () => _activateView('archive-terminated') },
-    { pattern: /^\/archive\/backout$/, handler: () => _activateView('archive-backout') },
-    { pattern: /^\/recruitment$/, handler: () => _activateView('recruitment') },
-    { pattern: /^\/calendar$/, handler: () => _activateView('calendar') },
-    { pattern: /^\/tracker$/, handler: () => _activateView('tracker') },
-    { pattern: /^\/log$/, handler: () => _activateView('log') },
-    { pattern: /^\/analytics$/, handler: () => _activateView('analytics') },
-    { pattern: /^\/settings$/, handler: () => _activateView('settings') },
-    { pattern: /^\/profile\/(.+)$/, handler: (m) => _activateProfile(m[1]) },
+    {
+      pattern: /^\/home$/,
+      handler: () => _activateView('home'),
+    },
+    {
+      pattern: /^\/people$/,
+      handler: () => _activateView('active'),
+    },
+    {
+      pattern: /^\/inactive$/,
+      handler: () => _activateView('inactive'),
+    },
+    {
+      pattern: /^\/tracker$/,
+      handler: () => _activateView('tracker'),
+    },
+    {
+      pattern: /^\/log$/,
+      handler: () => _activateView('log'),
+    },
+    {
+      pattern: /^\/analytics$/,
+      handler: () => _activateView('analytics'),
+    },
+    {
+      pattern: /^\/settings$/,
+      handler: () => _activateView('settings'),
+    },
+    {
+      // Profile route: #/profile/170012345  → full page (not side panel)
+      pattern: /^\/profile\/(.+)$/,
+      handler: (m) => _activateProfile(m[1]),
+    },
+    {
+      pattern: /^\/calendar$/,
+      handler: () => _activateView('calendar'),
+    },
+    {
+      pattern: /^\/recruitment$/,
+      handler: () => _activateView('recruitment'),
+    },
+    {
+      pattern: /^\/archive$/,
+      handler: () => _activateView('archive'),
+    },
+    {
+      pattern: /^\/archive\/(.+)$/,
+      handler: (m) => _activateArchive(m[1]),
+    },
   ];
 
   // ── Default route ──────────────────────────────────────────
@@ -115,13 +149,16 @@ const Router = (() => {
 
   // ── Breadcrumb ─────────────────────────────────────────────
   const ROUTE_LABELS = {
-    '/home':      'Home',
-    '/people':    'People',
-    '/inactive':  'Inactive',
-    '/tracker':   'Deployment Tracker',
-    '/log':       'Activity Log',
-    '/analytics': 'Analytics',
-    '/settings':  'Settings',
+    '/home':        'Home',
+    '/people':      'Active Workforce',
+    '/inactive':    'Workforce Archive',
+    '/tracker':     'Deployment Tracker',
+    '/log':         'Activity Log',
+    '/analytics':   'Analytics',
+    '/settings':    'Settings',
+    '/calendar':    'Calendar',
+    '/recruitment': 'Recruitment & Training',
+    '/archive':     'Workforce Archive',
   };
 
   function _updateBreadcrumb(path) {
@@ -305,22 +342,27 @@ const Router = (() => {
    * Use this in nav-item onclick: onclick="Router.go('active')"
    * It's the same as navigate() but accepts the old view names.
    */
+  function _activateArchive(status) {
+    // First activate the archive view (sets currentView, highlights nav, renders page)
+    _activateView('archive');
+    // Then filter to the specific status after a tick to let renderArchivePage run first
+    if (status && typeof showArchiveByStatus === 'function') {
+      setTimeout(() => showArchiveByStatus(status), 0);
+    }
+  }
+
   const VIEW_TO_ROUTE = {
-    'home':      '/home',
-    'dashboard': '/home',
-    'active':    '/people',
-    'inactive':  '/inactive',
-    'archive-resigned':   '/archive/resigned',
-    'archive-awol':       '/archive/awol',
-    'archive-floating':   '/archive/floating',
-    'archive-terminated': '/archive/terminated',
-    'archive-backout':    '/archive/backout',
-    'recruitment': '/recruitment',
+    'home':        '/home',
+    'dashboard':   '/home',
+    'active':      '/people',
+    'inactive':    '/archive',
+    'tracker':     '/tracker',
+    'log':         '/log',
+    'analytics':   '/analytics',
+    'settings':    '/settings',
     'calendar':    '/calendar',
-    'tracker':   '/tracker',
-    'log':       '/log',
-    'analytics': '/analytics',
-    'settings':  '/settings',
+    'recruitment': '/recruitment',
+    'archive':     '/archive',
   };
 
   function go(viewName) {
