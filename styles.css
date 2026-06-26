@@ -294,27 +294,25 @@ body::before {
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
 /* ============================================================
-   SIDEBAR
+   SIDEBAR — Claude-style clean panel
    ============================================================ */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
-  background: rgba(4,7,7,0.96);
-  backdrop-filter: blur(48px) saturate(2.0) brightness(0.85);
-  -webkit-backdrop-filter: blur(48px) saturate(2.0) brightness(0.85);
-  border-right: 1px solid rgba(0,200,170,0.10);
+  background: rgba(10, 12, 12, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(255,255,255,0.06);
   display: flex; flex-direction: column; overflow: visible;
   position: relative; z-index: 10;
-  transition: background .3s;
-  box-shadow: 4px 0 40px rgba(0,0,0,0.70), inset -1px 0 0 rgba(0,200,170,0.05);
+  transition: width .22s ease, background .3s;
 }
 [data-theme="light"] .sidebar {
-  background: rgba(220,232,232,0.92);
-  border-right-color: rgba(10,138,133,0.15);
-  box-shadow: 4px 0 24px rgba(10,138,133,0.10);
+  background: rgba(245, 248, 248, 0.97);
+  border-right-color: rgba(0,0,0,0.08);
 }
-[data-theme="light"] .nav-item { color: rgba(26,34,34,0.65); }
-[data-theme="light"] .nav-item:hover { background: rgba(10,138,133,0.08); border-color: rgba(10,138,133,0.15); color: rgba(26,34,34,0.9); }
-[data-theme="light"] .nav-item.active { background: rgba(10,138,133,0.14); border-color: rgba(10,138,133,0.30); color: rgba(26,34,34,0.95); }
+[data-theme="light"] .nav-item { color: rgba(26,34,34,0.60); }
+[data-theme="light"] .nav-item:hover { background: rgba(0,0,0,0.05); border-color: transparent; color: rgba(26,34,34,0.9); }
+[data-theme="light"] .nav-item.active { background: rgba(10,138,133,0.10); border-color: rgba(10,138,133,0.20); color: rgba(26,34,34,0.95); }
 [data-theme="light"] .sf-item { color: rgba(26,34,34,0.60); }
 [data-theme="light"] .sf-item:hover, [data-theme="light"] .sf-item.active { color: rgba(26,34,34,0.90); background: rgba(10,138,133,0.08); border-color: rgba(10,138,133,0.15); }
 [data-theme="light"] .sf-count { color: rgba(26,34,34,0.45); }
@@ -322,7 +320,7 @@ body::before {
 [data-theme="light"] .nav-section { color: #076e6a; opacity: 0.65; }
 [data-theme="light"] .user-name { color: rgba(26,34,34,0.90); }
 [data-theme="light"] .user-role-badge { color: #076e6a; border-color: rgba(7,110,106,0.25); background: rgba(7,110,106,0.08); }
-[data-theme="light"] .sidebar-footer { border-top-color: rgba(10,138,133,0.12); }
+[data-theme="light"] .sidebar-footer { border-top-color: rgba(0,0,0,0.08); }
 
 /* ─── LIGHT MODE: FIX ALL GLOWING / UNREADABLE TEAL TEXT ─── */
 [data-theme="light"] thead th { color: #076e6a !important; opacity: 1; }
@@ -414,41 +412,11 @@ body::before {
   box-shadow: 0 4px 16px rgba(10,138,133,0.20);
 }
 
-/* FIX: Sidebar brand area — compact, no overflow */
-.brand {
-  padding: 12px 14px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.02);
-  overflow: hidden;
-}
-.brand-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-}
+/* Brand area is styled in index.html inline styles — see .brand, .brand-hamburger, .brand-content */
 
-/* Sidebar logo — smaller */
-.brand-logo img {
-  height: 20px;
-  width: auto;
-  max-width: 110px;
-  object-fit: contain;
-  display: block;
-  filter: brightness(0) invert(1);
-  opacity: 0.96;
-}
-[data-theme="light"] .brand-logo img {
-  filter: brightness(0);
-  opacity: 0.85;
-}
 
-.brand-sub {
-  font-size: 7px; color: var(--moss-green);
-  letter-spacing: 2.5px; text-transform: uppercase;
-  margin-top: 5px; font-weight: 700; opacity: 0.55;
-}
+/* Sidebar nav area */
+
 
 .nav { flex: 1; padding: 8px 8px; overflow-y: auto; overflow-x: hidden; }
 .nav-section {
@@ -2703,9 +2671,8 @@ html, body {
 /* Hide the status-filters section (now using archive submenu instead) */
 .status-filters[style*="display:none"] { display: none !important; }
 
-/* ── Sidebar collapse: hide submenu in collapsed state ── */
-.sidebar.collapsed .nav-submenu { display: none; }
-.sidebar.collapsed .nav-item-parent { position: relative; }
+/* ── Sidebar collapse is handled entirely in index.html inline styles ── */
+
 
 /* ============================================================
    TOP BAR — INFINIX branding update
