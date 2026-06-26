@@ -48,14 +48,47 @@ function renderHome() {
     <div class="hd-wrap">
 
       <!-- ═══════════════════════════════════════════════════
-           HERO SECTION — big title matching reference
+           HERO — full viewport height, fills screen on load
+           User scrolls down to reach the dashboard content
       ═══════════════════════════════════════════════════ -->
-      <div class="hd-hero">
-        <div class="hd-hero-title">WORKFORCE PORTAL</div>
-        <div class="hd-hero-sub">Employee Management &bull; Deployment Tracking &bull; HR Operations</div>
-        <div class="hd-hero-btns">
-          <button class="hd-hero-btn" onclick="Router.go('analytics')">Analytics</button>
-          <button class="hd-hero-btn" onclick="Router.go('recruitment')">Applicants</button>
+      <div class="hd-hero" id="hd-hero">
+        <!-- Ambient background blobs -->
+        <div class="hd-hero-blob hd-hero-blob-1"></div>
+        <div class="hd-hero-blob hd-hero-blob-2"></div>
+        <div class="hd-hero-blob hd-hero-blob-3"></div>
+
+        <div class="hd-hero-inner">
+          <div class="hd-hero-tag">INFINIX HR PLATFORM</div>
+          <div class="hd-hero-title">WORKFORCE<br>PORTAL</div>
+          <div class="hd-hero-sub">Employee Management &bull; Deployment Tracking &bull; HR Operations</div>
+          <div class="hd-hero-btns">
+            <button class="hd-hero-btn hd-hero-btn-primary" onclick="Router.go('analytics')">Analytics</button>
+            <button class="hd-hero-btn hd-hero-btn-outline" onclick="Router.go('recruitment')">Applicants</button>
+          </div>
+          <div class="hd-hero-stats">
+            <div class="hd-hs-item">
+              <div class="hd-hs-val">${active}</div>
+              <div class="hd-hs-lbl">Active</div>
+            </div>
+            <div class="hd-hs-div"></div>
+            <div class="hd-hs-item">
+              <div class="hd-hs-val">${deployed}</div>
+              <div class="hd-hs-lbl">Deployed</div>
+            </div>
+            <div class="hd-hs-div"></div>
+            <div class="hd-hs-item">
+              <div class="hd-hs-val">${total}</div>
+              <div class="hd-hs-lbl">Total</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll down indicator -->
+        <div class="hd-scroll-indicator" onclick="document.querySelector('.hd-kpi-strip')?.scrollIntoView({behavior:'smooth'})">
+          <span>Scroll down</span>
+          <div class="hd-scroll-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </div>
         </div>
       </div>
 
@@ -557,57 +590,197 @@ function _injectHomeStyles() {
     max-width: 100%;
   }
 
-  /* ═══ HERO ═══════════════════════════════════════════════ */
+  /* ═══ HERO — full viewport height, naga.gov.ph style ════ */
   .hd-hero {
+    position: relative;
+    width: 100%;
+    /* Fill content area viewport height */
+    height: calc(100vh - 58px);
+    min-height: 520px;
     background: #000;
-    padding: 48px 24px 40px;
-    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Animated background blobs */
+  .hd-hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .18;
+    pointer-events: none;
+    animation: blobFloat 8s ease-in-out infinite;
+  }
+  .hd-hero-blob-1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #00C8AA, transparent 70%);
+    top: -120px; left: -80px;
+    animation-delay: 0s;
+  }
+  .hd-hero-blob-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #0099ff, transparent 70%);
+    bottom: -100px; right: -60px;
+    animation-delay: -3s;
+  }
+  .hd-hero-blob-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #7B5EA7, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    animation-delay: -6s;
+  }
+  @keyframes blobFloat {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33%      { transform: translate(20px,-15px) scale(1.05); }
+    66%      { transform: translate(-15px,10px) scale(.95); }
+  }
+  .hd-hero-blob-3 {
+    animation-name: blobFloat3;
+  }
+  @keyframes blobFloat3 {
+    0%,100% { transform: translate(-50%,-50%) scale(1); }
+    33%      { transform: translate(calc(-50% + 20px),calc(-50% - 15px)) scale(1.05); }
+    66%      { transform: translate(calc(-50% - 15px),calc(-50% + 10px)) scale(.95); }
+  }
+
+  /* Content inner */
+  .hd-hero-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: 0 24px;
+    max-width: 700px;
+  }
+
+  .hd-hero-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(0,200,170,.1);
+    border: 1px solid rgba(0,200,170,.25);
+    border-radius: 20px;
+    padding: 4px 14px;
   }
   .hd-hero-title {
-    font-size: clamp(28px, 5vw, 52px);
+    font-size: clamp(36px, 7vw, 72px);
     font-weight: 900;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     color: #fff;
     text-transform: uppercase;
-    line-height: 1.05;
+    line-height: 1.0;
+    text-shadow: 0 0 80px rgba(0,200,170,.3);
   }
   .hd-hero-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,.55);
+    font-size: 13.5px;
+    color: rgba(255,255,255,.5);
     font-style: italic;
     letter-spacing: .5px;
-    margin-bottom: 4px;
   }
   .hd-hero-btns {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 6px;
+    margin-top: 4px;
   }
   .hd-hero-btn {
-    padding: 10px 32px;
-    background: transparent;
-    border: 2px solid rgba(255,255,255,.6);
-    color: #fff;
-    font-size: 14px;
+    padding: 11px 32px;
+    font-size: 13px;
     font-weight: 700;
     font-family: 'Inter', sans-serif;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     letter-spacing: .5px;
-    transition: background .15s, border-color .15s;
-    min-width: 160px;
+    transition: all .18s;
+    min-width: 150px;
   }
-  .hd-hero-btn:hover {
-    background: rgba(255,255,255,.1);
-    border-color: #fff;
+  .hd-hero-btn-primary {
+    background: var(--accent);
+    border: 2px solid var(--accent);
+    color: #000;
   }
-  [data-theme="light"] .hd-hero { background: #111; }
+  .hd-hero-btn-primary:hover { background: #00e8c4; border-color: #00e8c4; transform: translateY(-1px); }
+  .hd-hero-btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,.4);
+    color: #fff;
+  }
+  .hd-hero-btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.07); transform: translateY(-1px); }
+
+  /* Quick stats row inside hero */
+  .hd-hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 12px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 14px 28px;
+    backdrop-filter: blur(12px);
+  }
+  .hd-hs-item { text-align: center; }
+  .hd-hs-val {
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+  }
+  .hd-hs-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,.4);
+    margin-top: 4px;
+  }
+  .hd-hs-div {
+    width: 1px;
+    height: 36px;
+    background: rgba(255,255,255,.12);
+  }
+
+  /* Scroll indicator */
+  .hd-scroll-indicator {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: rgba(255,255,255,.4);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: color .15s;
+    user-select: none;
+  }
+  .hd-scroll-indicator:hover { color: rgba(255,255,255,.7); }
+  .hd-scroll-arrow {
+    animation: scrollBounce 2s ease-in-out infinite;
+  }
+  @keyframes scrollBounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(6px); }
+  }
+
+  [data-theme="light"] .hd-hero { background: #0a0a0f; }
+  [data-theme="light"] .hd-hero-btn-outline { border-color: rgba(255,255,255,.5); }
 
   /* ═══ KPI STRIP ══════════════════════════════════════════ */
   .hd-kpi-strip {
