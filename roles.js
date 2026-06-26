@@ -96,14 +96,14 @@ async function validateRolePassword(role, pin){
   return false;
 }
 async function stampRoleLogin(rowNumber, hashedPin, role){
-  // Only update the timestamp (column E), preserve email/role/password/status
-  // so shared role passwords remain accessible to all users
   try{
+    const email = currentUser?.email || '';
+    const roleLabel = ROLE_NAME_MAP[role] || role || '';
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `'${ROLE_LOG_SHEET}'!E${rowNumber}`,
+      range: `'${ROLE_LOG_SHEET}'!A${rowNumber}:E${rowNumber}`,
       valueInputOption: 'RAW',
-      resource: { values: [[ts()]] }
+      resource: { values: [[email, roleLabel, hashedPin || '', 'ACTIVE', ts()]] }
     });
   }catch(e){
     console.warn('Role timestamp update failed:', e);
@@ -188,9 +188,11 @@ async function upsertRolePassword(role, password){
   const hashed = await sha256(password);
   const rows = await getRoleRows();
   const existing = rows.find(r => r.role === role);
-  // Use empty email so this is a shared password valid for ALL users, not just the owner
-  const values = [['', roleLabel, hashed, 'ACTIVE', ts()]];
   if(existing){
+    // BUG FIX: preserve the existing email field so other users can still log in.
+    // Using the owner's email here would lock out everyone else from this role.
+    const existingEmail = existing.email || '';
+    const values = [[existingEmail, roleLabel, hashed, 'ACTIVE', ts()]];
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId:SHEET_ID,
       range:`'${ROLE_LOG_SHEET}'!A${existing.row}:E${existing.row}`,
@@ -198,6 +200,8 @@ async function upsertRolePassword(role, password){
       resource:{values}
     });
   } else {
+    // New row: use blank email so any user can log in with this shared password
+    const values = [['', roleLabel, hashed, 'ACTIVE', ts()]];
     await gapi.client.sheets.spreadsheets.values.append({
       spreadsheetId:SHEET_ID,
       range:`'${ROLE_LOG_SHEET}'!A:E`,
