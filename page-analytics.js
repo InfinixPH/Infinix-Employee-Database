@@ -161,33 +161,35 @@ function _injectPhase3Charts() {
         <span class="p3-card-title"><i class="fi fi-sr-marker"></i> Region Breakdown</span>
         <span class="p3-card-sub">Deployment rate per region — click row to filter</span>
       </div>
-      <div class="table-scroll">
-        <table class="p3-region-table">
+      <div style="overflow-x:hidden">
+        <table class="p3-region-table" style="width:100%;table-layout:fixed">
           <thead>
             <tr>
-              <th>Region</th>
-              <th>Total</th>
-              <th>Deployed</th>
-              <th>Deploy Rate</th>
-              <th>Progress</th>
+              <th style="width:35%">Region</th>
+              <th style="width:15%;text-align:center">Total</th>
+              <th style="width:15%;text-align:center">Deployed</th>
+              <th style="width:15%;text-align:center">Deploy Rate</th>
+              <th style="width:20%">Progress</th>
             </tr>
           </thead>
           <tbody>
             ${regionData.map(r => `
               <tr onclick="missingFieldFilter=null;filterByStatus('Active');Router.go('people')" style="cursor:pointer" title="Click to view ${esc(r.region)} employees">
                 <td><span class="p3-region-name">${esc(r.region)}</span></td>
-                <td><strong>${r.total}</strong></td>
-                <td><span style="color:#00E676;font-weight:700">${r.deployed}</span></td>
-                <td>
+                <td style="text-align:center"><strong>${r.total}</strong></td>
+                <td style="text-align:center"><span style="color:#00E676;font-weight:700">${r.deployed}</span></td>
+                <td style="text-align:center">
                   <span class="p3-rate-badge ${r.pct >= 70 ? 'good' : r.pct >= 40 ? 'mid' : 'low'}">
                     ${r.pct}%
                   </span>
                 </td>
-                <td class="p3-bar-cell">
-                  <div class="p3-bar-wrap">
-                    <div class="p3-bar-fill" style="width:${r.pct}%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'}"></div>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">
+                      <div style="width:${r.pct}%;height:100%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'};border-radius:3px"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--text3);min-width:26px">${r.pct}%</span>
                   </div>
-                  <span class="p3-bar-pct">${r.pct}%</span>
                 </td>
               </tr>`).join('')}
             ${regionData.length === 0 ? `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-style:italic">No region data available</td></tr>` : ''}
@@ -195,9 +197,9 @@ function _injectPhase3Charts() {
           <tfoot>
             <tr>
               <td><strong>Total</strong></td>
-              <td><strong>${regionData.reduce((s,r)=>s+r.total,0)}</strong></td>
-              <td><strong style="color:#00E676">${regionData.reduce((s,r)=>s+r.deployed,0)}</strong></td>
-              <td><strong>${regionData.reduce((s,r)=>s+r.total,0) ? Math.round(regionData.reduce((s,r)=>s+r.deployed,0)/regionData.reduce((s,r)=>s+r.total,0)*100) : 0}%</strong></td>
+              <td style="text-align:center"><strong>${regionData.reduce((s,r)=>s+r.total,0)}</strong></td>
+              <td style="text-align:center"><strong style="color:#00E676">${regionData.reduce((s,r)=>s+r.deployed,0)}</strong></td>
+              <td style="text-align:center"><strong>${regionData.reduce((s,r)=>s+r.total,0) ? Math.round(regionData.reduce((s,r)=>s+r.deployed,0)/regionData.reduce((s,r)=>s+r.total,0)*100) : 0}%</strong></td>
               <td></td>
             </tr>
           </tfoot>
