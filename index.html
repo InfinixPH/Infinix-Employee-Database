@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/solid/rounded.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=18?v=18">
+<link rel="stylesheet" href="styles.css?v=19?v=18">
 </head>
 <body>
 
@@ -600,20 +600,53 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="config.js?v=17"></script>
 <script src="roles.js?v=17"></script>
-<script src="charts.js?v=17"></script>
+<script src="charts.js?v=18"></script>
 <script src="components.js?v=2"></script>
-<script src="page-home.js?v=3"></script>
+<script src="page-home.js?v=4"></script>
 <script src="page-profile.js?v=2"></script>
-<script src="page-analytics.js?v=2"></script>
+<script src="page-analytics.js?v=3"></script>
 <script src="page-settings.js?v=2"></script>
 <script src="page-calendar.js?v=2"></script>
 <script src="page-recruitment.js?v=2"></script>
 <script src="router.js?v=4"></script>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=19"></script>
 
 <script>
 // Initialize IX icons after DOM is ready, and again after each dynamic render
 // Icons are now Flaticon Uicons — no boot code needed, CSS font loads automatically.
+
+// ── Scroll reveal — sections below hero animate in on scroll ───
+(function(){
+  function revealOnScroll(){
+    const items = document.querySelectorAll('.hd-kpi-strip,.hd-row-a,.hd-row-b,.hd-row-c');
+    if(!items.length) return;
+    const trigger = window.innerHeight * 0.92;
+    items.forEach(el => {
+      if(!el.classList.contains('sr-hidden')) return;
+      const rect = el.getBoundingClientRect();
+      if(rect.top < trigger){
+        el.classList.remove('sr-hidden');
+        el.classList.add('sr-visible');
+      }
+    });
+  }
+  // Attach to content scroll container
+  document.addEventListener('DOMContentLoaded', () => {
+    const cont = document.getElementById('content');
+    if(cont) cont.addEventListener('scroll', revealOnScroll, {passive:true});
+    // Also check on render (content is re-injected)
+    const obs = new MutationObserver(() => {
+      // Mark new items as hidden for reveal
+      document.querySelectorAll('.hd-kpi-strip,.hd-row-a,.hd-row-b,.hd-row-c').forEach(el => {
+        if(!el.classList.contains('sr-hidden') && !el.classList.contains('sr-visible')){
+          el.classList.add('sr-hidden');
+        }
+      });
+      setTimeout(revealOnScroll, 60);
+    });
+    if(cont) obs.observe(cont, {childList:true, subtree:false});
+  });
+})();
 
 // ── Archive submenu toggle ────────────────────────────────────
 function toggleArchiveMenu(){
