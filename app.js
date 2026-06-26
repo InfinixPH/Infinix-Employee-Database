@@ -1214,10 +1214,14 @@ function renderView(){
   const contentEl=document.getElementById('content');
   if(contentEl){ contentEl.classList.remove('page-fade'); void contentEl.offsetWidth; contentEl.classList.add('page-fade'); }
 
-  // Search visible on table/people views only
+  // Search visible on table/people views only — smooth fade
   const sw=document.getElementById('topbar-search-wrap');
-  const _searchViews = ['active','inactive'];
-  if(sw) sw.style.visibility=_searchViews.includes(currentView)?'visible':'hidden';
+  const _searchViews = ['active','inactive','home'];
+  if(sw){
+    const visible = _searchViews.includes(currentView);
+    sw.style.opacity = visible ? '1' : '0';
+    sw.style.pointerEvents = visible ? '' : 'none';
+  }
 
   if(currentView==='home')renderHome();
   else if(currentView==='dashboard')renderAnalyticsPage();
@@ -1301,6 +1305,14 @@ function renderArchivePage(statusFilter){
 
 function showArchiveByStatus(status){
   _archiveActiveStatus = status;
+  if(currentView !== 'archive'){
+    // Navigate to archive view first (sets currentView, highlights nav), then render with filter
+    currentView = 'archive';
+    document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+    const el = document.getElementById('nav-archive-parent');
+    if(el) el.classList.add('active');
+    renderSidebar();
+  }
   renderArchivePage(status);
 }
 
