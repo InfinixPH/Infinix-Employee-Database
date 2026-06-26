@@ -52,15 +52,11 @@
   --surface2:       rgba(0,200,170,0.05);
 
   /* Spacing scale (8px grid) */
-  --space-3:  12px;
-  --space-4:  16px;
   --space-5:  20px;
   --space-6:  24px;
   --space-8:  32px;
 
   /* Elevation scale */
-  --shadow-xs: 0 1px 2px  rgba(0,0,0,0.30);
-  --shadow-sm: 0 2px 8px  rgba(0,0,0,0.40);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.50);
 
   --radius-pill: 100px;
@@ -381,19 +377,6 @@ body::before {
 /* ─── LIGHT MODE: PAGINATION ─── */
 [data-theme="light"] .pagination { background: rgba(255,255,255,0.80); border-top-color: rgba(0,0,0,0.07); }
 [data-theme="light"] .page-btn { background: rgba(255,255,255,0.80); border-color: rgba(0,0,0,0.12); color: rgba(26,34,34,0.65); }
-[data-theme="light"] .page-btn.active { background: #076e6a; border-color: transparent; color: #fff; }
-[data-theme="light"] .page-btn:hover:not(:disabled) { border-color: rgba(10,138,133,0.4); color: #076e6a; }
-
-/* ─── LIGHT MODE: btn-primary ─── */
-[data-theme="light"] .btn-primary {
-  background: rgba(10,138,133,0.15);
-  color: #076e6a;
-  border-color: rgba(10,138,133,0.40);
-  box-shadow: 0 2px 8px rgba(10,138,133,0.12);
-}
-[data-theme="light"] .btn-primary:hover {
-  background: rgba(10,138,133,0.25);
-  border-color: rgba(10,138,133,0.60);
   box-shadow: 0 4px 16px rgba(10,138,133,0.20);
 }
 
@@ -642,19 +625,6 @@ body::before {
   box-shadow: 0 2px 12px rgba(0,184,160,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 .btn-primary:hover {
-  background: rgba(0,184,160,0.30);
-  border-color: rgba(0,200,170,0.58);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(0,184,160,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
-}
-.btn-ghost {
-  background: rgba(255,255,255,0.04); color: var(--text2);
-  border-color: rgba(255,255,255,0.09);
-}
-.btn-ghost:hover { border-color: rgba(255,255,255,0.15); color: var(--text); background: rgba(255,255,255,0.08); }
-.btn-danger { background: rgba(224,92,92,0.10); color: var(--danger); border-color: rgba(224,92,92,0.22); }
-.btn-danger:hover { background: rgba(224,92,92,0.20); border-color: rgba(224,92,92,0.38); }
-.btn-sm { padding: 3px 9px; font-size: 11px; border-radius: 6px; }
 .btn-refresh { background: rgba(255,255,255,0.04); color: var(--text2); border-color: rgba(255,255,255,0.08); }
 .btn-refresh:hover { border-color: rgba(255,255,255,0.14); color: var(--text); }
 .btn-refresh.spinning span { display: inline-block; animation: spin .7s linear infinite; }
@@ -1592,14 +1562,6 @@ table td.td-check, table th.td-check { overflow: visible; }
   gap: 8px;
   width: fit-content;
   padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(46,196,190,0.10);
-  border: 1px solid rgba(46,196,190,0.18);
-  color: var(--teal);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
   margin-bottom: 12px;
 }
 .role-lock-icon { width: 16px; height: 16px; display: inline-flex; }
@@ -2630,20 +2592,6 @@ html, body {
 [data-theme="light"] .nav-parent.expanded { color: rgba(26,34,34,0.9); }
 
 /* ============================================================
-   SUMMARY / KPI CARDS — Premium redesign
-   ============================================================ */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  padding: 20px 24px 0;
-}
-@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
-@media (max-width: 540px) { .kpi-grid { grid-template-columns: 1fr; } }
-
-.kpi-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 20px;
   display: flex;
@@ -3260,3 +3208,221 @@ html, body {
 [data-theme="light"] .recruit-sum-card { background: rgba(255,255,255,.85); border-color: rgba(0,0,0,.07); }
 [data-theme="light"] .archive-table-wrap,
 [data-theme="light"] .archive-header { background: rgba(255,255,255,.85); border-color: rgba(0,0,0,.07); }
+
+/* ── HOME PAGE — content wrapper gets no padding so hero is truly full-width ── */
+.content:has(.ph-wrap) {
+  padding: 0 !important;
+  overflow-y: auto;
+}
+/* Fallback for browsers without :has() support */
+.content.home-no-pad {
+  padding: 0 !important;
+}
+
+/* ============================================================
+   PREMIUM UI — Enhanced visual polish pass
+   Buttons, tables, topbar, typography, micro-interactions
+   ============================================================ */
+
+/* ── BUTTONS — upgraded spacing & shadow ── */
+.btn {
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.1px;
+  transition: background .15s, border-color .15s, transform .12s, box-shadow .15s, opacity .15s !important;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,200,170,.25);
+}
+.btn-ghost:hover {
+  background: rgba(0,200,170,.07);
+  border-color: rgba(0,200,170,.22);
+}
+.btn-danger { transition: transform .12s, box-shadow .15s !important; }
+.btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(198,40,40,.22); }
+
+/* ── TOPBAR — more refined ── */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  background: var(--topbar-bg);
+}
+.topbar-right { gap: 8px; }
+
+/* Topbar search — premium input */
+.topbar-center input {
+  transition: background .15s, border-color .18s;
+}
+.topbar-center:focus-within {
+  border-color: var(--border2);
+  background: rgba(0,200,170,.04);
+}
+
+/* ── CONTENT AREA — breathing room ── */
+.content {
+  overflow-x: hidden;
+}
+
+/* ── TABLE — premium row interactions ── */
+tbody tr {
+  transition: background .10s;
+}
+tbody tr:hover {
+  background: var(--bg-frosted) !important;
+}
+thead th {
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── FILTER BAR — cleaner pill selects ── */
+.filter-bar select {
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.filter-bar select:focus {
+  outline: none;
+  border-color: var(--border2);
+}
+
+/* ── DETAIL PANEL — smoother entry ── */
+.detail-panel {
+  transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .22s;
+}
+.detail-panel.open {
+  box-shadow: -8px 0 48px rgba(0,0,0,.6), -1px 0 0 var(--border);
+}
+
+/* ── MODAL — polished overlay ── */
+.overlay {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.modal {
+  box-shadow: 0 24px 80px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.modal-header {
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── GLASS CARDS — improved hover state ── */
+.glass-card {
+  transition: transform .18s cubic-bezier(.4,0,.2,1), border-color .18s, box-shadow .18s !important;
+}
+
+/* ── SIDEBAR — section headers ── */
+.nav-section {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text4);
+  padding: 14px 10px 4px;
+  margin-top: 2px;
+}
+.sidebar.collapsed .nav-section {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Sub-nav active state */
+.nav-sub.active {
+  background: rgba(0,200,170,.08);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── PAGINATION — refined ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.page-btn {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: background .12s, border-color .12s, transform .1s;
+}
+.page-btn:hover:not(.active) {
+  transform: translateY(-1px);
+}
+.page-btn.active {
+  box-shadow: 0 2px 8px rgba(0,200,170,.25);
+}
+
+/* ── TOASTS — more polished ── */
+.toast {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+
+/* ── BADGE PILLS — consistent sizing ── */
+.badge, [class^="b-"], [class*=" b-"] {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* ── PENDING CARDS — hover lift ── */
+.pending-card {
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.pending-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ── KPI CARDS — glow pulse on load ── */
+@keyframes kpi-glow-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kpi-card {
+  animation: kpi-glow-in .4s cubic-bezier(.22,1,.36,1) both;
+}
+.kpi-card:nth-child(2) { animation-delay: .05s; }
+.kpi-card:nth-child(3) { animation-delay: .10s; }
+.kpi-card:nth-child(4) { animation-delay: .15s; }
+.kpi-card:nth-child(5) { animation-delay: .20s; }
+
+/* ── PROFILE PAGE — cleaner sections ── */
+.prof-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  opacity: .8;
+  margin-bottom: 10px;
+}
+
+/* ── ACTIVITY LOG — table polish ── */
+.log-table tbody tr td:first-child {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+/* ── RESPONSIVE tweaks ── */
+@media (max-width: 600px) {
+  .topbar-right .btn-refresh span { display: none; }
+  .topbar-right .btn-primary { padding: 6px 10px; font-size: 11px; }
+  .topbar-right { gap: 6px; }
+}
+
+/* ── LIGHT MODE premium adjustments ── */
+[data-theme="light"] .btn-primary:hover { box-shadow: 0 4px 14px rgba(10,138,133,.22); }
+[data-theme="light"] .glass-card { border-color: rgba(0,0,0,.07); }
+[data-theme="light"] .modal { box-shadow: 0 16px 60px rgba(10,138,133,.15); }
+[data-theme="light"] .detail-panel.open { box-shadow: -8px 0 40px rgba(10,138,133,.12), -1px 0 0 var(--border); }
+[data-theme="light"] .nav-section { color: rgba(26,34,34,.28); }
+[data-theme="light"] tbody tr:hover { background: rgba(10,138,133,.04) !important; }
+[data-theme="light"] .archive-table tbody tr:hover td { background: rgba(10,138,133,.04); }
