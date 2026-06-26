@@ -216,7 +216,8 @@ function renderDashboard(){
       ${STATUSES.map(st=>{
         const cnt=s[st]||0;
         const pct=total?Math.round(cnt/total*100):0;
-        return`<div class="dsr-card glass-card" onclick="filterByStatus('${esc(st)}')" style="border-left-color:${STATUS_COLORS[st]}">
+        const view = (st==='Active'||st==='Floating') ? 'active' : 'inactive';
+        return`<div class="dsr-card glass-card" onclick="filterByStatus('${esc(st)}')" style="border-left-color:${STATUS_COLORS[st]};cursor:pointer">
           <div class="dsr-num" style="color:${STATUS_COLORS[st]}">${cnt}</div>
           <div class="dsr-label">${esc(st)}</div>
           <div class="dsr-pct">${pct}% of total</div>
