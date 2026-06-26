@@ -126,12 +126,14 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
     <button class="sidebar-toggle-btn brand-hamburger" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
       <i class="fi fi-sr-menu-burger" style="font-size:15px"></i>
     </button>
-    <div class="brand-logo">
-      <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-family:'Inter',sans-serif;font-size:20px;font-weight:800;color:var(--tan);letter-spacing:1.5px">INFINIX</span>
+    <div class="brand-content">
+      <div class="brand-logo">
+        <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span style="display:none;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:var(--text);letter-spacing:1px">INFINIX</span>
+      </div>
+      <div class="brand-sub">Workforce</div>
     </div>
-    <div class="brand-sub">Workforce Portal</div>
   </div>
 
   <div class="nav">
@@ -373,76 +375,98 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 12px;
+  padding: 0 10px;
   height: var(--topbar-h);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
   overflow: hidden;
 }
+[data-theme="light"] .brand { border-bottom-color: rgba(0,0,0,0.08); }
+
 .brand-hamburger {
-  width: 32px; height: 32px; flex-shrink: 0;
-  border-radius: 8px; background: transparent; border: none;
+  width: 30px; height: 30px; flex-shrink: 0;
+  border-radius: 7px; background: transparent; border: none;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   color: var(--text2); transition: background .15s, color .15s;
   padding: 0;
 }
-.brand-hamburger:hover { background: rgba(0,200,170,0.10); color: var(--accent); }
+.brand-hamburger:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+[data-theme="light"] .brand-hamburger:hover { background: rgba(0,0,0,0.06); }
+
+/* Logo + subtitle wrapper — collapses to zero width when sidebar is closed */
+.brand-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  transition: opacity .2s, width .25s cubic-bezier(.4,0,.2,1);
+}
 .brand-logo {
   display: flex; align-items: center; flex-shrink: 0;
-  transition: opacity .2s, width .28s;
-  overflow: hidden;
-  width: 80px;
 }
-.brand-logo img { height: 22px; object-fit: contain; }
+.brand-logo img { height: 20px; width: auto; max-width: 80px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.90; }
+[data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.75; }
 .brand-sub {
   font-size: 9px; font-weight: 700; color: var(--text3);
   text-transform: uppercase; letter-spacing: 1.5px;
-  white-space: nowrap; overflow: hidden;
-  transition: opacity .2s, width .28s;
+  white-space: nowrap; flex-shrink: 0;
 }
-/* Collapsed: hide logo and subtitle, keep only hamburger */
-.sidebar.collapsed .brand { padding: 0; justify-content: center; }
-.sidebar.collapsed .brand-logo { opacity: 0; width: 0; pointer-events: none; }
-.sidebar.collapsed .brand-sub { opacity: 0; width: 0; pointer-events: none; }
+[data-theme="light"] .brand-sub { color: rgba(0,0,0,0.35); }
 
-/* ═══ SIDEBAR — no breathing, instant toggle ═══ */
-.sidebar { transition: width .25s cubic-bezier(.4,0,.2,1) !important; }
-.sidebar.collapsed { width: 56px !important; }
-.sidebar.collapsed .brand-dot { display: none; }
-.sidebar.collapsed .nav-section,
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .sf-label,
-.sidebar.collapsed .sf-count,
-.sidebar.collapsed .sidebar-footer,
-.sidebar.collapsed .sidebar-clock,
-.sidebar.collapsed .user-info,
-.sidebar.collapsed .user-name,
-.sidebar.collapsed .user-role-badge { opacity: 0; visibility: hidden; pointer-events: none; width: 0; max-width: 0; overflow: hidden; }
+/* ── Collapsed: only hamburger visible, everything else slides away ── */
+.sidebar { transition: width .25s cubic-bezier(.4,0,.2,1); }
+.sidebar.collapsed { width: 52px !important; }
+
+.sidebar.collapsed .brand { padding: 0; justify-content: center; gap: 0; }
+.sidebar.collapsed .brand-content { opacity: 0; width: 0; flex: 0; overflow: hidden; pointer-events: none; }
+
+/* Nav items */
 .sidebar.collapsed .nav-badge { display: none; }
-.sidebar.collapsed .nav { padding: 10px 6px; overflow: visible; }
-.sidebar.collapsed .status-filters { padding: 10px 6px 12px; overflow: visible; }
+.sidebar.collapsed .nav-section { display: none; }
+.sidebar.collapsed .nav { padding: 8px 6px; overflow: visible; }
+.sidebar.collapsed .status-filters { padding: 8px 6px 10px; overflow: visible; }
 .sidebar.collapsed .nav-item, .sidebar.collapsed .sf-item {
-  width: 40px; height: 38px; padding: 0; margin: 0 auto 4px;
+  width: 38px; height: 36px; padding: 0; margin: 0 auto 2px;
   justify-content: center; align-items: center; gap: 0;
   overflow: visible; display: flex;
 }
-.sidebar.collapsed .sf-label, .sidebar.collapsed .sf-count { display: none; }
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .sf-label,
+.sidebar.collapsed .sf-count { display: none; }
 .sidebar.collapsed .icon, .sidebar.collapsed .sf-dot { margin: 0; }
+
+/* Tooltips on collapsed items */
 .sidebar.collapsed .nav-item::after, .sidebar.collapsed .sf-item::after {
   content: attr(title); position: absolute; left: calc(100% + 10px); top: 50%;
   transform: translateY(-50%) translateX(-4px); opacity: 0; pointer-events: none;
-  white-space: nowrap; padding: 6px 10px; border-radius: 7px;
+  white-space: nowrap; padding: 5px 10px; border-radius: 7px;
   background: var(--bg-card-hover); border: 1px solid var(--border2);
   color: var(--text); font-size: 11px; font-weight: 600;
-  box-shadow: var(--shadow); transition: opacity .16s, transform .16s; z-index: 100;
+  box-shadow: var(--shadow); transition: opacity .16s, transform .16s; z-index: 200;
 }
 .sidebar.collapsed .nav-item:hover::after, .sidebar.collapsed .sf-item:hover::after {
   opacity: 1; transform: translateY(-50%) translateX(0);
 }
+
+/* Footer */
+.sidebar.collapsed .sidebar-footer { padding: 6px; }
+.sidebar.collapsed .sidebar-clock { display: none; }
+.sidebar.collapsed .user-pill { justify-content: center; padding: 6px; gap: 0; }
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .btn-signout,
+.sidebar.collapsed #pw-manager-btn,
+.sidebar.collapsed .user-role-badge { display: none !important; }
+
+/* Misc */
 .sidebar.collapsed .nav-chevron { display: none; }
 .sidebar.collapsed .nav-submenu { display: none; }
 .sidebar.collapsed .nav-item-parent { position: relative; }
 .sidebar.collapsed .nav-item.active::before { display: none; }
+.sidebar.collapsed .nav-item.active {
+  box-shadow: 0 0 0 1px rgba(0,200,170,0.30), 0 2px 8px rgba(0,184,160,0.15);
+}
 
 /* ═══ TOPBAR layout: left (title) + right (search + theme + bells + actions) ═══ */
 .topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
