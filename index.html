@@ -123,7 +123,9 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
 
 <div class="sidebar" id="sidebar">
   <div class="brand">
-    <div class="brand-dot" aria-hidden="true"></div>
+    <button class="sidebar-toggle-btn brand-hamburger" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
+      <i class="fi fi-sr-menu-burger" style="font-size:15px"></i>
+    </button>
     <div class="brand-logo">
       <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
@@ -259,21 +261,17 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
   <div class="offline-banner" id="offline-banner">Connection issue — data may be stale. <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="refreshData()">Retry</button></div>
   <div class="topbar">
     <div class="topbar-left">
-      <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
-        <span id="sidebar-toggle-icon" class="ix-toggle-icon"><i class="fi fi-sr-menu-burger" style="font-size:15px"></i></span>
-      </button>
-      <!-- #7 fix: topbar-title hidden when breadcrumb has content — breadcrumb alone shows page context -->
       <div class="topbar-title" id="topbar-title"></div>
       <div id="breadcrumb"></div>
     </div>
 
-    <div class="topbar-center" id="topbar-search-wrap">
-      <span class="search-icon" id="topbar-search-icon">
-        <i class="fi fi-sr-search" style="font-size:14px"></i>
-      </span>
-      <input type="text" id="search-input" placeholder="Search employees by name, ID, or store…" oninput="onSearch()" onkeydown="onSearchKeydown(event)" autocomplete="off">
-    </div>
     <div class="topbar-right">
+      <div class="topbar-search-wrap" id="topbar-search-wrap">
+        <span class="search-icon" id="topbar-search-icon">
+          <i class="fi fi-sr-search" style="font-size:14px"></i>
+        </span>
+        <input type="text" id="search-input" placeholder="Search employees…" oninput="onSearch()" onkeydown="onSearchKeydown(event)" autocomplete="off">
+      </div>
       <button class="theme-toggle topbar-theme-btn" id="topbar-theme-toggle" onclick="toggleTheme()" title="Toggle light/dark">
         <span id="theme-icon-dark"><i class="fi fi-sr-brightness" style="font-size:15px"></i></span>
         <span id="theme-icon-light" style="display:none"><i class="fi fi-sr-moon" style="font-size:15px"></i></span>
@@ -366,49 +364,51 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
 :root { font-feature-settings: 'cv02','cv03','cv04','cv11'; }
 html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !important; }
 
-/* ═══ IX ICON baseline alignment ═══ */
-.ix-icon { vertical-align: middle; flex-shrink: 0; }
-
-/* ═══ SIDEBAR TOGGLE icon container ═══ */
-.ix-toggle-icon { display: flex; align-items: center; justify-content: center; }
-.sidebar.collapsed ~ .main .ix-toggle-icon { transform: rotate(180deg); transition: transform .28s; }
-.ix-toggle-icon { transition: transform .28s; }
-
-/* ═══ Topbar: hide title when breadcrumb has content (#7 fix) ═══ */
+/* ═══ Topbar: hide title when breadcrumb has content ═══ */
 #topbar-title:not(:empty) + #breadcrumb:not(:empty) { display: none; }
 #topbar-title:empty { display: none; }
 
-/* ═══ COLLAPSIBLE SIDEBAR ═══ */
-.topbar-left {
-  display: flex; align-items: center; gap: 10px; min-width: 0;
+/* ═══ BRAND AREA with hamburger ═══ */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  height: var(--topbar-h);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
+  overflow: hidden;
 }
-.sidebar-toggle-btn {
-  position: relative; inset: auto; width: 32px; height: 32px;
-  border-radius: 8px; background: var(--bg-frosted); border: 1px solid var(--border);
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-  color: var(--text2); z-index: 2;
-  transition: background .18s, color .18s, border-color .18s, transform .18s;
-  padding: 0; flex: 0 0 auto;
+.brand-hamburger {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 8px; background: transparent; border: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text2); transition: background .15s, color .15s;
+  padding: 0;
 }
-.sidebar-toggle-btn:hover {
-  background: rgba(0,200,170,0.10); color: var(--accent);
-  border-color: rgba(0,200,170,0.26); transform: translateY(-1px);
+.brand-hamburger:hover { background: rgba(0,200,170,0.10); color: var(--accent); }
+.brand-logo {
+  display: flex; align-items: center; flex-shrink: 0;
+  transition: opacity .2s, width .28s;
+  overflow: hidden;
+  width: 80px;
 }
-.sidebar { transition: width .28s cubic-bezier(.4,0,.2,1), background .3s !important; }
-.sidebar.collapsed { width: 56px !important; overflow: visible !important; }
-.sidebar.collapsed .brand {
-  padding: 12px 0 10px; min-height: 56px;
-  width: 56px;
-  display: flex; align-items: center; justify-content: center;
+.brand-logo img { height: 22px; object-fit: contain; }
+.brand-sub {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  white-space: nowrap; overflow: hidden;
+  transition: opacity .2s, width .28s;
 }
-.brand-dot {
-  display: none; width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(0,200,170,0.45);
-  pointer-events: none; /* purely decorative — never intercepts clicks */
-}
-.sidebar.collapsed .brand-dot { display: block; margin: 0 auto; }
-.sidebar.collapsed .brand-logo,
-.sidebar.collapsed .brand-sub,
+/* Collapsed: hide logo and subtitle, keep only hamburger */
+.sidebar.collapsed .brand { padding: 0; justify-content: center; }
+.sidebar.collapsed .brand-logo { opacity: 0; width: 0; pointer-events: none; }
+.sidebar.collapsed .brand-sub { opacity: 0; width: 0; pointer-events: none; }
+
+/* ═══ SIDEBAR — no breathing, instant toggle ═══ */
+.sidebar { transition: width .25s cubic-bezier(.4,0,.2,1) !important; }
+.sidebar.collapsed { width: 56px !important; }
+.sidebar.collapsed .brand-dot { display: none; }
 .sidebar.collapsed .nav-section,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .sf-label,
@@ -417,27 +417,18 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
 .sidebar.collapsed .sidebar-clock,
 .sidebar.collapsed .user-info,
 .sidebar.collapsed .user-name,
-.sidebar.collapsed .user-role-badge {
-  opacity: 0; visibility: hidden; pointer-events: none;
-  width: 0; max-width: 0; overflow: hidden;
-}
-/* nav-badge must use display:none (not just width:0) so it's fully removed
-   from flex layout — a zero-width flex child still disrupts icon centering */
+.sidebar.collapsed .user-role-badge { opacity: 0; visibility: hidden; pointer-events: none; width: 0; max-width: 0; overflow: hidden; }
 .sidebar.collapsed .nav-badge { display: none; }
 .sidebar.collapsed .nav { padding: 10px 6px; overflow: visible; }
 .sidebar.collapsed .status-filters { padding: 10px 6px 12px; overflow: visible; }
-.sidebar.collapsed .nav-item,
-.sidebar.collapsed .sf-item {
+.sidebar.collapsed .nav-item, .sidebar.collapsed .sf-item {
   width: 40px; height: 38px; padding: 0; margin: 0 auto 4px;
-  justify-content: center; align-items: center; gap: 0; overflow: visible;
-  display: flex;
+  justify-content: center; align-items: center; gap: 0;
+  overflow: visible; display: flex;
 }
-/* Remove sf-label and sf-count from flex flow entirely so dot is truly centered */
-.sidebar.collapsed .sf-label,
-.sidebar.collapsed .sf-count { display: none; }
+.sidebar.collapsed .sf-label, .sidebar.collapsed .sf-count { display: none; }
 .sidebar.collapsed .icon, .sidebar.collapsed .sf-dot { margin: 0; }
-.sidebar.collapsed .nav-item::after,
-.sidebar.collapsed .sf-item::after {
+.sidebar.collapsed .nav-item::after, .sidebar.collapsed .sf-item::after {
   content: attr(title); position: absolute; left: calc(100% + 10px); top: 50%;
   transform: translateY(-50%) translateX(-4px); opacity: 0; pointer-events: none;
   white-space: nowrap; padding: 6px 10px; border-radius: 7px;
@@ -445,15 +436,42 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   color: var(--text); font-size: 11px; font-weight: 600;
   box-shadow: var(--shadow); transition: opacity .16s, transform .16s; z-index: 100;
 }
-.sidebar.collapsed .nav-item:hover::after,
-.sidebar.collapsed .sf-item:hover::after {
+.sidebar.collapsed .nav-item:hover::after, .sidebar.collapsed .sf-item:hover::after {
   opacity: 1; transform: translateY(-50%) translateX(0);
 }
-[data-theme="light"] .sidebar-toggle-btn {
-  color: rgba(26,34,34,0.6); background: rgba(255,255,255,0.72);
+.sidebar.collapsed .nav-chevron { display: none; }
+.sidebar.collapsed .nav-submenu { display: none; }
+.sidebar.collapsed .nav-item-parent { position: relative; }
+.sidebar.collapsed .nav-item.active::before { display: none; }
+
+/* ═══ TOPBAR layout: left (title) + right (search + theme + bells + actions) ═══ */
+.topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.topbar-right {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
-[data-theme="light"] .sidebar-toggle-btn:hover {
-  background: rgba(10,138,133,0.10); color: #076e6a; border-color: rgba(10,138,133,0.22);
+/* Search bar moved to topbar-right, inline before theme btn */
+.topbar-search-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.topbar-search-wrap input {
+  background: var(--bg-frosted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px 6px 34px;
+  font-size: 12px; color: var(--text);
+  width: 220px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, width .2s;
+}
+.topbar-search-wrap input:focus {
+  border-color: rgba(0,200,170,0.40);
+  box-shadow: 0 0 0 3px rgba(0,200,170,0.08);
+  width: 280px;
+}
+.topbar-search-wrap input::placeholder { color: var(--text3); }
+.topbar-search-wrap .search-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; opacity: 0.4; display: flex; align-items: center;
 }
 
 /* ═══ NOTIFICATION CENTER ═══ */
@@ -518,42 +536,22 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   display: flex; flex-direction: column; gap: 2px; margin-top: 10px;
   background: rgba(0,200,170,0.05); border: 1px solid rgba(0,200,170,0.10);
   border-radius: 9px; padding: 8px 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.25);
 }
-#sidebar-clock {
-  font-size: 16px; font-weight: 700; color: #D8EFEB;
-  letter-spacing: .8px; line-height: 1;
-}
-#sidebar-clock .clock-ampm {
-  font-size: 9px; font-weight: 600; color: #00C8AA;
-  letter-spacing: 0.5px; margin-left: 3px; opacity: 0.8;
-}
+#sidebar-clock { font-size: 16px; font-weight: 700; color: #D8EFEB; letter-spacing: .8px; line-height: 1; }
+#sidebar-clock .clock-ampm { font-size: 9px; font-weight: 600; color: #00C8AA; letter-spacing: 0.5px; margin-left: 3px; opacity: 0.8; }
 #sidebar-date { font-size: 10px; color: rgba(216,239,235,0.38); letter-spacing: 0.1px; margin-top: 2px; }
-[data-theme="light"] .sidebar-clock {
-  background: rgba(10,138,133,0.06); border-color: rgba(10,138,133,0.14);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 8px rgba(10,138,133,0.06);
-}
+[data-theme="light"] .sidebar-clock { background: rgba(10,138,133,0.06); border-color: rgba(10,138,133,0.14); }
 [data-theme="light"] #sidebar-clock { color: #1a2222 !important; }
 [data-theme="light"] #sidebar-clock .clock-ampm { color: #076e6a !important; }
 [data-theme="light"] #sidebar-date { color: rgba(26,34,34,0.45); }
 
-/* ═══ ROLE MODAL premium grid ═══ */
+/* ═══ ROLE MODAL ═══ */
 .role-modal-premium .role-btn-grid { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
-
-/* ═══ NAV badge active ═══ */
-.nav-item.active .nav-badge {
-  background: rgba(0,200,170,0.12); border-color: rgba(0,200,170,0.26); color: rgba(0,200,170,0.9);
-}
-
-/* ═══ PAGINATION ═══ */
+.nav-item.active .nav-badge { background: rgba(0,200,170,0.12); border-color: rgba(0,200,170,0.26); color: rgba(0,200,170,0.9); }
 .page-btn.active { background: var(--moss-green); border-color: transparent; color: #fff; font-weight: 700; }
-
-/* ═══ FILTER BAR ═══ */
 .filter-bar { background: rgba(0,200,170,0.025); border-bottom: 1px solid rgba(0,200,170,0.07); }
 .filter-bar select { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
 .filter-label { color: rgba(0,200,170,0.75); }
-
-/* ═══ SECTION HEADINGS ═══ */
 .section-heading,.drh-title,.section-label,.pending-title,.kf-label-top,.tracker-region-name,.chart-title,.detail-section-title { color: rgba(0,200,170,0.85); }
 .dhc-label { color: rgba(216,239,235,0.45); }
 [data-theme="light"] .section-heading,[data-theme="light"] .drh-title,[data-theme="light"] .section-label,
@@ -565,8 +563,6 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
 [data-theme="light"] .td-id { color: #076e6a !important; }
 [data-theme="light"] .btn-primary { color: #076e6a !important; }
 [data-theme="light"] #sidebar-clock { color: #076e6a !important; }
-
-/* ═══ MISC OVERRIDES ═══ */
 .dsr-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.45), 0 0 12px rgba(0,200,170,0.05); }
 .pending-card:hover { border-color: rgba(0,200,170,0.16) !important; }
 .spinner { border-top-color: #00C8AA; }
@@ -575,17 +571,10 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
 .toast.error   { border-color: rgba(255,82,82,0.36); color: #FF5252; }
 thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9); }
 .modal-header { background: rgba(0,200,170,0.02); }
-.pc-icon {
-  color: rgba(0,200,170,0.9);
-  background: linear-gradient(135deg, rgba(0,200,170,0.10), rgba(0,184,160,0.04)) !important;
-  border: 1px solid rgba(0,200,170,0.14);
-}
+.pc-icon { color: rgba(0,200,170,0.9); background: linear-gradient(135deg, rgba(0,200,170,0.10), rgba(0,184,160,0.04)) !important; border: 1px solid rgba(0,200,170,0.14); }
 .pc-icon.warn { color: #FFD740; background: linear-gradient(135deg, rgba(255,215,64,0.12), rgba(255,215,64,0.03)) !important; border-color: rgba(255,215,64,0.20); }
 .pc-icon.danger { color: #FF5252; background: linear-gradient(135deg, rgba(255,82,82,0.12), rgba(255,82,82,0.03)) !important; border-color: rgba(255,82,82,0.20); }
-.user-avatar {
-  background: linear-gradient(135deg, rgba(0,200,170,0.30), rgba(0,184,160,0.12));
-  border: 1px solid rgba(0,200,170,0.35); color: rgba(0,200,170,0.95);
-}
+.user-avatar { background: linear-gradient(135deg, rgba(0,200,170,0.30), rgba(0,184,160,0.12)); border: 1px solid rgba(0,200,170,0.35); color: rgba(0,200,170,0.95); }
 .sf-dot { box-shadow: 0 0 3px currentColor; }
 .dhc-progress { background: rgba(255,255,255,0.04); }
 .table-head { background: rgba(0,200,170,0.03); }
@@ -594,6 +583,10 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
 .chart-card:has(#chart-status) canvas { filter: drop-shadow(0 0 10px rgba(0,230,118,.25)) drop-shadow(0 0 18px rgba(255,215,64,.08)) !important; }
 #chart-sparkline { filter: drop-shadow(0 0 10px rgba(0,230,118,.20)) !important; }
 .chart-card:has(#chart-region) canvas { filter: drop-shadow(0 0 10px rgba(0,200,170,.18)) !important; }
+
+/* ═══ SCROLL REVEAL animations for home page sections ═══ */
+.sr-hidden { opacity: 0; transform: translateY(24px); }
+.sr-visible { opacity: 1; transform: translateY(0); transition: opacity .5s ease, transform .5s ease; }
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
