@@ -621,26 +621,26 @@ function renderTracker(){
     </div>
     <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount${trackerRegion?` — filtered to ${esc(trackerRegion)}`:''}</span></div>
     <div class="table-wrap">
-      <div class="table-scroll" style="overflow-x:hidden">
-        <table style="width:100%;table-layout:fixed">
+      <div class="table-scroll">
+        <table>
           <thead><tr>
-            <th class="no-sort" style="width:28%">Store</th><th class="no-sort" style="width:10%">Store ID</th><th class="no-sort" style="width:14%">Region</th>
-            <th class="no-sort" style="width:7%;text-align:center">Total</th><th class="no-sort" style="width:9%;text-align:center">Deployed</th><th class="no-sort" style="width:9%;text-align:center">Pending</th>
-            <th class="no-sort" style="width:9%;text-align:center">Backout</th><th class="no-sort" style="width:14%">Progress</th>
+            <th class="no-sort">Store</th><th class="no-sort">Store ID</th><th class="no-sort">Region</th>
+            <th class="no-sort" style="text-align:center">Total</th><th class="no-sort" style="text-align:center">Deployed</th><th class="no-sort" style="text-align:center">Pending</th>
+            <th class="no-sort" style="text-align:center">Backout</th><th class="no-sort">Progress</th>
           </tr></thead>
           <tbody>
             ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
             :storeList.map(st=>{
               const sp=st.total?Math.round(st.deployed/st.total*100):0;
               return`<tr>
-                <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><div class="td-name">${esc(st.name)}</div></td>
-                <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span class="td-id">${esc(st.storeId||'—')}</span></td>
-                <td style="color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(st.region||'—')}</td>
+                <td><div class="td-name">${esc(st.name)}</div></td>
+                <td><span class="td-id">${esc(st.storeId||'—')}</span></td>
+                <td style="color:var(--text2)">${esc(st.region||'—')}</td>
                 <td style="font-weight:700;text-align:center">${st.total}</td>
                 <td style="text-align:center"><span style="color:var(--success);font-weight:700">${st.deployed}</span></td>
                 <td style="text-align:center"><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td>
                 <td style="text-align:center"><span style="color:var(--danger);font-weight:700">${st.backout}</span></td>
-                <td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:24px">${sp}%</span></div></td>
+                <td style="min-width:100px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td>
               </tr>`;
             }).join('')}
           </tbody>
