@@ -170,31 +170,29 @@ function _injectPhase3Charts() {
         <span class="p3-card-sub">Deployment rate per region</span>
       </div>
       <div style="overflow-x:auto;width:100%">
-      <table class="p3-region-table" style="min-width:100%">
+      <table class="p3-region-table" style="min-width:100%;table-layout:fixed">
           <thead>
             <tr>
-              <th style="text-align:left;min-width:140px">Region</th>
-              <th style="text-align:center;min-width:70px">Total</th>
-              <th style="text-align:center;min-width:80px">Deployed</th>
-              <th style="text-align:center;min-width:100px">Deploy Rate</th>
-              <th style="text-align:left;min-width:140px">Progress</th>
+              <th style="text-align:left;width:160px;padding-left:0">Region</th>
+              <th style="text-align:center;width:80px">Total</th>
+              <th style="text-align:center;width:90px">Deployed</th>
+              <th style="text-align:center;width:110px">Deploy Rate</th>
+              <th style="text-align:left;width:160px">Progress</th>
             </tr>
           </thead>
           <tbody>
             ${regionData.map(r => `
               <tr title="${esc(r.region)} — ${r.deployed} deployed of ${r.total}">
-                <td style="font-weight:600;color:var(--text)">${esc(r.region)}</td>
+                <td style="font-weight:600;color:var(--text);padding-left:0">${esc(r.region)}</td>
                 <td style="text-align:center"><strong>${r.total}</strong></td>
                 <td style="text-align:center"><span style="color:#00E676;font-weight:700">${r.deployed}</span></td>
-                <td style="text-align:center">
-                  <span style="color:#00E676;font-weight:700;font-size:13px">${r.deployed}</span>
-                </td>
+                <td style="text-align:center"><span style="color:#00E676;font-weight:700;font-size:13px">${r.deployed}</span></td>
                 <td>
                   <div style="display:flex;align-items:center;gap:8px">
-                    <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;min-width:80px">
+                    <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
                       <div style="width:${r.pct}%;height:100%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'};border-radius:3px;transition:width .4s"></div>
                     </div>
-                    <span style="font-size:10px;color:var(--text3);min-width:32px;text-align:right">${r.pct}%</span>
+                    <span style="font-size:10px;color:var(--text3);min-width:36px;text-align:right">${r.pct}%</span>
                   </div>
                 </td>
               </tr>`).join('')}
@@ -202,7 +200,7 @@ function _injectPhase3Charts() {
           </tbody>
           <tfoot>
             <tr>
-              <td><strong>Total</strong></td>
+              <td style="padding-left:0"><strong>Total</strong></td>
               <td style="text-align:center"><strong>${regionData.reduce((s,r)=>s+r.total,0)}</strong></td>
               <td style="text-align:center"><strong style="color:#00E676">${regionData.reduce((s,r)=>s+r.deployed,0)}</strong></td>
               <td style="text-align:center"><strong>${regionData.reduce((s,r)=>s+r.total,0) ? Math.round(regionData.reduce((s,r)=>s+r.deployed,0)/regionData.reduce((s,r)=>s+r.total,0)*100) : 0}%</strong></td>
