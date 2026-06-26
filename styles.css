@@ -2769,3 +2769,127 @@ html, body {
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   FIX 4: Smooth search bar fade transition
+   ============================================================ */
+.topbar-center {
+  transition: opacity .22s ease;
+}
+
+/* ============================================================
+   FIX 4: Smooth page content transition (stronger)
+   ============================================================ */
+#content {
+  transition: opacity .18s ease;
+}
+.page-fade {
+  animation: pageFadeIn .2s ease-out;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   FIX 5: Region breakdown table — compress, no sideways scroll
+   ============================================================ */
+.p3-region-table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+.p3-region-table th,
+.p3-region-table td {
+  padding: 10px 12px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.p3-region-table th:first-child,
+.p3-region-table td:first-child {
+  width: 28%;
+}
+.p3-region-table th:nth-child(2),
+.p3-region-table td:nth-child(2),
+.p3-region-table th:nth-child(3),
+.p3-region-table td:nth-child(3) {
+  width: 12%;
+  text-align: center;
+}
+.p3-region-table th:nth-child(4),
+.p3-region-table td:nth-child(4) {
+  width: 14%;
+  text-align: center;
+}
+.p3-region-table th:nth-child(5),
+.p3-region-table td:nth-child(5) {
+  width: 34%;
+}
+/* Remove horizontal scroll on the region table container */
+.p3-region-table-wrap,
+.p3-card .table-scroll {
+  overflow-x: hidden !important;
+}
+/* Fix bar cell to not overflow */
+.p3-bar-cell {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+.p3-bar-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Tracker region breakdown table — same fix */
+.tracker-region-table-wrap .table-scroll {
+  overflow-x: hidden !important;
+}
+
+
+/* ============================================================
+   FIX 1: Hero entrance animation + scroll reveal
+   ============================================================ */
+
+/* Hero slides up and fades in when home loads */
+.hd-hero {
+  animation: heroEntrance .55s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes heroEntrance {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* KPI strip fades up slightly after hero */
+.hd-kpi-strip {
+  animation: heroEntrance .5s .12s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* Scroll-reveal: sections start hidden, slide up when scrolled into view */
+.sr-hidden {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .45s ease, transform .45s cubic-bezier(.22,1,.36,1);
+}
+.sr-visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+/* Stagger row A/B/C */
+.hd-row-a.sr-hidden { transition-delay: .0s; }
+.hd-row-b.sr-hidden { transition-delay: .08s; }
+.hd-row-c.sr-hidden { transition-delay: .16s; }
+
+/* ============================================================
+   FIX 2: Search bar always shown on home — style tweak
+   (no extra CSS needed, handled by JS opacity logic)
+   ============================================================ */
+
+/* ============================================================
+   FIX 5: Analytics region table — remove Progress column on small screens,
+   ensure no horizontal overflow
+   ============================================================ */
+@media (max-width: 860px) {
+  .p3-region-table th:last-child,
+  .p3-region-table td:last-child { display: none; }
+}
