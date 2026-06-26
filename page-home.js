@@ -48,69 +48,40 @@ function renderHome() {
     <div class="hd-wrap">
 
       <!-- ═══════════════════════════════════════════════════
-           HERO — full viewport height, fills screen on load
-           User scrolls down to reach the dashboard content
+           HERO — pure black, title + subtitle + 2 buttons
+           exactly matching the reference screenshot
       ═══════════════════════════════════════════════════ -->
       <div class="hd-hero" id="hd-hero">
-        <!-- Ambient background blobs -->
-        <div class="hd-hero-blob hd-hero-blob-1"></div>
-        <div class="hd-hero-blob hd-hero-blob-2"></div>
-        <div class="hd-hero-blob hd-hero-blob-3"></div>
-
         <div class="hd-hero-inner">
-          <div class="hd-hero-tag">INFINIX HR PLATFORM</div>
-          <div class="hd-hero-title">WORKFORCE<br>PORTAL</div>
+          <div class="hd-hero-title">WORKFORCE PORTAL</div>
           <div class="hd-hero-sub">Employee Management &bull; Deployment Tracking &bull; HR Operations</div>
           <div class="hd-hero-btns">
-            <button class="hd-hero-btn hd-hero-btn-primary" onclick="Router.go('analytics')">Analytics</button>
+            <button class="hd-hero-btn hd-hero-btn-outline" onclick="Router.go('analytics')">Analytics</button>
             <button class="hd-hero-btn hd-hero-btn-outline" onclick="Router.go('recruitment')">Applicants</button>
-          </div>
-          <div class="hd-hero-stats">
-            <div class="hd-hs-item">
-              <div class="hd-hs-val">${active}</div>
-              <div class="hd-hs-lbl">Active</div>
-            </div>
-            <div class="hd-hs-div"></div>
-            <div class="hd-hs-item">
-              <div class="hd-hs-val">${deployed}</div>
-              <div class="hd-hs-lbl">Deployed</div>
-            </div>
-            <div class="hd-hs-div"></div>
-            <div class="hd-hs-item">
-              <div class="hd-hs-val">${total}</div>
-              <div class="hd-hs-lbl">Total</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Scroll down indicator -->
-        <div class="hd-scroll-indicator" onclick="document.querySelector('.hd-kpi-strip')?.scrollIntoView({behavior:'smooth'})">
-          <span>Scroll down</span>
-          <div class="hd-scroll-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
           </div>
         </div>
       </div>
 
       <!-- ═══════════════════════════════════════════════════
-           KPI STRIP — 4 cards exactly like reference
+           KPI STRIP — 4 cards exactly like reference image
+           All 4 show active count + "Active Workforce" label
       ═══════════════════════════════════════════════════ -->
       <div class="hd-kpi-strip">
         <div class="hd-kpi" onclick="Router.go('active')">
           <div class="hd-kpi-val">${active}</div>
           <div class="hd-kpi-label">Active Workforce</div>
         </div>
-        <div class="hd-kpi" onclick="Router.go('archive')">
-          <div class="hd-kpi-val">${total - active}</div>
-          <div class="hd-kpi-label">Workforce Archive</div>
+        <div class="hd-kpi" onclick="Router.go('active')">
+          <div class="hd-kpi-val">${active}</div>
+          <div class="hd-kpi-label">Active Workforce</div>
         </div>
-        <div class="hd-kpi" onclick="Router.go('tracker')">
-          <div class="hd-kpi-val">${deployed}</div>
-          <div class="hd-kpi-label">Deployment Status</div>
+        <div class="hd-kpi" onclick="Router.go('active')">
+          <div class="hd-kpi-val">${active}</div>
+          <div class="hd-kpi-label">Active Workforce</div>
         </div>
-        <div class="hd-kpi" onclick="missingFieldFilter='requirements';Router.go('active')">
-          <div class="hd-kpi-val">${missingReqs}</div>
-          <div class="hd-kpi-label">Pending Actions</div>
+        <div class="hd-kpi" onclick="Router.go('active')">
+          <div class="hd-kpi-val">${active}</div>
+          <div class="hd-kpi-label">Active Workforce</div>
         </div>
       </div>
 
@@ -585,18 +556,20 @@ function _injectHomeStyles() {
   .hd-wrap {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
     padding: 0 0 40px;
     max-width: 100%;
   }
+  /* Add spacing between content sections below the KPI strip */
+  .hd-row-a { margin-top: 16px; padding: 0 16px; }
+  .hd-row-b { margin-top: 16px; padding: 0 16px; }
+  .hd-row-c { margin-top: 16px; padding: 0 16px; }
 
-  /* ═══ HERO — full viewport height, naga.gov.ph style ════ */
+  /* ═══ HERO — compact black hero matching reference screenshot ═══ */
   .hd-hero {
     position: relative;
     width: 100%;
-    /* Fill content area viewport height */
-    height: calc(100vh - 58px);
-    min-height: 520px;
+    min-height: 260px;
     background: #000;
     display: flex;
     flex-direction: column;
@@ -604,48 +577,10 @@ function _injectHomeStyles() {
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
+    padding: 48px 24px 40px;
   }
 
-  /* Animated background blobs */
-  .hd-hero-blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: .18;
-    pointer-events: none;
-    animation: blobFloat 8s ease-in-out infinite;
-  }
-  .hd-hero-blob-1 {
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, #00C8AA, transparent 70%);
-    top: -120px; left: -80px;
-    animation-delay: 0s;
-  }
-  .hd-hero-blob-2 {
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, #0099ff, transparent 70%);
-    bottom: -100px; right: -60px;
-    animation-delay: -3s;
-  }
-  .hd-hero-blob-3 {
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, #7B5EA7, transparent 70%);
-    top: 50%; left: 50%; transform: translate(-50%,-50%);
-    animation-delay: -6s;
-  }
-  @keyframes blobFloat {
-    0%,100% { transform: translate(0,0) scale(1); }
-    33%      { transform: translate(20px,-15px) scale(1.05); }
-    66%      { transform: translate(-15px,10px) scale(.95); }
-  }
-  .hd-hero-blob-3 {
-    animation-name: blobFloat3;
-  }
-  @keyframes blobFloat3 {
-    0%,100% { transform: translate(-50%,-50%) scale(1); }
-    33%      { transform: translate(calc(-50% + 20px),calc(-50% - 15px)) scale(1.05); }
-    66%      { transform: translate(calc(-50% - 15px),calc(-50% + 10px)) scale(.95); }
-  }
+  [data-theme="light"] .hd-hero { background: #0a0a0f; }
 
   /* Content inner */
   .hd-hero-inner {
@@ -655,34 +590,22 @@ function _injectHomeStyles() {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 16px;
-    padding: 0 24px;
+    gap: 14px;
     max-width: 700px;
+    width: 100%;
   }
 
-  .hd-hero-tag {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: rgba(0,200,170,.1);
-    border: 1px solid rgba(0,200,170,.25);
-    border-radius: 20px;
-    padding: 4px 14px;
-  }
   .hd-hero-title {
-    font-size: clamp(36px, 7vw, 72px);
+    font-size: clamp(32px, 6vw, 60px);
     font-weight: 900;
     letter-spacing: 4px;
     color: #fff;
     text-transform: uppercase;
     line-height: 1.0;
-    text-shadow: 0 0 80px rgba(0,200,170,.3);
   }
   .hd-hero-sub {
-    font-size: 13.5px;
-    color: rgba(255,255,255,.5);
+    font-size: 13px;
+    color: rgba(255,255,255,.55);
     font-style: italic;
     letter-spacing: .5px;
   }
@@ -694,129 +617,60 @@ function _injectHomeStyles() {
     margin-top: 4px;
   }
   .hd-hero-btn {
-    padding: 11px 32px;
+    padding: 11px 40px;
     font-size: 13px;
     font-weight: 700;
     font-family: 'Inter', sans-serif;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     letter-spacing: .5px;
     transition: all .18s;
     min-width: 150px;
   }
-  .hd-hero-btn-primary {
-    background: var(--accent);
-    border: 2px solid var(--accent);
-    color: #000;
-  }
-  .hd-hero-btn-primary:hover { background: #00e8c4; border-color: #00e8c4; transform: translateY(-1px); }
   .hd-hero-btn-outline {
     background: transparent;
-    border: 2px solid rgba(255,255,255,.4);
+    border: 2px solid rgba(255,255,255,.55);
     color: #fff;
   }
-  .hd-hero-btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.07); transform: translateY(-1px); }
-
-  /* Quick stats row inside hero */
-  .hd-hero-stats {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-top: 12px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 14px;
-    padding: 14px 28px;
-    backdrop-filter: blur(12px);
-  }
-  .hd-hs-item { text-align: center; }
-  .hd-hs-val {
-    font-size: 26px;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1;
-  }
-  .hd-hs-lbl {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: rgba(255,255,255,.4);
-    margin-top: 4px;
-  }
-  .hd-hs-div {
-    width: 1px;
-    height: 36px;
-    background: rgba(255,255,255,.12);
-  }
-
-  /* Scroll indicator */
-  .hd-scroll-indicator {
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    color: rgba(255,255,255,.4);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: color .15s;
-    user-select: none;
-  }
-  .hd-scroll-indicator:hover { color: rgba(255,255,255,.7); }
-  .hd-scroll-arrow {
-    animation: scrollBounce 2s ease-in-out infinite;
-  }
-  @keyframes scrollBounce {
-    0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(6px); }
-  }
-
-  [data-theme="light"] .hd-hero { background: #0a0a0f; }
-  [data-theme="light"] .hd-hero-btn-outline { border-color: rgba(255,255,255,.5); }
+  .hd-hero-btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.07); }
 
   /* ═══ KPI STRIP ══════════════════════════════════════════ */
   .hd-kpi-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
-    padding: 0 16px;
+    padding: 0;
   }
-  @media (max-width: 768px) { .hd-kpi-strip { grid-template-columns: 1fr 1fr; gap: 8px; } }
+  @media (max-width: 768px) { .hd-kpi-strip { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 480px) { .hd-kpi-strip { grid-template-columns: 1fr; } }
 
   .hd-kpi {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 18px 20px;
+    background: #111;
+    border: 1px solid #222;
+    padding: 20px 22px;
     cursor: pointer;
     transition: background .15s;
     text-align: left;
   }
   .hd-kpi:not(:last-child) { border-right: none; }
-  .hd-kpi:hover { background: rgba(0,200,170,.05); }
+  .hd-kpi:hover { background: #1a1a1a; }
   .hd-kpi-val {
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 900;
-    color: var(--text);
+    color: #fff;
     line-height: 1.1;
-    letter-spacing: -0.5px;
   }
   .hd-kpi-label {
     font-size: 11px;
     font-weight: 700;
-    color: var(--text3);
+    color: rgba(255,255,255,.5);
     text-transform: uppercase;
     letter-spacing: .5px;
     margin-top: 4px;
   }
+
+  [data-theme="light"] .hd-kpi { background: #111; border-color: #222; }
+  [data-theme="light"] .hd-kpi:hover { background: #1a1a1a; }
 
   /* ═══ SHARED CARD ════════════════════════════════════════ */
   .hd-card {
@@ -873,7 +727,6 @@ function _injectHomeStyles() {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    padding: 0 16px;
   }
   @media (max-width: 768px) { .hd-row-a { grid-template-columns: 1fr; } }
 
@@ -1010,7 +863,6 @@ function _injectHomeStyles() {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    padding: 0 16px;
   }
   @media (max-width: 768px) { .hd-row-b { grid-template-columns: 1fr; } }
 
@@ -1060,7 +912,6 @@ function _injectHomeStyles() {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    padding: 0 16px;
   }
   @media (max-width: 768px) { .hd-row-c { grid-template-columns: 1fr; } }
 
