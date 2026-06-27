@@ -621,38 +621,40 @@ function renderTracker(){
       }).join('')}
     </div>
     <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">${storeList.length} store${storeList.length!==1?'s':''}${trackerRegion?` — ${esc(trackerRegion)}`:' · all regions'} · click store name to view its promoters</span></div>
-    <div class="table-wrap">
-      <div class="table-scroll tracker-store-scroll">
-        <table class="tracker-store-table">
-          <thead><tr>
-            <th class="no-sort">Store</th>
-            <th class="no-sort">Store ID</th>
-            <th class="no-sort">Region</th>
-            <th class="no-sort" style="text-align:center">Total</th>
-            <th class="no-sort" style="text-align:center">Deployed</th>
-            <th class="no-sort" style="text-align:center">Pending</th>
-            <th class="no-sort" style="text-align:center">Backout</th>
-            <th class="no-sort">Progress</th>
-          </tr></thead>
-          <tbody>
-            ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
-            :storeList.map(st=>{
+    <div class="tkt-store-wrap">
+      <div class="tkt-store-head">
+        <span class="tkt-sc tkt-sc-store">Store</span>
+        <span class="tkt-sc tkt-sc-id">Store ID</span>
+        <span class="tkt-sc tkt-sc-region">Region</span>
+        <span class="tkt-sc tkt-sc-num">Total</span>
+        <span class="tkt-sc tkt-sc-num">Deployed</span>
+        <span class="tkt-sc tkt-sc-num">Pending</span>
+        <span class="tkt-sc tkt-sc-num">Backout</span>
+        <span class="tkt-sc tkt-sc-prog">Progress</span>
+      </div>
+      <div class="tkt-store-body">
+        ${storeList.length===0
+          ? `<div class="tkt-store-empty">No data for current filters</div>`
+          : storeList.map(st=>{
               const sp=st.total?Math.round(st.deployed/st.total*100):0;
-              return`<tr>
-                <td>
-                  <div class="td-name" style="cursor:pointer;color:var(--accent)" data-store="${esc(st.name)}" onclick="_trackerGoToStore(this.dataset.store)" title="View promoters at this store">${esc(st.name)}</div>
-                </td>
-                <td><span class="td-id">${esc(st.storeId||'—')}</span></td>
-                <td style="color:var(--text2)">${esc(st.region||'—')}</td>
-                <td style="font-weight:700;text-align:center">${st.total}</td>
-                <td style="text-align:center"><span style="color:var(--success);font-weight:700">${st.deployed}</span></td>
-                <td style="text-align:center"><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td>
-                <td style="text-align:center"><span style="color:var(--danger);font-weight:700">${st.backout}</span></td>
-                <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td>
-              </tr>`;
+              return`<div class="tkt-store-row" onclick="_trackerShowStore('${esc(st.name).replace(/'/g,"&#39;")}')" title="Click to view promoters at this store">
+                <span class="tkt-sc tkt-sc-store tkt-store-link">${esc(st.name)}</span>
+                <span class="tkt-sc tkt-sc-id td-id">${esc(st.storeId||'—')}</span>
+                <span class="tkt-sc tkt-sc-region">${esc(st.region||'—')}</span>
+                <span class="tkt-sc tkt-sc-num" style="font-weight:700">${st.total}</span>
+                <span class="tkt-sc tkt-sc-num" style="color:var(--success);font-weight:700">${st.deployed}</span>
+                <span class="tkt-sc tkt-sc-num" style="color:var(--warning);font-weight:700">${st.notYet}</span>
+                <span class="tkt-sc tkt-sc-num" style="color:var(--danger);font-weight:700">${st.backout}</span>
+                <span class="tkt-sc tkt-sc-prog">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;height:5px;background:rgba(136,144,99,0.15);border-radius:3px;overflow:hidden">
+                      <div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div>
+                    </div>
+                    <span style="font-size:10px;color:var(--text3);min-width:30px;text-align:right">${sp}%</span>
+                  </div>
+                </span>
+              </div>`;
             }).join('')}
-          </tbody>
-        </table>
       </div>
     </div>`;
 }
@@ -667,31 +669,50 @@ function _trackerToggleRegion(region){
   if(mainEl) requestAnimationFrame(()=>{ mainEl.scrollTop = scrollY; });
 }
 
-// Navigate to active workforce filtered to a specific store
-function _trackerGoToStore(storeName){
+// Show a modal listing all promoters at a specific store
+function _trackerShowStore(storeName){
   if(!storeName) return;
-  missingFieldFilter = null;
-  filterRegion = '';
-  filterDeployStatus = '';
-  filterQR = '';
-  filterContractStatus = '';
-  currentPage = 1;
-  currentView = 'active';
-  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const navEl = document.getElementById('nav-active');
-  if(navEl) navEl.classList.add('active');
-  // Keep hash in sync with router
-  history.pushState(null, '', '#/people');
-  renderSidebar();
-  renderView();
-  // After render, apply store name as search filter
-  setTimeout(()=>{
-    const si = document.getElementById('search-input');
-    if(si){
-      si.value = storeName;
-      si.dispatchEvent(new Event('input', {bubbles:true}));
-    }
-  }, 150);
+  const promoters = employees.filter(e =>
+    normalizeStatus(e.status) === 'Active' &&
+    (e.storeAssignment === storeName || e.storeId === storeName)
+  );
+
+  const rows = promoters.length === 0
+    ? `<div style="padding:24px;text-align:center;color:var(--text3)">No active promoters found for this store.</div>`
+    : promoters.map(e => {
+        const dep = normalizeDeployStatus(e.deploymentStatus);
+        const depColor = dep==='DEPLOYED'?'var(--success)':dep==='BACKOUT'?'var(--danger)':'var(--warning)';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(0,200,170,0.06)">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;flex-shrink:0">${esc((e.firstName||e.fullName||'?')[0].toUpperCase())}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.fullName||'—')}</div>
+            <div style="font-size:11px;color:var(--text3)">${esc(e.infinixId||'—')}</div>
+          </div>
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${dep==='DEPLOYED'?'rgba(0,230,118,.15)':dep==='BACKOUT'?'rgba(255,82,82,.15)':'rgba(255,215,64,.15)'};color:${depColor}">${dep}</span>
+        </div>`;
+      }).join('');
+
+  // Build modal
+  const existing = document.getElementById('tkt-store-modal');
+  if(existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'tkt-store-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:24px';
+  modal.innerHTML = `
+    <div style="background:var(--bg-card);border:1px solid rgba(0,200,170,0.15);border-radius:var(--radius);width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(0,200,170,0.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${esc(storeName)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${promoters.length} active promoter${promoters.length!==1?'s':''}</div>
+        </div>
+        <button onclick="document.getElementById('tkt-store-modal').remove()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px">&times;</button>
+      </div>
+      <div style="overflow-y:auto;flex:1">${rows}</div>
+    </div>`;
+
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 // ============================================================
