@@ -1661,17 +1661,10 @@ body.role-viewer .write-action {
   display: none !important;
 }
 
-/* Collapse the entire actions column for viewer — visibility:collapse is required
-   for table cells; display:none leaves a blank gap */
+/* Collapse the entire actions column for viewer — display:none removes it completely */
 body.role-viewer .td-actions-cell,
 body.role-viewer th.td-actions-col {
-  visibility: collapse !important;
-  padding: 0 !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  overflow: hidden !important;
-  border: none !important;
+  display: none !important;
 }
 
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
