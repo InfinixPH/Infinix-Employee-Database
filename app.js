@@ -879,8 +879,8 @@ function renderSkeletonRows(count=8){
   };
   tbody.innerHTML=Array.from({length:count},()=>`
     <tr class="skeleton-row">
+      ${canWrite()?`<td><div class="skeleton-base sk-cell" style="width:80px"></div></td>`:''}
       ${visColKeys.map(k=>`<td>${skMap[k]||`<div class="skeleton-base sk-cell sk-short"></div>`}</td>`).join('')}
-      <td><div class="skeleton-base sk-cell" style="width:80px"></div></td>
     </tr>`).join('');
 }
 
