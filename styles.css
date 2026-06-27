@@ -2761,56 +2761,7 @@ html, body {
 /* ============================================================
    FIX 5: Region breakdown table — compress, no sideways scroll
    ============================================================ */
-.p3-region-table {
-  width: 100% !important;
-  min-width: 0 !important;
-  table-layout: fixed !important;
-}
-.p3-region-table thead th {
-  position: static !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  box-shadow: none !important;
-}
-.p3-region-table th,
-.p3-region-table td {
-  padding: 10px 12px !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0 !important;
-}
-.p3-region-table th:first-child,
-.p3-region-table td:first-child {
-  width: 28%;
-}
-.p3-region-table th:nth-child(2),
-.p3-region-table td:nth-child(2),
-.p3-region-table th:nth-child(3),
-.p3-region-table td:nth-child(3) {
-  width: 12%;
-  text-align: center;
-}
-.p3-region-table th:nth-child(4),
-.p3-region-table td:nth-child(4) {
-  width: 14%;
-  text-align: center;
-}
-.p3-region-table th:nth-child(5),
-.p3-region-table td:nth-child(5) {
-  width: 34%;
-}
-/* region table container scroll handled by parent div */
-/* Fix bar cell to not overflow */
-.p3-bar-cell {
-  display: flex !important;
-  align-items: center;
-  gap: 8px;
-}
-.p3-bar-wrap {
-  flex: 1;
-  min-width: 0;
-}
+/* region breakdown uses .rgn-grid flex layout */
 
 
 
@@ -2857,74 +2808,96 @@ html, body {
    FIX 5: Analytics region table — remove Progress column on small screens,
    ensure no horizontal overflow
    ============================================================ */
-@media (max-width: 860px) {
-  .p3-region-table th:last-child,
-  .p3-region-table td:last-child { display: none; }
+
+
+/* tracker store uses .tkt-store-wrap flex layout */
+
+/* ============================================================
+   REGION BREAKDOWN — flex grid (no <table>, no global conflicts)
+   ============================================================ */
+.rgn-grid { width: 100%; }
+.rgn-head, .rgn-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 90px 110px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.rgn-head {
+  border-bottom: 1px solid rgba(0,200,170,0.10);
+  padding: 0 0 8px 0;
+}
+.rgn-row {
+  border-bottom: 1px solid rgba(0,200,170,0.04);
+  padding: 8px 0;
+  transition: background .12s;
+}
+.rgn-row:last-child { border-bottom: none; }
+.rgn-row:hover { background: rgba(0,200,170,0.04); }
+.rgn-foot {
+  border-top: 1px solid rgba(0,200,170,0.10);
+  border-bottom: none;
+  margin-top: 4px;
+  padding-top: 10px;
+}
+.rgn-c { padding: 4px 12px; font-size: 13px; }
+.rgn-c-name { padding-left: 0; }
+.rgn-c-num  { text-align: center; }
+.rgn-c-rate { text-align: center; }
+.rgn-c-bar  { padding-right: 0; }
+.rgn-head .rgn-c {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: rgba(0,200,170,0.75);
 }
 
 /* ============================================================
-   TRACKER STORE TABLE — override global 1900px min-width
-   so columns align correctly with their headers
+   TRACKER BY STORE — flex grid (no <table>, no global conflicts)
    ============================================================ */
-.tracker-store-table {
-  min-width: 0 !important;
-  width: 100% !important;
-  table-layout: auto !important;
+.tkt-store-wrap { width: 100%; }
+.tkt-store-head, .tkt-store-row {
+  display: grid;
+  grid-template-columns: 2fr 110px 130px 70px 80px 70px 70px 150px;
+  align-items: center;
 }
-.tracker-store-table thead th,
-.tracker-store-table tbody td {
-  position: static !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  box-shadow: none !important;
-  min-width: 0 !important;
-  white-space: nowrap;
+.tkt-store-head {
+  border-bottom: 1px solid rgba(0,200,170,0.10);
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(4,7,7,0.98);
+  backdrop-filter: blur(12px);
+}
+.tkt-store-body {
+  max-height: 460px;
+  overflow-y: auto;
+}
+.tkt-store-row {
+  border-bottom: 1px solid rgba(0,200,170,0.04);
+  cursor: pointer;
+  transition: background .12s;
+}
+.tkt-store-row:last-child { border-bottom: none; }
+.tkt-store-row:hover { background: rgba(0,200,170,0.06); }
+.tkt-store-empty {
+  padding: 32px; text-align: center;
+  color: var(--text3); font-style: italic;
+}
+.tkt-sc {
+  padding: 10px 12px;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
-/* Sticky header still needs a background for readability */
-.tracker-store-table thead th {
-  background: rgba(4,7,7,0.98) !important;
-  backdrop-filter: blur(12px) !important;
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 10 !important;
+.tkt-store-head .tkt-sc {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: rgba(0,200,170,0.75);
+  padding: 10px 12px;
 }
-/* Store column — give it breathing room */
-.tracker-store-table th:first-child,
-.tracker-store-table td:first-child {
-  min-width: 180px;
+.tkt-sc-store { padding-left: 0; }
+.tkt-sc-num   { text-align: center; }
+.tkt-sc-prog  { padding-right: 0; }
+.tkt-store-link {
+  color: var(--accent);
+  font-weight: 600;
 }
-/* Progress column */
-.tracker-store-table th:last-child,
-.tracker-store-table td:last-child {
-  min-width: 120px;
-  width: 160px;
-}
-/* Centre the numeric columns */
-.tracker-store-table th:nth-child(4),
-.tracker-store-table td:nth-child(4),
-.tracker-store-table th:nth-child(5),
-.tracker-store-table td:nth-child(5),
-.tracker-store-table th:nth-child(6),
-.tracker-store-table td:nth-child(6),
-.tracker-store-table th:nth-child(7),
-.tracker-store-table td:nth-child(7) {
-  text-align: center;
-  width: 80px;
-}
-/* Store name link — make it clearly clickable */
-.tracker-store-table .td-name {
-  cursor: pointer !important;
-  color: var(--accent) !important;
-}
-.tracker-store-table .td-name:hover {
+.tkt-store-row:hover .tkt-store-link {
   text-decoration: underline;
-  opacity: 0.85;
-}
-/* Scroll container for the store table */
-.tracker-store-scroll {
-  max-height: 480px;
-  overflow-x: auto;
-  overflow-y: auto;
 }
