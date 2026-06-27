@@ -170,7 +170,7 @@ function _injectPhase3Charts() {
         <span class="p3-card-sub">Deployment rate per region</span>
       </div>
       <div style="overflow-x:auto;width:100%">
-      <table class="p3-region-table" style="min-width:100%;table-layout:fixed">
+      <table class="p3-region-table">
           <thead>
             <tr>
               <th style="text-align:left;width:160px;padding-left:0">Region</th>
@@ -189,12 +189,12 @@ function _injectPhase3Charts() {
                 <td style="text-align:center">
                   <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px;background:${r.pct>=70?'rgba(0,230,118,.15)':r.pct>=40?'rgba(255,215,64,.15)':'rgba(255,82,82,.15)'};color:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'}">${r.pct}%</span>
                 </td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div style="flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
+                <td style="overflow:hidden">
+                  <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                    <div style="flex:1;min-width:0;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
                       <div style="width:${r.pct}%;height:100%;background:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'};border-radius:3px;transition:width .4s"></div>
                     </div>
-                    <span style="font-size:10px;color:var(--text3);min-width:36px;text-align:right">${r.pct}%</span>
+                    <span style="font-size:10px;color:var(--text3);min-width:32px;text-align:right;flex-shrink:0">${r.pct}%</span>
                   </div>
                 </td>
               </tr>`).join('')}
