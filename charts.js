@@ -622,17 +622,17 @@ function renderTracker(){
     </div>
     <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">${storeList.length} store${storeList.length!==1?'s':''}${trackerRegion?` — ${esc(trackerRegion)}`:' · all regions'} · click store name to view its promoters</span></div>
     <div class="table-wrap">
-      <div class="table-scroll">
-        <table>
+      <div class="table-scroll tracker-store-scroll">
+        <table class="tracker-store-table">
           <thead><tr>
-            <th class="no-sort" style="min-width:200px">Store</th>
+            <th class="no-sort">Store</th>
             <th class="no-sort">Store ID</th>
             <th class="no-sort">Region</th>
             <th class="no-sort" style="text-align:center">Total</th>
             <th class="no-sort" style="text-align:center">Deployed</th>
             <th class="no-sort" style="text-align:center">Pending</th>
             <th class="no-sort" style="text-align:center">Backout</th>
-            <th class="no-sort" style="min-width:120px">Progress</th>
+            <th class="no-sort">Progress</th>
           </tr></thead>
           <tbody>
             ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
@@ -657,17 +657,19 @@ function renderTracker(){
     </div>`;
 }
 
-// Toggle region filter without inline string quoting issues
+// Toggle region filter — freely switch between regions, click same to deselect
 function _trackerToggleRegion(region){
+  // Preserve scroll position so page does not jump on re-render
+  const mainEl = document.querySelector('.main');
+  const scrollY = mainEl ? mainEl.scrollTop : 0;
   trackerRegion = (trackerRegion === region) ? '' : region;
   renderTracker();
+  if(mainEl) requestAnimationFrame(()=>{ mainEl.scrollTop = scrollY; });
 }
 
 // Navigate to active workforce filtered to a specific store
 function _trackerGoToStore(storeName){
   if(!storeName) return;
-  // Use drillDown pattern: set view without clearing missingFieldFilter path,
-  // then apply search so the active table shows only that store
   missingFieldFilter = null;
   filterRegion = '';
   filterDeployStatus = '';
@@ -678,9 +680,11 @@ function _trackerGoToStore(storeName){
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   const navEl = document.getElementById('nav-active');
   if(navEl) navEl.classList.add('active');
+  // Keep hash in sync with router
+  history.pushState(null, '', '#/people');
   renderSidebar();
   renderView();
-  // After render, set search input value and trigger filter
+  // After render, apply store name as search filter
   setTimeout(()=>{
     const si = document.getElementById('search-input');
     if(si){
