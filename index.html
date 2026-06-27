@@ -126,13 +126,13 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
     <button class="sidebar-toggle-btn brand-hamburger" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
       <i class="fi fi-sr-menu-burger" style="font-size:15px"></i>
     </button>
-    <div class="brand-content">
-      <div class="brand-logo">
+    <div class="brand-logo">
+      <div class="brand-logo-inner">
         <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-        <span style="display:none;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:var(--text);letter-spacing:1px">INFINIX</span>
+        <span style="display:none;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:var(--text);letter-spacing:1.5px">INFINIX</span>
+        <div class="brand-sub">Workforce</div>
       </div>
-      <div class="brand-sub">Workforce</div>
     </div>
   </div>
 
@@ -391,40 +391,52 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   padding: 0;
 }
 .brand-hamburger:hover { background: rgba(255,255,255,0.07); color: var(--text); }
-[data-theme="light"] .brand-hamburger:hover { background: rgba(0,0,0,0.06); }
+[data-theme="light"] .brand-hamburger:hover { background: rgba(0,0,0,0.06); color: var(--text); }
 
-/* Logo + subtitle wrapper — collapses to zero width when sidebar is closed */
-.brand-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow: hidden;
-  flex: 1;
-  min-width: 0;
-  transition: opacity .2s, width .25s cubic-bezier(.4,0,.2,1);
-}
+/* Logo wrapper — collapses as one unit */
 .brand-logo {
-  display: flex; align-items: center; flex-shrink: 0;
+  flex: 1; min-width: 0; overflow: hidden;
+  transition: opacity .2s, max-width .25s cubic-bezier(.4,0,.2,1);
+  max-width: 160px;
 }
-.brand-logo img { height: 20px; width: auto; max-width: 80px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.90; }
+/* Inner stacks logo image above WORKFORCE text */
+.brand-logo-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+.brand-logo img {
+  height: 18px; width: auto; max-width: 90px;
+  object-fit: contain; display: block;
+  filter: brightness(0) invert(1); opacity: 0.90;
+}
 [data-theme="light"] .brand-logo img { filter: brightness(0); opacity: 0.75; }
+
 .brand-sub {
-  font-size: 9px; font-weight: 700; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 1.5px;
-  white-space: nowrap; flex-shrink: 0;
+  font-size: 8px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: 2px;
+  white-space: nowrap;
+  padding-left: 1px;
 }
 [data-theme="light"] .brand-sub { color: rgba(0,0,0,0.35); }
 
-/* ── Collapsed: only hamburger visible, everything else slides away ── */
-.sidebar { transition: width .25s cubic-bezier(.4,0,.2,1); }
+/* ── Collapsed: only hamburger visible ── */
+.sidebar { transition: width .25s cubic-bezier(.4,0,.2,1) !important; }
 .sidebar.collapsed { width: 52px !important; }
-
 .sidebar.collapsed .brand { padding: 0; justify-content: center; gap: 0; }
-.sidebar.collapsed .brand-content { opacity: 0; width: 0; flex: 0; overflow: hidden; pointer-events: none; }
+.sidebar.collapsed .brand-logo { opacity: 0; max-width: 0; pointer-events: none; }
 
-/* Nav items */
+.sidebar.collapsed .nav-section,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .sf-label,
+.sidebar.collapsed .sf-count,
+.sidebar.collapsed .sidebar-clock,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .user-name,
+.sidebar.collapsed .user-role-badge { opacity: 0; visibility: hidden; pointer-events: none; width: 0; max-width: 0; overflow: hidden; }
 .sidebar.collapsed .nav-badge { display: none; }
-.sidebar.collapsed .nav-section { display: none; }
 .sidebar.collapsed .nav { padding: 8px 6px; overflow: visible; }
 .sidebar.collapsed .status-filters { padding: 8px 6px 10px; overflow: visible; }
 .sidebar.collapsed .nav-item, .sidebar.collapsed .sf-item {
@@ -432,16 +444,12 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
   justify-content: center; align-items: center; gap: 0;
   overflow: visible; display: flex;
 }
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .sf-label,
-.sidebar.collapsed .sf-count { display: none; }
+.sidebar.collapsed .sf-label, .sidebar.collapsed .sf-count { display: none; }
 .sidebar.collapsed .icon, .sidebar.collapsed .sf-dot { margin: 0; }
-
-/* Tooltips on collapsed items */
 .sidebar.collapsed .nav-item::after, .sidebar.collapsed .sf-item::after {
   content: attr(title); position: absolute; left: calc(100% + 10px); top: 50%;
   transform: translateY(-50%) translateX(-4px); opacity: 0; pointer-events: none;
-  white-space: nowrap; padding: 5px 10px; border-radius: 7px;
+  white-space: nowrap; padding: 6px 10px; border-radius: 7px;
   background: var(--bg-card-hover); border: 1px solid var(--border2);
   color: var(--text); font-size: 11px; font-weight: 600;
   box-shadow: var(--shadow); transition: opacity .16s, transform .16s; z-index: 200;
@@ -449,24 +457,13 @@ html, body, * { font-family: 'Inter', 'Inter var', system-ui, sans-serif !import
 .sidebar.collapsed .nav-item:hover::after, .sidebar.collapsed .sf-item:hover::after {
   opacity: 1; transform: translateY(-50%) translateX(0);
 }
-
-/* Footer */
-.sidebar.collapsed .sidebar-footer { padding: 6px; }
-.sidebar.collapsed .sidebar-clock { display: none; }
-.sidebar.collapsed .user-pill { justify-content: center; padding: 6px; gap: 0; }
-.sidebar.collapsed .user-info,
-.sidebar.collapsed .btn-signout,
-.sidebar.collapsed #pw-manager-btn,
-.sidebar.collapsed .user-role-badge { display: none !important; }
-
-/* Misc */
 .sidebar.collapsed .nav-chevron { display: none; }
 .sidebar.collapsed .nav-submenu { display: none; }
 .sidebar.collapsed .nav-item-parent { position: relative; }
 .sidebar.collapsed .nav-item.active::before { display: none; }
-.sidebar.collapsed .nav-item.active {
-  box-shadow: 0 0 0 1px rgba(0,200,170,0.30), 0 2px 8px rgba(0,184,160,0.15);
-}
+.sidebar.collapsed .sidebar-footer { padding: 6px; overflow: hidden; }
+.sidebar.collapsed .btn-signout { display: none; }
+.sidebar.collapsed #pw-manager-btn { display: none !important; }
 
 /* ═══ TOPBAR layout: left (title) + right (search + theme + bells + actions) ═══ */
 .topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
