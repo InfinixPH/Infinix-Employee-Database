@@ -1334,6 +1334,7 @@ function _renderArchiveList(){
     });
 
     const statusInfo = ARCHIVE_STATUSES.find(s => s.key === _archiveActiveStatus) || {};
+    const _canWrite = canWrite();
     wrap.innerHTML = `
       <div class="table-wrap">
         <div class="table-head">
@@ -1342,15 +1343,15 @@ function _renderArchiveList(){
         <div class="table-scroll">
           <table>
             <thead><tr>
-              ${canWrite()?'<th class="no-sort td-actions-col">Actions</th>':''}
+              ${_canWrite?'<th class="no-sort td-actions-col">Actions</th>':''}
               <th>Full Name</th><th>Infinix ID</th><th>Status</th>
               <th>Status Date</th><th>Region</th><th>Store</th><th>Remarks</th>
             </tr></thead>
             <tbody>
               ${filtered.length === 0
-                ? `<tr><td colspan="${canWrite()?8:7}"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
+                ? `<tr><td colspan="${_canWrite?8:7}"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
                 : filtered.map(e=>`<tr onclick="openDetailPanel('${esc(e.infinixId)}')" style="cursor:pointer">
-                    ${canWrite()?`<td onclick="event.stopPropagation()" class="td-actions-cell">
+                    ${_canWrite?`<td onclick="event.stopPropagation()" class="td-actions-cell">
                       <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
                       <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
                     </td>`:''}
