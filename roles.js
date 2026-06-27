@@ -309,8 +309,10 @@ function applyRole(role){
   const pwBtn = document.getElementById('pw-manager-btn');
   if(pwBtn) pwBtn.style.display = (role==='owner') ? 'flex' : 'none';
   if(detailEmpId) openDetailPanel(detailEmpId);
-  // Re-render so the Actions column is added/removed from the DOM, not just CSS-hidden
-  if(typeof renderView === 'function' && typeof employees !== 'undefined' && employees.length) renderView();
+  // Re-render the current view so the Actions column is added/removed from the
+  // table DOM rather than relying on CSS visibility tricks.
+  if(typeof renderSidebar === 'function') renderSidebar();
+  if(typeof renderView === 'function') renderView();
 }
 
 function initRole(){
