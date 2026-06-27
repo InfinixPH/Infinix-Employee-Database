@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/solid/rounded.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=20?v=18">
+<link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
 
@@ -167,23 +167,23 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
     </div>
     <!-- Archive sub-items -->
     <div class="nav-submenu" id="nav-archive-submenu">
-      <div class="nav-subitem" onclick="showArchiveByStatus('Resigned');Router.navigate('/archive/Resigned')" id="nav-archive-Resigned" title="Resigned">
+      <div class="nav-subitem" onclick="Router.navigate('/archive/Resigned')" id="nav-archive-Resigned" title="Resigned">
         <span class="sub-dot" style="background:#CD7F32"></span>
         <span class="nav-label">Resigned</span>
       </div>
-      <div class="nav-subitem" onclick="showArchiveByStatus('AWOL');Router.navigate('/archive/AWOL')" id="nav-archive-AWOL" title="AWOL">
+      <div class="nav-subitem" onclick="Router.navigate('/archive/AWOL')" id="nav-archive-AWOL" title="AWOL">
         <span class="sub-dot" style="background:#C62828"></span>
         <span class="nav-label">AWOL</span>
       </div>
-      <div class="nav-subitem" onclick="showArchiveByStatus('Floating');Router.navigate('/archive/Floating')" id="nav-archive-Floating" title="Floating">
+      <div class="nav-subitem" onclick="Router.navigate('/archive/Floating')" id="nav-archive-Floating" title="Floating">
         <span class="sub-dot" style="background:#D4AF37"></span>
         <span class="nav-label">Floating</span>
       </div>
-      <div class="nav-subitem" onclick="showArchiveByStatus('Terminated');Router.navigate('/archive/Terminated')" id="nav-archive-Terminated" title="Terminated">
+      <div class="nav-subitem" onclick="Router.navigate('/archive/Terminated')" id="nav-archive-Terminated" title="Terminated">
         <span class="sub-dot" style="background:#7B5EA7"></span>
         <span class="nav-label">Terminated</span>
       </div>
-      <div class="nav-subitem" onclick="showArchiveByStatus('Backout');Router.navigate('/archive/Backout')" id="nav-archive-Backout" title="Backout">
+      <div class="nav-subitem" onclick="Router.navigate('/archive/Backout')" id="nav-archive-Backout" title="Backout">
         <span class="sub-dot" style="background:#C62828"></span>
         <span class="nav-label">Backout</span>
       </div>
@@ -622,6 +622,7 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
 <script src="page-settings.js?v=2"></script>
 <script src="page-calendar.js?v=2"></script>
 <script src="page-recruitment.js?v=2"></script>
+<script src="page-archive.js?v=1"></script>
 <script src="router.js?v=4"></script>
 <script src="app.js?v=20"></script>
 
@@ -671,6 +672,8 @@ function toggleArchiveMenu(){
   const isOpen = submenu.classList.toggle('open');
   if(chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
   if(parent)  parent.classList.toggle('submenu-open', isOpen);
+  // Persist open/closed state
+  sessionStorage.setItem('archive_menu_open', isOpen ? 'true' : 'false');
 }
 
 // Persist archive submenu state across views
