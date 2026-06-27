@@ -41,10 +41,26 @@ function roleKey(v){
   return ROLE_ALIASES[raw] || ROLE_ALIASES[compact] || compact;
 }
 async function getRoleRows(){
-  const res = await gapi.client.sheets.spreadsheets.values.get({
-    spreadsheetId: SHEET_ID,
-    range: `'${ROLE_LOG_SHEET}'!A2:E`
-  });
+  // Sheet names with spaces need single quotes in the range string
+  const rangeName = `'${ROLE_LOG_SHEET}'!A2:E`;
+  let res;
+  try {
+    res = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: rangeName
+    });
+  } catch(e) {
+    // Fallback: try without quotes (in case sheet name has no spaces)
+    try {
+      res = await gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: `${ROLE_LOG_SHEET}!A2:E`
+      });
+    } catch(e2) {
+      console.error('getRoleRows failed both with and without quotes:', e2);
+      throw e2;
+    }
+  }
   return (res.result.values || []).map((r,i)=>({
     row: i + 2,
     email: String(r[0]||'').trim(),
@@ -101,7 +117,7 @@ async function stampRoleLogin(rowNumber, hashedPin, role){
     const roleLabel = ROLE_NAME_MAP[role] || role || '';
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `'${ROLE_LOG_SHEET}'!A${rowNumber}:E${rowNumber}`,
+      range: `${ROLE_LOG_SHEET}!A${rowNumber}:E${rowNumber}`,
       valueInputOption: 'RAW',
       resource: { values: [[email, roleLabel, hashedPin || '', 'ACTIVE', ts()]] }
     });
@@ -195,7 +211,7 @@ async function upsertRolePassword(role, password){
     const values = [[existingEmail, roleLabel, hashed, 'ACTIVE', ts()]];
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId:SHEET_ID,
-      range:`'${ROLE_LOG_SHEET}'!A${existing.row}:E${existing.row}`,
+      range:`${ROLE_LOG_SHEET}!A${existing.row}:E${existing.row}`,
       valueInputOption:'RAW',
       resource:{values}
     });
@@ -204,7 +220,7 @@ async function upsertRolePassword(role, password){
     const values = [['', roleLabel, hashed, 'ACTIVE', ts()]];
     await gapi.client.sheets.spreadsheets.values.append({
       spreadsheetId:SHEET_ID,
-      range:`'${ROLE_LOG_SHEET}'!A:E`,
+      range:`${ROLE_LOG_SHEET}!A:E`,
       valueInputOption:'RAW',
       insertDataOption:'INSERT_ROWS',
       resource:{values}
