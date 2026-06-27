@@ -559,10 +559,14 @@ function renderTracker(){
   document.getElementById('topbar-title').textContent='Deployment Tracker';
   const _tsub=document.getElementById('topbar-sub'); if(_tsub) _tsub.textContent='Active promoters only';
 
-  let list=employees.filter(e=>normalizeStatus(e.status)==='Active');
-  if(trackerDateFrom)list=list.filter(e=>e.deploymentDate&&new Date(e.deploymentDate)>=new Date(trackerDateFrom));
-  if(trackerDateTo)list=list.filter(e=>e.deploymentDate&&new Date(e.deploymentDate)<=new Date(trackerDateTo));
-  if(trackerRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(trackerRegion));
+  // Base: active employees filtered by date only (NOT by region)
+  // Region cards always show all regions so you can freely switch
+  let baseList=employees.filter(e=>normalizeStatus(e.status)==='Active');
+  if(trackerDateFrom)baseList=baseList.filter(e=>e.deploymentDate&&new Date(e.deploymentDate)>=new Date(trackerDateFrom));
+  if(trackerDateTo)baseList=baseList.filter(e=>e.deploymentDate&&new Date(e.deploymentDate)<=new Date(trackerDateTo));
+
+  // list = further filtered by selected region (used for KPIs and store table)
+  let list=trackerRegion?baseList.filter(e=>normalizeRegion(e.region)===normalizeRegion(trackerRegion)):baseList;
 
   const total=list.length;
   const deployed=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length;
@@ -570,9 +574,10 @@ function renderTracker(){
   const backout=list.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length;
   const pct=total?Math.round(deployed/total*100):0;
 
+  // byRegion always uses baseList so all region cards remain clickable
   const byRegion={};
   REGIONS.forEach(r=>{
-    const reg=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(r));
+    const reg=baseList.filter(e=>normalizeRegion(e.region)===normalizeRegion(r));
     byRegion[r]={total:reg.length,deployed:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='DEPLOYED').length,notYet:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='NOT YET DEPLOYED').length,backout:reg.filter(e=>normalizeDeployStatus(e.deploymentStatus)==='BACKOUT').length};
   });
 
