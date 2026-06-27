@@ -187,7 +187,7 @@ function _injectPhase3Charts() {
                 <td style="text-align:center"><strong>${r.total}</strong></td>
                 <td style="text-align:center"><span style="color:#00E676;font-weight:700">${r.deployed}</span></td>
                 <td style="text-align:center">
-                  <span class="p3-rate-badge ${r.pct>=70?'good':r.pct>=40?'mid':'low'}">${r.pct}%</span>
+                  <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px;background:${r.pct>=70?'rgba(0,230,118,.15)':r.pct>=40?'rgba(255,215,64,.15)':'rgba(255,82,82,.15)'};color:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'}">${r.pct}%</span>
                 </td>
                 <td>
                   <div style="display:flex;align-items:center;gap:8px">
