@@ -1656,17 +1656,18 @@ body.role-rssrsh .btn-dp-delete,
 body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
-body.role-rssrsh #bulk-bar .btn-danger,
-body.role-viewer .write-action {
+body.role-rssrsh #bulk-bar .btn-danger {
   display: none !important;
 }
 
-/* Safety net: if the actions column elements somehow reach the DOM for a viewer,
-   hide them. The table re-renders on role change so these cells are not emitted
-   in the first place — this rule is a belt-and-suspenders fallback only. */
-body.role-viewer .td-actions-cell,
-body.role-viewer th.td-actions-col {
-  display: none !important;
+/* Viewer: Actions column is always visible for alignment.
+   Buttons appear disabled — clicking still triggers denyWrite() toast. */
+body.role-viewer .btn-tbl-edit,
+body.role-viewer .btn-tbl-delete {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
+  filter: grayscale(0.6) !important;
 }
 
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
