@@ -1175,7 +1175,7 @@ function renderSidebar(){
   const badgeActive = document.getElementById('badge-active');
   const badgeInactive = document.getElementById('badge-inactive');
   if(badgeActive) badgeActive.textContent=s.Active;
-  const _s=getStats(); if(badgeInactive) badgeInactive.textContent=(_s.Floating||0)+(_s.Resigned||0)+(_s.AWOL||0)+(_s.Terminated||0)+(_s.Backout||0);
+  if(badgeInactive) badgeInactive.textContent=(s.Floating||0)+(s.Resigned||0)+(s.AWOL||0)+(s.Terminated||0)+(s.Backout||0);
   const sf = document.getElementById('status-filters');
   if(sf) sf.innerHTML=STATUSES.map(st=>`
     <div class="sf-item ${filterStatus===st?'active':''}" onclick="filterByStatus('${esc(st)}')" title="${esc(st)}">
@@ -1187,10 +1187,10 @@ function renderSidebar(){
 function filterByStatus(s){
   filterStatus=filterStatus===s?null:s;
   missingFieldFilter=null;
-  currentView=(s==='Active')?'active':'inactive';
+  currentView=(s==='Active')?'active':'archive';
   currentPage=1;selectedIds.clear();
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const navEl=document.getElementById('nav-'+(s==='Active'?'active':'inactive'));
+  const navEl=document.getElementById(s==='Active'?'nav-active':'nav-archive-parent');
   if(navEl)navEl.classList.add('active');
   renderSidebar();renderView();
 }
@@ -1456,7 +1456,7 @@ function renderEmployeeTable(type){
     const labels={notDeployed:'Not Yet Deployed',notScanned:'QR Not Scanned',contractPending:'Contract Pending',missingRequirements:'Requirements Incomplete',missingGovIds:'Missing Gov IDs',missingBank:'Missing Bank Account',missingMobile:'Missing Mobile',missingInfinixId:'Missing Infinix ID',missingStore:'No Store Assignment',backout:'Backout Cases'};
     label=(labels[missingFieldFilter]||'Filtered')+' Employees';
   }
-  document.getElementById('topbar-title').textContent=label;
+  const _ttEl=document.getElementById('topbar-title');if(_ttEl)_ttEl.textContent=label;
   const _sub1=document.getElementById('topbar-sub'); if(_sub1) _sub1.textContent='Click a row to view details';
 
   const afc=activeFilterCount();
@@ -2130,7 +2130,7 @@ async function loadEmployeeAudit(infinixId){
 // ACTIVITY LOG
 // ============================================================
 async function renderLog(){
-  document.getElementById('topbar-title').textContent='Activity Log';
+  const _ttLog=document.getElementById('topbar-title');if(_ttLog)_ttLog.textContent='Activity Log';
   const _sub2=document.getElementById('topbar-sub'); if(_sub2) _sub2.textContent='All changes recorded automatically';
   document.getElementById('content').innerHTML=`<div class="table-wrap"><div class="table-head"><h3>Activity Log</h3></div><div id="log-list" style="padding:6px 18px 16px">Loading...</div></div>`;
   showLoading(true,'Loading log...');
