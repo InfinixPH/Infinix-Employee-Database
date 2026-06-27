@@ -102,7 +102,7 @@ function _buildArchiveRows(list, statusLabel, color){
       <td>${store}</td>
       <td>${area}</td>
       <td>${hired}</td>
-      <td><span class="archive-status-pill" style="color:${color};background:rgba(from ${color} r g b / 0.12);border:1px solid rgba(from ${color} r g b / 0.25)">${st}</span></td>
+      <td><span class="archive-status-pill" style="color:${color};background:${color}1F;border:1px solid ${color}40">${st}</span></td>
     </tr>`;
   }).join('');
 }
