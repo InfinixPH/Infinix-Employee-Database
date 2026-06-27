@@ -1018,7 +1018,7 @@ table td.td-check, table th.td-check { overflow: visible; }
 table td.td-actions-cell { overflow: visible; }
 
 /* Min-widths per column so content never gets crushed — browser distributes remaining space */
-.col-fullName        { min-width: 180px; }
+.col-fullName        { min-width: 280px; width: 28%; }
 .col-infinixId       { min-width: 100px; }
 .col-status          { min-width: 100px; }
 .col-statusDate      { min-width: 110px; }
