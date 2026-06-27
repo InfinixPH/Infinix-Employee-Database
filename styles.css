@@ -1018,7 +1018,8 @@ table td.td-check, table th.td-check { overflow: visible; }
 table td.td-actions-cell { overflow: visible; }
 
 /* Min-widths per column so content never gets crushed — browser distributes remaining space */
-.col-fullName        { min-width: 280px; width: 28%; }
+.col-fullName        { min-width: 200px; }
+table td.col-fullName, table th.col-fullName { overflow: visible; }
 .col-infinixId       { min-width: 100px; }
 .col-status          { min-width: 100px; }
 .col-statusDate      { min-width: 110px; }
@@ -1656,7 +1657,9 @@ body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
 body.role-rssrsh #bulk-bar .btn-danger,
-body.role-viewer .write-action {
+body.role-viewer .write-action,
+body.role-viewer .td-actions-cell,
+body.role-viewer th.td-actions-col {
   display: none !important;
 }
 
