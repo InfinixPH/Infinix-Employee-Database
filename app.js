@@ -877,10 +877,9 @@ function renderSkeletonRows(count=8){
     bankName: `<div class="skeleton-base sk-cell sk-short"></div>`,
     contractStatus: `<div class="skeleton-base sk-badge"></div>`,
   };
-  const skActionCell = canWrite() ? `<td><div class="skeleton-base sk-cell" style="width:80px"></div></td>` : '';
   tbody.innerHTML=Array.from({length:count},()=>`
     <tr class="skeleton-row">
-      ${skActionCell}
+      <td><div class="skeleton-base sk-cell" style="width:80px"></div></td>
       ${visColKeys.map(k=>`<td>${skMap[k]||`<div class="skeleton-base sk-cell sk-short"></div>`}</td>`).join('')}
     </tr>`).join('');
 }
@@ -1344,7 +1343,7 @@ function _renderArchiveList(){
         <div class="table-scroll">
           <table>
             <thead><tr>
-              ${_canWrite?'<th class="no-sort td-actions-col">Actions</th>':''}
+              <th class="no-sort td-actions-col">Actions</th>
               <th class="col-fullName">Full Name</th>
               <th class="col-infinixId">Infinix ID</th>
               <th class="col-status">Status</th>
@@ -1355,12 +1354,12 @@ function _renderArchiveList(){
             </tr></thead>
             <tbody>
               ${filtered.length === 0
-                ? `<tr><td colspan="${_canWrite?8:7}"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
+                ? `<tr><td colspan="8"><div class="empty-state"><div class="es-title">No ${esc(statusInfo.label||'')} employees</div></div></td></tr>`
                 : filtered.map(e=>`<tr onclick="openDetailPanel('${esc(e.infinixId)}')" style="cursor:pointer">
-                    ${_canWrite?`<td onclick="event.stopPropagation()" class="td-actions-cell">
+                    <td onclick="event.stopPropagation()" class="td-actions-cell">
                       <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
                       <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
-                    </td>`:''}
+                    </td>
                     <td class="col-fullName"><div class="td-name">${esc(e.fullName||'')}</div></td>
                     <td class="col-infinixId"><span class="td-id">${esc(e.infinixId||'')}</span></td>
                     <td class="col-status">${badgeHTML(e.status)}</td>
@@ -1535,7 +1534,7 @@ function renderEmployeeTable(type){
           <thead>
             <tr>
               ${bulkMode?'<th class="td-check no-sort" id="col-check-header"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>':''}
-              ${canWrite()?'<th class="no-sort td-actions-col">Actions</th>':''}
+              <th class="no-sort td-actions-col">Actions</th>
               ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th class="col-${esc(c.key)}" data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
             </tr>
           </thead>
@@ -1615,10 +1614,10 @@ function renderTableRows(type){
         ${bulkMode?`<td class="td-check" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect(event,'${esc(e.infinixId)}',this.checked)">
         </td>`:''}
-${canWrite()?`<td onclick="event.stopPropagation()" class="td-actions-cell">
+<td onclick="event.stopPropagation()" class="td-actions-cell">
           <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
           <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
-        </td>`:''}
+        </td>
         ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
       </tr>`).join('');
     _attachRowPreview(tbody, page);
