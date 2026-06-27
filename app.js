@@ -1344,8 +1344,13 @@ function _renderArchiveList(){
           <table>
             <thead><tr>
               ${_canWrite?'<th class="no-sort td-actions-col">Actions</th>':''}
-              <th>Full Name</th><th>Infinix ID</th><th>Status</th>
-              <th>Status Date</th><th>Region</th><th>Store</th><th>Remarks</th>
+              <th class="col-fullName">Full Name</th>
+              <th class="col-infinixId">Infinix ID</th>
+              <th class="col-status">Status</th>
+              <th class="col-statusDate">Status Date</th>
+              <th class="col-region">Region</th>
+              <th class="col-storeAssignment">Store</th>
+              <th class="col-remarks">Remarks</th>
             </tr></thead>
             <tbody>
               ${filtered.length === 0
@@ -1355,13 +1360,13 @@ function _renderArchiveList(){
                       <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
                       <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
                     </td>`:''}
-                    <td><div class="td-name">${esc(e.fullName||'')}</div></td>
-                    <td><span class="td-id">${esc(e.infinixId||'')}</span></td>
-                    <td>${badgeHTML(e.status)}</td>
-                    <td style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>
-                    <td style="color:var(--text2)">${esc(e.region||'—')}</td>
-                    <td style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>
-                    <td style="color:var(--text3);font-size:11px">${esc(e.statusRemarks||'—')}</td>
+                    <td class="col-fullName"><div class="td-name">${esc(e.fullName||'')}</div></td>
+                    <td class="col-infinixId"><span class="td-id">${esc(e.infinixId||'')}</span></td>
+                    <td class="col-status">${badgeHTML(e.status)}</td>
+                    <td class="col-statusDate" style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>
+                    <td class="col-region" style="color:var(--text2)">${esc(e.region||'—')}</td>
+                    <td class="col-storeAssignment" style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>
+                    <td class="col-remarks" style="color:var(--text3);font-size:11px">${esc(e.statusRemarks||'—')}</td>
                   </tr>`).join('')}
             </tbody>
           </table>
