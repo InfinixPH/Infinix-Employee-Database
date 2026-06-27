@@ -1533,7 +1533,7 @@ function renderEmployeeTable(type){
         <table>
           <thead>
             <tr>
-              <th class="td-check no-sort" id="col-check-header" style="display:none"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
+              ${bulkMode?'<th class="td-check no-sort" id="col-check-header"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>':''}
               ${canWrite()?'<th class="no-sort td-actions-col">Actions</th>':''}
               ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th class="col-${esc(c.key)}" data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
             </tr>
@@ -1611,9 +1611,9 @@ function renderTableRows(type){
     const visibleColKeys=TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>c.key);
     tbody.innerHTML=page.map(e=>`
       <tr class="${selectedIds.has(e.infinixId)?'selected':''}" onclick="handleRowClick(event,'${esc(e.infinixId)}')" data-id="${esc(e.infinixId)}">
-        <td class="td-check" style="display:${bulkMode?'':'none'}" onclick="event.stopPropagation()">
+        ${bulkMode?`<td class="td-check" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect(event,'${esc(e.infinixId)}',this.checked)">
-        </td>
+        </td>`:''}
 ${canWrite()?`<td onclick="event.stopPropagation()" class="td-actions-cell">
           <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
           <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
@@ -1711,11 +1711,8 @@ function changePageSize(s){pageSize=s;currentPage=1;renderTableRows(currentView=
 function toggleBulkMode(){
   bulkMode=!bulkMode;
   if(!bulkMode){selectedIds.clear();}
-  // Show/hide checkbox header column
-  const chkHeader=document.getElementById('col-check-header');
-  if(chkHeader)chkHeader.style.display=bulkMode?'':'none';
-  // Show/hide checkbox cells in rows
-  document.querySelectorAll('.td-check').forEach(td=>td.style.display=bulkMode?'':'none');
+  // Re-render table rows so checkbox column is added/removed from DOM properly
+  renderTableRows('active');
   // Toggle Select button active state
   const btn=document.getElementById('bulk-toggle-btn');
   if(btn){
