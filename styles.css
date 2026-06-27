@@ -968,7 +968,7 @@ body::before {
 .table-head .rec { font-size: 12px; color: var(--text3); }
 .table-scroll { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); position: relative; z-index: 1; }
 
-table { width: 100%; border-collapse: collapse; min-width: 1900px; table-layout: fixed; }
+table { width: 100%; border-collapse: collapse; table-layout: auto; }
 thead th {
   background: rgba(4,7,7,0.98); padding: 10px 14px; font-size: 10px; font-weight: 700;
   color: rgba(0,200,170,0.75); text-align: left;
@@ -1011,31 +1011,30 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
 .td-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
 .td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
-.td-actions-col { width: 116px; white-space: nowrap; }
+.td-actions-col { white-space: nowrap; }
 .td-actions-cell { display: flex; gap: 4px; align-items: center; overflow: visible !important; }
-/* table-layout:fixed requires overflow handling per-cell since column widths are now locked */
 table td, table th { overflow: hidden; text-overflow: ellipsis; }
 table td.td-check, table th.td-check { overflow: visible; }
+table td.td-actions-cell { overflow: visible; }
 
-/* Explicit per-column widths so table-layout:fixed never compresses
-   headers/data unevenly. Matches TABLE_COLUMNS order in app.js. */
-.col-fullName       { width: 200px; }
-.col-infinixId       { width: 110px; }
-.col-status          { width: 110px; }
-.col-statusDate      { width: 110px; }
-.col-deploymentDate  { width: 120px; }
-.col-deploymentStatus{ width: 130px; }
-.col-requirements    { width: 110px; }
-.col-qrStatus        { width: 120px; }
-.col-region          { width: 130px; }
-.col-storeAssignment { width: 160px; }
-.col-storeId         { width: 90px; }
-.col-rssName         { width: 140px; }
-.col-bankName        { width: 130px; }
-.col-contractStatus  { width: 120px; }
-.col-contractEndDate { width: 120px; }
-.col-tags            { width: 160px; }
-.col-remarks         { width: 180px; }
+/* Min-widths per column so content never gets crushed — browser distributes remaining space */
+.col-fullName        { min-width: 180px; }
+.col-infinixId       { min-width: 100px; }
+.col-status          { min-width: 100px; }
+.col-statusDate      { min-width: 110px; }
+.col-deploymentDate  { min-width: 120px; }
+.col-deploymentStatus{ min-width: 120px; }
+.col-requirements    { min-width: 100px; }
+.col-qrStatus        { min-width: 100px; }
+.col-region          { min-width: 110px; }
+.col-storeAssignment { min-width: 150px; }
+.col-storeId         { min-width: 80px; }
+.col-rssName         { min-width: 120px; }
+.col-bankName        { min-width: 110px; }
+.col-contractStatus  { min-width: 110px; }
+.col-contractEndDate { min-width: 110px; }
+.col-tags            { min-width: 140px; }
+.col-remarks         { min-width: 150px; }
 
 /* BADGES — compact solid-fill chips */
 .badge {
