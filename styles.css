@@ -2763,7 +2763,14 @@ html, body {
    ============================================================ */
 .p3-region-table {
   width: 100% !important;
-  table-layout: fixed;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+.p3-region-table thead th {
+  position: static !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 .p3-region-table th,
 .p3-region-table td {
@@ -2771,6 +2778,7 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0 !important;
 }
 .p3-region-table th:first-child,
 .p3-region-table td:first-child {
@@ -2792,11 +2800,7 @@ html, body {
 .p3-region-table td:nth-child(5) {
   width: 34%;
 }
-/* Remove horizontal scroll on the region table container */
-.p3-region-table-wrap,
-.p3-card .table-scroll {
-  overflow-x: hidden !important;
-}
+/* region table container scroll handled by parent div */
 /* Fix bar cell to not overflow */
 .p3-bar-cell {
   display: flex !important;
@@ -2808,10 +2812,7 @@ html, body {
   min-width: 0;
 }
 
-/* Tracker region breakdown table — same fix */
-.tracker-region-table-wrap .table-scroll {
-  overflow-x: hidden !important;
-}
+
 
 
 /* ============================================================
@@ -2859,4 +2860,71 @@ html, body {
 @media (max-width: 860px) {
   .p3-region-table th:last-child,
   .p3-region-table td:last-child { display: none; }
+}
+
+/* ============================================================
+   TRACKER STORE TABLE — override global 1900px min-width
+   so columns align correctly with their headers
+   ============================================================ */
+.tracker-store-table {
+  min-width: 0 !important;
+  width: 100% !important;
+  table-layout: auto !important;
+}
+.tracker-store-table thead th,
+.tracker-store-table tbody td {
+  position: static !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Sticky header still needs a background for readability */
+.tracker-store-table thead th {
+  background: rgba(4,7,7,0.98) !important;
+  backdrop-filter: blur(12px) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}
+/* Store column — give it breathing room */
+.tracker-store-table th:first-child,
+.tracker-store-table td:first-child {
+  min-width: 180px;
+}
+/* Progress column */
+.tracker-store-table th:last-child,
+.tracker-store-table td:last-child {
+  min-width: 120px;
+  width: 160px;
+}
+/* Centre the numeric columns */
+.tracker-store-table th:nth-child(4),
+.tracker-store-table td:nth-child(4),
+.tracker-store-table th:nth-child(5),
+.tracker-store-table td:nth-child(5),
+.tracker-store-table th:nth-child(6),
+.tracker-store-table td:nth-child(6),
+.tracker-store-table th:nth-child(7),
+.tracker-store-table td:nth-child(7) {
+  text-align: center;
+  width: 80px;
+}
+/* Store name link — make it clearly clickable */
+.tracker-store-table .td-name {
+  cursor: pointer !important;
+  color: var(--accent) !important;
+}
+.tracker-store-table .td-name:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+/* Scroll container for the store table */
+.tracker-store-scroll {
+  max-height: 480px;
+  overflow-x: auto;
+  overflow-y: auto;
 }
