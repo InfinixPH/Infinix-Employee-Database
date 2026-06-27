@@ -1661,6 +1661,9 @@ body.role-viewer .write-action {
   display: none !important;
 }
 
+/* Safety net: if the actions column elements somehow reach the DOM for a viewer,
+   hide them. The table re-renders on role change so these cells are not emitted
+   in the first place — this rule is a belt-and-suspenders fallback only. */
 body.role-viewer .td-actions-cell,
 body.role-viewer th.td-actions-col {
   display: none !important;
