@@ -1659,6 +1659,10 @@ body.role-rssrsh #bulk-bar .btn-danger,
 body.role-viewer .write-action {
   display: none !important;
 }
+body.role-viewer .td-actions-cell,
+body.role-viewer .td-actions-col {
+  display: none !important;
+}
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
 
 
