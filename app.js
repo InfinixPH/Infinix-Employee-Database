@@ -879,7 +879,7 @@ function renderSkeletonRows(count=8){
   };
   tbody.innerHTML=Array.from({length:count},()=>`
     <tr class="skeleton-row">
-      ${canWrite()?`<td><div class="skeleton-base sk-cell" style="width:80px"></div></td>`:''}
+      ${canWrite()?`<td class="td-actions-cell"><div class="skeleton-base sk-cell" style="width:80px"></div></td>`:''}
       ${visColKeys.map(k=>`<td>${skMap[k]||`<div class="skeleton-base sk-cell sk-short"></div>`}</td>`).join('')}
     </tr>`).join('');
 }
@@ -1549,21 +1549,20 @@ function renderEmployeeTable(type){
 }
 
 function renderTableRows(type){
-  // Always sync thead so it matches current role (canWrite may have changed since table was built)
+  // Sync thead every time — pagination/sort/filter call this directly without rebuilding the full table
   const theadRow = document.querySelector('#content thead tr');
   if(theadRow){
     const hasActionsTh = !!theadRow.querySelector('th.td-actions-col');
-    if(canWrite() && !hasActionsTh){
-      const firstTh = theadRow.querySelector('th:not(.td-check)');
+    if(!canWrite() && hasActionsTh){
+      theadRow.querySelector('th.td-actions-col').remove();
+    } else if(canWrite() && !hasActionsTh){
       const th = document.createElement('th');
       th.className = 'no-sort td-actions-col';
       th.textContent = 'Actions';
-      theadRow.insertBefore(th, firstTh || null);
-    } else if(!canWrite() && hasActionsTh){
-      theadRow.querySelector('th.td-actions-col').remove();
+      const firstDataTh = theadRow.querySelector('th:not(.td-check)');
+      theadRow.insertBefore(th, firstDataTh || null);
     }
   }
-
   const list=filteredEmployees(type);
   const total=list.length;
   const totalPages=Math.max(1,Math.ceil(total/pageSize));
