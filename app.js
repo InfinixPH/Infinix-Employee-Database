@@ -1529,7 +1529,7 @@ function renderEmployeeTable(type){
           <thead>
             <tr>
               <th class="td-check no-sort" id="col-check-header" style="display:none"><input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"></th>
-              <th class="no-sort td-actions-col">Actions</th>
+              ${canWrite()?'<th class="no-sort td-actions-col">Actions</th>':''}
               ${TABLE_COLUMNS.filter(c=>visibleCols.has(c.key)).map(c=>`<th class="col-${esc(c.key)}" data-sort="${esc(c.key)}" onclick="toggleSort('${esc(c.key)}')">${esc(c.label)}</th>`).join('')}
             </tr>
           </thead>
@@ -1609,10 +1609,10 @@ function renderTableRows(type){
         <td class="td-check" style="display:${bulkMode?'':'none'}" onclick="event.stopPropagation()">
           <input type="checkbox" ${selectedIds.has(e.infinixId)?'checked':''} onchange="toggleSelect(event,'${esc(e.infinixId)}',this.checked)">
         </td>
-        <td onclick="event.stopPropagation()" class="td-actions-cell">
+${canWrite()?`<td onclick="event.stopPropagation()" class="td-actions-cell">
           <button class="btn btn-tbl-edit write-action" onclick="openEditModal('${esc(e.infinixId)}')"><i class='fi fi-sr-edit' style='font-size:11px'></i> Edit</button>
           <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
-        </td>
+        </td>`:''}
         ${visibleColKeys.map(k=>(colRender[k]||(() =>`<td>—</td>`))(e)).join('')}
       </tr>`).join('');
     _attachRowPreview(tbody, page);
