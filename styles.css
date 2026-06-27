@@ -1035,6 +1035,7 @@ table td.td-check, table th.td-check { overflow: visible; }
 .col-contractStatus  { width: 120px; }
 .col-contractEndDate { width: 120px; }
 .col-tags            { width: 160px; }
+.col-remarks         { width: 180px; }
 
 /* BADGES — compact solid-fill chips */
 .badge {
