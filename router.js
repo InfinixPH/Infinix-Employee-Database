@@ -10,7 +10,7 @@
 //   • Nothing in app.js breaks — router just wraps what's already there
 //
 // ROUTES:
-//   #/home          → showView('dashboard')   (landing page)
+//   #/home          → showView('home')         (landing page)
 //   #/people        → showView('active')
 //   #/inactive      → showView('inactive')
 //   #/tracker       → showView('tracker')
@@ -38,7 +38,7 @@ const Router = (() => {
     },
     {
       pattern: /^\/inactive$/,
-      handler: () => _activateView('inactive'),
+      handler: () => _activateView('archive'),  // legacy — /archive is canonical
     },
     {
       pattern: /^\/tracker$/,
