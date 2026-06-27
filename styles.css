@@ -1657,10 +1657,21 @@ body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
 body.role-rssrsh #bulk-bar .btn-danger,
-body.role-viewer .write-action,
+body.role-viewer .write-action {
+  display: none !important;
+}
+
+/* Collapse the entire actions column for viewer — visibility:collapse is required
+   for table cells; display:none leaves a blank gap */
 body.role-viewer .td-actions-cell,
 body.role-viewer th.td-actions-col {
-  display: none !important;
+  visibility: collapse !important;
+  padding: 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  border: none !important;
 }
 
 body.role-viewer .notes-area { pointer-events: none; opacity: .65; }
