@@ -66,13 +66,13 @@ function renderArchivePage(statusLabel){
         <table class="archive-table" id="archive-table-${esc(statusLabel)}">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Full Name</th>
-              <th>Position</th>
-              <th>Store / Outlet</th>
-              <th>Area</th>
-              <th>Date Hired</th>
-              <th>${statusLabel === 'Backout' ? 'Deployment Status' : 'Status'}</th>
+              <th class="arc-col-id">ID</th>
+              <th class="arc-col-name">Full Name</th>
+              <th class="arc-col-pos">Position</th>
+              <th class="arc-col-store">Store / Outlet</th>
+              <th class="arc-col-area">Area</th>
+              <th class="arc-col-hired">Date Hired</th>
+              <th class="arc-col-status">${statusLabel === 'Backout' ? 'Deployment Status' : 'Status'}</th>
             </tr>
           </thead>
           <tbody id="archive-tbody-${esc(statusLabel)}">
@@ -96,13 +96,13 @@ function _buildArchiveRows(list, statusLabel, color){
     const hired= esc(emp.dateHired || emp.startDate || '—');
     const st   = esc(statusLabel === 'Backout' ? (emp.deploymentStatus || '—') : (emp.status || '—'));
     return `<tr onclick="openDetailPanel('${emp.infinixId}')" style="cursor:pointer" class="archive-row">
-      <td class="td-id">${id}</td>
-      <td><strong>${name}</strong></td>
-      <td>${pos}</td>
-      <td>${store}</td>
-      <td>${area}</td>
-      <td>${hired}</td>
-      <td><span class="archive-status-pill" style="color:${color};background:${color}1F;border:1px solid ${color}40">${st}</span></td>
+      <td class="td-id arc-col-id">${id}</td>
+      <td class="arc-col-name"><strong>${name}</strong></td>
+      <td class="arc-col-pos">${pos}</td>
+      <td class="arc-col-store">${store}</td>
+      <td class="arc-col-area">${area}</td>
+      <td class="arc-col-hired">${hired}</td>
+      <td class="arc-col-status"><span class="archive-status-pill" style="color:${color};background:${color}1F;border:1px solid ${color}40">${st}</span></td>
     </tr>`;
   }).join('');
 }
