@@ -63,23 +63,22 @@ function renderHome() {
       </div>
 
       <!-- ═══════════════════════════════════════════════════
-           KPI STRIP — 4 cards exactly like reference image
-           All 4 show active count + "Active Workforce" label
+           KPI STRIP — 4 cards with real distinct metrics
       ═══════════════════════════════════════════════════ -->
       <div class="hd-kpi-strip">
-        <div class="hd-kpi" onclick="Router.go('active')">
+        <div class="hd-kpi" onclick="Router.go('active')" title="View all active workforce">
           <div class="hd-kpi-val">${active}</div>
           <div class="hd-kpi-label">Active Workforce</div>
         </div>
-        <div class="hd-kpi" onclick="Router.go('tracker')">
+        <div class="hd-kpi" onclick="Router.go('tracker')" title="View deployment tracker">
           <div class="hd-kpi-val">${deployed}</div>
           <div class="hd-kpi-label">Deployed</div>
         </div>
-        <div class="hd-kpi" onclick="missingFieldFilter='notDeployed';Router.go('active')">
+        <div class="hd-kpi" onclick="drillDown('notDeployed')" title="View pending deployment">
           <div class="hd-kpi-val">${notDeployed}</div>
           <div class="hd-kpi-label">Pending Deploy</div>
         </div>
-        <div class="hd-kpi" onclick="missingFieldFilter='requirements';Router.go('active')">
+        <div class="hd-kpi" onclick="drillDown('missingRequirements')" title="View missing requirements">
           <div class="hd-kpi-val">${missingReqs}</div>
           <div class="hd-kpi-label">Missing Reqs</div>
         </div>
@@ -327,11 +326,6 @@ function _phCalDayClick(day, year, month, clickedEl) {
     }
   }
 
-  // Only open popover if there's actual content OR user can add events
-  const hasContent = events.length > 0 || bdayNames.length > 0;
-  const canAdd = canViewSensitive();
-  if (!hasContent && !canAdd) return; // nothing to show, do nothing
-
   const dateLabel = new Date(year, month, day).toLocaleDateString('en-PH',
     { weekday:'long', month:'long', day:'numeric' });
 
@@ -349,14 +343,11 @@ function _phCalDayClick(day, year, month, clickedEl) {
       <div class="hd-pop-title" style="color:#FF9800">🎂 ${esc(name)}</div>
     </div>`;
   });
-
-  // Only show "Add one?" prompt if no events and user can add
-  if (!body && canAdd) {
-    body = `<div class="hd-pop-empty">No events. <button class="hd-card-link" style="font-size:11px" onclick="_phOpenAddEventDate('${dateStr}')">Add one?</button></div>`;
+  if (!body) {
+    body = canViewSensitive()
+      ? `<div class="hd-pop-empty">No events. <button class="hd-card-link" style="font-size:11px" onclick="_phOpenAddEventDate('${dateStr}')">Add one?</button></div>`
+      : `<div class="hd-pop-empty">No events.</div>`;
   }
-
-  // If still no body (shouldn't happen given check above), bail
-  if (!body) return;
 
   popover.innerHTML = `
     <div class="hd-pop-header">
@@ -677,8 +668,7 @@ function _injectHomeStyles() {
     letter-spacing: .5px;
     margin-top: 4px;
   }
-
-  /* Force dark KPI in both themes — always black */
+  /* Always dark regardless of theme */
   [data-theme="light"] .hd-kpi { background: #111 !important; border-color: #222 !important; }
   [data-theme="light"] .hd-kpi:hover { background: #1c1c1c !important; }
   [data-theme="light"] .hd-kpi-val { color: #fff !important; }
