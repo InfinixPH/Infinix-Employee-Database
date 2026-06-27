@@ -585,7 +585,15 @@ function renderTracker(){
     else if(normalizeDeployStatus(e.deploymentStatus)==='BACKOUT')byStore[key].backout++;
     else byStore[key].notYet++;
   });
-  const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total).slice(0,20);
+  const storeList=Object.values(byStore).sort((a,b)=>b.total-a.total); // show ALL stores, no slice
+
+  // Track which employees belong to each store for click-through
+  const byStoreEmps={};
+  list.forEach(e=>{
+    const key=e.storeAssignment||e.storeId||'Unknown';
+    if(!byStoreEmps[key])byStoreEmps[key]=[];
+    byStoreEmps[key].push(e.infinixId);
+  });
 
   document.getElementById('content').innerHTML=`
     <div class="tracker-date-filters glass-card" style="padding:12px 16px;margin-bottom:16px">
@@ -605,49 +613,81 @@ function renderTracker(){
       <div class="tracker-kf glass-card"><div class="kf-label-top">Deployed</div><div style="font-size:32px;font-weight:800;color:var(--success)">${deployed}</div><div style="font-size:10.5px;color:var(--text3);margin-top:6px">${pct}% deployment rate</div><div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:12px;overflow:hidden"><div style="width:${pct}%;height:100%;background:var(--success);border-radius:2px"></div></div></div>
       <div class="tracker-kf glass-card"><div class="kf-label-top">Breakdown</div><div style="display:flex;gap:16px;font-size:13px;margin-top:4px"><span><span style="color:var(--warning);font-weight:800;font-size:22px">${notYet}</span><div style="font-size:10px;color:var(--text3);margin-top:2px">Pending</div></span><span><span style="color:var(--danger);font-weight:800;font-size:22px">${backout}</span><div style="font-size:10px;color:var(--text3);margin-top:2px">Backout</div></span></div></div>
     </div>
-    <div class="section-heading"><span>By Region</span><div class="section-heading-line"></div></div>
+    <div class="section-heading"><span>By Region</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Click a region to filter — click again to deselect</span></div>
     <div class="tracker-region-grid">
       ${REGIONS.map(r=>{
         const rd=byRegion[r];
         const isActive=trackerRegion===r;
-        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card" style="opacity:.5"><div class="tracker-region-name"><i class="fi fi-sr-marker" style="font-size:11px;margin-right:5px"></i>${esc(r)}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
+        if(!rd||rd.total===0)return`<div class="tracker-region-card glass-card" style="opacity:.4;cursor:default"><div class="tracker-region-name"><i class="fi fi-sr-marker" style="font-size:11px;margin-right:5px"></i>${esc(r)}</div><div style="font-size:11px;color:var(--text3)">No employees</div></div>`;
         const rpct=Math.round(rd.deployed/rd.total*100);
-        return`<div class="tracker-region-card glass-card ${isActive?'tracker-region-active':''}" onclick="trackerRegion=trackerRegion==='${esc(r)}'?'':'${esc(r)}';renderTracker()" style="cursor:pointer" title="Click to filter by ${esc(r)}">
-          <div class="tracker-region-name"><i class="fi fi-sr-marker" style="font-size:11px;margin-right:5px;color:var(--accent)"></i>${esc(r)}</div>
+        return`<div class="tracker-region-card glass-card ${isActive?'tracker-region-active':''}" onclick="trackerRegion=trackerRegion==='${esc(r)}'?'':'${esc(r)}';renderTracker()" style="cursor:pointer" title="${isActive?'Click to deselect':'Click to filter by '+esc(r)}">
+          <div class="tracker-region-name"><i class="fi fi-sr-marker" style="font-size:11px;margin-right:5px;color:var(--accent)"></i>${esc(r)}${isActive?` <span style="font-size:9px;color:var(--accent);font-weight:600;margin-left:4px">✓ Active</span>`:''}</div>
           <div style="font-size:22px;font-weight:800;color:var(--text)">${rd.deployed}<span style="font-size:13px;color:var(--text3);font-weight:400"> / ${rd.total}</span></div>
           <div class="tracker-region-bar-wrap"><div class="tracker-region-bar" style="width:${rpct}%"></div></div>
           <div class="tracker-region-stats"><span style="color:var(--success)">${rpct}% deployed</span><span>${rd.notYet} pending · ${rd.backout} backout</span></div>
         </div>`;
       }).join('')}
     </div>
-    <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">Top 20 by headcount${trackerRegion?` — filtered to ${esc(trackerRegion)}`:''}</span></div>
+    <div class="section-heading"><span>By Store</span><div class="section-heading-line"></div><span style="font-size:9px;opacity:.55">${storeList.length} store${storeList.length!==1?'s':''}${trackerRegion?` — ${esc(trackerRegion)}`:' · all regions'} · click store name to view promoters</span></div>
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="no-sort">Store</th><th class="no-sort">Store ID</th><th class="no-sort">Region</th>
-            <th class="no-sort" style="text-align:center">Total</th><th class="no-sort" style="text-align:center">Deployed</th><th class="no-sort" style="text-align:center">Pending</th>
-            <th class="no-sort" style="text-align:center">Backout</th><th class="no-sort">Progress</th>
+            <th class="no-sort">Store</th>
+            <th class="no-sort">Store ID</th>
+            <th class="no-sort">Region</th>
+            <th class="no-sort" style="text-align:center">Total</th>
+            <th class="no-sort" style="text-align:center">Deployed</th>
+            <th class="no-sort" style="text-align:center">Pending</th>
+            <th class="no-sort" style="text-align:center">Backout</th>
+            <th class="no-sort">Progress</th>
           </tr></thead>
           <tbody>
             ${storeList.length===0?`<tr><td colspan="8"><div class="empty-state"><div class="ei">—</div><p>No data</p></div></td></tr>`
             :storeList.map(st=>{
               const sp=st.total?Math.round(st.deployed/st.total*100):0;
+              // Build a safe store name for onclick filter
+              const safeStore=esc(st.name).replace(/'/g,"\\'");
               return`<tr>
-                <td><div class="td-name">${esc(st.name)}</div></td>
+                <td>
+                  <div class="td-name" style="cursor:pointer;color:var(--accent);text-decoration:underline;text-decoration-color:rgba(0,200,170,.3)"
+                    onclick="filterByStore('${safeStore}')"
+                    title="View promoters at ${esc(st.name)}">${esc(st.name)}</div>
+                </td>
                 <td><span class="td-id">${esc(st.storeId||'—')}</span></td>
                 <td style="color:var(--text2)">${esc(st.region||'—')}</td>
                 <td style="font-weight:700;text-align:center">${st.total}</td>
                 <td style="text-align:center"><span style="color:var(--success);font-weight:700">${st.deployed}</span></td>
                 <td style="text-align:center"><span style="color:var(--warning);font-weight:700">${st.notYet}</span></td>
                 <td style="text-align:center"><span style="color:var(--danger);font-weight:700">${st.backout}</span></td>
-                <td style="min-width:100px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td>
+                <td style="min-width:120px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:rgba(136,144,99,0.12);border-radius:3px;overflow:hidden"><div style="width:${sp}%;height:100%;background:var(--moss-green);border-radius:3px"></div></div><span style="font-size:10px;color:var(--text3);min-width:28px">${sp}%</span></div></td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>
     </div>`;
+}
+
+// Filter active list to employees at a specific store and navigate to it
+function filterByStore(storeName) {
+  // Set the store filter on the active list page and navigate there
+  if(typeof filterStoreAssignment !== 'undefined') {
+    filterStoreAssignment = storeName;
+  }
+  // Use search to find promoters at this store
+  const searchInput = document.getElementById('search-input');
+  if(searchInput) searchInput.value = storeName;
+  if(typeof searchQuery !== 'undefined') searchQuery = storeName;
+  Router.go('active');
+  // Brief delay so the page renders first, then apply
+  setTimeout(() => {
+    const si = document.getElementById('search-input');
+    if(si) {
+      si.value = storeName;
+      si.dispatchEvent(new Event('input', {bubbles:true}));
+    }
+  }, 200);
 }
 
 // ============================================================
