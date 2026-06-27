@@ -1549,6 +1549,21 @@ function renderEmployeeTable(type){
 }
 
 function renderTableRows(type){
+  // Always sync thead so it matches current role (canWrite may have changed since table was built)
+  const theadRow = document.querySelector('#content thead tr');
+  if(theadRow){
+    const hasActionsTh = !!theadRow.querySelector('th.td-actions-col');
+    if(canWrite() && !hasActionsTh){
+      const firstTh = theadRow.querySelector('th:not(.td-check)');
+      const th = document.createElement('th');
+      th.className = 'no-sort td-actions-col';
+      th.textContent = 'Actions';
+      theadRow.insertBefore(th, firstTh || null);
+    } else if(!canWrite() && hasActionsTh){
+      theadRow.querySelector('th.td-actions-col').remove();
+    }
+  }
+
   const list=filteredEmployees(type);
   const total=list.length;
   const totalPages=Math.max(1,Math.ceil(total/pageSize));
