@@ -1,75 +1,229 @@
 // ============================================================
 // page-recruitment.js — Recruitment & Training page
-// Placeholder UI ready for future implementation
+// Full Applicants pipeline tracker backed by the "Applicants"
+// Google Sheet, with Store ID autofill (Store Details sheet)
+// and auto-push to Active sheet on Deployed.
 // ============================================================
 'use strict';
 
-function renderRecruitmentPage(){
+// ── State ──────────────────────────────────────────────────
+let applicants = [];
+let applicantsLoaded = false;
+let editingApplicantId = null;
+let recSearchTerm = '';
+let recStatusFilter = '';
+
+const APPLICANT_POSITIONS = ['Promoter','RSS'];
+const INTERVIEW_RESULTS = ['','PASSED','FAILED','BACKOUT'];
+const FINAL_STATUSES = ['','Deployed','Backout'];
+const UNIFORM_SIZES = ['','XS','S','M','L','XL','XXL'];
+
+// ============================================================
+// DATA — load / save
+// ============================================================
+function applicantRowToObj(r){
+  r = r || [];
+  return {
+    id: r[0]||'',
+    batchNo: r[1]||'',
+    waveNo: r[2]||'',
+    region: r[3]||'',
+    rssName: r[4]||'',
+    rssId: r[5]||'',
+    storeAssignment: r[6]||'',
+    storeId: r[7]||'',
+    fullName: r[8]||'',
+    position: r[9]||'',
+    mobile: r[10]||'',
+    email: r[11]||'',
+    initInterviewDate: r[12]||'',
+    initInterviewResult: r[13]||'',
+    initInterviewRemarks: r[14]||'',
+    finalInterviewDate: r[15]||'',
+    finalInterviewResult: r[16]||'',
+    finalInterviewRemarks: r[17]||'',
+    obtStartDate: r[18]||'',
+    obtResult: r[19]||'',
+    obtRemarks: r[20]||'',
+    deploymentDate: r[21]||'',
+    status: r[22]||'',
+    completeRequirements: r[23]||'',
+    uniformSize: r[24]||'',
+    uniformDeliveredDate: r[25]||'',
+    dateAdded: r[26]||'',
+    lastUpdated: r[27]||'',
+    addedBy: r[28]||'',
+    _row: 0
+  };
+}
+function applicantObjToRow(d){
+  d = d||{};
+  return [
+    d.id||'', d.batchNo||'', d.waveNo||'', d.region||'', d.rssName||'', d.rssId||'',
+    d.storeAssignment||'', d.storeId||'', d.fullName||'', d.position||'', d.mobile||'', d.email||'',
+    d.initInterviewDate||'', d.initInterviewResult||'', d.initInterviewRemarks||'',
+    d.finalInterviewDate||'', d.finalInterviewResult||'', d.finalInterviewRemarks||'',
+    d.obtStartDate||'', d.obtResult||'', d.obtRemarks||'',
+    d.deploymentDate||'', d.status||'', d.completeRequirements||'',
+    d.uniformSize||'', d.uniformDeliveredDate||'',
+    d.dateAdded||ts(), ts(), d.addedBy||(ROLE_META[currentRole]?.label||'')
+  ];
+}
+async function loadApplicants(force){
+  if(applicantsLoaded && !force) return;
+  try{
+    const r = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${APPLICANTS_SHEET}!A2:${APPLICANTS_LAST_COL}`
+    });
+    const rows = r.result.values||[];
+    applicants = rows.map((row,i)=>{
+      const obj = applicantRowToObj(row);
+      obj._row = i+2;
+      return obj;
+    }).filter(a=>a.id);
+    applicantsLoaded = true;
+  }catch(e){
+    console.warn('Applicants load failed:', e);
+    toast('Could not load applicants — check the Applicants sheet exists.','error');
+  }
+}
+function nextApplicantId(){
+  let max = 0;
+  applicants.forEach(a=>{
+    const m = String(a.id).match(/APP-(\d+)/);
+    if(m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return `APP-${String(max+1).padStart(4,'0')}`;
+}
+async function saveApplicant(data){
+  if(!canWrite()){denyWrite();return false;}
+  try{
+    showLoading(true,'Saving applicant…');
+    if(editingApplicantId){
+      const existing = applicants.find(a=>a.id===editingApplicantId);
+      if(!existing) throw new Error('Applicant not found');
+      data.id = existing.id;
+      data.dateAdded = existing.dateAdded;
+      await gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID, range: `${APPLICANTS_SHEET}!A${existing._row}:${APPLICANTS_LAST_COL}${existing._row}`,
+        valueInputOption:'RAW', resource:{ values:[applicantObjToRow(data)] }
+      });
+    } else {
+      data.id = nextApplicantId();
+      await gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID, range: `${APPLICANTS_SHEET}!A:${APPLICANTS_LAST_COL}`,
+        valueInputOption:'RAW', insertDataOption:'INSERT_ROWS', resource:{ values:[applicantObjToRow(data)] }
+      });
+    }
+    // Auto-push to Active employee sheet when marked Deployed
+    if(normalizeFinalStatus(data.status)==='DEPLOYED'){
+      await pushApplicantToActive(data);
+    }
+    await loadApplicants(true);
+    toast(editingApplicantId?'Applicant updated':'Applicant added','success');
+    return true;
+  }catch(e){
+    console.error(e);
+    toast('Save failed — '+(e.message||'check connection'),'error');
+    return false;
+  }finally{
+    showLoading(false);
+  }
+}
+function normalizeFinalStatus(s){ return String(s||'').trim().toUpperCase(); }
+
+async function pushApplicantToActive(applicant){
+  try{
+    // Avoid duplicate push if already deployed previously
+    const already = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`
+    });
+    const existingIds = (already.result.values||[]).map(r=>String(r[1]||'').trim());
+    if(existingIds.includes(applicant.id)) return; // already pushed
+
+    const empData = {
+      region: applicant.region,
+      infinixId: applicant.id, // placeholder until assigned a real Infinix ID
+      fullName: applicant.fullName,
+      storeAssignment: applicant.storeAssignment,
+      storeId: applicant.storeId,
+      status: 'Active',
+      qrStatus: 'NOT SCANNED',
+      deploymentDate: applicant.deploymentDate,
+      deploymentStatus: 'DEPLOYED',
+      rssName: applicant.rssName,
+      rssId: applicant.rssId,
+      mobile: applicant.mobile,
+      email: applicant.email,
+      contractStatus: 'NOT YET SENT',
+      notes: `Promoted from Recruitment pipeline (${applicant.id})`
+    };
+    await gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID, range: `${ACTIVE_SHEET}!A:${SHEET_LAST_COL}`,
+      valueInputOption:'RAW', insertDataOption:'INSERT_ROWS', resource:{ values:[objToRow(empData)] }
+    });
+    toast(`${applicant.fullName} pushed to Active Workforce`,'success');
+  }catch(e){
+    console.warn('Auto-push to Active failed:', e);
+    toast('Deployed, but auto-push to Active failed — add manually.','error');
+  }
+}
+
+async function deleteApplicant(id){
+  if(!canDeleteRecords()){toast('You need HR/AGENCY or Owner access to delete records.','error');return;}
+  const app = applicants.find(a=>a.id===id);
+  if(!app) return;
+  if(!confirm(`Delete applicant "${app.fullName||id}"? This cannot be undone.`)) return;
+  try{
+    showLoading(true,'Deleting…');
+    const sheetMeta = await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
+    const sheetObj = sheetMeta.result.sheets.find(s=>s.properties.title===APPLICANTS_SHEET);
+    if(sheetObj){
+      await gapi.client.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: SHEET_ID,
+        resource:{ requests:[{ deleteDimension:{ range:{ sheetId:sheetObj.properties.sheetId, dimension:'ROWS', startIndex:app._row-1, endIndex:app._row } } }] }
+      });
+    }
+    await loadApplicants(true);
+    renderRecruitmentPage();
+    toast('Applicant deleted','success');
+  }catch(e){
+    console.error(e);
+    toast('Delete failed','error');
+  }finally{
+    showLoading(false);
+  }
+}
+
+// ============================================================
+// RENDER — Page shell
+// ============================================================
+async function renderRecruitmentPage(){
   const titleEl = document.getElementById('topbar-title');
   if(titleEl) titleEl.textContent = 'Recruitment & Training';
 
   document.getElementById('content').innerHTML = `
     <div class="rec-wrap">
+      <div id="rec-kpi-row" class="rec-kpi-row">${_recKpiSkeleton()}</div>
 
-      <!-- Summary Cards -->
-      <div class="rec-kpi-row">
-        <div class="rec-kpi-card">
-          <div class="rec-kpi-icon" style="background:rgba(0,200,170,.1);color:var(--accent)">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <div class="rec-kpi-body">
-            <div class="rec-kpi-val">—</div>
-            <div class="rec-kpi-label">Total Applicants</div>
-          </div>
-        </div>
-        <div class="rec-kpi-card">
-          <div class="rec-kpi-icon" style="background:rgba(55,138,221,.1);color:#378ADD">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
-          </div>
-          <div class="rec-kpi-body">
-            <div class="rec-kpi-val" style="color:#378ADD">—</div>
-            <div class="rec-kpi-label">Shortlisted</div>
-          </div>
-        </div>
-        <div class="rec-kpi-card">
-          <div class="rec-kpi-icon" style="background:rgba(255,215,64,.1);color:#FFD740">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          </div>
-          <div class="rec-kpi-body">
-            <div class="rec-kpi-val" style="color:#FFD740">—</div>
-            <div class="rec-kpi-label">In Training</div>
-          </div>
-        </div>
-        <div class="rec-kpi-card">
-          <div class="rec-kpi-icon" style="background:rgba(0,230,118,.1);color:#00E676">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>
-          <div class="rec-kpi-body">
-            <div class="rec-kpi-val" style="color:#00E676">—</div>
-            <div class="rec-kpi-label">Onboarded</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main content area -->
       <div class="rec-grid">
-
-        <!-- Applicants section -->
-        <div class="rec-section">
+        <div class="rec-section rec-section-full">
           <div class="rec-section-header">
             <div class="rec-section-title">Applicants</div>
-            <div class="rec-section-badge coming-soon">Coming Soon</div>
-          </div>
-          <div class="rec-placeholder-body">
-            <div class="rec-ph-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div class="rec-toolbar">
+              <input type="text" id="rec-search" class="rec-search-input" placeholder="Search name, batch, store…" value="${esc(recSearchTerm)}">
+              <select id="rec-status-filter" class="rec-filter-select">
+                <option value="">All Statuses</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Deployed">Deployed</option>
+                <option value="Backout">Backout</option>
+              </select>
+              <button class="btn-primary" id="rec-add-btn" onclick="openApplicantModal()">+ Add Applicant</button>
             </div>
-            <div class="rec-ph-title">Applicant Tracking</div>
-            <div class="rec-ph-sub">Track applicants from screening to onboarding. Connect an Applicants Google Sheet to enable this feature.</div>
           </div>
+          <div id="rec-table-wrap" class="rec-table-wrap">${_recTableSkeleton()}</div>
         </div>
 
-        <!-- Training Schedule section -->
         <div class="rec-section">
           <div class="rec-section-header">
             <div class="rec-section-title">Training Schedule</div>
@@ -84,108 +238,466 @@ function renderRecruitmentPage(){
           </div>
         </div>
 
-        <!-- Pipeline section -->
-        <div class="rec-section rec-section-full">
+        <div class="rec-section">
           <div class="rec-section-header">
             <div class="rec-section-title">Recruitment Pipeline</div>
-            <div class="rec-section-badge coming-soon">Coming Soon</div>
           </div>
-          <div class="rec-pipeline-placeholder">
-            ${['Screening','Interview','Job Offer','Pre-Employment','Onboarding'].map((stage,i)=>`
-              <div class="rec-pipeline-stage">
-                <div class="rec-stage-header">
-                  <div class="rec-stage-num">${String(i+1).padStart(2,'0')}</div>
-                  <div class="rec-stage-name">${stage}</div>
-                </div>
-                <div class="rec-stage-empty">—</div>
-              </div>`).join('')}
-          </div>
+          <div id="rec-pipeline" class="rec-pipeline-placeholder">${_recPipelineSkeleton()}</div>
         </div>
-
       </div>
+    </div>
 
+    <!-- Applicant Modal -->
+    <div class="modal-overlay" id="rec-modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title" id="rec-modal-title">Add Applicant</div>
+          <button class="modal-close" onclick="closeApplicantModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="rec-modal-body"></div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeApplicantModal()">Cancel</button>
+          <button class="btn-primary" id="rec-modal-save-btn" onclick="submitApplicantForm()">Save Applicant</button>
+        </div>
+      </div>
     </div>
   `;
 
   _injectRecruitmentStyles();
+
+  document.getElementById('rec-search').addEventListener('input', e=>{
+    recSearchTerm = e.target.value;
+    _renderApplicantsTable();
+  });
+  document.getElementById('rec-status-filter').addEventListener('change', e=>{
+    recStatusFilter = e.target.value;
+    _renderApplicantsTable();
+  });
+
+  if(!storeCacheLoaded) loadStoreDetails();
+  await loadApplicants();
+  _renderApplicantsTable();
+  _renderKpis();
+  _renderPipeline();
 }
 
+function _recKpiSkeleton(){
+  return ['Total Applicants','Shortlisted','In Training','Onboarded'].map(label=>`
+    <div class="rec-kpi-card">
+      <div class="rec-kpi-body">
+        <div class="rec-kpi-val">—</div>
+        <div class="rec-kpi-label">${label}</div>
+      </div>
+    </div>`).join('');
+}
+function _recTableSkeleton(){
+  return `<div class="rec-placeholder-body"><div class="rec-ph-sub">Loading applicants…</div></div>`;
+}
+function _recPipelineSkeleton(){
+  return ['Screening','Interview','Job Offer','Pre-Employment','Onboarding'].map((stage,i)=>`
+    <div class="rec-pipeline-stage">
+      <div class="rec-stage-header"><div class="rec-stage-num">${String(i+1).padStart(2,'0')}</div><div class="rec-stage-name">${stage}</div></div>
+      <div class="rec-stage-empty">—</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// KPIs
+// ============================================================
+function _renderKpis(){
+  const total = applicants.length;
+  const shortlisted = applicants.filter(a=>normalizeFinalStatus(a.initInterviewResult)==='PASSED').length;
+  const inTraining = applicants.filter(a=>a.obtStartDate && normalizeFinalStatus(a.obtResult)!=='PASSED' && normalizeFinalStatus(a.obtResult)!=='FAILED' && normalizeFinalStatus(a.obtResult)!=='BACKOUT').length;
+  const onboarded = applicants.filter(a=>normalizeFinalStatus(a.status)==='DEPLOYED').length;
+
+  const cards = [
+    {val:total, label:'Total Applicants', color:'var(--accent)'},
+    {val:shortlisted, label:'Shortlisted', color:'#378ADD'},
+    {val:inTraining, label:'In Training', color:'#FFD740'},
+    {val:onboarded, label:'Onboarded', color:'#00E676'}
+  ];
+  document.getElementById('rec-kpi-row').innerHTML = cards.map(c=>`
+    <div class="rec-kpi-card">
+      <div class="rec-kpi-body">
+        <div class="rec-kpi-val" style="color:${c.color}">${c.val}</div>
+        <div class="rec-kpi-label">${c.label}</div>
+      </div>
+    </div>`).join('');
+}
+
+function _renderPipeline(){
+  const stages = [
+    {name:'Screening', count: applicants.filter(a=>!a.initInterviewDate).length},
+    {name:'Interview', count: applicants.filter(a=>a.initInterviewDate && !a.finalInterviewDate).length},
+    {name:'Job Offer', count: applicants.filter(a=>normalizeFinalStatus(a.finalInterviewResult)==='PASSED' && !a.obtStartDate).length},
+    {name:'Pre-Employment', count: applicants.filter(a=>a.obtStartDate && normalizeFinalStatus(a.completeRequirements)!=='YES').length},
+    {name:'Onboarding', count: applicants.filter(a=>normalizeFinalStatus(a.status)==='DEPLOYED').length}
+  ];
+  document.getElementById('rec-pipeline').innerHTML = stages.map((s,i)=>`
+    <div class="rec-pipeline-stage">
+      <div class="rec-stage-header"><div class="rec-stage-num">${String(i+1).padStart(2,'0')}</div><div class="rec-stage-name">${s.name}</div></div>
+      <div class="rec-stage-count">${s.count}</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+function _filteredApplicants(){
+  let list = applicants.slice();
+  if(recSearchTerm){
+    const q = recSearchTerm.toLowerCase();
+    list = list.filter(a =>
+      String(a.fullName).toLowerCase().includes(q) ||
+      String(a.batchNo).toLowerCase().includes(q) ||
+      String(a.waveNo).toLowerCase().includes(q) ||
+      String(a.storeAssignment).toLowerCase().includes(q) ||
+      String(a.storeId).toLowerCase().includes(q) ||
+      String(a.rssName).toLowerCase().includes(q)
+    );
+  }
+  if(recStatusFilter==='Deployed') list = list.filter(a=>normalizeFinalStatus(a.status)==='DEPLOYED');
+  else if(recStatusFilter==='Backout') list = list.filter(a=>normalizeFinalStatus(a.status)==='BACKOUT');
+  else if(recStatusFilter==='In Progress') list = list.filter(a=>{
+    const s = normalizeFinalStatus(a.status);
+    return s!=='DEPLOYED' && s!=='BACKOUT';
+  });
+  return list.sort((a,b)=>String(b.dateAdded).localeCompare(String(a.dateAdded)));
+}
+function _statusBadgeClass(status){
+  const s = normalizeFinalStatus(status);
+  if(s==='DEPLOYED') return 'rec-badge-success';
+  if(s==='BACKOUT') return 'rec-badge-danger';
+  return 'rec-badge-pending';
+}
+function _resultBadge(result){
+  const r = normalizeFinalStatus(result);
+  if(!r) return '<span class="rec-result-dash">—</span>';
+  if(r==='PASSED') return '<span class="rec-result rec-result-pass">PASSED</span>';
+  if(r==='FAILED') return '<span class="rec-result rec-result-fail">FAILED</span>';
+  if(r==='BACKOUT') return '<span class="rec-result rec-result-backout">BACKOUT</span>';
+  return esc(result);
+}
+function _renderApplicantsTable(){
+  const wrap = document.getElementById('rec-table-wrap');
+  if(!wrap) return;
+  const list = _filteredApplicants();
+
+  if(!list.length){
+    wrap.innerHTML = `<div class="rec-placeholder-body">
+      <div class="rec-ph-title">No applicants yet</div>
+      <div class="rec-ph-sub">Click "+ Add Applicant" to start tracking your recruitment pipeline.</div>
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="rec-table-scroll">
+      <table class="rec-table">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Batch / Wave</th>
+            <th>Store</th>
+            <th>Initial Int.</th>
+            <th>Final Int.</th>
+            <th>OBT</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(a=>`
+            <tr>
+              <td>
+                <div class="rec-cell-name">${esc(a.fullName)||'—'}</div>
+                <div class="rec-cell-sub">${esc(a.position)||''}${a.mobile?' · '+esc(a.mobile):''}</div>
+              </td>
+              <td>${esc(a.batchNo)}${a.waveNo?'-'+esc(a.waveNo):''}</td>
+              <td>
+                <div class="rec-cell-name">${esc(a.storeAssignment)||'—'}</div>
+                <div class="rec-cell-sub">${esc(a.storeId)||''}</div>
+              </td>
+              <td>${_resultBadge(a.initInterviewResult)}</td>
+              <td>${_resultBadge(a.finalInterviewResult)}</td>
+              <td>${_resultBadge(a.obtResult)}</td>
+              <td><span class="rec-badge ${_statusBadgeClass(a.status)}">${esc(a.status)||'In Progress'}</span></td>
+              <td class="rec-cell-actions">
+                <button class="rec-icon-btn" title="Edit" onclick="openApplicantModal('${esc(a.id)}')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                </button>
+                <button class="rec-icon-btn rec-icon-danger" title="Delete" onclick="deleteApplicant('${esc(a.id)}')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+                </button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ============================================================
+// FORM / MODAL
+// ============================================================
+function openApplicantModal(id){
+  if(id && !canWrite()){denyWrite();return;}
+  editingApplicantId = id||null;
+  const a = id ? applicants.find(x=>x.id===id) : null;
+  document.getElementById('rec-modal-title').textContent = a ? `Edit — ${a.fullName||a.id}` : 'Add Applicant';
+  document.getElementById('rec-modal-save-btn').textContent = a ? 'Update Applicant' : 'Save Applicant';
+  document.getElementById('rec-modal-body').innerHTML = _applicantFormHTML(a);
+  document.getElementById('rec-modal-overlay').classList.add('open');
+
+  const storeIdEl = document.getElementById('raf_storeId');
+  if(storeIdEl) storeIdEl.addEventListener('input', _onApplicantStoreIdInput);
+  if(a && a.storeId) _onApplicantStoreIdInput();
+}
+function closeApplicantModal(){
+  document.getElementById('rec-modal-overlay').classList.remove('open');
+  editingApplicantId = null;
+}
+function _onApplicantStoreIdInput(){
+  const idEl = document.getElementById('raf_storeId');
+  const storeEl = document.getElementById('raf_storeAssignment');
+  const regionEl = document.getElementById('raf_region');
+  const rssNameEl = document.getElementById('raf_rssName');
+  const rssIdEl = document.getElementById('raf_rssId');
+  const statusEl = document.getElementById('raf-store-status');
+  if(!idEl) return;
+  const shopId = idEl.value.trim();
+  if(!shopId){
+    statusEl.textContent = '';
+    [storeEl,regionEl,rssNameEl,rssIdEl].forEach(el=>{ if(el) el.readOnly=false; });
+    return;
+  }
+  const found = lookupStore(shopId);
+  if(found){
+    if(storeEl){ storeEl.value = found.storeName; storeEl.readOnly = !!found.storeName; }
+    if(regionEl){ regionEl.value = found.region; regionEl.readOnly = !!found.region; }
+    if(rssNameEl){ rssNameEl.value = found.rssName; rssNameEl.readOnly = !!found.rssName; }
+    if(rssIdEl){ rssIdEl.value = found.rssId; rssIdEl.readOnly = !!found.rssId; }
+    statusEl.textContent = `Store found: ${found.storeName}${found.region?' · '+found.region:''}`;
+    statusEl.className = 'store-lookup-status found';
+  } else {
+    [storeEl,regionEl,rssNameEl,rssIdEl].forEach(el=>{ if(el) el.readOnly=false; });
+    statusEl.textContent = storeCacheLoaded ? 'Store ID not found — enter fields manually' : 'Store list loading…';
+    statusEl.className = 'store-lookup-status '+(storeCacheLoaded?'notfound':'searching');
+  }
+}
+function _opt(list, current){
+  return list.map(v=>`<option value="${esc(v)}" ${String(v)===String(current||'')?'selected':''}>${v||'— Select —'}</option>`).join('');
+}
+function _applicantFormHTML(a){
+  a = a || {};
+  return `
+    <div class="rec-form">
+
+      <div class="rec-form-section-label">Batch & Assignment</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Batch No.</label><input id="raf_batchNo" type="text" placeholder="e.g. 9" value="${esc(a.batchNo)}"></div>
+        <div class="field"><label>Wave No.</label><input id="raf_waveNo" type="text" placeholder="e.g. 1" value="${esc(a.waveNo)}"></div>
+      </div>
+      <div class="rec-form-row">
+        <div class="field">
+          <label>Store ID (Shop ID)</label>
+          <input id="raf_storeId" type="text" placeholder="Type Shop ID to auto-fill" value="${esc(a.storeId)}">
+          <div class="store-lookup-status" id="raf-store-status">${storeCacheLoaded?'Enter Store ID to auto-fill':'Loading store list…'}</div>
+        </div>
+        <div class="field"><label>Store Assignment</label><input id="raf_storeAssignment" type="text" placeholder="Auto-filled or enter manually" value="${esc(a.storeAssignment)}"></div>
+      </div>
+      <div class="rec-form-row">
+        <div class="field"><label>Region</label><input id="raf_region" type="text" placeholder="Auto-filled" value="${esc(a.region)}"></div>
+      </div>
+      <div class="rec-form-row">
+        <div class="field"><label>RSS Name</label><input id="raf_rssName" type="text" placeholder="Auto-filled" value="${esc(a.rssName)}"></div>
+        <div class="field"><label>RSS ID</label><input id="raf_rssId" type="text" placeholder="Auto-filled" value="${esc(a.rssId)}"></div>
+      </div>
+
+      <div class="rec-form-section-label">Applicant Info</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Full Name</label><input id="raf_fullName" type="text" value="${esc(a.fullName)}"></div>
+        <div class="field"><label>Position</label><select id="raf_position">${_opt(['',...APPLICANT_POSITIONS], a.position)}</select></div>
+      </div>
+      <div class="rec-form-row">
+        <div class="field"><label>Mobile No.</label><input id="raf_mobile" type="text" value="${esc(a.mobile)}"></div>
+        <div class="field"><label>Email Address</label><input id="raf_email" type="email" value="${esc(a.email)}"></div>
+      </div>
+
+      <div class="rec-form-section-label">Initial Interview</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Date</label><input id="raf_initInterviewDate" type="date" value="${esc(a.initInterviewDate)}"></div>
+        <div class="field"><label>Result</label><select id="raf_initInterviewResult">${_opt(INTERVIEW_RESULTS, a.initInterviewResult)}</select></div>
+      </div>
+      <div class="field"><label>Remarks</label><input id="raf_initInterviewRemarks" type="text" value="${esc(a.initInterviewRemarks)}"></div>
+
+      <div class="rec-form-section-label">Final Interview</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Date</label><input id="raf_finalInterviewDate" type="date" value="${esc(a.finalInterviewDate)}"></div>
+        <div class="field"><label>Result</label><select id="raf_finalInterviewResult">${_opt(INTERVIEW_RESULTS, a.finalInterviewResult)}</select></div>
+      </div>
+      <div class="field"><label>Remarks</label><input id="raf_finalInterviewRemarks" type="text" value="${esc(a.finalInterviewRemarks)}"></div>
+
+      <div class="rec-form-section-label">OBT (On-the-Job Training)</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Start Date</label><input id="raf_obtStartDate" type="date" value="${esc(a.obtStartDate)}"></div>
+        <div class="field"><label>Result</label><select id="raf_obtResult">${_opt(INTERVIEW_RESULTS, a.obtResult)}</select></div>
+      </div>
+      <div class="field"><label>Remarks</label><input id="raf_obtRemarks" type="text" value="${esc(a.obtRemarks)}"></div>
+
+      <div class="rec-form-section-label">Deployment</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Deployment Date</label><input id="raf_deploymentDate" type="date" value="${esc(a.deploymentDate)}"></div>
+        <div class="field"><label>Status</label><select id="raf_status">${_opt(FINAL_STATUSES, a.status)}</select></div>
+      </div>
+      <div class="field">
+        <label>Complete Requirements</label>
+        <select id="raf_completeRequirements">${_opt(['','Yes','No'], a.completeRequirements)}</select>
+      </div>
+
+      <div class="rec-form-section-label">Uniform</div>
+      <div class="rec-form-row">
+        <div class="field"><label>Size</label><select id="raf_uniformSize">${_opt(UNIFORM_SIZES, a.uniformSize)}</select></div>
+        <div class="field"><label>Delivered Date</label><input id="raf_uniformDeliveredDate" type="date" value="${esc(a.uniformDeliveredDate)}"></div>
+      </div>
+
+    </div>
+  `;
+}
+async function submitApplicantForm(){
+  if(!canWrite()){denyWrite();return;}
+  const g = id => document.getElementById(id)?.value?.trim() || '';
+  const fullName = g('raf_fullName');
+  if(!fullName){ toast('Full Name is required','error'); return; }
+
+  const status = g('raf_status');
+  if(normalizeFinalStatus(status)==='DEPLOYED' && !g('raf_deploymentDate')){
+    toast('Deployment Date is required when Status is Deployed','error'); return;
+  }
+
+  const data = {
+    batchNo: g('raf_batchNo'), waveNo: g('raf_waveNo'),
+    region: g('raf_region'), rssName: g('raf_rssName'), rssId: g('raf_rssId'),
+    storeAssignment: g('raf_storeAssignment'), storeId: g('raf_storeId'),
+    fullName, position: g('raf_position'), mobile: g('raf_mobile'), email: g('raf_email'),
+    initInterviewDate: g('raf_initInterviewDate'), initInterviewResult: g('raf_initInterviewResult'), initInterviewRemarks: g('raf_initInterviewRemarks'),
+    finalInterviewDate: g('raf_finalInterviewDate'), finalInterviewResult: g('raf_finalInterviewResult'), finalInterviewRemarks: g('raf_finalInterviewRemarks'),
+    obtStartDate: g('raf_obtStartDate'), obtResult: g('raf_obtResult'), obtRemarks: g('raf_obtRemarks'),
+    deploymentDate: g('raf_deploymentDate'), status, completeRequirements: g('raf_completeRequirements'),
+    uniformSize: g('raf_uniformSize'), uniformDeliveredDate: g('raf_uniformDeliveredDate')
+  };
+
+  const ok = await saveApplicant(data);
+  if(ok){
+    closeApplicantModal();
+    _renderApplicantsTable();
+    _renderKpis();
+    _renderPipeline();
+  }
+}
+
+// ============================================================
+// STYLES
+// ============================================================
 function _injectRecruitmentStyles(){
-  if(document.getElementById('page-rec-styles')) return;
+  if(document.getElementById('page-rec-styles')) document.getElementById('page-rec-styles').remove();
   const s = document.createElement('style');
   s.id = 'page-rec-styles';
   s.textContent = `
   .rec-wrap { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
 
-  /* KPI strip */
   .rec-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
   @media(max-width:900px){ .rec-kpi-row { grid-template-columns: 1fr 1fr; } }
   @media(max-width:560px){ .rec-kpi-row { grid-template-columns: 1fr; } }
-  .rec-kpi-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px;
-    display: flex; gap: 12px; align-items: center;
-    transition: transform .15s, border-color .15s;
-  }
+  .rec-kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: transform .15s, border-color .15s; }
   .rec-kpi-card:hover { transform: translateY(-2px); border-color: var(--border2); }
-  .rec-kpi-icon {
-    width: 42px; height: 42px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .rec-kpi-body { flex: 1; }
   .rec-kpi-val { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.1; }
   .rec-kpi-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
-  /* Grid */
-  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media(max-width:768px){ .rec-grid { grid-template-columns: 1fr; } }
+  .rec-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  @media(max-width:1100px){ .rec-grid { grid-template-columns: 1fr; } }
 
-  .rec-section {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-  }
-  .rec-section-full { grid-column: 1 / -1; }
+  .rec-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .rec-section-full { grid-column: 1; }
 
-  .rec-section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; border-bottom: 1px solid var(--border);
-    background: rgba(0,200,170,.03);
-  }
+  .rec-section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); background: rgba(0,200,170,.03); }
   .rec-section-title { font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .5px; }
-  .rec-section-badge {
-    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
-    text-transform: uppercase; letter-spacing: .5px;
-  }
-  .rec-section-badge.coming-soon {
-    background: rgba(255,215,64,.1); color: #FFD740; border: 1px solid rgba(255,215,64,.3);
-  }
+  .rec-section-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+  .rec-section-badge.coming-soon { background: rgba(255,215,64,.1); color: #FFD740; border: 1px solid rgba(255,215,64,.3); }
 
-  /* Placeholder body */
-  .rec-placeholder-body {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 32px 20px; text-align: center; gap: 10px;
+  .rec-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .rec-search-input, .rec-filter-select {
+    background: var(--bg-frosted); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 7px 10px; font-size: 12px; outline: none;
   }
+  .rec-search-input { width: 200px; }
+  .rec-search-input:focus, .rec-filter-select:focus { border-color: var(--accent); }
+
+  .rec-placeholder-body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; gap: 10px; }
   .rec-ph-icon { color: var(--text3); opacity: .5; margin-bottom: 4px; }
   .rec-ph-title { font-size: 13px; font-weight: 700; color: var(--text2); }
   .rec-ph-sub { font-size: 12px; color: var(--text3); line-height: 1.6; max-width: 280px; }
 
-  /* Pipeline */
-  .rec-pipeline-placeholder {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    padding: 16px; gap: 8px;
-  }
-  @media(max-width:900px){ .rec-pipeline-placeholder { grid-template-columns: repeat(3, 1fr); } }
-  @media(max-width:560px){ .rec-pipeline-placeholder { grid-template-columns: 1fr 1fr; } }
-  .rec-pipeline-stage {
-    background: var(--bg-frosted); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px; min-height: 120px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .rec-stage-header { display: flex; align-items: center; gap: 6px; }
+  .rec-pipeline-placeholder { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
+  .rec-pipeline-stage { background: var(--bg-frosted); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .rec-stage-header { display: flex; align-items: center; gap: 8px; }
   .rec-stage-num { font-size: 10px; font-weight: 700; color: var(--text3); }
   .rec-stage-name { font-size: 11px; font-weight: 700; color: var(--text); }
-  .rec-stage-empty { font-size: 11px; color: var(--text3); font-style: italic; padding: 4px 0; }
+  .rec-stage-empty { font-size: 11px; color: var(--text3); font-style: italic; }
+  .rec-stage-count { font-size: 16px; font-weight: 800; color: var(--accent); }
+
+  .rec-table-wrap { overflow: hidden; }
+  .rec-table-scroll { overflow-x: auto; }
+  .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .rec-table th { text-align: left; padding: 10px 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .rec-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+  .rec-table tr:hover td { background: rgba(0,200,170,.03); }
+  .rec-cell-name { font-weight: 600; color: var(--text); }
+  .rec-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .rec-cell-actions { display: flex; gap: 6px; }
+
+  .rec-icon-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-frosted); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
+  .rec-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .rec-icon-btn.rec-icon-danger:hover { border-color: #C62828; color: #C62828; }
+
+  .rec-badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .3px; }
+  .rec-badge-success { background: rgba(0,230,118,.12); color: #00E676; border: 1px solid rgba(0,230,118,.3); }
+  .rec-badge-danger { background: rgba(198,40,40,.12); color: #EF5350; border: 1px solid rgba(198,40,40,.3); }
+  .rec-badge-pending { background: rgba(255,215,64,.12); color: #FFD740; border: 1px solid rgba(255,215,64,.3); }
+
+  .rec-result { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+  .rec-result-pass { background: rgba(0,230,118,.12); color: #00E676; }
+  .rec-result-fail { background: rgba(198,40,40,.12); color: #EF5350; }
+  .rec-result-backout { background: rgba(255,152,0,.12); color: #FFA726; }
+  .rec-result-dash { color: var(--text3); }
+
+  /* Modal form */
+  #rec-modal-overlay.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+  #rec-modal-overlay.modal-overlay.open { display:flex; }
+  #rec-modal-overlay .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); width: 560px; max-width: 92vw; max-height: 88vh; display: flex; flex-direction: column; }
+  #rec-modal-overlay .modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+  #rec-modal-overlay .modal-title { font-size:14px; font-weight:700; color:var(--text); }
+  #rec-modal-overlay .modal-close { background:none; border:none; color:var(--text3); font-size:20px; cursor:pointer; line-height:1; }
+  #rec-modal-overlay .modal-body { padding:18px 20px; overflow-y:auto; flex:1; }
+  #rec-modal-overlay .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid var(--border); }
+
+  .rec-form-section-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; margin: 16px 0 8px; }
+  .rec-form-section-label:first-child { margin-top: 0; }
+  .rec-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+  @media(max-width:480px){ .rec-form-row { grid-template-columns: 1fr; } }
+  .rec-form .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .rec-form .field label { font-size: 11px; color: var(--text3); font-weight: 600; }
+  .rec-form .field input, .rec-form .field select {
+    background: var(--bg-frosted); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 8px 10px; font-size: 12px; outline: none;
+  }
+  .rec-form .field input:focus, .rec-form .field select:focus { border-color: var(--accent); }
+  .rec-form .field input[readonly] { opacity: .7; cursor: not-allowed; }
+
+  .store-lookup-status { font-size: 11px; margin-top: 2px; }
+  .store-lookup-status.found { color: #00E676; }
+  .store-lookup-status.notfound { color: #EF5350; }
+  .store-lookup-status.searching { color: var(--text3); }
   `;
   document.head.appendChild(s);
 }
