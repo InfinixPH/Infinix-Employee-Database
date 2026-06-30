@@ -412,46 +412,42 @@ function _renderApplicantsTable(){
 
   wrap.innerHTML = `
     <div class="rec-table-scroll">
-      <table class="rec-table">
-        <thead>
-          <tr>
-            <th>Applicant</th>
-            <th>Batch / Wave</th>
-            <th>Store</th>
-            <th>Initial Int.</th>
-            <th>Final Int.</th>
-            <th>OBT</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list.map(a=>`
-            <tr>
-              <td>
-                <div class="rec-cell-name" title="${esc(a.fullName)}">${esc(a.fullName)||'—'}</div>
-                <div class="rec-cell-sub">${esc(a.position)||''}${a.mobile?' · '+esc(a.mobile):''}</div>
-              </td>
-              <td>${esc(a.batchNo)}${a.waveNo?'-'+esc(a.waveNo):''}</td>
-              <td>
-                <div class="rec-cell-name" title="${esc(a.storeAssignment)}">${esc(a.storeAssignment)||'—'}</div>
-                <div class="rec-cell-sub">${esc(a.storeId)||''}</div>
-              </td>
-              <td>${_resultBadge(a.initInterviewResult)}</td>
-              <td>${_resultBadge(a.finalInterviewResult)}</td>
-              <td>${_resultBadge(a.obtResult)}</td>
-              <td><span class="rec-badge ${_statusBadgeClass(a.status)}">${esc(a.status)||'In Progress'}</span></td>
-              <td class="rec-cell-actions">
-                <button class="rec-icon-btn" title="Edit" onclick="openApplicantModal('${esc(a.id)}')">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                </button>
-                <button class="rec-icon-btn rec-icon-danger" title="Delete" onclick="deleteApplicant('${esc(a.id)}')">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
-                </button>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
+      <div class="rec-grid">
+        <div class="rec-grid-row rec-grid-head">
+          <div>Applicant</div>
+          <div>Batch / Wave</div>
+          <div>Store</div>
+          <div>Initial Int.</div>
+          <div>Final Int.</div>
+          <div>OBT</div>
+          <div>Status</div>
+          <div></div>
+        </div>
+        ${list.map(a=>`
+          <div class="rec-grid-row rec-grid-body" onclick="openApplicantModal('${esc(a.id)}')">
+            <div>
+              <div class="rec-cell-name" title="${esc(a.fullName)}">${esc(a.fullName)||'—'}</div>
+              <div class="rec-cell-sub">${esc(a.position)||''}${a.mobile?' · '+esc(a.mobile):''}</div>
+            </div>
+            <div>${esc(a.batchNo)}${a.waveNo?'-'+esc(a.waveNo):''}</div>
+            <div>
+              <div class="rec-cell-name" title="${esc(a.storeAssignment)}">${esc(a.storeAssignment)||'—'}</div>
+              <div class="rec-cell-sub">${esc(a.storeId)||''}</div>
+            </div>
+            <div>${_resultBadge(a.initInterviewResult)}</div>
+            <div>${_resultBadge(a.finalInterviewResult)}</div>
+            <div>${_resultBadge(a.obtResult)}</div>
+            <div><span class="rec-badge ${_statusBadgeClass(a.status)}">${esc(a.status)||'In Progress'}</span></div>
+            <div class="rec-cell-actions">
+              <button class="rec-icon-btn" title="Edit" onclick="event.stopPropagation();openApplicantModal('${esc(a.id)}')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </button>
+              <button class="rec-icon-btn rec-icon-danger" title="Delete" onclick="event.stopPropagation();deleteApplicant('${esc(a.id)}')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+              </button>
+            </div>
+          </div>`).join('')}
+      </div>
     </div>
   `;
 }
@@ -790,13 +786,21 @@ function _injectRecruitmentStyles(){
 
   .rec-table-wrap { overflow: hidden; }
   .rec-table-scroll { overflow-x: auto; }
-  .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .rec-table th { text-align: left; padding: 10px 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  .rec-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
-  .rec-table tr:hover td { background: rgba(0,200,170,.03); }
-  .rec-cell-name { font-weight: 600; color: var(--text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rec-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rec-cell-actions { display: flex; gap: 6px; }
+  .rec-grid { min-width: 760px; font-size: 12px; }
+  .rec-grid-row {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1.8fr 1fr 1fr 0.9fr 1fr 76px;
+    align-items: center;
+    column-gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rec-grid-head { color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; }
+  .rec-grid-body { cursor: pointer; }
+  .rec-grid-body:hover { background: rgba(0,200,170,.03); }
+  .rec-cell-name { font-weight: 600; color: var(--text); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-cell-actions { display: flex; gap: 6px; justify-content: flex-end; }
 
   .rec-icon-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-frosted); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
   .rec-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -826,11 +830,12 @@ function _injectRecruitmentStyles(){
   .rec-form-section-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; margin: 16px 0 8px; }
   .rec-form-section-label:first-child { margin-top: 0; }
 
-  .rec-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-wrap: wrap; }
+  .rec-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-wrap: nowrap; overflow-x: auto; }
   .rec-tab {
     background: none; border: none; border-bottom: 2px solid transparent;
     color: var(--text3); font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: .3px; padding: 8px 10px; cursor: pointer; transition: color .15s, border-color .15s;
+    white-space: nowrap; flex-shrink: 0;
   }
   .rec-tab:hover { color: var(--text2); }
   .rec-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
