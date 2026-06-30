@@ -325,9 +325,14 @@ function _recPipelineSkeleton(){
 // KPIs
 // ============================================================
 function _renderKpis(){
-  const total = applicants.length;
-  const shortlisted = applicants.filter(a=>normalizeFinalStatus(a.initInterviewResult)==='PASSED').length;
-  const inTraining = applicants.filter(a=>a.obtStartDate && normalizeFinalStatus(a.obtResult)!=='PASSED' && normalizeFinalStatus(a.obtResult)!=='FAILED' && normalizeFinalStatus(a.obtResult)!=='BACKOUT').length;
+  // Pipeline KPIs reflect applicants still in the recruitment funnel — once
+  // someone is Deployed they've moved on to Active Workforce and shouldn't
+  // keep inflating these counts. "Onboarded" is the exception: it's meant
+  // to track total successful conversions, so it counts all Deployed.
+  const pipeline = applicants.filter(a=>normalizeFinalStatus(a.status)!=='DEPLOYED');
+  const total = pipeline.length;
+  const shortlisted = pipeline.filter(a=>normalizeFinalStatus(a.initInterviewResult)==='PASSED').length;
+  const inTraining = pipeline.filter(a=>a.obtStartDate && normalizeFinalStatus(a.obtResult)!=='PASSED' && normalizeFinalStatus(a.obtResult)!=='FAILED' && normalizeFinalStatus(a.obtResult)!=='BACKOUT').length;
   const onboarded = applicants.filter(a=>normalizeFinalStatus(a.status)==='DEPLOYED').length;
 
   const cards = [
@@ -404,6 +409,18 @@ function _resultBadge(result){
   if(r==='BACKOUT') return '<span class="rec-result rec-result-backout">BACKOUT</span>';
   return esc(result);
 }
+function _applicantsHeaderRow(){
+  return `<div class="rec-grid-row rec-grid-head">
+    <div>Applicant</div>
+    <div>Batch / Wave</div>
+    <div>Store</div>
+    <div>Initial Int.</div>
+    <div>Final Int.</div>
+    <div>OBT</div>
+    <div>Status</div>
+    <div></div>
+  </div>`;
+}
 function _renderApplicantsTable(){
   const wrap = document.getElementById('rec-table-wrap');
   if(!wrap) return;
@@ -420,16 +437,7 @@ function _renderApplicantsTable(){
   wrap.innerHTML = `
     <div class="rec-table-scroll">
       <div class="rec-applist">
-        <div class="rec-grid-row rec-grid-head">
-          <div>Applicant</div>
-          <div>Batch / Wave</div>
-          <div>Store</div>
-          <div>Initial Int.</div>
-          <div>Final Int.</div>
-          <div>OBT</div>
-          <div>Status</div>
-          <div></div>
-        </div>
+        ${_applicantsHeaderRow()}
         ${list.map(a=>`
           <div class="rec-grid-row rec-grid-body" onclick="openApplicantModal('${esc(a.id)}')">
             <div>
