@@ -33,34 +33,39 @@ function applicantRowToObj(r){
     storeAssignment: r[6]||'',
     storeId: r[7]||'',
     fullName: r[8]||'',
-    position: r[9]||'',
-    mobile: r[10]||'',
-    email: r[11]||'',
-    initInterviewDate: r[12]||'',
-    initInterviewResult: r[13]||'',
-    initInterviewRemarks: r[14]||'',
-    finalInterviewDate: r[15]||'',
-    finalInterviewResult: r[16]||'',
-    finalInterviewRemarks: r[17]||'',
-    obtStartDate: r[18]||'',
-    obtResult: r[19]||'',
-    obtRemarks: r[20]||'',
-    deploymentDate: r[21]||'',
-    status: r[22]||'',
-    completeRequirements: r[23]||'',
-    uniformSize: r[24]||'',
-    uniformDeliveredDate: r[25]||'',
-    dateAdded: r[26]||'',
-    lastUpdated: r[27]||'',
-    addedBy: r[28]||'',
+    firstName: r[9]||'',
+    lastName: r[10]||'',
+    middleName: r[11]||'',
+    position: r[12]||'',
+    mobile: r[13]||'',
+    email: r[14]||'',
+    initInterviewDate: r[15]||'',
+    initInterviewResult: r[16]||'',
+    initInterviewRemarks: r[17]||'',
+    finalInterviewDate: r[18]||'',
+    finalInterviewResult: r[19]||'',
+    finalInterviewRemarks: r[20]||'',
+    obtStartDate: r[21]||'',
+    obtResult: r[22]||'',
+    obtRemarks: r[23]||'',
+    deploymentDate: r[24]||'',
+    status: r[25]||'',
+    completeRequirements: r[26]||'',
+    uniformSize: r[27]||'',
+    uniformDeliveredDate: r[28]||'',
+    dateAdded: r[29]||'',
+    lastUpdated: r[30]||'',
+    addedBy: r[31]||'',
     _row: 0
   };
 }
 function applicantObjToRow(d){
   d = d||{};
+  const fullName = (d.fullName || `${d.firstName||''} ${d.lastName||''}`.trim()).trim();
   return [
     d.id||'', d.batchNo||'', d.waveNo||'', d.region||'', d.rssName||'', d.rssId||'',
-    d.storeAssignment||'', d.storeId||'', d.fullName||'', d.position||'', d.mobile||'', d.email||'',
+    d.storeAssignment||'', d.storeId||'', fullName, d.firstName||'', d.lastName||'', d.middleName||'',
+    d.position||'', d.mobile||'', d.email||'',
     d.initInterviewDate||'', d.initInterviewResult||'', d.initInterviewRemarks||'',
     d.finalInterviewDate||'', d.finalInterviewResult||'', d.finalInterviewRemarks||'',
     d.obtStartDate||'', d.obtResult||'', d.obtRemarks||'',
@@ -145,6 +150,9 @@ async function pushApplicantToActive(applicant){
       region: applicant.region,
       infinixId: applicant.id, // placeholder until assigned a real Infinix ID
       fullName: applicant.fullName,
+      firstName: applicant.firstName,
+      lastName: applicant.lastName,
+      middleName: applicant.middleName,
       storeAssignment: applicant.storeAssignment,
       storeId: applicant.storeId,
       status: 'Active',
@@ -452,6 +460,26 @@ function openApplicantModal(id){
   const storeIdEl = document.getElementById('raf_storeId');
   if(storeIdEl) storeIdEl.addEventListener('input', _onApplicantStoreIdInput);
   if(a && a.storeId) _onApplicantStoreIdInput();
+
+  ['raf_firstName','raf_lastName','raf_middleName'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', _updateApplicantFullName);
+  });
+  _updateApplicantFullName();
+
+  document.querySelectorAll('#raf-tabs .rec-tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>_switchApplicantTab(btn.dataset.tab));
+  });
+  _switchApplicantTab(_defaultApplicantTab(a));
+}
+function _updateApplicantFullName(){
+  const first = document.getElementById('raf_firstName')?.value.trim() || '';
+  const last = document.getElementById('raf_lastName')?.value.trim() || '';
+  const middle = document.getElementById('raf_middleName')?.value.trim() || '';
+  const fullNameEl = document.getElementById('raf_fullName');
+  if(!fullNameEl) return;
+  const middleInitial = middle ? middle.charAt(0).toUpperCase()+'.' : '';
+  fullNameEl.value = [first, middleInitial, last].filter(Boolean).join(' ');
 }
 function closeApplicantModal(){
   document.getElementById('rec-modal-overlay').classList.remove('open');
@@ -516,59 +544,94 @@ function _applicantFormHTML(a){
 
       <div class="rec-form-section-label">Applicant Info</div>
       <div class="rec-form-row">
-        <div class="field"><label>Full Name</label><input id="raf_fullName" type="text" value="${esc(a.fullName)}"></div>
-        <div class="field"><label>Position</label><select id="raf_position">${_opt(['',...APPLICANT_POSITIONS], a.position)}</select></div>
+        <div class="field"><label>First Name</label><input id="raf_firstName" type="text" value="${esc(a.firstName)}"></div>
+        <div class="field"><label>Last Name</label><input id="raf_lastName" type="text" value="${esc(a.lastName)}"></div>
       </div>
       <div class="rec-form-row">
+        <div class="field"><label>Middle Name</label><input id="raf_middleName" type="text" value="${esc(a.middleName)}"></div>
+        <div class="field"><label>Full Name</label><input id="raf_fullName" type="text" readonly placeholder="Auto-filled from name fields" value="${esc(a.fullName)}"></div>
+      </div>
+      <div class="rec-form-row">
+        <div class="field"><label>Position</label><select id="raf_position">${_opt(['',...APPLICANT_POSITIONS], a.position)}</select></div>
         <div class="field"><label>Mobile No.</label><input id="raf_mobile" type="text" value="${esc(a.mobile)}"></div>
+      </div>
+      <div class="rec-form-row">
         <div class="field"><label>Email Address</label><input id="raf_email" type="email" value="${esc(a.email)}"></div>
       </div>
 
-      <div class="rec-form-section-label">Initial Interview</div>
-      <div class="rec-form-row">
-        <div class="field"><label>Date</label><input id="raf_initInterviewDate" type="date" value="${esc(a.initInterviewDate)}"></div>
-        <div class="field"><label>Result</label><select id="raf_initInterviewResult">${_opt(INTERVIEW_RESULTS, a.initInterviewResult)}</select></div>
-      </div>
-      <div class="field"><label>Remarks</label><input id="raf_initInterviewRemarks" type="text" value="${esc(a.initInterviewRemarks)}"></div>
-
-      <div class="rec-form-section-label">Final Interview</div>
-      <div class="rec-form-row">
-        <div class="field"><label>Date</label><input id="raf_finalInterviewDate" type="date" value="${esc(a.finalInterviewDate)}"></div>
-        <div class="field"><label>Result</label><select id="raf_finalInterviewResult">${_opt(INTERVIEW_RESULTS, a.finalInterviewResult)}</select></div>
-      </div>
-      <div class="field"><label>Remarks</label><input id="raf_finalInterviewRemarks" type="text" value="${esc(a.finalInterviewRemarks)}"></div>
-
-      <div class="rec-form-section-label">OBT (On-the-Job Training)</div>
-      <div class="rec-form-row">
-        <div class="field"><label>Start Date</label><input id="raf_obtStartDate" type="date" value="${esc(a.obtStartDate)}"></div>
-        <div class="field"><label>Result</label><select id="raf_obtResult">${_opt(INTERVIEW_RESULTS, a.obtResult)}</select></div>
-      </div>
-      <div class="field"><label>Remarks</label><input id="raf_obtRemarks" type="text" value="${esc(a.obtRemarks)}"></div>
-
-      <div class="rec-form-section-label">Deployment</div>
-      <div class="rec-form-row">
-        <div class="field"><label>Deployment Date</label><input id="raf_deploymentDate" type="date" value="${esc(a.deploymentDate)}"></div>
-        <div class="field"><label>Status</label><select id="raf_status">${_opt(FINAL_STATUSES, a.status)}</select></div>
-      </div>
-      <div class="field">
-        <label>Complete Requirements</label>
-        <select id="raf_completeRequirements">${_opt(['','Yes','No'], a.completeRequirements)}</select>
+      <div class="rec-form-section-label">Pipeline Stage</div>
+      <div class="rec-tabs" id="raf-tabs">
+        <button type="button" class="rec-tab" data-tab="init">Initial Interview${(a.initInterviewDate||a.initInterviewResult)?' <span class=\"rec-tab-dot\"></span>':''}</button>
+        <button type="button" class="rec-tab" data-tab="final">Final Interview${(a.finalInterviewDate||a.finalInterviewResult)?' <span class=\"rec-tab-dot\"></span>':''}</button>
+        <button type="button" class="rec-tab" data-tab="obt">OBT${(a.obtStartDate||a.obtResult)?' <span class=\"rec-tab-dot\"></span>':''}</button>
+        <button type="button" class="rec-tab" data-tab="deploy">Deployment &amp; Uniform${(a.deploymentDate||a.status)?' <span class=\"rec-tab-dot\"></span>':''}</button>
       </div>
 
-      <div class="rec-form-section-label">Uniform</div>
-      <div class="rec-form-row">
-        <div class="field"><label>Size</label><select id="raf_uniformSize">${_opt(UNIFORM_SIZES, a.uniformSize)}</select></div>
-        <div class="field"><label>Delivered Date</label><input id="raf_uniformDeliveredDate" type="date" value="${esc(a.uniformDeliveredDate)}"></div>
+      <div class="rec-tab-panel" data-panel="init">
+        <div class="rec-form-row">
+          <div class="field"><label>Date</label><input id="raf_initInterviewDate" type="date" value="${esc(a.initInterviewDate)}"></div>
+          <div class="field"><label>Result</label><select id="raf_initInterviewResult">${_opt(INTERVIEW_RESULTS, a.initInterviewResult)}</select></div>
+        </div>
+        <div class="field"><label>Remarks</label><input id="raf_initInterviewRemarks" type="text" value="${esc(a.initInterviewRemarks)}"></div>
+      </div>
+
+      <div class="rec-tab-panel" data-panel="final">
+        <div class="rec-form-row">
+          <div class="field"><label>Date</label><input id="raf_finalInterviewDate" type="date" value="${esc(a.finalInterviewDate)}"></div>
+          <div class="field"><label>Result</label><select id="raf_finalInterviewResult">${_opt(INTERVIEW_RESULTS, a.finalInterviewResult)}</select></div>
+        </div>
+        <div class="field"><label>Remarks</label><input id="raf_finalInterviewRemarks" type="text" value="${esc(a.finalInterviewRemarks)}"></div>
+      </div>
+
+      <div class="rec-tab-panel" data-panel="obt">
+        <div class="rec-form-row">
+          <div class="field"><label>Start Date</label><input id="raf_obtStartDate" type="date" value="${esc(a.obtStartDate)}"></div>
+          <div class="field"><label>Result</label><select id="raf_obtResult">${_opt(INTERVIEW_RESULTS, a.obtResult)}</select></div>
+        </div>
+        <div class="field"><label>Remarks</label><input id="raf_obtRemarks" type="text" value="${esc(a.obtRemarks)}"></div>
+      </div>
+
+      <div class="rec-tab-panel" data-panel="deploy">
+        <div class="rec-form-row">
+          <div class="field"><label>Deployment Date</label><input id="raf_deploymentDate" type="date" value="${esc(a.deploymentDate)}"></div>
+          <div class="field"><label>Status</label><select id="raf_status">${_opt(FINAL_STATUSES, a.status)}</select></div>
+        </div>
+        <div class="field">
+          <label>Complete Requirements</label>
+          <select id="raf_completeRequirements">${_opt(['','Yes','No'], a.completeRequirements)}</select>
+        </div>
+        <div class="rec-form-row">
+          <div class="field"><label>Uniform Size</label><select id="raf_uniformSize">${_opt(UNIFORM_SIZES, a.uniformSize)}</select></div>
+          <div class="field"><label>Uniform Delivered Date</label><input id="raf_uniformDeliveredDate" type="date" value="${esc(a.uniformDeliveredDate)}"></div>
+        </div>
       </div>
 
     </div>
   `;
 }
+function _defaultApplicantTab(a){
+  a = a||{};
+  if(a.deploymentDate || a.status || a.completeRequirements || a.uniformSize) return 'deploy';
+  if(a.obtStartDate || a.obtResult) return 'obt';
+  if(a.finalInterviewDate || a.finalInterviewResult) return 'final';
+  return 'init';
+}
+function _switchApplicantTab(tab){
+  document.querySelectorAll('#raf-tabs .rec-tab').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.tab===tab);
+  });
+  document.querySelectorAll('.rec-tab-panel').forEach(panel=>{
+    panel.classList.toggle('active', panel.dataset.panel===tab);
+  });
+}
 async function submitApplicantForm(){
   if(!canWrite()){denyWrite();return;}
   const g = id => document.getElementById(id)?.value?.trim() || '';
+  const firstName = g('raf_firstName');
+  const lastName = g('raf_lastName');
+  const middleName = g('raf_middleName');
+  if(!firstName || !lastName){ toast('First Name and Last Name are required','error'); return; }
   const fullName = g('raf_fullName');
-  if(!fullName){ toast('Full Name is required','error'); return; }
 
   const status = g('raf_status');
   if(normalizeFinalStatus(status)==='DEPLOYED' && !g('raf_deploymentDate')){
@@ -579,7 +642,8 @@ async function submitApplicantForm(){
     batchNo: g('raf_batchNo'), waveNo: g('raf_waveNo'),
     region: g('raf_region'), rssName: g('raf_rssName'), rssId: g('raf_rssId'),
     storeAssignment: g('raf_storeAssignment'), storeId: g('raf_storeId'),
-    fullName, position: g('raf_position'), mobile: g('raf_mobile'), email: g('raf_email'),
+    fullName, firstName, lastName, middleName,
+    position: g('raf_position'), mobile: g('raf_mobile'), email: g('raf_email'),
     initInterviewDate: g('raf_initInterviewDate'), initInterviewResult: g('raf_initInterviewResult'), initInterviewRemarks: g('raf_initInterviewRemarks'),
     finalInterviewDate: g('raf_finalInterviewDate'), finalInterviewResult: g('raf_finalInterviewResult'), finalInterviewRemarks: g('raf_finalInterviewRemarks'),
     obtStartDate: g('raf_obtStartDate'), obtResult: g('raf_obtResult'), obtRemarks: g('raf_obtRemarks'),
@@ -683,6 +747,18 @@ function _injectRecruitmentStyles(){
 
   .rec-form-section-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; margin: 16px 0 8px; }
   .rec-form-section-label:first-child { margin-top: 0; }
+
+  .rec-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-wrap: wrap; }
+  .rec-tab {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: var(--text3); font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .3px; padding: 8px 10px; cursor: pointer; transition: color .15s, border-color .15s;
+  }
+  .rec-tab:hover { color: var(--text2); }
+  .rec-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .rec-tab-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-left: 3px; vertical-align: middle; }
+  .rec-tab-panel { display: none; }
+  .rec-tab-panel.active { display: block; }
   .rec-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
   @media(max-width:480px){ .rec-form-row { grid-template-columns: 1fr; } }
   .rec-form .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
