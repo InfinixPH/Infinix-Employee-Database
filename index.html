@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons@3.3.1/css/solid/rounded.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=21">
+<script>document.write('<link rel="stylesheet" href="styles.css?v='+Date.now()+'">');</script>
 </head>
 <body>
 
@@ -612,18 +612,20 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js"></script>
-<script src="config.js?v=17"></script>
-<script src="roles.js?v=17"></script>
-<script src="charts.js?v=19"></script>
-<script src="components.js?v=2"></script>
-<script src="page-home.js?v=5"></script>
-<script src="page-profile.js?v=2"></script>
-<script src="page-analytics.js?v=4"></script>
-<script src="page-settings.js?v=2"></script>
-<script src="page-calendar.js?v=5"></script>
-<script src="page-recruitment.js?v=4"></script>
-<script src="router.js?v=4"></script>
-<script src="app.js?v=21"></script>
+<script>
+// Auto cache-busting: every local script gets a fresh version tag
+// automatically, so we never have to remember to bump "?v=N" by hand again.
+// (Each page load fetches the latest file from the server — no stale cache.)
+(function(){
+  var BUILD = Date.now();
+  var files = ['config.js','roles.js','charts.js','components.js','page-home.js',
+    'page-profile.js','page-analytics.js','page-settings.js','page-calendar.js',
+    'page-recruitment.js','router.js','app.js'];
+  files.forEach(function(f){
+    document.write('<script src="'+f+'?v='+BUILD+'"><\/script>');
+  });
+})();
+</script>
 
 <script>
 // Initialize IX icons after DOM is ready, and again after each dynamic render
