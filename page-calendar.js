@@ -170,7 +170,7 @@ async function renderCalendarPage() {
         </div>
 
         <!-- Inline delete-confirm view (swapped in over the form, same modal) -->
-        <div id="calpg-ev-confirm-view" class="hidden">
+        <div id="calpg-ev-confirm-view" style="display:none">
           <div class="modal-body" style="padding:28px 20px 8px;text-align:center">
             <div style="width:44px;height:44px;border-radius:50%;background:rgba(244,67,54,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -688,12 +688,16 @@ async function _calSubmitEvent() {
   finally { _calSubmitting = false; if (saveBtn) saveBtn.disabled = false; }
 }
 function _calShowDeleteConfirm() {
-  document.getElementById('calpg-ev-form-view')?.classList.add('hidden');
-  document.getElementById('calpg-ev-confirm-view')?.classList.remove('hidden');
+  const formView = document.getElementById('calpg-ev-form-view');
+  const confirmView = document.getElementById('calpg-ev-confirm-view');
+  if (formView) formView.style.display = 'none';
+  if (confirmView) confirmView.style.display = 'block';
 }
 function _calHideDeleteConfirm() {
-  document.getElementById('calpg-ev-confirm-view')?.classList.add('hidden');
-  document.getElementById('calpg-ev-form-view')?.classList.remove('hidden');
+  const formView = document.getElementById('calpg-ev-form-view');
+  const confirmView = document.getElementById('calpg-ev-confirm-view');
+  if (confirmView) confirmView.style.display = 'none';
+  if (formView) formView.style.display = 'block';
 }
 async function _calConfirmDeleteYes() {
   if (!_calEditId || !_calEditRow) return;
@@ -731,7 +735,6 @@ function _injectCalPageStyles() {
     overflow: hidden;
   }
   .calpg-loading { display:flex;align-items:center;justify-content:center;height:60vh; }
-  #calpg-ev-form-view.hidden, #calpg-ev-confirm-view.hidden { display:none; }
 
   /* ═══ SIDEBAR ════════════════════════════════════════════════ */
   .calpg-sidebar {
