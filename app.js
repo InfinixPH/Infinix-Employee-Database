@@ -648,18 +648,6 @@ function normalizeRegion(region){
   if(s.includes('MINDANAO'))return 'MINDANAO';
   return raw.toUpperCase();
 }
-function prettyRegionName(region){
-  const r=normalizeRegion(region);
-  const map={
-    'NCR':'NCR',
-    'NORTH LUZON':'North Luzon',
-    'CENTRAL LUZON':'Central Luzon',
-    'SOUTH LUZON':'South Luzon',
-    'VISAYAS':'Visayas',
-    'MINDANAO':'Mindanao'
-  };
-  return map[r]||String(region||r||'').toLowerCase().replace(/\b\w/g,m=>m.toUpperCase());
-}
 function normalizeDeployStatus(status){
   const raw=String(status||'').trim();
   const s=raw.toUpperCase().replace(/[\-_]+/g,' ').replace(/\s+/g,' ');
@@ -1268,12 +1256,6 @@ function drillDown(filterKey){
   if(navEl)navEl.classList.add('active');
   history.pushState(null, '', '#/people');
   renderSidebar();renderView();
-}
-
-function dashSearch(q){
-  if(!q.trim())return;
-  document.getElementById('search-input').value=q;
-  Router.navigate('/people');
 }
 
 
@@ -3114,53 +3096,6 @@ function viewAllBirthdays(){
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
         <div style="font-size:14px;font-weight:800;color:var(--text)">🎂 Birthdays This Month</div>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('bday-all-modal').remove()">✕ Close</button>
-      </div>
-      <div style="overflow-y:auto;flex:1">${rows}</div>
-    </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
-}
-
-function viewAllRecentlyUpdated(){
-  const recent = [...employees].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0)).slice(0,20);
-  const modal = document.createElement('div');
-  modal.id = 'recent-all-modal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  const rows = recent.map(e => {
-    const initials = ((e.firstName||e.fullName||'?')[0]||'?').toUpperCase();
-    const empLogs = logCache ? [...logCache].filter(r=>String(r[1]||'').trim()===String(e.infinixId).trim()).reverse() : [];
-    const statusLog = empLogs.find(r=>{
-      const action=r[3]||'', from=r[4]||'', to=r[5]||'';
-      if(action==='Added') return true;
-      return STATUS_SET.has(from)||STATUS_SET.has(to)||(action==='Status Changed / Moved');
-    });
-    let changeDesc = '', logTs = '';
-    if(statusLog){
-      const action=statusLog[3]||'', from=statusLog[4]||'', to=statusLog[5]||'';
-      logTs = statusLog[0]||'';
-      if(action==='Added') changeDesc='New employee added';
-      else if(from && to && from!=='—' && from!==to) changeDesc=from+' → '+to;
-      else if(to && to!=='—') changeDesc='Status set to '+to;
-      else changeDesc=action;
-    }
-    const ago = timeAgo(logTs||e.lastUpdated);
-    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="document.getElementById('recent-all-modal').remove();openDetailPanel('${esc(e.infinixId)}')">
-      <div class="rr-avatar">${initials}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(e.fullName||'')}</div>
-        ${changeDesc?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${esc(changeDesc)}</div>`:''}
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-        ${badgeHTML(e.status)}
-        ${ago?`<div style="font-size:10px;color:var(--text3)">${ago}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-  modal.innerHTML = `
-    <div class="glass-card" style="width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;padding:24px;gap:0">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
-        <div style="font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:6px"><i class="fi fi-sr-clock" style="font-size:13px"></i> Recently Updated</div>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('recent-all-modal').remove()">✕ Close</button>
       </div>
       <div style="overflow-y:auto;flex:1">${rows}</div>
     </div>`;
