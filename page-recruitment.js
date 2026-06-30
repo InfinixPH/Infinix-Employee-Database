@@ -790,22 +790,12 @@ function _injectRecruitmentStyles(){
 
   .rec-table-wrap { overflow: hidden; }
   .rec-table-scroll { overflow-x: auto; }
-  .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-  .rec-table th { text-align: left; padding: 10px 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .rec-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .rec-table th:nth-child(1), .rec-table td:nth-child(1) { width: 19%; }
-  .rec-table th:nth-child(2), .rec-table td:nth-child(2) { width: 11%; }
-  .rec-table th:nth-child(3), .rec-table td:nth-child(3) { width: 22%; }
-  .rec-table th:nth-child(4), .rec-table td:nth-child(4) { width: 11%; }
-  .rec-table th:nth-child(5), .rec-table td:nth-child(5) { width: 11%; }
-  .rec-table th:nth-child(6), .rec-table td:nth-child(6) { width: 9%; }
-  .rec-table th:nth-child(7), .rec-table td:nth-child(7) { width: 11%; }
-  .rec-table th:nth-child(8), .rec-table td:nth-child(8) { width: 78px; }
-  .rec-table td:nth-child(1) .rec-cell-name, .rec-table td:nth-child(3) .rec-cell-name,
-  .rec-table td:nth-child(1) .rec-cell-sub, .rec-table td:nth-child(3) .rec-cell-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .rec-table th { text-align: left; padding: 10px 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .rec-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
   .rec-table tr:hover td { background: rgba(0,200,170,.03); }
-  .rec-cell-name { font-weight: 600; color: var(--text); }
-  .rec-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .rec-cell-name { font-weight: 600; color: var(--text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rec-cell-actions { display: flex; gap: 6px; }
 
   .rec-icon-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-frosted); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
