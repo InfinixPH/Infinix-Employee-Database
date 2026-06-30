@@ -44,12 +44,17 @@ function renderHome() {
   const bdayToday   = typeof getBirthdaysToday === 'function' ? getBirthdaysToday() : [];
   const bdayMonth   = typeof getBirthdaysThisMonth === 'function' ? getBirthdaysThisMonth() : [];
 
+  // Clean up any popover/backdrop left detached in <body> from a previous
+  // render of this page (they get reparented to <body> when opened).
+  document.getElementById('hd-cal-popover')?.remove();
+  document.getElementById('hd-cal-popover-backdrop')?.remove();
+
   document.getElementById('content').innerHTML = `
     <div class="hd-wrap">
 
       <!-- ═══════════════════════════════════════════════════
-           HERO — pure black, title + subtitle + 2 buttons
-           exactly matching the reference screenshot
+           HERO — dark teal gradient matching app palette,
+           title + subtitle + 2 buttons
       ═══════════════════════════════════════════════════ -->
       <div class="hd-hero" id="hd-hero">
         <div class="hd-hero-inner">
@@ -308,9 +313,14 @@ function _phCalRender() {
 }
 
 function _phCalDayClick(day, year, month, clickedEl) {
-  const popover  = document.getElementById('hd-cal-popover');
-  const backdrop = document.getElementById('hd-cal-popover-backdrop');
+  let popover  = document.getElementById('hd-cal-popover');
+  let backdrop = document.getElementById('hd-cal-popover-backdrop');
   if (!popover) return;
+
+  // Move popover + backdrop to <body> so the card's `overflow:hidden`
+  // can never clip or trap them behind sibling cards (e.g. Upcoming Event).
+  if (popover.parentElement !== document.body) document.body.appendChild(popover);
+  if (backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
 
   const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   const events  = (_calEventsCache || []).filter(ev => ev.date && ev.date.slice(0,10) === dateStr);
@@ -569,7 +579,10 @@ function _injectHomeStyles() {
     position: relative;
     width: 100%;
     min-height: 260px;
-    background: #000;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(0,200,170,.10), transparent 55%),
+      radial-gradient(circle at 80% 100%, rgba(0,200,170,.06), transparent 55%),
+      linear-gradient(160deg, #0B1212 0%, #0E1717 55%, #0A1414 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -577,9 +590,15 @@ function _injectHomeStyles() {
     overflow: hidden;
     flex-shrink: 0;
     padding: 48px 24px 40px;
+    border-bottom: 1px solid var(--border2);
   }
 
-  [data-theme="light"] .hd-hero { background: #0a0a0f; }
+  [data-theme="light"] .hd-hero {
+    background:
+      radial-gradient(circle at 20% 0%, rgba(10,138,133,.10), transparent 55%),
+      radial-gradient(circle at 80% 100%, rgba(10,138,133,.07), transparent 55%),
+      linear-gradient(160deg, #0B1716 0%, #0E1A19 55%, #0A1514 100%);
+  }
 
   /* Content inner */
   .hd-hero-inner {
@@ -598,14 +617,15 @@ function _injectHomeStyles() {
     font-size: clamp(22px, 4.5vw, 52px);
     font-weight: 900;
     letter-spacing: 4px;
-    color: #fff;
+    color: var(--text);
     text-transform: uppercase;
     line-height: 1.0;
     white-space: nowrap;
+    text-shadow: 0 0 28px rgba(0,200,170,.18);
   }
   .hd-hero-sub {
     font-size: 13px;
-    color: rgba(255,255,255,.55);
+    color: var(--text2);
     font-style: italic;
     letter-spacing: .5px;
   }
@@ -628,11 +648,11 @@ function _injectHomeStyles() {
     min-width: 150px;
   }
   .hd-hero-btn-outline {
-    background: transparent;
-    border: 2px solid rgba(255,255,255,.55);
-    color: #fff;
+    background: var(--accent-dim);
+    border: 2px solid var(--border3);
+    color: var(--accent);
   }
-  .hd-hero-btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.07); }
+  .hd-hero-btn-outline:hover { border-color: var(--accent); background: rgba(0,200,170,.16); }
 
   /* ═══ KPI STRIP ══════════════════════════════════════════ */
   .hd-kpi-strip {
@@ -645,25 +665,25 @@ function _injectHomeStyles() {
   @media (max-width: 480px) { .hd-kpi-strip { grid-template-columns: 1fr; } }
 
   .hd-kpi {
-    background: #111;
-    border: 1px solid #222;
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
     padding: 20px 22px;
     cursor: pointer;
     transition: background .15s;
     text-align: left;
   }
   .hd-kpi:not(:last-child) { border-right: none; }
-  .hd-kpi:hover { background: #1c1c1c; }
+  .hd-kpi:hover { background: var(--bg-card-hover); }
   .hd-kpi-val {
     font-size: 28px;
     font-weight: 900;
-    color: #fff;
+    color: var(--accent);
     line-height: 1.1;
   }
   .hd-kpi-label {
     font-size: 11px;
     font-weight: 700;
-    color: rgba(255,255,255,.5);
+    color: var(--text2);
     text-transform: uppercase;
     letter-spacing: .5px;
     margin-top: 4px;
@@ -963,9 +983,6 @@ function _injectHomeStyles() {
   }
 
   /* Light mode overrides */
-  [data-theme="light"] .hd-kpi { background: #fff; }
-  [data-theme="light"] .hd-card { background: #fff; }
-  [data-theme="light"] .hd-hero-btn { border-color: rgba(255,255,255,.5); }
   [data-theme="light"] .hd-pill-btn { border-color: rgba(0,0,0,.2); color: #222; }
   `;
   document.head.appendChild(s);
