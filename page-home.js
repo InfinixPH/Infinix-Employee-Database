@@ -617,15 +617,15 @@ function _injectHomeStyles() {
     font-size: clamp(22px, 4.5vw, 52px);
     font-weight: 900;
     letter-spacing: 4px;
-    color: var(--text);
+    color: #EAFBF7;
     text-transform: uppercase;
     line-height: 1.0;
     white-space: nowrap;
-    text-shadow: 0 0 28px rgba(0,200,170,.18);
+    text-shadow: 0 2px 18px rgba(0,0,0,.4);
   }
   .hd-hero-sub {
     font-size: 13px;
-    color: var(--text2);
+    color: rgba(234,251,247,.62);
     font-style: italic;
     letter-spacing: .5px;
   }
