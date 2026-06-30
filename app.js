@@ -2800,9 +2800,23 @@ function _dismissNotif(key){
 // ============================================================
 function toast(msg,type=''){
   const el=document.getElementById('toast');
+  // Don't let a routine success toast silently swallow a still-visible error.
+  if(el.classList.contains('show') && el.classList.contains('error') && type!=='error'){
+    if(el._toastTimer) clearTimeout(el._toastTimer);
+    el._toastQueue = el._toastQueue || [];
+    el._toastQueue.push({msg,type});
+    return;
+  }
   el.textContent=msg;
   el.className='toast show '+type;
-  setTimeout(()=>el.classList.remove('show'),3500);
+  if(el._toastTimer) clearTimeout(el._toastTimer);
+  el._toastTimer = setTimeout(()=>{
+    el.classList.remove('show');
+    if(el._toastQueue && el._toastQueue.length){
+      const next = el._toastQueue.shift();
+      setTimeout(()=>toast(next.msg,next.type), 250);
+    }
+  },type==='error'?5000:3500);
 }
 function showLoading(v,text='Loading...'){
   const el=document.getElementById('loading');el.style.display=v?'flex':'none';
