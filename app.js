@@ -472,7 +472,7 @@ async function ensureHeaders(){
     await chk(LOG_SHEET,LOG_HEADERS,'A1:H1');
     await chk(ROLE_LOG_SHEET,ROLE_LOG_HEADERS,'A1:E1');
     await chk(ANNOUNCEMENTS_SHEET,['ID','Title','Body','PostedBy','Timestamp','Active'],'A1:F1');
-    await chk(EVENTS_SHEET_APP,['ID','Title','Date','Note','PostedBy','Active'],'A1:F1');
+    await chk(EVENTS_SHEET_APP,['ID','Title','Date','Time','EndTime','Note','PostedBy','Active'],'A1:H1');
   }catch(e){console.warn('Header setup:',e);}
 }
 
