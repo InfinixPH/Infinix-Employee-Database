@@ -123,11 +123,16 @@ async function saveApplicant(data){
       });
     }
     // Auto-push to Active employee sheet when marked Deployed
+    let pushFailed = false;
     if(normalizeFinalStatus(data.status)==='DEPLOYED'){
-      await pushApplicantToActive(data);
+      pushFailed = !(await pushApplicantToActive(data));
     }
     await loadApplicants(true);
-    toast(editingApplicantId?'Applicant updated':'Applicant added','success');
+    if(pushFailed){
+      toast((editingApplicantId?'Applicant updated':'Applicant added')+', but push to Active Workforce failed — see error above / add manually.','error');
+    } else {
+      toast(editingApplicantId?'Applicant updated':'Applicant added','success');
+    }
     return true;
   }catch(e){
     console.error('Applicant save error:', e);
@@ -147,7 +152,7 @@ async function pushApplicantToActive(applicant){
       spreadsheetId: SHEET_ID, range: `${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`
     });
     const existingIds = (already.result.values||[]).map(r=>String(r[1]||'').trim());
-    if(existingIds.includes(applicant.id)) return; // already pushed
+    if(existingIds.includes(applicant.id)) return true; // already pushed, not an error
 
     const empData = {
       region: applicant.region,
@@ -174,9 +179,12 @@ async function pushApplicantToActive(applicant){
       valueInputOption:'RAW', insertDataOption:'INSERT_ROWS', resource:{ values:[objToRow(empData)] }
     });
     toast(`${applicant.fullName} pushed to Active Workforce`,'success');
+    return true;
   }catch(e){
-    console.warn('Auto-push to Active failed:', e);
-    toast('Deployed, but auto-push to Active failed — add manually.','error');
+    console.error('Auto-push to Active failed:', e);
+    const detail = e?.result?.error?.message || e?.message || 'unknown error — check connection';
+    toast('Auto-push to Active failed — '+detail,'error');
+    return false;
   }
 }
 
@@ -421,12 +429,12 @@ function _renderApplicantsTable(){
           ${list.map(a=>`
             <tr>
               <td>
-                <div class="rec-cell-name">${esc(a.fullName)||'—'}</div>
+                <div class="rec-cell-name" title="${esc(a.fullName)}">${esc(a.fullName)||'—'}</div>
                 <div class="rec-cell-sub">${esc(a.position)||''}${a.mobile?' · '+esc(a.mobile):''}</div>
               </td>
               <td>${esc(a.batchNo)}${a.waveNo?'-'+esc(a.waveNo):''}</td>
               <td>
-                <div class="rec-cell-name">${esc(a.storeAssignment)||'—'}</div>
+                <div class="rec-cell-name" title="${esc(a.storeAssignment)}">${esc(a.storeAssignment)||'—'}</div>
                 <div class="rec-cell-sub">${esc(a.storeId)||''}</div>
               </td>
               <td>${_resultBadge(a.initInterviewResult)}</td>
@@ -782,9 +790,19 @@ function _injectRecruitmentStyles(){
 
   .rec-table-wrap { overflow: hidden; }
   .rec-table-scroll { overflow-x: auto; }
-  .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .rec-table th { text-align: left; padding: 10px 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  .rec-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+  .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  .rec-table th { text-align: left; padding: 10px 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rec-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rec-table th:nth-child(1), .rec-table td:nth-child(1) { width: 19%; }
+  .rec-table th:nth-child(2), .rec-table td:nth-child(2) { width: 11%; }
+  .rec-table th:nth-child(3), .rec-table td:nth-child(3) { width: 22%; }
+  .rec-table th:nth-child(4), .rec-table td:nth-child(4) { width: 11%; }
+  .rec-table th:nth-child(5), .rec-table td:nth-child(5) { width: 11%; }
+  .rec-table th:nth-child(6), .rec-table td:nth-child(6) { width: 9%; }
+  .rec-table th:nth-child(7), .rec-table td:nth-child(7) { width: 11%; }
+  .rec-table th:nth-child(8), .rec-table td:nth-child(8) { width: 78px; }
+  .rec-table td:nth-child(1) .rec-cell-name, .rec-table td:nth-child(3) .rec-cell-name,
+  .rec-table td:nth-child(1) .rec-cell-sub, .rec-table td:nth-child(3) .rec-cell-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rec-table tr:hover td { background: rgba(0,200,170,.03); }
   .rec-cell-name { font-weight: 600; color: var(--text); }
   .rec-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
