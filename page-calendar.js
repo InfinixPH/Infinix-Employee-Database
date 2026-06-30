@@ -333,7 +333,7 @@ function _calRenderWeek() {
               const startH = parseInt((e.time||'09:00').split(':')[0]);
               if (startH !== h) return '';
               return `<div class="calpg-evt-block" style="background:${e.color||'#00C8AA'}20;border-left:3px solid ${e.color||'#00C8AA'}"
-                onclick="event.stopPropagation();_calOpenDrawer(${JSON.stringify(JSON.stringify(e))})"
+                onclick="event.stopPropagation();_calOpenDrawer('${esc(e.id)}')"
               >
                 <div class="calpg-evt-block-title">${esc(e.title)}</div>
                 <div class="calpg-evt-block-time">${e.time||'09:00'} – ${e.endTime||'10:00'}</div>
@@ -395,7 +395,7 @@ function _calRenderMonth() {
     cells += `<div class="calpg-month-cell ${isCur?'':'other'} ${isToday?'is-today':''}">
       <div class="calpg-month-num ${isToday?'today-circle':''}">${dayNum}</div>
       ${dayEvts.slice(0,2).map(e=>`<div class="calpg-month-evt" style="background:${e.color||'#00C8AA'}25;border-left:2px solid ${e.color||'#00C8AA'}"
-        onclick="event.stopPropagation();_calOpenDrawer(${JSON.stringify(JSON.stringify(e))})"
+        onclick="event.stopPropagation();_calOpenDrawer('${esc(e.id)}')"
       >${esc(e.title)}</div>`).join('')}
       ${dayEvts.length>2?`<div class="calpg-month-more">+${dayEvts.length-2} more</div>`:''}
     </div>`;
@@ -434,7 +434,7 @@ function _calRenderDay() {
         <div class="calpg-hour-cell" style="min-height:60px" onclick="_calCellClick('${dateStr}',${h})">
           ${dayEvts.filter(e=>parseInt((e.time||'09').split(':')[0])===h).map(e=>`
             <div class="calpg-evt-block" style="background:${e.color||'#00C8AA'}20;border-left:3px solid ${e.color||'#00C8AA'}"
-              onclick="event.stopPropagation();_calOpenDrawer(${JSON.stringify(JSON.stringify(e))})">
+              onclick="event.stopPropagation();_calOpenDrawer('${esc(e.id)}')">
               <div class="calpg-evt-block-title">${esc(e.title)}</div>
               <div class="calpg-evt-block-time">${e.time||'09:00'} – ${e.endTime||'10:00'}</div>
               ${e.note?`<div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:2px">${esc(e.note)}</div>`:''}
@@ -459,7 +459,7 @@ function _calRenderTodayList() {
     const isToday = e.date.slice(0,10) === todayStr;
     const dateLabel = isToday ? 'Today' : new Date(e.date).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
     return `
-    <div class="calpg-today-item" onclick="_calOpenDrawer(${JSON.stringify(JSON.stringify(e))})">
+    <div class="calpg-today-item" onclick="_calOpenDrawer('${esc(e.id)}')">
       <span class="calpg-today-dot" style="background:${e.color||'#00C8AA'}"></span>
       <div class="calpg-today-info">
         <div class="calpg-today-title">${esc(e.title)}</div>
@@ -495,9 +495,10 @@ function _calCellClick(dateStr, hour) {
 }
 
 // ── Drawer ────────────────────────────────────────────────────
-function _calOpenDrawer(evtJson) {
+function _calOpenDrawer(id) {
   try {
-    const e = typeof evtJson === 'string' ? JSON.parse(evtJson) : evtJson;
+    const e = (_calPageEvents || []).find(ev => ev.id === id);
+    if (!e) { console.warn('Drawer: event not found for id', id); return; }
     _calPageDrawer = e;
     const d = new Date(e.date);
     const dateLabel = isNaN(d) ? e.date : d.toLocaleDateString('en-PH',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
@@ -527,7 +528,7 @@ function _calOpenDrawer(evtJson) {
         </div>
         ${canViewSensitive() && e._row ? `
         <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px;display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="_calCloseDrawer();_calOpenAddModal(null,null,${JSON.stringify(JSON.stringify(e))})">Edit Event</button>
+          <button class="btn btn-ghost btn-sm" onclick="_calCloseDrawer();_calOpenAddModal(null,null,'${esc(e.id)}')">Edit Event</button>
           <button class="btn btn-danger btn-sm" onclick="_calDeleteEvent('${esc(e.id)}',${e._row||0})">Delete Event</button>
         </div>` : ''}
       </div>`;
@@ -543,14 +544,14 @@ function _calCloseDrawer() {
 }
 
 // ── Add/Edit Event Modal ──────────────────────────────────────
-function _calOpenAddModal(dateStr, hour, editEventJson) {
+function _calOpenAddModal(dateStr, hour, editEventId) {
   if (!canViewSensitive()) { toast('Permission denied.','error'); return; }
   const overlay = document.getElementById('calpg-add-modal');
   if (!overlay) return;
   overlay.classList.remove('hidden');
   overlay.classList.add('open');
 
-  const editEvent = editEventJson ? (typeof editEventJson === 'string' ? JSON.parse(editEventJson) : editEventJson) : null;
+  const editEvent = editEventId ? (_calPageEvents || []).find(ev => ev.id === editEventId) : null;
   const titleEl   = document.getElementById('calpg-ev-modal-title');
   const delBtn    = document.getElementById('calpg-ev-delete-btn');
 
