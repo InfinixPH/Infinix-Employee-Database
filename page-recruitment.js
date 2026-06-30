@@ -105,8 +105,10 @@ async function saveApplicant(data){
   try{
     showLoading(true,'Saving applicant…');
     if(editingApplicantId){
+      // Refresh first to avoid acting on a stale row index
+      await loadApplicants(true);
       const existing = applicants.find(a=>a.id===editingApplicantId);
-      if(!existing) throw new Error('Applicant not found');
+      if(!existing) throw new Error('Applicant no longer exists in the sheet — it may have been deleted or edited elsewhere.');
       data.id = existing.id;
       data.dateAdded = existing.dateAdded;
       await gapi.client.sheets.spreadsheets.values.update({
@@ -128,8 +130,9 @@ async function saveApplicant(data){
     toast(editingApplicantId?'Applicant updated':'Applicant added','success');
     return true;
   }catch(e){
-    console.error(e);
-    toast('Save failed — '+(e.message||'check connection'),'error');
+    console.error('Applicant save error:', e);
+    const detail = e?.result?.error?.message || e?.message || 'check connection';
+    toast('Save failed — '+detail,'error');
     return false;
   }finally{
     showLoading(false);
@@ -214,24 +217,24 @@ async function renderRecruitmentPage(){
     <div class="rec-wrap">
       <div id="rec-kpi-row" class="rec-kpi-row">${_recKpiSkeleton()}</div>
 
-      <div class="rec-grid">
-        <div class="rec-section rec-section-full">
-          <div class="rec-section-header">
-            <div class="rec-section-title">Applicants</div>
-            <div class="rec-toolbar">
-              <input type="text" id="rec-search" class="rec-search-input" placeholder="Search name, batch, store…" value="${esc(recSearchTerm)}">
-              <select id="rec-status-filter" class="rec-filter-select">
-                <option value="">All Statuses</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Deployed">Deployed</option>
-                <option value="Backout">Backout</option>
-              </select>
-              <button class="btn-primary" id="rec-add-btn" onclick="openApplicantModal()">+ Add Applicant</button>
-            </div>
+      <div class="rec-section rec-section-full">
+        <div class="rec-section-header">
+          <div class="rec-section-title">Applicants</div>
+          <div class="rec-toolbar">
+            <input type="text" id="rec-search" class="rec-search-input" placeholder="Search name, batch, store…" value="${esc(recSearchTerm)}">
+            <select id="rec-status-filter" class="rec-filter-select">
+              <option value="">All Statuses</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Deployed">Deployed</option>
+              <option value="Backout">Backout</option>
+            </select>
+            <button class="btn-primary" id="rec-add-btn" onclick="openApplicantModal()">+ Add Applicant</button>
           </div>
-          <div id="rec-table-wrap" class="rec-table-wrap">${_recTableSkeleton()}</div>
         </div>
+        <div id="rec-table-wrap" class="rec-table-wrap">${_recTableSkeleton()}</div>
+      </div>
 
+      <div class="rec-grid">
         <div class="rec-section">
           <div class="rec-section-header">
             <div class="rec-section-title">Training Schedule</div>
@@ -678,11 +681,11 @@ function _injectRecruitmentStyles(){
   .rec-kpi-val { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.1; }
   .rec-kpi-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
 
-  .rec-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media(max-width:1100px){ .rec-grid { grid-template-columns: 1fr; } }
 
   .rec-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .rec-section-full { grid-column: 1; }
+  .rec-section-full { width: 100%; }
 
   .rec-section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); background: rgba(0,200,170,.03); }
   .rec-section-title { font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .5px; }
