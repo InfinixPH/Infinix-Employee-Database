@@ -399,17 +399,18 @@ async function _phLoadEventsAndRender() {
   try {
     const res = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A2:F`
+      range: `${EVENTS_SHEET}!A2:H`
     });
     const rows = res.result.values || [];
     _calEventsCache = rows
-      .filter(r => String(r[5] || 'TRUE').trim().toUpperCase() !== 'FALSE')
       .map((r, i) => ({
         id: r[0] || '', title: r[1] || '', date: r[2] || '',
-        note: r[3] || '', postedBy: r[4] || '',
-        active: String(r[5] || 'TRUE').trim().toUpperCase() !== 'FALSE',
-        _row: i + 2,
-      }));
+        time: r[3] || '', endTime: r[4] || '',
+        note: r[5] || '', postedBy: r[6] || '',
+        active: String(r[7] || 'TRUE').trim().toUpperCase() !== 'FALSE',
+        _row: i + 2, // true sheet row, computed BEFORE any filtering
+      }))
+      .filter(e => e.active);
   } catch (e) {
     console.warn('Events load error:', e);
     _calEventsCache = [];
@@ -499,10 +500,10 @@ async function _phSubmitEvent() {
   try {
     await gapi.client.sheets.spreadsheets.values.append({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A:F`,
+      range: `${EVENTS_SHEET}!A:H`,
       valueInputOption: 'RAW',
       insertDataOption: 'INSERT_ROWS',
-      resource: { values: [[id, title, date, note, by, 'TRUE']] }
+      resource: { values: [[id, title, date, '09:00', '10:00', note, by, 'TRUE']] }
     });
     toast('Event added!', 'success');
     document.getElementById('ph-ev-modal')?.remove();
@@ -517,7 +518,7 @@ async function _phDeleteEvent(id, rowNum, evt) {
   try {
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!F${rowNum}`,
+      range: `${EVENTS_SHEET}!H${rowNum}`,
       valueInputOption: 'RAW',
       resource: { values: [['FALSE']] }
     });
