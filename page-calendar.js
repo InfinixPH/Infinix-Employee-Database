@@ -11,6 +11,8 @@ let _calPageView    = 'week';       // 'week' | 'month' | 'day'
 let _calPageEvents  = null;         // null = not yet loaded
 let _calPageDrawer  = null;         // currently open event
 let _calMiniDate    = new Date();   // mini calendar month
+let _calEditId       = null;        // event id currently being edited (null = add mode)
+let _calEditRow      = null;        // sheet row of event being edited
 
 function _p2(n) { return String(n).padStart(2,'0'); }
 
@@ -49,7 +51,7 @@ async function renderCalendarPage() {
   const content = document.getElementById('content');
   content.innerHTML = `<div class="calpg-loading"><div class="spinner"></div></div>`;
 
-  await _calLoadEvents();
+  await _calLoadEvents(true);
   _injectCalPageStyles();
 
   content.innerHTML = `
@@ -137,11 +139,11 @@ async function renderCalendarPage() {
 
     </div>
 
-    <!-- Add Event Modal -->
+    <!-- Add/Edit Event Modal -->
     <div class="overlay hidden" id="calpg-add-modal">
       <div class="modal" style="max-width:420px">
         <div class="modal-header">
-          <h2>Add Calendar Event</h2>
+          <h2 id="calpg-ev-modal-title">Add Calendar Event</h2>
           <button class="modal-close" onclick="_calCloseAddModal()">✕</button>
         </div>
         <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
@@ -155,9 +157,12 @@ async function renderCalendarPage() {
           <div class="field"><label>Posted By</label><input id="calpg-ev-by" class="field-input" placeholder="HR"></div>
           <div id="calpg-ev-msg" style="font-size:11px;color:var(--success);min-height:14px"></div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" onclick="_calCloseAddModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="_calSubmitEvent()">Save Event</button>
+        <div class="modal-footer" style="justify-content:space-between">
+          <button id="calpg-ev-delete-btn" class="btn btn-danger btn-sm hidden" onclick="_calDeleteFromModal()">Delete Event</button>
+          <div style="display:flex;gap:8px;margin-left:auto">
+            <button class="btn btn-ghost" onclick="_calCloseAddModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="_calSubmitEvent()">Save Event</button>
+          </div>
         </div>
       </div>
     </div>
@@ -521,7 +526,8 @@ function _calOpenDrawer(evtJson) {
           <div style="font-size:11px;color:var(--text3)">Posted by ${esc(e.postedBy||'HR')}</div>
         </div>
         ${canViewSensitive() && e._row ? `
-        <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px">
+        <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px;display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="_calCloseDrawer();_calOpenAddModal(null,null,${JSON.stringify(JSON.stringify(e))})">Edit Event</button>
           <button class="btn btn-danger btn-sm" onclick="_calDeleteEvent('${esc(e.id)}',${e._row||0})">Delete Event</button>
         </div>` : ''}
       </div>`;
@@ -536,22 +542,47 @@ function _calCloseDrawer() {
   _calPageDrawer = null;
 }
 
-// ── Add Event Modal ───────────────────────────────────────────
-function _calOpenAddModal(dateStr, hour) {
+// ── Add/Edit Event Modal ──────────────────────────────────────
+function _calOpenAddModal(dateStr, hour, editEventJson) {
   if (!canViewSensitive()) { toast('Permission denied.','error'); return; }
   const overlay = document.getElementById('calpg-add-modal');
   if (!overlay) return;
   overlay.classList.remove('hidden');
   overlay.classList.add('open');
-  if (dateStr) { const el = document.getElementById('calpg-ev-date'); if(el) el.value = dateStr; }
-  const timeEl = document.getElementById('calpg-ev-time');
-  const endEl  = document.getElementById('calpg-ev-endtime');
-  if (typeof hour === 'number' && !isNaN(hour)) {
-    if (timeEl) timeEl.value = _p2(hour) + ':00';
-    if (endEl)  endEl.value  = _p2((hour+1) % 24) + ':00';
+
+  const editEvent = editEventJson ? (typeof editEventJson === 'string' ? JSON.parse(editEventJson) : editEventJson) : null;
+  const titleEl   = document.getElementById('calpg-ev-modal-title');
+  const delBtn    = document.getElementById('calpg-ev-delete-btn');
+
+  if (editEvent) {
+    _calEditId  = editEvent.id;
+    _calEditRow = editEvent._row;
+    if (titleEl) titleEl.textContent = 'Edit Calendar Event';
+    if (delBtn)  delBtn.classList.remove('hidden');
+    document.getElementById('calpg-ev-title').value    = editEvent.title || '';
+    document.getElementById('calpg-ev-date').value     = editEvent.date || '';
+    document.getElementById('calpg-ev-time').value     = editEvent.time || '09:00';
+    document.getElementById('calpg-ev-endtime').value  = editEvent.endTime || '10:00';
+    document.getElementById('calpg-ev-note').value     = editEvent.note || '';
+    document.getElementById('calpg-ev-by').value       = editEvent.postedBy || '';
   } else {
-    if (timeEl) timeEl.value = '09:00';
-    if (endEl)  endEl.value  = '10:00';
+    _calEditId  = null;
+    _calEditRow = null;
+    if (titleEl) titleEl.textContent = 'Add Calendar Event';
+    if (delBtn)  delBtn.classList.add('hidden');
+    document.getElementById('calpg-ev-title').value = '';
+    document.getElementById('calpg-ev-note').value   = '';
+    document.getElementById('calpg-ev-by').value     = '';
+    if (dateStr) { const el = document.getElementById('calpg-ev-date'); if(el) el.value = dateStr; }
+    const timeEl = document.getElementById('calpg-ev-time');
+    const endEl  = document.getElementById('calpg-ev-endtime');
+    if (typeof hour === 'number' && !isNaN(hour)) {
+      if (timeEl) timeEl.value = _p2(hour) + ':00';
+      if (endEl)  endEl.value  = _p2((hour+1) % 24) + ':00';
+    } else {
+      if (timeEl) timeEl.value = '09:00';
+      if (endEl)  endEl.value  = '10:00';
+    }
   }
   const msgEl = document.getElementById('calpg-ev-msg');
   if (msgEl) msgEl.textContent = '';
@@ -560,6 +591,8 @@ function _calOpenAddModal(dateStr, hour) {
 function _calCloseAddModal() {
   const o = document.getElementById('calpg-add-modal');
   if (o) { o.classList.remove('open'); o.classList.add('hidden'); }
+  _calEditId  = null;
+  _calEditRow = null;
 }
 async function _calSubmitEvent() {
   const title   = (document.getElementById('calpg-ev-title')?.value||'').trim();
@@ -571,38 +604,56 @@ async function _calSubmitEvent() {
   const msgEl   = document.getElementById('calpg-ev-msg');
   if (!title) { toast('Please enter a title.','error'); return; }
   if (!date)  { toast('Please select a date.','error'); return; }
-  const id = 'EVT-' + Date.now();
   try {
-    await gapi.client.sheets.spreadsheets.values.append({
-      spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A:H`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      resource: { values: [[id, title, date, time, endTime, note, by, 'TRUE']] }
-    });
-    if (msgEl) msgEl.textContent = '✓ Saved!';
+    if (_calEditId && _calEditRow) {
+      // Edit mode: update the existing row in place
+      await gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID,
+        range: `${EVENTS_SHEET}!A${_calEditRow}:H${_calEditRow}`,
+        valueInputOption: 'RAW',
+        resource: { values: [[_calEditId, title, date, time, endTime, note, by, 'TRUE']] }
+      });
+      if (msgEl) msgEl.textContent = '✓ Updated!';
+      toast('Event updated!','success');
+    } else {
+      const id = 'EVT-' + Date.now();
+      await gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID,
+        range: `${EVENTS_SHEET}!A:H`,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS',
+        resource: { values: [[id, title, date, time, endTime, note, by, 'TRUE']] }
+      });
+      if (msgEl) msgEl.textContent = '✓ Saved!';
+      toast('Event added!','success');
+    }
     _calPageEvents = null;
     _calCloseAddModal();
     await _calLoadEvents(true);
     _calRenderMain(); _calRenderMiniCal(); _calRenderTodayList();
-    toast('Event added!','success');
   } catch(e) { toast('Failed to save event.','error'); console.error(e); }
 }
+async function _calDeleteFromModal() {
+  if (!_calEditId || !_calEditRow) return;
+  await _calDeleteEvent(_calEditId, _calEditRow);
+  _calCloseAddModal();
+}
 async function _calDeleteEvent(id, rowNum) {
-  if (!confirm('Delete this event?')) return;
+  if (!confirm('Delete this event? This cannot be undone.')) return;
   try {
-    await gapi.client.sheets.spreadsheets.values.update({
+    const sheetId = await getSheetId(EVENTS_SHEET);
+    await gapi.client.sheets.spreadsheets.batchUpdate({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!H${rowNum}`,
-      valueInputOption: 'RAW',
-      resource: { values: [['FALSE']] }
+      resource: { requests: [{
+        deleteDimension: { range: { sheetId, dimension: 'ROWS', startIndex: rowNum - 1, endIndex: rowNum } }
+      }] }
     });
     _calPageEvents = null;
     _calCloseDrawer();
     await _calLoadEvents(true);
     _calRenderMain(); _calRenderMiniCal(); _calRenderTodayList();
     toast('Event deleted.','success');
-  } catch(e) { toast('Failed to delete event.','error'); }
+  } catch(e) { toast('Failed to delete event.','error'); console.error(e); }
 }
 
 // ── Styles ────────────────────────────────────────────────────
