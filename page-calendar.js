@@ -142,28 +142,48 @@ async function renderCalendarPage() {
     <!-- Add/Edit Event Modal -->
     <div class="overlay hidden" id="calpg-add-modal">
       <div class="modal" style="max-width:420px">
-        <div class="modal-header">
-          <h2 id="calpg-ev-modal-title">Add Calendar Event</h2>
-          <button class="modal-close" onclick="_calCloseAddModal()">✕</button>
-        </div>
-        <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
-          <div class="field"><label>Title *</label><input id="calpg-ev-title" class="field-input" placeholder="Event title…"></div>
-          <div class="field"><label>Date *</label><input id="calpg-ev-date" type="date" class="field-input"></div>
-          <div style="display:flex;gap:10px">
-            <div class="field" style="flex:1"><label>Start Time</label><input id="calpg-ev-time" type="time" class="field-input" value="09:00"></div>
-            <div class="field" style="flex:1"><label>End Time</label><input id="calpg-ev-endtime" type="time" class="field-input" value="10:00"></div>
+
+        <!-- Form view -->
+        <div id="calpg-ev-form-view">
+          <div class="modal-header">
+            <h2 id="calpg-ev-modal-title">Add Calendar Event</h2>
+            <button class="modal-close" onclick="_calCloseAddModal()">✕</button>
           </div>
-          <div class="field"><label>Note</label><textarea id="calpg-ev-note" class="field-input" rows="3" placeholder="Optional…" style="resize:vertical"></textarea></div>
-          <div class="field"><label>Posted By</label><input id="calpg-ev-by" class="field-input" placeholder="HR"></div>
-          <div id="calpg-ev-msg" style="font-size:11px;color:var(--success);min-height:14px"></div>
-        </div>
-        <div class="modal-footer" style="justify-content:space-between">
-          <button id="calpg-ev-delete-btn" class="btn btn-danger btn-sm hidden" onclick="_calDeleteFromModal()">Delete Event</button>
-          <div style="display:flex;gap:8px;margin-left:auto">
-            <button class="btn btn-ghost" onclick="_calCloseAddModal()">Cancel</button>
-            <button class="btn btn-primary" id="calpg-ev-save-btn" onclick="_calSubmitEvent()">Save Event</button>
+          <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+            <div class="field"><label>Title *</label><input id="calpg-ev-title" class="field-input" placeholder="Event title…"></div>
+            <div class="field"><label>Date *</label><input id="calpg-ev-date" type="date" class="field-input"></div>
+            <div style="display:flex;gap:10px">
+              <div class="field" style="flex:1"><label>Start Time</label><input id="calpg-ev-time" type="time" class="field-input" value="09:00"></div>
+              <div class="field" style="flex:1"><label>End Time</label><input id="calpg-ev-endtime" type="time" class="field-input" value="10:00"></div>
+            </div>
+            <div class="field"><label>Note</label><textarea id="calpg-ev-note" class="field-input" rows="3" placeholder="Optional…" style="resize:vertical"></textarea></div>
+            <div class="field"><label>Posted By</label><input id="calpg-ev-by" class="field-input" placeholder="HR"></div>
+            <div id="calpg-ev-msg" style="font-size:11px;color:var(--success);min-height:14px"></div>
+          </div>
+          <div class="modal-footer" style="justify-content:space-between">
+            <button id="calpg-ev-delete-btn" class="btn btn-danger btn-sm hidden" onclick="_calShowDeleteConfirm()">Delete Event</button>
+            <div style="display:flex;gap:8px;margin-left:auto">
+              <button class="btn btn-ghost" onclick="_calCloseAddModal()">Cancel</button>
+              <button class="btn btn-primary" id="calpg-ev-save-btn" onclick="_calSubmitEvent()">Save Event</button>
+            </div>
           </div>
         </div>
+
+        <!-- Inline delete-confirm view (swapped in over the form, same modal) -->
+        <div id="calpg-ev-confirm-view" class="hidden">
+          <div class="modal-body" style="padding:28px 20px 8px;text-align:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:rgba(244,67,54,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Delete this event?</div>
+            <div style="font-size:12px;color:var(--text3)">This action cannot be undone.</div>
+          </div>
+          <div class="modal-footer" style="justify-content:center;gap:8px;padding-top:18px">
+            <button class="btn btn-ghost" onclick="_calHideDeleteConfirm()">No, keep it</button>
+            <button class="btn btn-danger" onclick="_calConfirmDeleteYes()">Yes, delete</button>
+          </div>
+        </div>
+
       </div>
     </div>
   `;
@@ -575,6 +595,7 @@ function _calOpenAddModal(dateStr, hour, editEventId) {
   if (!overlay) return;
   overlay.classList.remove('hidden');
   overlay.classList.add('open');
+  _calHideDeleteConfirm();
 
   const editEvent = editEventId ? (_calPageEvents || []).find(ev => ev.id === editEventId) : null;
   const titleEl   = document.getElementById('calpg-ev-modal-title');
@@ -619,6 +640,7 @@ function _calCloseAddModal() {
   if (o) { o.classList.remove('open'); o.classList.add('hidden'); }
   _calEditId  = null;
   _calEditRow = null;
+  _calHideDeleteConfirm();
 }
 let _calSubmitting   = false;       // guards against duplicate Save clicks
 async function _calSubmitEvent() {
@@ -665,13 +687,19 @@ async function _calSubmitEvent() {
   } catch(e) { toast('Failed to save event.','error'); console.error(e); }
   finally { _calSubmitting = false; if (saveBtn) saveBtn.disabled = false; }
 }
-async function _calDeleteFromModal() {
+function _calShowDeleteConfirm() {
+  document.getElementById('calpg-ev-form-view')?.classList.add('hidden');
+  document.getElementById('calpg-ev-confirm-view')?.classList.remove('hidden');
+}
+function _calHideDeleteConfirm() {
+  document.getElementById('calpg-ev-confirm-view')?.classList.add('hidden');
+  document.getElementById('calpg-ev-form-view')?.classList.remove('hidden');
+}
+async function _calConfirmDeleteYes() {
   if (!_calEditId || !_calEditRow) return;
   await _calDeleteEvent(_calEditId, _calEditRow);
-  _calCloseAddModal();
 }
 async function _calDeleteEvent(id, rowNum) {
-  if (!confirm('Delete this event? This cannot be undone.')) return;
   try {
     const sheetId = await getSheetId(EVENTS_SHEET);
     await gapi.client.sheets.spreadsheets.batchUpdate({
@@ -682,6 +710,7 @@ async function _calDeleteEvent(id, rowNum) {
     });
     _calPageEvents = null;
     _calCloseDrawer();
+    _calCloseAddModal();
     await _calLoadEvents(true);
     _calRenderMain(); _calRenderMiniCal(); _calRenderTodayList();
     toast('Event deleted.','success');
