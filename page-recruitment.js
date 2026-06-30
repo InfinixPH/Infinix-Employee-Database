@@ -412,7 +412,7 @@ function _renderApplicantsTable(){
 
   wrap.innerHTML = `
     <div class="rec-table-scroll">
-      <div class="rec-grid">
+      <div class="rec-applist">
         <div class="rec-grid-row rec-grid-head">
           <div>Applicant</div>
           <div>Batch / Wave</div>
@@ -786,7 +786,7 @@ function _injectRecruitmentStyles(){
 
   .rec-table-wrap { overflow: hidden; }
   .rec-table-scroll { overflow-x: auto; }
-  .rec-grid { min-width: 760px; font-size: 12px; }
+  .rec-applist { min-width: 760px; font-size: 12px; }
   .rec-grid-row {
     display: grid;
     grid-template-columns: 1.8fr 1fr 1.8fr 1fr 1fr 0.9fr 1fr 76px;
