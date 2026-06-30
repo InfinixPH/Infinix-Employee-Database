@@ -12,6 +12,8 @@ let applicantsLoaded = false;
 let editingApplicantId = null;
 let recSearchTerm = '';
 let recStatusFilter = '';
+let recPage = 1;
+let recPageSize = 10;
 
 const APPLICANT_POSITIONS = ['Promoter','RSS'];
 const INTERVIEW_RESULTS = ['','PASSED','FAILED','BACKOUT'];
@@ -242,6 +244,7 @@ async function renderRecruitmentPage(){
           </div>
         </div>
         <div id="rec-table-wrap" class="rec-table-wrap">${_recTableSkeleton()}</div>
+        <div id="rec-pagination" class="pagination"></div>
       </div>
 
       <div class="rec-grid">
@@ -277,8 +280,8 @@ async function renderRecruitmentPage(){
         </div>
         <div class="modal-body" id="rec-modal-body"></div>
         <div class="modal-footer">
-          <button class="btn-secondary" onclick="closeApplicantModal()">Cancel</button>
-          <button class="btn-primary" id="rec-modal-save-btn" onclick="submitApplicantForm()">Save Applicant</button>
+          <button class="rec-cancel-btn" onclick="closeApplicantModal()">Cancel</button>
+          <button class="rec-add-btn" id="rec-modal-save-btn" onclick="submitApplicantForm()">Save Applicant</button>
         </div>
       </div>
     </div>
@@ -288,10 +291,12 @@ async function renderRecruitmentPage(){
 
   document.getElementById('rec-search').addEventListener('input', e=>{
     recSearchTerm = e.target.value;
+    recPage = 1;
     _renderApplicantsTable();
   });
   document.getElementById('rec-status-filter').addEventListener('change', e=>{
     recStatusFilter = e.target.value;
+    recPage = 1;
     _renderApplicantsTable();
   });
 
@@ -427,10 +432,57 @@ function _applicantsHeaderRow(){
     <div></div>
   </div>`;
 }
+function _renderApplicantsPagination(total,totalPages){
+  const pg = document.getElementById('rec-pagination');
+  if(!pg) return;
+  const start = total===0 ? 0 : (recPage-1)*recPageSize+1;
+  const end = Math.min(recPage*recPageSize, total);
+  let pages=[];
+  if(totalPages<=7){ for(let i=1;i<=totalPages;i++) pages.push(i); }
+  else{
+    pages=[1];
+    if(recPage>3) pages.push('...');
+    for(let i=Math.max(2,recPage-1); i<=Math.min(totalPages-1,recPage+1); i++) pages.push(i);
+    if(recPage<totalPages-2) pages.push('...');
+    pages.push(totalPages);
+  }
+  pg.innerHTML = `
+    <div class="pagination-info">${total===0?'No records':`${start}–${end} of ${total}`}</div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <div class="pagination-controls">
+        <button class="page-btn" onclick="_recGoPage(1)" ${recPage===1?'disabled':''}>«</button>
+        <button class="page-btn" onclick="_recGoPage(${recPage-1})" ${recPage===1?'disabled':''}>‹</button>
+        ${pages.map(p=>p==='...'?`<span style="color:var(--text3);padding:0 4px;font-size:12px">…</span>`:`<button class="page-btn ${p===recPage?'active':''}" onclick="_recGoPage(${p})">${p}</button>`).join('')}
+        <button class="page-btn" onclick="_recGoPage(${recPage+1})" ${recPage===totalPages?'disabled':''}>›</button>
+        <button class="page-btn" onclick="_recGoPage(${totalPages})" ${recPage===totalPages?'disabled':''}>»</button>
+      </div>
+      <select class="page-size-sel" onchange="_recChangePageSize(parseInt(this.value))">
+        <option value="10" ${recPageSize===10?'selected':''}>10/page</option>
+        <option value="25" ${recPageSize===25?'selected':''}>25/page</option>
+        <option value="50" ${recPageSize===50?'selected':''}>50/page</option>
+        <option value="100" ${recPageSize===100?'selected':''}>100/page</option>
+      </select>
+    </div>`;
+}
+function _recGoPage(p){
+  const list = _filteredApplicants();
+  const totalPages = Math.max(1, Math.ceil(list.length/recPageSize));
+  recPage = Math.max(1, Math.min(p, totalPages));
+  _renderApplicantsTable();
+}
+function _recChangePageSize(s){
+  recPageSize = s;
+  recPage = 1;
+  _renderApplicantsTable();
+}
 function _renderApplicantsTable(){
   const wrap = document.getElementById('rec-table-wrap');
   if(!wrap) return;
   const list = _filteredApplicants();
+  const totalPages = Math.max(1, Math.ceil(list.length/recPageSize));
+  if(recPage>totalPages) recPage = totalPages;
+  const pageList = list.slice((recPage-1)*recPageSize, recPage*recPageSize);
+  _renderApplicantsPagination(list.length, totalPages);
 
   if(!list.length){
     wrap.innerHTML = `<div class="rec-placeholder-body">
@@ -444,7 +496,7 @@ function _renderApplicantsTable(){
     <div class="rec-table-scroll">
       <div class="rec-applist">
         ${_applicantsHeaderRow()}
-        ${list.map(a=>`
+        ${pageList.map(a=>`
           <div class="rec-grid-row rec-grid-body" onclick="openApplicantModal('${esc(a.id)}')">
             <div>
               <div class="rec-cell-name" title="${esc(a.fullName)}">${esc(a.fullName)||'—'}</div>
@@ -799,6 +851,11 @@ function _injectRecruitmentStyles(){
   }
   .rec-add-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
   .rec-add-btn:active { transform: translateY(0); }
+  .rec-cancel-btn {
+    background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s;
+  }
+  .rec-cancel-btn:hover { background: var(--bg-frosted); }
 
   .rec-placeholder-body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; gap: 10px; }
   .rec-ph-icon { color: var(--text3); opacity: .5; margin-bottom: 4px; }
