@@ -31,7 +31,7 @@ const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From St
 const ROLE_LOG_HEADERS = ['Email','Role','Password/PIN','Status','Timestamp'];
 const APPLICANTS_HEADERS = [
   'Applicant ID','Batch No.','Wave No.','Region','RSS Name','RSS ID','Store Assignment','Store ID',
-  'Full Name','Position','Mobile No.','Email Address',
+  'Full Name','First Name','Last Name','Middle Name','Position','Mobile No.','Email Address',
   'Initial Interview Date','Initial Interview Result','Initial Interview Remarks',
   'Final Interview Date','Final Interview Result','Final Interview Remarks',
   'OBT Start Date','OBT Result','OBT Remarks',
@@ -39,7 +39,7 @@ const APPLICANTS_HEADERS = [
   'Uniform Size','Uniform Delivered Date',
   'Date Added','Last Updated','Added By'
 ];
-const APPLICANTS_LAST_COL = 'AC';
+const APPLICANTS_LAST_COL = 'AF';
 const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
 
 const REQUIREMENT_FIELDS = [
