@@ -12,6 +12,7 @@ const STORE_DETAILS_SHEET = 'Store Details';
 const ROLE_LOG_SHEET      = 'Role Logs';
 const ANNOUNCEMENTS_SHEET = 'Announcements';
 const EVENTS_SHEET_APP    = 'Events'; // calendar events — mirrors EVENTS_SHEET in page-home.js
+const APPLICANTS_SHEET    = 'Applicants';
 const PAGE_SIZE_DEFAULT   = 50;
 
 const STATUSES = ['Active','Floating','Resigned','AWOL','Terminated','Backout'];
@@ -28,6 +29,17 @@ const HEADERS = [
 const SHEET_LAST_COL = 'AQ';
 const LOG_HEADERS = ['Timestamp','Employee ID','Employee Name','Action','From Status','To Status','Updated By','Detail'];
 const ROLE_LOG_HEADERS = ['Email','Role','Password/PIN','Status','Timestamp'];
+const APPLICANTS_HEADERS = [
+  'Applicant ID','Batch No.','Wave No.','Region','RSS Name','RSS ID','Store Assignment','Store ID',
+  'Full Name','Position','Mobile No.','Email Address',
+  'Initial Interview Date','Initial Interview Result','Initial Interview Remarks',
+  'Final Interview Date','Final Interview Result','Final Interview Remarks',
+  'OBT Start Date','OBT Result','OBT Remarks',
+  'Deployment Date','Status','Complete Requirements',
+  'Uniform Size','Uniform Delivered Date',
+  'Date Added','Last Updated','Added By'
+];
+const APPLICANTS_LAST_COL = 'AC';
 const BANK_OPTIONS = ['','CTBC Bank (Philippines)','Union Bank of the Philippines'];
 
 const REQUIREMENT_FIELDS = [
@@ -473,6 +485,7 @@ async function ensureHeaders(){
     await chk(ROLE_LOG_SHEET,ROLE_LOG_HEADERS,'A1:E1');
     await chk(ANNOUNCEMENTS_SHEET,['ID','Title','Body','PostedBy','Timestamp','Active'],'A1:F1');
     await chk(EVENTS_SHEET_APP,['ID','Title','Date','Time','EndTime','Note','PostedBy','Active'],'A1:H1');
+    await chk(APPLICANTS_SHEET,APPLICANTS_HEADERS,`A1:${APPLICANTS_LAST_COL}1`);
   }catch(e){console.warn('Header setup:',e);}
 }
 
