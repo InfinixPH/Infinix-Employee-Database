@@ -900,7 +900,10 @@ function renderSkeletonRows(count=8){
 
 // ============================================================
 function sortEmployees(list){
-  if(!sortCol)return list;
+  if(!sortCol){
+    // No manual sort chosen — show most recently added/updated first
+    return [...list].sort((a,b)=>new Date(b.lastUpdated||0)-new Date(a.lastUpdated||0));
+  }
   return [...list].sort((a,b)=>{
     const av=String(a[sortCol]||'').toLowerCase();
     const bv=String(b[sortCol]||'').toLowerCase();
