@@ -39,19 +39,19 @@ async function _calLoadEvents(force) {
   try {
     const r = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A2:F`
+      range: `${EVENTS_SHEET}!A2:H`
     });
     const rows = r.result.values || [];
     _calPageEvents = rows
-      .filter(r => String(r[5]||'TRUE').trim().toUpperCase() !== 'FALSE')
       .map((r,i) => ({
         id:r[0]||'', title:r[1]||'', date:r[2]||'',
-        time: r[2] ? '09:00' : '',
-        endTime: r[2] ? '10:00' : '',
-        note:r[3]||'', postedBy:r[4]||'',
+        time: r[3]||'', endTime: r[4]||'',
+        note:r[5]||'', postedBy:r[6]||'',
+        active: String(r[7]||'TRUE').trim().toUpperCase(),
         color: '#00C8AA',
-        _row: i + 2,
+        _row: i + 2, // true sheet row, computed BEFORE any filtering
       }))
+      .filter(e => e.active !== 'FALSE')
       .filter(e => e.title && e.date);
   } catch(e) {
     console.warn('Calendar page: Events sheet not yet connected, showing placeholder data.', e);
@@ -92,8 +92,8 @@ async function renderCalendarPage() {
         <!-- Upcoming events today -->
         <div class="calpg-side-section">
           <div class="calpg-side-title">
-            <span>Upcoming events today</span>
-            <button class="hd-card-link" onclick="_calViewToday()">View all</button>
+            <span>Upcoming events</span>
+            <button class="hd-card-link" onclick="_calViewNextEvent()">View all</button>
           </div>
           <div id="calpg-today-list"></div>
         </div>
@@ -165,6 +165,10 @@ async function renderCalendarPage() {
         <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
           <div class="field"><label>Title *</label><input id="calpg-ev-title" class="field-input" placeholder="Event title…"></div>
           <div class="field"><label>Date *</label><input id="calpg-ev-date" type="date" class="field-input"></div>
+          <div style="display:flex;gap:10px">
+            <div class="field" style="flex:1"><label>Start Time</label><input id="calpg-ev-time" type="time" class="field-input" value="09:00"></div>
+            <div class="field" style="flex:1"><label>End Time</label><input id="calpg-ev-endtime" type="time" class="field-input" value="10:00"></div>
+          </div>
           <div class="field"><label>Note</label><textarea id="calpg-ev-note" class="field-input" rows="3" placeholder="Optional…" style="resize:vertical"></textarea></div>
           <div class="field"><label>Posted By</label><input id="calpg-ev-by" class="field-input" placeholder="HR"></div>
           <div id="calpg-ev-msg" style="font-size:11px;color:var(--success);min-height:14px"></div>
@@ -263,6 +267,22 @@ function _calViewToday() {
   _calPageDate = new Date();
   _calMiniDate = new Date();
   _calRenderMain(); _calRenderMiniCal(); _calRenderTodayList();
+}
+function _calViewNextEvent() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = `${today.getFullYear()}-${_p2(today.getMonth()+1)}-${_p2(today.getDate())}`;
+  const next = (_calPageEvents||[])
+    .filter(e => e.date && e.date.slice(0,10) >= todayStr)
+    .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time))[0];
+  if (next) {
+    _calPageDate = new Date(next.date);
+    _calMiniDate = new Date(next.date);
+  } else {
+    _calPageDate = new Date();
+    _calMiniDate = new Date();
+  }
+  _calPageView = 'week';
+  renderCalendarPage();
 }
 
 function _calRenderMain() {
@@ -437,22 +457,29 @@ function _calRenderDay() {
   </div>`;
 }
 
-// ── Today's events list ───────────────────────────────────────
+// ── Upcoming events list ────────────────────────────────────────
 function _calRenderTodayList() {
   const el = document.getElementById('calpg-today-list');
   if (!el) return;
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = `${today.getFullYear()}-${_p2(today.getMonth()+1)}-${_p2(today.getDate())}`;
-  const evts = (_calPageEvents||[]).filter(e => e.date && e.date.slice(0,10) === todayStr);
-  if (!evts.length) { el.innerHTML = `<div style="font-size:11px;color:var(--text3);font-style:italic;padding:6px 0">No events today</div>`; return; }
-  el.innerHTML = evts.map(e => `
+  const evts = (_calPageEvents||[])
+    .filter(e => e.date && e.date.slice(0,10) >= todayStr)
+    .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time))
+    .slice(0, 5);
+  if (!evts.length) { el.innerHTML = `<div style="font-size:11px;color:var(--text3);font-style:italic;padding:6px 0">No upcoming events</div>`; return; }
+  el.innerHTML = evts.map(e => {
+    const isToday = e.date.slice(0,10) === todayStr;
+    const dateLabel = isToday ? 'Today' : new Date(e.date).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+    return `
     <div class="calpg-today-item" onclick="_calOpenDrawer(${JSON.stringify(JSON.stringify(e))})">
       <span class="calpg-today-dot" style="background:${e.color||'#00C8AA'}"></span>
       <div class="calpg-today-info">
         <div class="calpg-today-title">${esc(e.title)}</div>
-        <div class="calpg-today-time">${e.time||''} – ${e.endTime||''}</div>
+        <div class="calpg-today-time">${dateLabel} · ${e.time||''}${e.endTime?' – '+e.endTime:''}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── Time breakdown ────────────────────────────────────────────
@@ -535,6 +562,15 @@ function _calOpenAddModal(dateStr, hour) {
   overlay.classList.remove('hidden');
   overlay.classList.add('open');
   if (dateStr) { const el = document.getElementById('calpg-ev-date'); if(el) el.value = dateStr; }
+  const timeEl = document.getElementById('calpg-ev-time');
+  const endEl  = document.getElementById('calpg-ev-endtime');
+  if (typeof hour === 'number' && !isNaN(hour)) {
+    if (timeEl) timeEl.value = _p2(hour) + ':00';
+    if (endEl)  endEl.value  = _p2((hour+1) % 24) + ':00';
+  } else {
+    if (timeEl) timeEl.value = '09:00';
+    if (endEl)  endEl.value  = '10:00';
+  }
   const msgEl = document.getElementById('calpg-ev-msg');
   if (msgEl) msgEl.textContent = '';
   setTimeout(() => document.getElementById('calpg-ev-title')?.focus(), 80);
@@ -544,21 +580,23 @@ function _calCloseAddModal() {
   if (o) { o.classList.remove('open'); o.classList.add('hidden'); }
 }
 async function _calSubmitEvent() {
-  const title = (document.getElementById('calpg-ev-title')?.value||'').trim();
-  const date  = (document.getElementById('calpg-ev-date')?.value||'').trim();
-  const note  = (document.getElementById('calpg-ev-note')?.value||'').trim();
-  const by    = (document.getElementById('calpg-ev-by')?.value||'').trim() || currentUser?.name || 'HR';
-  const msgEl = document.getElementById('calpg-ev-msg');
+  const title   = (document.getElementById('calpg-ev-title')?.value||'').trim();
+  const date    = (document.getElementById('calpg-ev-date')?.value||'').trim();
+  const time    = (document.getElementById('calpg-ev-time')?.value||'').trim();
+  const endTime = (document.getElementById('calpg-ev-endtime')?.value||'').trim();
+  const note    = (document.getElementById('calpg-ev-note')?.value||'').trim();
+  const by      = (document.getElementById('calpg-ev-by')?.value||'').trim() || currentUser?.name || 'HR';
+  const msgEl   = document.getElementById('calpg-ev-msg');
   if (!title) { toast('Please enter a title.','error'); return; }
   if (!date)  { toast('Please select a date.','error'); return; }
   const id = 'EVT-' + Date.now();
   try {
     await gapi.client.sheets.spreadsheets.values.append({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A:F`,
+      range: `${EVENTS_SHEET}!A:H`,
       valueInputOption: 'RAW',
       insertDataOption: 'INSERT_ROWS',
-      resource: { values: [[id, title, date, note, by, 'TRUE']] }
+      resource: { values: [[id, title, date, time, endTime, note, by, 'TRUE']] }
     });
     if (msgEl) msgEl.textContent = '✓ Saved!';
     _calPageEvents = null;
@@ -573,7 +611,7 @@ async function _calDeleteEvent(id, rowNum) {
   try {
     await gapi.client.sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!F${rowNum}`,
+      range: `${EVENTS_SHEET}!H${rowNum}`,
       valueInputOption: 'RAW',
       resource: { values: [['FALSE']] }
     });
