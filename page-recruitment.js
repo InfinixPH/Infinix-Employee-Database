@@ -464,16 +464,51 @@ function openApplicantModal(id){
   if(storeIdEl) storeIdEl.addEventListener('input', _onApplicantStoreIdInput);
   if(a && a.storeId) _onApplicantStoreIdInput();
 
-  ['raf_firstName','raf_lastName','raf_middleName'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.addEventListener('input', _updateApplicantFullName);
+  ['raf_firstName','raf_lastName','raf_middleName'].forEach(fid=>{
+    const el = document.getElementById(fid);
+    if(!el) return;
+    el.addEventListener('input', _updateApplicantFullName);
+    el.addEventListener('blur', ()=>{ el.value = _toTitleCase(el.value.trim()); _updateApplicantFullName(); });
   });
   _updateApplicantFullName();
+
+  const mobileEl = document.getElementById('raf_mobile');
+  if(mobileEl){
+    mobileEl.addEventListener('blur', ()=>{
+      const formatted = _formatMobile(mobileEl.value);
+      mobileEl.value = formatted;
+      mobileEl.classList.toggle('err', !!formatted && !_isValidMobile(formatted));
+    });
+  }
+  const emailEl = document.getElementById('raf_email');
+  if(emailEl){
+    emailEl.addEventListener('blur', ()=>{
+      const v = emailEl.value.trim().toLowerCase();
+      emailEl.value = v;
+      emailEl.classList.toggle('err', !!v && !_isValidEmail(v));
+    });
+  }
 
   document.querySelectorAll('#raf-tabs .rec-tab').forEach(btn=>{
     btn.addEventListener('click', ()=>_switchApplicantTab(btn.dataset.tab));
   });
   _switchApplicantTab(_defaultApplicantTab(a));
+}
+function _toTitleCase(s){
+  return String(s||'').toLowerCase().replace(/\b\w/g, c=>c.toUpperCase());
+}
+function _formatMobile(raw){
+  let digits = String(raw||'').replace(/\D/g,'');
+  // Convert +63XXXXXXXXXX or 63XXXXXXXXXX to 09XXXXXXXXX
+  if(digits.startsWith('63') && digits.length===12) digits = '0'+digits.slice(2);
+  if(digits.length===10 && digits.startsWith('9')) digits = '0'+digits;
+  return digits;
+}
+function _isValidMobile(v){
+  return /^09\d{9}$/.test(v);
+}
+function _isValidEmail(v){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 function _updateApplicantFullName(){
   const first = document.getElementById('raf_firstName')?.value.trim() || '';
@@ -526,12 +561,12 @@ function _applicantFormHTML(a){
 
       <div class="rec-form-section-label">Batch & Assignment</div>
       <div class="rec-form-row">
-        <div class="field"><label>Batch No.</label><input id="raf_batchNo" type="text" placeholder="e.g. 9" value="${esc(a.batchNo)}"></div>
+        <div class="field"><label>Batch No. <span class="req">*</span></label><input id="raf_batchNo" type="text" placeholder="e.g. 9" value="${esc(a.batchNo)}"></div>
         <div class="field"><label>Wave No.</label><input id="raf_waveNo" type="text" placeholder="e.g. 1" value="${esc(a.waveNo)}"></div>
       </div>
       <div class="rec-form-row">
         <div class="field">
-          <label>Store ID (Shop ID)</label>
+          <label>Store ID (Shop ID) <span class="req">*</span></label>
           <input id="raf_storeId" type="text" placeholder="Type Shop ID to auto-fill" value="${esc(a.storeId)}">
           <div class="store-lookup-status" id="raf-store-status">${storeCacheLoaded?'Enter Store ID to auto-fill':'Loading store list…'}</div>
         </div>
@@ -547,16 +582,16 @@ function _applicantFormHTML(a){
 
       <div class="rec-form-section-label">Applicant Info</div>
       <div class="rec-form-row">
-        <div class="field"><label>First Name</label><input id="raf_firstName" type="text" value="${esc(a.firstName)}"></div>
-        <div class="field"><label>Last Name</label><input id="raf_lastName" type="text" value="${esc(a.lastName)}"></div>
+        <div class="field"><label>First Name <span class="req">*</span></label><input id="raf_firstName" type="text" value="${esc(a.firstName)}"></div>
+        <div class="field"><label>Last Name <span class="req">*</span></label><input id="raf_lastName" type="text" value="${esc(a.lastName)}"></div>
       </div>
       <div class="rec-form-row">
         <div class="field"><label>Middle Name</label><input id="raf_middleName" type="text" value="${esc(a.middleName)}"></div>
         <div class="field"><label>Full Name</label><input id="raf_fullName" type="text" readonly placeholder="Auto-filled from name fields" value="${esc(a.fullName)}"></div>
       </div>
       <div class="rec-form-row">
-        <div class="field"><label>Position</label><select id="raf_position">${_opt(['',...APPLICANT_POSITIONS], a.position)}</select></div>
-        <div class="field"><label>Mobile No.</label><input id="raf_mobile" type="text" value="${esc(a.mobile)}"></div>
+        <div class="field"><label>Position <span class="req">*</span></label><select id="raf_position">${_opt(['',...APPLICANT_POSITIONS], a.position)}</select></div>
+        <div class="field"><label>Mobile No. <span class="req">*</span></label><input id="raf_mobile" type="text" placeholder="09XXXXXXXXX" value="${esc(a.mobile)}"></div>
       </div>
       <div class="rec-form-row">
         <div class="field"><label>Email Address</label><input id="raf_email" type="email" value="${esc(a.email)}"></div>
@@ -630,27 +665,59 @@ function _switchApplicantTab(tab){
 async function submitApplicantForm(){
   if(!canWrite()){denyWrite();return;}
   const g = id => document.getElementById(id)?.value?.trim() || '';
-  const firstName = g('raf_firstName');
-  const lastName = g('raf_lastName');
-  const middleName = g('raf_middleName');
-  if(!firstName || !lastName){ toast('First Name and Last Name are required','error'); return; }
-  const fullName = g('raf_fullName');
 
+  // Clear previous error states
+  document.querySelectorAll('.rec-form .field input.err, .rec-form .field select.err').forEach(el=>el.classList.remove('err'));
+
+  const firstName = _toTitleCase(g('raf_firstName'));
+  const lastName = _toTitleCase(g('raf_lastName'));
+  const middleName = _toTitleCase(g('raf_middleName'));
+  const batchNo = g('raf_batchNo');
+  const storeId = g('raf_storeId');
+  const position = g('raf_position');
+  const mobile = _formatMobile(g('raf_mobile'));
+  const email = g('raf_email').toLowerCase();
   const status = g('raf_status');
-  if(normalizeFinalStatus(status)==='DEPLOYED' && !g('raf_deploymentDate')){
-    toast('Deployment Date is required when Status is Deployed','error'); return;
+  const deploymentDate = g('raf_deploymentDate');
+
+  const errors = [];
+  if(!batchNo) errors.push({id:'raf_batchNo', msg:'Batch No. is required'});
+  if(!storeId) errors.push({id:'raf_storeId', msg:'Store ID is required'});
+  if(!firstName) errors.push({id:'raf_firstName', msg:'First Name is required'});
+  if(!lastName) errors.push({id:'raf_lastName', msg:'Last Name is required'});
+  if(!position) errors.push({id:'raf_position', msg:'Position is required'});
+  if(!mobile) errors.push({id:'raf_mobile', msg:'Mobile No. is required'});
+  else if(!_isValidMobile(mobile)) errors.push({id:'raf_mobile', msg:'Mobile No. must be a valid PH number (e.g. 09171234567)'});
+  if(email && !_isValidEmail(email)) errors.push({id:'raf_email', msg:'Email Address format is invalid'});
+  if(normalizeFinalStatus(status)==='DEPLOYED' && !deploymentDate){
+    errors.push({id:'raf_deploymentDate', msg:'Deployment Date is required when Status is Deployed', tab:'deploy'});
   }
 
+  if(errors.length){
+    errors.forEach(err=>{
+      const el = document.getElementById(err.id);
+      if(el) el.classList.add('err');
+    });
+    const first = errors[0];
+    if(first.tab) _switchApplicantTab(first.tab);
+    document.getElementById(first.id)?.scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById(first.id)?.focus();
+    toast(first.msg,'error');
+    return;
+  }
+
+  const fullName = g('raf_fullName');
+
   const data = {
-    batchNo: g('raf_batchNo'), waveNo: g('raf_waveNo'),
+    batchNo, waveNo: g('raf_waveNo'),
     region: g('raf_region'), rssName: g('raf_rssName'), rssId: g('raf_rssId'),
-    storeAssignment: g('raf_storeAssignment'), storeId: g('raf_storeId'),
+    storeAssignment: g('raf_storeAssignment'), storeId,
     fullName, firstName, lastName, middleName,
-    position: g('raf_position'), mobile: g('raf_mobile'), email: g('raf_email'),
+    position, mobile, email,
     initInterviewDate: g('raf_initInterviewDate'), initInterviewResult: g('raf_initInterviewResult'), initInterviewRemarks: g('raf_initInterviewRemarks'),
     finalInterviewDate: g('raf_finalInterviewDate'), finalInterviewResult: g('raf_finalInterviewResult'), finalInterviewRemarks: g('raf_finalInterviewRemarks'),
     obtStartDate: g('raf_obtStartDate'), obtResult: g('raf_obtResult'), obtRemarks: g('raf_obtRemarks'),
-    deploymentDate: g('raf_deploymentDate'), status, completeRequirements: g('raf_completeRequirements'),
+    deploymentDate, status, completeRequirements: g('raf_completeRequirements'),
     uniformSize: g('raf_uniformSize'), uniformDeliveredDate: g('raf_uniformDeliveredDate')
   };
 
@@ -772,6 +839,8 @@ function _injectRecruitmentStyles(){
   }
   .rec-form .field input:focus, .rec-form .field select:focus { border-color: var(--accent); }
   .rec-form .field input[readonly] { opacity: .7; cursor: not-allowed; }
+  .rec-form .field input.err, .rec-form .field select.err { border-color: #EF5350; box-shadow: 0 0 0 1px rgba(239,83,80,.25); }
+  .req { color: #EF5350; font-weight: 700; }
 
   .store-lookup-status { font-size: 11px; margin-top: 2px; }
   .store-lookup-status.found { color: #00E676; }
