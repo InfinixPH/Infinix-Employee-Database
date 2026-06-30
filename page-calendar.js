@@ -12,25 +12,6 @@ let _calPageEvents  = null;         // null = not yet loaded
 let _calPageDrawer  = null;         // currently open event
 let _calMiniDate    = new Date();   // mini calendar month
 
-// ── Placeholder events ────────────────────────────────────────
-function _calGetPlaceholders() {
-  const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
-  return [
-    { id:'p1', title:'Client Meeting',         date:`${y}-${_p2(m+1)}-05`, time:'08:00', endTime:'09:00', note:'Discuss Q3 targets', postedBy:'HR', color:'#4CAF50' },
-    { id:'p2', title:'Preparing project pres', date:`${y}-${_p2(m+1)}-05`, time:'09:30', endTime:'10:30', note:'Slide deck review', postedBy:'HR', color:'#9C27B0' },
-    { id:'p3', title:'Team retrospective',      date:`${y}-${_p2(m+1)}-06`, time:'08:00', endTime:'09:00', note:'Monthly retro', postedBy:'HR', color:'#4CAF50' },
-    { id:'p4', title:'Meetup meeting',          date:`${y}-${_p2(m+1)}-06`, time:'09:00', endTime:'11:00', note:'Community meetup', postedBy:'HR', color:'#9C27B0' },
-    { id:'p5', title:'User flow testing',       date:`${y}-${_p2(m+1)}-07`, time:'10:00', endTime:'11:30', note:'QA session', postedBy:'HR', color:'#F44336' },
-    { id:'p6', title:'Design review w/ art dir',date:`${y}-${_p2(m+1)}-07`, time:'10:30', endTime:'12:30', note:'UI critique', postedBy:'HR', color:'#9C27B0' },
-    { id:'p7', title:'Payroll Cutoff',          date:`${y}-${_p2(m+1)}-15`, time:'17:00', endTime:'17:30', note:'Submit timesheets', postedBy:'HR', color:'#FF9800' },
-    { id:'p8', title:'Sync with developers',    date:`${y}-${_p2(m+1)}-08`, time:'13:00', endTime:'14:00', note:'Sprint planning', postedBy:'HR', color:'#2196F3' },
-    { id:'p9', title:'Leading a workshop',      date:`${y}-${_p2(m+1)}-08`, time:'14:00', endTime:'16:00', note:'Product knowledge', postedBy:'HR', color:'#2196F3' },
-    { id:'p10',title:'Creating animations',     date:`${y}-${_p2(m+1)}-09`, time:'14:00', endTime:'15:30', note:'Motion design session', postedBy:'HR', color:'#4CAF50' },
-    { id:'p11',title:'Client meeting',          date:`${y}-${_p2(m+1)}-09`, time:'08:00', endTime:'09:00', note:'Weekly check-in', postedBy:'HR', color:'#4CAF50' },
-    { id:'p12',title:'Design system work',      date:`${y}-${_p2(m+1)}-10`, time:'09:00', endTime:'11:00', note:'Component library', postedBy:'HR', color:'#9C27B0' },
-  ];
-}
 function _p2(n) { return String(n).padStart(2,'0'); }
 
 // ── Load events ───────────────────────────────────────────────
@@ -54,8 +35,9 @@ async function _calLoadEvents(force) {
       .filter(e => e.active !== 'FALSE')
       .filter(e => e.title && e.date);
   } catch(e) {
-    console.warn('Calendar page: Events sheet not yet connected, showing placeholder data.', e);
-    _calPageEvents = _calGetPlaceholders();
+    console.error('Calendar page: failed to load Events sheet.', e);
+    _calPageEvents = [];
+    toast('Failed to load calendar events.', 'error');
   }
 }
 
