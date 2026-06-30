@@ -1656,14 +1656,16 @@ body.role-rssrsh .btn-dp-delete,
 body.role-viewer .notes-save-btn,
 body.role-viewer #bulk-bar .btn-primary,
 body.role-viewer #bulk-bar .btn-danger,
-body.role-rssrsh #bulk-bar .btn-danger {
+body.role-rssrsh #bulk-bar .btn-danger,
+body.role-viewer #rec-add-btn {
   display: none !important;
 }
 
 /* Viewer: Actions column is always visible for alignment.
    Buttons appear disabled — clicking still triggers denyWrite() toast. */
 body.role-viewer .btn-tbl-edit,
-body.role-viewer .btn-tbl-delete {
+body.role-viewer .btn-tbl-delete,
+body.role-viewer .rec-icon-btn {
   opacity: 0.35 !important;
   cursor: not-allowed !important;
   pointer-events: auto !important;
@@ -2348,6 +2350,7 @@ html, body {
 .dp-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
+.dp-field-full { grid-column: 1 / -1; }
 .dp-field { display: flex; flex-direction: column; gap: 3px; }
 .dp-field-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
