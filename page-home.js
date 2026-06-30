@@ -110,7 +110,6 @@ function renderHome() {
           <div class="hd-card-header">
             <span class="hd-card-title">Calendar</span>
             <div style="display:flex;gap:4px;align-items:center">
-              ${canViewSensitive() ? `<button class="hd-icon-btn" onclick="_phOpenAddEvent()" title="Add event">+</button>` : ''}
               <button class="hd-icon-btn" onclick="_phCalPrev()">&#8249;</button>
               <button class="hd-icon-btn" onclick="_phCalNext()">&#8250;</button>
             </div>
@@ -228,10 +227,6 @@ function renderHome() {
         </div>
 
       </div>
-    </div>
-
-    <!-- Add Event Modal -->
-    <div id="ph-ev-modal-wrap" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
     </div>
   `;
 
@@ -354,9 +349,7 @@ function _phCalDayClick(day, year, month, clickedEl) {
     </div>`;
   });
   if (!body) {
-    body = canViewSensitive()
-      ? `<div class="hd-pop-empty">No events. <button class="hd-card-link" style="font-size:11px" onclick="_phOpenAddEventDate('${dateStr}')">Add one?</button></div>`
-      : `<div class="hd-pop-empty">No events.</div>`;
+    body = `<div class="hd-pop-empty">No events.</div>`;
   }
 
   popover.innerHTML = `
@@ -391,11 +384,6 @@ function _phCloseCalPopover() {
 // EVENTS — load + render into upcoming list
 // ============================================================
 async function _phLoadEventsAndRender() {
-  if (_calEventsCache !== null) {
-    _phCalRender();
-    _phRenderEventsList();
-    return;
-  }
   try {
     const res = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
@@ -446,86 +434,8 @@ function _phRenderEventsList() {
         ${ev.note ? `<div class="hd-ev-note">${esc(ev.note.slice(0,60))}</div>` : ''}
         <div class="hd-ev-when">${when}</div>
       </div>
-      ${canViewSensitive() ? `<button class="hd-ev-del" onclick="_phDeleteEvent('${esc(ev.id)}',${ev._row},event)" title="Remove">✕</button>` : ''}
     </div>`;
   }).join('');
-}
-
-// ── Add / Delete event (shared with calendar page) ──────────
-function _phOpenAddEvent() {
-  if (!canViewSensitive()) { toast('Only HR/Agency or Owner can add events.', 'error'); return; }
-  const existing = document.getElementById('ph-ev-modal');
-  if (existing) existing.remove();
-
-  const today = new Date().toISOString().split('T')[0];
-  const overlay = document.createElement('div');
-  overlay.id = 'ph-ev-modal';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  overlay.innerHTML = `
-    <div class="modal" style="max-width:420px;width:100%">
-      <div class="modal-header">
-        <h2>Add Calendar Event</h2>
-        <button class="modal-close" onclick="document.getElementById('ph-ev-modal').remove()">✕</button>
-      </div>
-      <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
-        <div class="field"><label>Title *</label><input id="ph-ev-title" class="field-input" placeholder="Event title…"></div>
-        <div class="field"><label>Date *</label><input id="ph-ev-date" type="date" class="field-input" value="${today}"></div>
-        <div class="field"><label>Note</label><textarea id="ph-ev-note" class="field-input" rows="2" placeholder="Optional details…" style="resize:vertical"></textarea></div>
-        <div class="field"><label>Posted By</label><input id="ph-ev-by" class="field-input" value="${esc(currentUser?.name || '')}" placeholder="HR"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="document.getElementById('ph-ev-modal').remove()">Cancel</button>
-        <button class="btn btn-primary" onclick="_phSubmitEvent()">Save Event</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  setTimeout(() => document.getElementById('ph-ev-title')?.focus(), 80);
-}
-
-function _phOpenAddEventDate(date) {
-  _phCloseCalPopover();
-  _phOpenAddEvent();
-  setTimeout(() => { const d = document.getElementById('ph-ev-date'); if (d) d.value = date; }, 80);
-}
-
-async function _phSubmitEvent() {
-  const title = (document.getElementById('ph-ev-title')?.value || '').trim();
-  const date  = (document.getElementById('ph-ev-date')?.value  || '').trim();
-  const note  = (document.getElementById('ph-ev-note')?.value  || '').trim();
-  const by    = (document.getElementById('ph-ev-by')?.value    || '').trim() || currentUser?.name || 'HR';
-  if (!title) { toast('Please enter a title.', 'error'); return; }
-  if (!date)  { toast('Please pick a date.', 'error'); return; }
-  const id = 'EV-' + Date.now();
-  try {
-    await gapi.client.sheets.spreadsheets.values.append({
-      spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A:H`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      resource: { values: [[id, title, date, '09:00', '10:00', note, by, 'TRUE']] }
-    });
-    toast('Event added!', 'success');
-    document.getElementById('ph-ev-modal')?.remove();
-    _calEventsCache = null;
-    _phLoadEventsAndRender();
-  } catch (e) { toast('Failed to save event.', 'error'); console.error(e); }
-}
-
-async function _phDeleteEvent(id, rowNum, evt) {
-  evt.stopPropagation();
-  if (!confirm('Remove this event?')) return;
-  try {
-    await gapi.client.sheets.spreadsheets.values.update({
-      spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!H${rowNum}`,
-      valueInputOption: 'RAW',
-      resource: { values: [['FALSE']] }
-    });
-    toast('Event removed.', 'success');
-    _calEventsCache = null;
-    _phLoadEventsAndRender();
-  } catch (e) { toast('Failed to remove event.', 'error'); }
 }
 
 // ============================================================
@@ -923,12 +833,6 @@ function _injectHomeStyles() {
   .hd-ev-title { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hd-ev-note  { font-size: 10.5px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hd-ev-when  { font-size: 10px; font-weight: 700; color: var(--accent); margin-top: 3px; }
-  .hd-ev-del {
-    background: none; border: none; cursor: pointer;
-    color: var(--text3); font-size: 10px; padding: 2px 4px;
-    flex-shrink: 0; opacity: .5; transition: opacity .12s;
-  }
-  .hd-ev-del:hover { opacity: 1; color: var(--danger); }
 
   /* ═══ ROW C: Recent Activity + Celebrants ════════════════ */
   .hd-row-c {
