@@ -289,10 +289,15 @@ async function renderRecruitmentPage(){
 
   _injectRecruitmentStyles();
 
+  let _recSearchDebounce = null;
   document.getElementById('rec-search').addEventListener('input', e=>{
-    recSearchTerm = e.target.value;
-    recPage = 1;
-    _renderApplicantsTable();
+    const val = e.target.value;
+    clearTimeout(_recSearchDebounce);
+    _recSearchDebounce = setTimeout(()=>{
+      recSearchTerm = val;
+      recPage = 1;
+      _renderApplicantsTable();
+    }, 180);
   });
   document.getElementById('rec-status-filter').addEventListener('change', e=>{
     recStatusFilter = e.target.value;
@@ -529,7 +534,7 @@ function _renderApplicantsTable(){
 // FORM / MODAL
 // ============================================================
 function openApplicantModal(id){
-  if(id && !canWrite()){denyWrite();return;}
+  if(!canWrite()){denyWrite();return;}
   editingApplicantId = id||null;
   const a = id ? applicants.find(x=>x.id===id) : null;
   document.getElementById('rec-modal-title').textContent = a ? `Edit — ${a.fullName||a.id}` : 'Add Applicant';
