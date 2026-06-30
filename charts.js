@@ -751,34 +751,6 @@ function getBirthdaysThisWeek(){
   return result.sort((a,b)=>a.daysUntil-b.daysUntil);
 }
 
-function renderBdayList(list){
-  if(!list||!list.length) return`<div class="bday-empty">None at this time.</div>`;
-  return list.slice(0,6).map(({emp,daysUntil})=>{
-    const isToday=daysUntil===0;
-    const bd=new Date(emp.dob);
-    const dateStr=bd.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const timeLabel=isToday?'<span class="bday-today-badge">🎉 Today!</span>':daysUntil===1?'Tomorrow':`in ${daysUntil}d`;
-    const initials=((emp.firstName||emp.fullName||'?')[0]||'?').toUpperCase();
-    return`<div class="bday-item${isToday?' bday-today':''}" onclick="openDetailPanel('${esc(emp.infinixId)}')">
-      <div class="bday-avatar">${isToday?'🎉':initials}</div>
-      <div style="flex:1;min-width:0">
-        <div class="bday-name">${esc(emp.fullName||'')}</div>
-        <div class="bday-date">${esc(dateStr)}${emp.storeAssignment?' · '+esc(emp.storeAssignment):''}</div>
-      </div>
-      <div style="font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0">${timeLabel}</div>
-    </div>`;
-  }).join('');
-}
-
-function switchBdayTab(tab, btn){
-  ['today','week','month'].forEach(t=>{
-    const el=document.getElementById('bday-list-'+t);
-    if(el)el.style.display=t===tab?'':'none';
-  });
-  document.querySelectorAll('.bday-tab-btn').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-}
-
 // Chart global defaults — color is overridden per-render for theme support
 Chart.defaults.font.family = "Inter";
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
