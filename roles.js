@@ -330,15 +330,18 @@ function initRole(){
 async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
-    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!B:F`});
+    // Store Details columns: A=Region B=City C=Responsible RSS D=RSS User ID
+    // E=Mall Name/Location F=Dealer Name G=DCR Name/Store Name H=Shop ID I=Store Type J=Status
+    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!A:J`});
     const rows=r.result.values||[];
     storeCache={};
     for(let i=1;i<rows.length;i++){
-      const rssName  =(rows[i][0]||'').trim();
-      const rssId    =(rows[i][1]||'').trim();
-      const storeName=(rows[i][3]||'').trim();
-      const shopId   =(rows[i][4]||'').trim();
-      if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId};
+      const region   =(rows[i][0]||'').trim();
+      const rssName  =(rows[i][2]||'').trim();
+      const rssId    =(rows[i][3]||'').trim();
+      const storeName=(rows[i][6]||'').trim();
+      const shopId   =(rows[i][7]||'').trim();
+      if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId, region};
     }
     storeCacheLoaded=true;
   }catch(e){console.warn('Store Details load failed:',e);}
