@@ -77,7 +77,7 @@ async function renderCalendarPage() {
         <div class="calpg-side-section">
           <div class="calpg-side-title">
             <span>Upcoming events</span>
-            <button class="hd-card-link" onclick="_calViewNextEvent()">View all</button>
+            <button class="hd-card-link" onclick="_calOpenUpcomingModal()">View all</button>
           </div>
           <div id="calpg-today-list"></div>
         </div>
@@ -161,7 +161,7 @@ async function renderCalendarPage() {
           <button id="calpg-ev-delete-btn" class="btn btn-danger btn-sm hidden" onclick="_calDeleteFromModal()">Delete Event</button>
           <div style="display:flex;gap:8px;margin-left:auto">
             <button class="btn btn-ghost" onclick="_calCloseAddModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="_calSubmitEvent()">Save Event</button>
+            <button class="btn btn-primary" id="calpg-ev-save-btn" onclick="_calSubmitEvent()">Save Event</button>
           </div>
         </div>
       </div>
@@ -255,21 +255,41 @@ function _calViewToday() {
   _calMiniDate = new Date();
   _calRenderMain(); _calRenderMiniCal(); _calRenderTodayList();
 }
-function _calViewNextEvent() {
+function _calOpenUpcomingModal() {
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = `${today.getFullYear()}-${_p2(today.getMonth()+1)}-${_p2(today.getDate())}`;
-  const next = (_calPageEvents||[])
+  const upcoming = (_calPageEvents||[])
     .filter(e => e.date && e.date.slice(0,10) >= todayStr)
-    .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time))[0];
-  if (next) {
-    _calPageDate = new Date(next.date);
-    _calMiniDate = new Date(next.date);
-  } else {
-    _calPageDate = new Date();
-    _calMiniDate = new Date();
-  }
-  _calPageView = 'week';
-  renderCalendarPage();
+    .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+
+  const existing = document.getElementById('calpg-upcoming-modal');
+  if (existing) existing.remove();
+
+  const rows = upcoming.length ? upcoming.map(e => {
+    const d = new Date(e.date);
+    const dateLabel = isNaN(d) ? e.date : d.toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric'});
+    return `<div class="calpg-upcoming-row" onclick="document.getElementById('calpg-upcoming-modal').remove();_calEventClick('${esc(e.id)}')">
+      <span class="calpg-cal-dot" style="background:${e.color||'#00C8AA'}"></span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.title)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${dateLabel} · ${e.time||''}${e.endTime?' – '+e.endTime:''}</div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="calpg-loading" style="padding:30px 0;color:var(--text3);font-size:12px">No upcoming events</div>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'calpg-upcoming-modal';
+  overlay.className = 'overlay';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <h2>Upcoming Events</h2>
+        <button class="modal-close" onclick="document.getElementById('calpg-upcoming-modal').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:8px 12px;max-height:60vh;overflow-y:auto">${rows}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 function _calRenderMain() {
@@ -333,7 +353,7 @@ function _calRenderWeek() {
               const startH = parseInt((e.time||'09:00').split(':')[0]);
               if (startH !== h) return '';
               return `<div class="calpg-evt-block" style="background:${e.color||'#00C8AA'}20;border-left:3px solid ${e.color||'#00C8AA'}"
-                onclick="event.stopPropagation();_calOpenDrawer('${esc(e.id)}')"
+                onclick="event.stopPropagation();_calEventClick('${esc(e.id)}')"
               >
                 <div class="calpg-evt-block-title">${esc(e.title)}</div>
                 <div class="calpg-evt-block-time">${e.time||'09:00'} – ${e.endTime||'10:00'}</div>
@@ -395,7 +415,7 @@ function _calRenderMonth() {
     cells += `<div class="calpg-month-cell ${isCur?'':'other'} ${isToday?'is-today':''}">
       <div class="calpg-month-num ${isToday?'today-circle':''}">${dayNum}</div>
       ${dayEvts.slice(0,2).map(e=>`<div class="calpg-month-evt" style="background:${e.color||'#00C8AA'}25;border-left:2px solid ${e.color||'#00C8AA'}"
-        onclick="event.stopPropagation();_calOpenDrawer('${esc(e.id)}')"
+        onclick="event.stopPropagation();_calEventClick('${esc(e.id)}')"
       >${esc(e.title)}</div>`).join('')}
       ${dayEvts.length>2?`<div class="calpg-month-more">+${dayEvts.length-2} more</div>`:''}
     </div>`;
@@ -434,7 +454,7 @@ function _calRenderDay() {
         <div class="calpg-hour-cell" style="min-height:60px" onclick="_calCellClick('${dateStr}',${h})">
           ${dayEvts.filter(e=>parseInt((e.time||'09').split(':')[0])===h).map(e=>`
             <div class="calpg-evt-block" style="background:${e.color||'#00C8AA'}20;border-left:3px solid ${e.color||'#00C8AA'}"
-              onclick="event.stopPropagation();_calOpenDrawer('${esc(e.id)}')">
+              onclick="event.stopPropagation();_calEventClick('${esc(e.id)}')">
               <div class="calpg-evt-block-title">${esc(e.title)}</div>
               <div class="calpg-evt-block-time">${e.time||'09:00'} – ${e.endTime||'10:00'}</div>
               ${e.note?`<div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:2px">${esc(e.note)}</div>`:''}
@@ -459,7 +479,7 @@ function _calRenderTodayList() {
     const isToday = e.date.slice(0,10) === todayStr;
     const dateLabel = isToday ? 'Today' : new Date(e.date).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
     return `
-    <div class="calpg-today-item" onclick="_calOpenDrawer('${esc(e.id)}')">
+    <div class="calpg-today-item" onclick="_calEventClick('${esc(e.id)}')">
       <span class="calpg-today-dot" style="background:${e.color||'#00C8AA'}"></span>
       <div class="calpg-today-info">
         <div class="calpg-today-title">${esc(e.title)}</div>
@@ -494,7 +514,17 @@ function _calCellClick(dateStr, hour) {
   _calOpenAddModal(dateStr, hour);
 }
 
-// ── Drawer ────────────────────────────────────────────────────
+// ── Event click router: privileged users go straight to the
+//    edit/delete popup; everyone else gets a read-only drawer ──
+function _calEventClick(id) {
+  if (canViewSensitive()) {
+    _calOpenAddModal(null, null, id);
+  } else {
+    _calOpenDrawer(id);
+  }
+}
+
+// ── Drawer (read-only event view, for non-privileged users) ───
 function _calOpenDrawer(id) {
   try {
     const e = (_calPageEvents || []).find(ev => ev.id === id);
@@ -526,11 +556,6 @@ function _calOpenDrawer(id) {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <div style="font-size:11px;color:var(--text3)">Posted by ${esc(e.postedBy||'HR')}</div>
         </div>
-        ${canViewSensitive() && e._row ? `
-        <div style="padding-top:12px;border-top:1px solid var(--border);margin-top:4px;display:flex;gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="_calCloseDrawer();_calOpenAddModal(null,null,'${esc(e.id)}')">Edit Event</button>
-          <button class="btn btn-danger btn-sm" onclick="_calDeleteEvent('${esc(e.id)}',${e._row||0})">Delete Event</button>
-        </div>` : ''}
       </div>`;
     document.getElementById('calpg-drawer-backdrop')?.classList.remove('hidden');
     document.getElementById('calpg-drawer')?.classList.remove('hidden');
@@ -595,7 +620,9 @@ function _calCloseAddModal() {
   _calEditId  = null;
   _calEditRow = null;
 }
+let _calSubmitting   = false;       // guards against duplicate Save clicks
 async function _calSubmitEvent() {
+  if (_calSubmitting) return;
   const title   = (document.getElementById('calpg-ev-title')?.value||'').trim();
   const date    = (document.getElementById('calpg-ev-date')?.value||'').trim();
   const time    = (document.getElementById('calpg-ev-time')?.value||'').trim();
@@ -603,8 +630,11 @@ async function _calSubmitEvent() {
   const note    = (document.getElementById('calpg-ev-note')?.value||'').trim();
   const by      = (document.getElementById('calpg-ev-by')?.value||'').trim() || currentUser?.name || 'HR';
   const msgEl   = document.getElementById('calpg-ev-msg');
+  const saveBtn = document.getElementById('calpg-ev-save-btn');
   if (!title) { toast('Please enter a title.','error'); return; }
   if (!date)  { toast('Please select a date.','error'); return; }
+  _calSubmitting = true;
+  if (saveBtn) saveBtn.disabled = true;
   try {
     if (_calEditId && _calEditRow) {
       // Edit mode: update the existing row in place
@@ -633,6 +663,7 @@ async function _calSubmitEvent() {
     await _calLoadEvents(true);
     _calRenderMain(); _calRenderMiniCal(); _calRenderTodayList();
   } catch(e) { toast('Failed to save event.','error'); console.error(e); }
+  finally { _calSubmitting = false; if (saveBtn) saveBtn.disabled = false; }
 }
 async function _calDeleteFromModal() {
   if (!_calEditId || !_calEditRow) return;
@@ -759,6 +790,13 @@ function _injectCalPageStyles() {
   .calpg-cal-list { display:flex;flex-direction:column;gap:5px; }
   .calpg-cal-item { display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text2); }
   .calpg-cal-dot { width:10px;height:10px;border-radius:3px;flex-shrink:0; }
+  .calpg-upcoming-row {
+    display:flex;align-items:flex-start;gap:10px;
+    padding:10px 6px;cursor:pointer;border-radius:8px;
+    transition:background .12s;
+  }
+  .calpg-upcoming-row:hover { background:rgba(0,200,170,.06); }
+  .calpg-upcoming-row + .calpg-upcoming-row { border-top:1px solid var(--border); }
 
   /* ═══ MAIN AREA ══════════════════════════════════════════════ */
   .calpg-main {
