@@ -178,6 +178,7 @@ async function pushApplicantToActive(applicant){
       spreadsheetId: SHEET_ID, range: `${ACTIVE_SHEET}!A:${SHEET_LAST_COL}`,
       valueInputOption:'RAW', insertDataOption:'INSERT_ROWS', resource:{ values:[objToRow(empData)] }
     });
+    await writeLog(applicant.id, applicant.fullName, 'Deployed', 'Applicant', 'Active Workforce', `Promoted from Recruitment pipeline (${applicant.id})`);
     toast(`${applicant.fullName} pushed to Active Workforce`,'success');
     return true;
   }catch(e){
@@ -231,7 +232,7 @@ async function renderRecruitmentPage(){
           <div class="rec-toolbar">
             <input type="text" id="rec-search" class="rec-search-input" placeholder="Search name, batch, store…" value="${esc(recSearchTerm)}">
             <select id="rec-status-filter" class="rec-filter-select">
-              <option value="">All Statuses</option>
+              <option value="">All Statuses (excl. Deployed)</option>
               <option value="In Progress">In Progress</option>
               <option value="Deployed">Deployed</option>
               <option value="Backout">Backout</option>
@@ -381,6 +382,12 @@ function _filteredApplicants(){
     const s = normalizeFinalStatus(a.status);
     return s!=='DEPLOYED' && s!=='BACKOUT';
   });
+  else {
+    // Default view ("All Statuses"): Deployed applicants already live in Active
+    // Workforce now, so keep them out of the day-to-day pipeline list.
+    // Still reachable by explicitly picking the "Deployed" filter above.
+    list = list.filter(a=>normalizeFinalStatus(a.status)!=='DEPLOYED');
+  }
   return list.sort((a,b)=>String(b.dateAdded).localeCompare(String(a.dateAdded)));
 }
 function _statusBadgeClass(status){
@@ -789,12 +796,16 @@ function _injectRecruitmentStyles(){
   .rec-applist { min-width: 760px; font-size: 12px; }
   .rec-grid-row {
     display: grid;
-    grid-template-columns: 1.8fr 1fr 1.8fr 1fr 1fr 0.9fr 1fr 76px;
+    grid-template-columns: 1.8fr 0.8fr 1.8fr 0.85fr 0.85fr 0.7fr 0.85fr 76px;
     align-items: center;
     column-gap: 12px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--border);
   }
+  .rec-grid-row > div:nth-child(4),
+  .rec-grid-row > div:nth-child(5),
+  .rec-grid-row > div:nth-child(6),
+  .rec-grid-row > div:nth-child(7) { text-align: center; }
   .rec-grid-head { color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; }
   .rec-grid-body { cursor: pointer; }
   .rec-grid-body:hover { background: rgba(0,200,170,.03); }
