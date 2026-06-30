@@ -232,12 +232,13 @@ async function renderRecruitmentPage(){
           <div class="rec-toolbar">
             <input type="text" id="rec-search" class="rec-search-input" placeholder="Search name, batch, store…" value="${esc(recSearchTerm)}">
             <select id="rec-status-filter" class="rec-filter-select">
-              <option value="">All Statuses (excl. Deployed)</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Deployed">Deployed</option>
+              <option value="">All Applicants</option>
+              <option value="Initial Interview">Initial Interview</option>
+              <option value="Final Interview">Final Interview</option>
+              <option value="OBT">OBT</option>
               <option value="Backout">Backout</option>
             </select>
-            <button class="btn-primary" id="rec-add-btn" onclick="openApplicantModal()">+ Add Applicant</button>
+            <button class="rec-add-btn" id="rec-add-btn" onclick="openApplicantModal()">+ Add Applicant</button>
           </div>
         </div>
         <div id="rec-table-wrap" class="rec-table-wrap">${_recTableSkeleton()}</div>
@@ -381,19 +382,24 @@ function _filteredApplicants(){
       String(a.rssName).toLowerCase().includes(q)
     );
   }
-  if(recStatusFilter==='Deployed') list = list.filter(a=>normalizeFinalStatus(a.status)==='DEPLOYED');
-  else if(recStatusFilter==='Backout') list = list.filter(a=>normalizeFinalStatus(a.status)==='BACKOUT');
-  else if(recStatusFilter==='In Progress') list = list.filter(a=>{
-    const s = normalizeFinalStatus(a.status);
-    return s!=='DEPLOYED' && s!=='BACKOUT';
-  });
+  if(recStatusFilter) list = list.filter(a=>_applicantStage(a)===recStatusFilter);
   else {
-    // Default view ("All Statuses"): Deployed applicants already live in Active
-    // Workforce now, so keep them out of the day-to-day pipeline list.
-    // Still reachable by explicitly picking the "Deployed" filter above.
-    list = list.filter(a=>normalizeFinalStatus(a.status)!=='DEPLOYED');
+    // Default view ("All Applicants"): Deployed applicants already live in
+    // Active Workforce now, so keep them out of the day-to-day pipeline list.
+    list = list.filter(a=>_applicantStage(a)!=='Deployed');
   }
   return list.sort((a,b)=>String(b.dateAdded).localeCompare(String(a.dateAdded)));
+}
+function _applicantStage(a){
+  const status = normalizeFinalStatus(a.status);
+  const initR = normalizeFinalStatus(a.initInterviewResult);
+  const finalR = normalizeFinalStatus(a.finalInterviewResult);
+  const obtR = normalizeFinalStatus(a.obtResult);
+  if(status==='DEPLOYED') return 'Deployed';
+  if(status==='BACKOUT' || initR==='BACKOUT' || finalR==='BACKOUT' || obtR==='BACKOUT') return 'Backout';
+  if(a.obtStartDate || a.obtResult) return 'OBT';
+  if(a.finalInterviewDate || a.finalInterviewResult) return 'Final Interview';
+  return 'Initial Interview';
 }
 function _statusBadgeClass(status){
   const s = normalizeFinalStatus(status);
@@ -785,6 +791,14 @@ function _injectRecruitmentStyles(){
   }
   .rec-search-input { width: 200px; }
   .rec-search-input:focus, .rec-filter-select:focus { border-color: var(--accent); }
+
+  .rec-add-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 16px; font-size: 12px; font-weight: 700; letter-spacing: -0.1px;
+    cursor: pointer; transition: filter .15s, transform .15s; white-space: nowrap;
+  }
+  .rec-add-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .rec-add-btn:active { transform: translateY(0); }
 
   .rec-placeholder-body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; gap: 10px; }
   .rec-ph-icon { color: var(--text3); opacity: .5; margin-bottom: 4px; }
