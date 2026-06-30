@@ -731,6 +731,7 @@ function _injectCalPageStyles() {
     overflow: hidden;
   }
   .calpg-loading { display:flex;align-items:center;justify-content:center;height:60vh; }
+  #calpg-ev-form-view.hidden, #calpg-ev-confirm-view.hidden { display:none; }
 
   /* ═══ SIDEBAR ════════════════════════════════════════════════ */
   .calpg-sidebar {
