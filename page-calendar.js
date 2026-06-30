@@ -102,7 +102,7 @@ async function renderCalendarPage() {
         <div class="calpg-side-section">
           <div class="calpg-side-title">
             <span>Time breakdown</span>
-            <button class="hd-card-link">View all</button>
+            <button class="hd-card-link" onclick="_calSetView('month')">View all</button>
           </div>
           <div class="calpg-breakdown" id="calpg-breakdown"></div>
         </div>
