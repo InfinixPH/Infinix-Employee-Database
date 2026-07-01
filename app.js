@@ -496,9 +496,10 @@ async function loadData(){
   showLoading(true,'Loading employees...');
   setOfflineBanner(false);
   try{
-    const [aRes,iRes]=await Promise.all([
+    const [aRes,iRes,logRes]=await Promise.all([
       gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${ACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
-      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`})
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${INACTIVE_SHEET}!A2:${SHEET_LAST_COL}`}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:H`})
     ]);
     employees=[];
     (aRes.result.values||[]).forEach((r,i)=>{
@@ -510,7 +511,8 @@ async function loadData(){
         employees.push({...obj,_sheet:ACTIVE_SHEET,_row:i+2});
     });
     (iRes.result.values||[]).forEach((r,i)=>{const obj=rowToObj(r);if(String(obj.infinixId||'').trim())employees.push({...obj,_sheet:INACTIVE_SHEET,_row:i+2});});
-    logCache=null;selectedIds.clear();
+    logCache=logRes.result.values||[];
+    selectedIds.clear();
     renderSidebar();
     // Let the router decide the view based on the current URL hash
     if(typeof Router !== 'undefined' && window.location.hash && window.location.hash !== '#'){
@@ -677,7 +679,10 @@ async function writeLog(empId,name,action,from,to,detail){
       resource:{values:[[ts(),empId,name,action,from,to,currentUser?.email||'Unknown',(detail||'')]]}
     });
     logCache=null;
-  }catch(e){console.warn('Log write failed:',e);}
+  }catch(e){
+    console.warn('Log write failed:',e);
+    toast('Activity log could not be saved — check connection.','error');
+  }
 }
 
 // Compute a human-readable summary of what changed between old and new employee data
@@ -1214,9 +1219,15 @@ function showView(v){
 }
 
 function renderView(){
-  // Page fade transition
+  // Page fade transition — only animate when switching between views, not re-rendering same view
   const contentEl=document.getElementById('content');
-  if(contentEl){ contentEl.classList.remove('page-fade'); void contentEl.offsetWidth; contentEl.classList.add('page-fade'); }
+  const _lastView = contentEl?.dataset.lastView;
+  if(contentEl){
+    if(_lastView !== currentView){
+      contentEl.classList.remove('page-fade'); void contentEl.offsetWidth; contentEl.classList.add('page-fade');
+    }
+    contentEl.dataset.lastView = currentView;
+  }
 
   // Search visible on table/people views only — smooth fade
   const sw=document.getElementById('topbar-search-wrap');
@@ -2149,12 +2160,13 @@ async function renderLog(){
       </div>`;
       return;
     }
-    const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated'};
+    const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated',Deployed:'log-added'};
     const svgMap={
       Added:`<i class="fi fi-sr-plus"></i>`,
       'Status Changed / Moved':`<i class="fi fi-sr-rotate-right"></i>`,
       Deleted:`<i class="fi fi-sr-trash"></i>`,
-      Updated:`<i class="fi fi-sr-edit"></i>`
+      Updated:`<i class="fi fi-sr-edit"></i>`,
+      Deployed:`<i class="fi fi-sr-rocket"></i>`
     };
     el.innerHTML=rows.map(r=>{
       const action=r[3]||'';
