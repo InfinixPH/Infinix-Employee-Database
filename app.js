@@ -1393,7 +1393,6 @@ function _renderArchiveList(){
     });
 
     const statusInfo = ARCHIVE_STATUSES.find(s => s.key === _archiveActiveStatus) || {};
-    const _canWrite = canWrite();
     wrap.innerHTML = `
       <div class="table-wrap">
         <div class="table-head">
@@ -1884,6 +1883,35 @@ function closeDetailPanel(){
   if(backdrop)backdrop.classList.remove('open');
   document.body.classList.remove('panel-open');
   detailEmpId=null;
+}
+
+// ============================================================
+// RECENT ACTIVITY ROUTING (Home page)
+// Recent Activity entries can be employees (Infinix ID) or
+// applicants (APP-xxxx) now that both write to the same Log
+// sheet. Route each click to the right panel/modal.
+// ============================================================
+function openRecentActivityItem(id){
+  const strId=String(id||'');
+  if(!strId)return;
+  if(strId.startsWith('APP-')){
+    Router.go('recruitment');
+    _openApplicantAfterLoad(strId,0);
+  } else {
+    openDetailPanel(strId);
+  }
+}
+function _openApplicantAfterLoad(id,attempts){
+  if(typeof applicantsLoaded!=='undefined' && applicantsLoaded){
+    if(typeof applicants!=='undefined' && applicants.some(a=>a.id===id)){
+      openApplicantModal(id);
+    } else {
+      toast('Applicant not found — it may have been deleted.','error');
+    }
+    return;
+  }
+  if(attempts>=40){toast('Could not load applicant details.','error');return;}
+  setTimeout(()=>_openApplicantAfterLoad(id,attempts+1),150);
 }
 
 // ============================================================
