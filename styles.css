@@ -1012,7 +1012,20 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
 .td-check { width: 36px; padding: 10px 8px 10px 14px !important; }
 .td-check input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--moss-green); cursor: pointer; }
 .td-actions-col { white-space: nowrap; }
-.td-actions-cell { display: flex; gap: 4px; align-items: center; overflow: visible !important; }
+.td-actions-cell { display: flex; gap: 4px; align-items: center; overflow: visible !important; min-width: 80px; }
+.td-actions-cell .btn-tbl-edit,
+.td-actions-cell .btn-tbl-delete {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity .15s ease, transform .15s ease;
+  pointer-events: none;
+}
+tr:hover .td-actions-cell .btn-tbl-edit,
+tr:hover .td-actions-cell .btn-tbl-delete {
+  opacity: 1; transform: translateX(0); pointer-events: auto;
+}
+body.role-viewer tr:hover .td-actions-cell .btn-tbl-edit,
+body.role-viewer tr:hover .td-actions-cell .btn-tbl-delete { opacity: 0.35; }
 table td, table th { overflow: hidden; text-overflow: ellipsis; }
 table td.td-check, table th.td-check { overflow: visible; }
 table td.td-actions-cell { overflow: visible; }
@@ -1405,6 +1418,14 @@ table td.col-fullName, table th.col-fullName { overflow: visible; }
   transform: translateY(80px); opacity: 0;
   transition: all .28s cubic-bezier(.4,0,.2,1); max-width: 340px;
   font-family: 'Inter', sans-serif;
+}
+@media (max-width: 600px) {
+  .toast {
+    right: 50%; bottom: 20px;
+    transform: translate(50%, 80px);
+    max-width: calc(100vw - 32px);
+  }
+  .toast.show { transform: translate(50%, 0); }
 }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { border-color: rgba(122,184,148,0.4); color: var(--success); }
