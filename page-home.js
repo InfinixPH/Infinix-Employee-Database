@@ -489,7 +489,7 @@ function _injectHomeStyles() {
   .hd-hero {
     position: relative;
     width: 100%;
-    min-height: 190px;
+    min-height: 260px;
     background:
       radial-gradient(circle at 20% 0%, rgba(0,200,170,.10), transparent 55%),
       radial-gradient(circle at 80% 100%, rgba(0,200,170,.06), transparent 55%),
@@ -500,19 +500,8 @@ function _injectHomeStyles() {
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-    padding: 32px 24px 28px;
+    padding: 48px 24px 40px;
     border-bottom: 1px solid var(--border2);
-  }
-
-  /* Shrink further on short viewports so KPI cards stay above the fold */
-  @media (max-height: 800px) {
-    .hd-hero { min-height: 140px; padding: 22px 24px 18px; }
-    .hd-hero-btns { margin-top: 0; }
-  }
-  @media (max-height: 650px) {
-    .hd-hero { min-height: 110px; padding: 16px 24px 14px; }
-    .hd-hero-sub { display: none; }
-    .hd-hero-title { font-size: clamp(18px, 3.5vw, 34px); }
   }
 
   [data-theme="light"] .hd-hero {
