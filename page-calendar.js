@@ -5,6 +5,16 @@
 // ============================================================
 'use strict';
 
+// ── Event types / color coding ──────────────────────────────────
+const CAL_EVENT_TYPES = {
+  general:    { label: 'HR Event',   color: '#00C8AA' },
+  meeting:    { label: 'Meeting',    color: '#4CAF50' },
+  deployment: { label: 'Deployment', color: '#378ADD' },
+  training:   { label: 'Training',   color: '#9C27B0' },
+  birthday:   { label: 'Birthday',   color: '#FF9800' },
+};
+function _calTypeColor(type){ return (CAL_EVENT_TYPES[type]||CAL_EVENT_TYPES.general).color; }
+
 // ── State ─────────────────────────────────────────────────────
 let _calPageDate    = new Date();   // current week anchor
 let _calPageView    = 'week';       // 'week' | 'month' | 'day'
@@ -22,7 +32,7 @@ async function _calLoadEvents(force) {
   try {
     const r = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${EVENTS_SHEET}!A2:H`
+      range: `${EVENTS_SHEET}!A2:I`
     });
     const rows = r.result.values || [];
     _calPageEvents = rows
@@ -31,7 +41,8 @@ async function _calLoadEvents(force) {
         time: r[3]||'', endTime: r[4]||'',
         note:r[5]||'', postedBy:r[6]||'',
         active: String(r[7]||'TRUE').trim().toUpperCase(),
-        color: '#00C8AA',
+        type: r[8]||'general',
+        color: _calTypeColor(r[8]||'general'),
         _row: i + 2, // true sheet row, computed BEFORE any filtering
       }))
       .filter(e => e.active !== 'FALSE')
@@ -97,9 +108,7 @@ async function renderCalendarPage() {
             <span class="calpg-chevron">▾</span>
           </div>
           <div class="calpg-cal-list">
-            <div class="calpg-cal-item"><span class="calpg-cal-dot" style="background:#00C8AA"></span> HR Events</div>
-            <div class="calpg-cal-item"><span class="calpg-cal-dot" style="background:#FF9800"></span> Birthdays</div>
-            <div class="calpg-cal-item"><span class="calpg-cal-dot" style="background:#378ADD"></span> Deployments</div>
+            ${Object.values(CAL_EVENT_TYPES).map(t=>`<div class="calpg-cal-item"><span class="calpg-cal-dot" style="background:${t.color}"></span> ${esc(t.label)}</div>`).join('')}
           </div>
         </div>
 
@@ -151,6 +160,11 @@ async function renderCalendarPage() {
           </div>
           <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
             <div class="field"><label>Title *</label><input id="calpg-ev-title" class="field-input" placeholder="Event title…"></div>
+            <div class="field"><label>Type</label>
+              <select id="calpg-ev-type" class="field-input">
+                ${Object.entries(CAL_EVENT_TYPES).map(([k,t])=>`<option value="${esc(k)}">${esc(t.label)}</option>`).join('')}
+              </select>
+            </div>
             <div class="field"><label>Date *</label><input id="calpg-ev-date" type="date" class="field-input"></div>
             <div style="display:flex;gap:10px">
               <div class="field" style="flex:1"><label>Start Time</label><input id="calpg-ev-time" type="time" class="field-input" value="09:00"></div>
@@ -607,6 +621,7 @@ function _calOpenAddModal(dateStr, hour, editEventId) {
     if (titleEl) titleEl.textContent = 'Edit Calendar Event';
     if (delBtn)  delBtn.classList.remove('hidden');
     document.getElementById('calpg-ev-title').value    = editEvent.title || '';
+    document.getElementById('calpg-ev-type').value     = editEvent.type || 'general';
     document.getElementById('calpg-ev-date').value     = editEvent.date || '';
     document.getElementById('calpg-ev-time').value     = editEvent.time || '09:00';
     document.getElementById('calpg-ev-endtime').value  = editEvent.endTime || '10:00';
@@ -618,6 +633,7 @@ function _calOpenAddModal(dateStr, hour, editEventId) {
     if (titleEl) titleEl.textContent = 'Add Calendar Event';
     if (delBtn)  delBtn.classList.add('hidden');
     document.getElementById('calpg-ev-title').value = '';
+    document.getElementById('calpg-ev-type').value  = 'general';
     document.getElementById('calpg-ev-note').value   = '';
     document.getElementById('calpg-ev-by').value     = '';
     if (dateStr) { const el = document.getElementById('calpg-ev-date'); if(el) el.value = dateStr; }
@@ -646,6 +662,7 @@ let _calSubmitting   = false;       // guards against duplicate Save clicks
 async function _calSubmitEvent() {
   if (_calSubmitting) return;
   const title   = (document.getElementById('calpg-ev-title')?.value||'').trim();
+  const type    = (document.getElementById('calpg-ev-type')?.value||'general').trim();
   const date    = (document.getElementById('calpg-ev-date')?.value||'').trim();
   const time    = (document.getElementById('calpg-ev-time')?.value||'').trim();
   const endTime = (document.getElementById('calpg-ev-endtime')?.value||'').trim();
@@ -662,9 +679,9 @@ async function _calSubmitEvent() {
       // Edit mode: update the existing row in place
       await gapi.client.sheets.spreadsheets.values.update({
         spreadsheetId: SHEET_ID,
-        range: `${EVENTS_SHEET}!A${_calEditRow}:H${_calEditRow}`,
+        range: `${EVENTS_SHEET}!A${_calEditRow}:I${_calEditRow}`,
         valueInputOption: 'RAW',
-        resource: { values: [[_calEditId, title, date, time, endTime, note, by, 'TRUE']] }
+        resource: { values: [[_calEditId, title, date, time, endTime, note, by, 'TRUE', type]] }
       });
       if (msgEl) msgEl.textContent = '✓ Updated!';
       toast('Event updated!','success');
@@ -672,10 +689,10 @@ async function _calSubmitEvent() {
       const id = 'EVT-' + Date.now();
       await gapi.client.sheets.spreadsheets.values.append({
         spreadsheetId: SHEET_ID,
-        range: `${EVENTS_SHEET}!A:H`,
+        range: `${EVENTS_SHEET}!A:I`,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
-        resource: { values: [[id, title, date, time, endTime, note, by, 'TRUE']] }
+        resource: { values: [[id, title, date, time, endTime, note, by, 'TRUE', type]] }
       });
       if (msgEl) msgEl.textContent = '✓ Saved!';
       toast('Event added!','success');
