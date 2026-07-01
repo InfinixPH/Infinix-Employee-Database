@@ -26,15 +26,36 @@ async function renderHome() {
     return;
   }
 
-  // Always fetch fresh log so Recent Activity reflects latest changes
+  // Render the page immediately with whatever logCache we have,
+  // then silently refresh the log and patch just the Recent Activity list.
+  _renderHomeContent();
+
   try {
     const r = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
     });
     logCache = r.result.values || [];
-  } catch(e) { /* non-fatal — Recent Activity will show cached or empty */ }
+  } catch(e) { /* non-fatal */ }
 
-  const s            = getStats();
+  // Patch Recent Activity in-place without re-rendering the whole page
+  const recentEl = document.querySelector('.hd-recent-list');
+  if (recentEl) {
+    const recentItems = _buildRecentList(6);
+    recentEl.innerHTML = recentItems.length
+      ? recentItems.map(r => `
+          <div class="hd-recent-item" onclick="openDetailPanel('${esc(r.id)}')" title="View profile">
+            ${Components.avatar(r.name, 30)}
+            <div class="hd-recent-body">
+              <div class="hd-recent-name">${esc(r.name)}</div>
+              <div class="hd-recent-action">${esc(r.action)}</div>
+            </div>
+            <div class="hd-recent-time">${esc(r.time)}</div>
+          </div>`).join('')
+      : `<div class="hd-empty-state">No recent activity</div>`;
+  }
+}
+
+function _renderHomeContent() {
   const total        = employees.length;
   const active       = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
                                              normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
