@@ -17,6 +17,7 @@ let recSortCol = null;
 let recSortDir = 1;
 let recPage = 1;
 let recPageSize = 10;
+let _recSubmitting = false;
 
 const APPLICANT_POSITIONS = ['Promoter','RSS'];
 const INTERVIEW_RESULTS = ['','PASSED','FAILED','BACKOUT'];
@@ -107,6 +108,7 @@ function nextApplicantId(){
 }
 async function saveApplicant(data){
   if(!canWrite()){denyWrite();return false;}
+  let oldStatus = '—';
   try{
     showLoading(true,'Saving applicant…');
     if(editingApplicantId){
@@ -114,6 +116,7 @@ async function saveApplicant(data){
       await loadApplicants(true);
       const existing = applicants.find(a=>a.id===editingApplicantId);
       if(!existing) throw new Error('Applicant no longer exists in the sheet — it may have been deleted or edited elsewhere.');
+      oldStatus = existing.status || '—';
       data.id = existing.id;
       data.dateAdded = existing.dateAdded;
       await gapi.client.sheets.spreadsheets.values.update({
@@ -127,6 +130,8 @@ async function saveApplicant(data){
         valueInputOption:'RAW', insertDataOption:'INSERT_ROWS', resource:{ values:[applicantObjToRow(data)] }
       });
     }
+    await writeLog(data.id, data.fullName||`${data.firstName||''} ${data.lastName||''}`.trim(),
+      editingApplicantId?'Updated':'Added', editingApplicantId?oldStatus:'—', data.status||'In Progress');
     // Auto-push to Active employee sheet when marked Deployed
     let pushFailed = false;
     if(normalizeFinalStatus(data.status)==='DEPLOYED'){
@@ -198,7 +203,17 @@ async function deleteApplicant(id){
   if(!canDeleteRecords()){toast('You need HR/AGENCY or Owner access to delete records.','error');return;}
   const app = applicants.find(a=>a.id===id);
   if(!app) return;
-  if(!confirm(`Delete applicant "${app.fullName||id}"? This cannot be undone.`)) return;
+  document.getElementById('confirm-icon').innerHTML='<i class="fi fi-sr-trash"></i>';
+  document.getElementById('confirm-icon').className='confirm-icon danger';
+  document.getElementById('confirm-title').textContent='Delete Applicant?';
+  document.getElementById('confirm-msg').innerHTML=`This will permanently delete <strong style="color:var(--danger)">${esc(app.fullName||id)}</strong> (${esc(id)}). This cannot be undone.`;
+  document.getElementById('confirm-ok').textContent='Delete';
+  _setupTypeToConfirm(null, ()=>{closeConfirm();_doDeleteApplicant(id);});
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+async function _doDeleteApplicant(id){
+  const app = applicants.find(a=>a.id===id);
+  if(!app) return;
   try{
     showLoading(true,'Deleting…');
     const sheetMeta = await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
@@ -209,6 +224,7 @@ async function deleteApplicant(id){
         resource:{ requests:[{ deleteDimension:{ range:{ sheetId:sheetObj.properties.sheetId, dimension:'ROWS', startIndex:app._row-1, endIndex:app._row } } }] }
       });
     }
+    await writeLog(app.id, app.fullName||app.id, 'Deleted', app.status||'—', '—');
     await loadApplicants(true);
     renderRecruitmentPage();
     toast('Applicant deleted','success');
@@ -552,7 +568,7 @@ function _renderApplicantsTable(){
             <div>${esc(a.batchNo)}${a.waveNo?'-'+esc(a.waveNo):''}</div>
             <div>
               <div class="rec-cell-name" title="${esc(a.storeAssignment)}">${esc(a.storeAssignment)||'—'}</div>
-              <div class="rec-cell-sub">${esc(a.storeId)||''}</div>
+              <div class="rec-cell-sub">${esc(a.storeId)||''}${copyIdBtn(a.storeId,'Store ID')}</div>
             </div>
             <div>${_resultBadge(a.initInterviewResult)}</div>
             <div>${_resultBadge(a.finalInterviewResult)}</div>
@@ -579,10 +595,11 @@ function openApplicantModal(id){
   if(!canWrite()){denyWrite();return;}
   editingApplicantId = id||null;
   const a = id ? applicants.find(x=>x.id===id) : null;
-  document.getElementById('rec-modal-title').textContent = a ? `Edit — ${a.fullName||a.id}` : 'Add Applicant';
+  document.getElementById('rec-modal-title').innerHTML = a ? `Edit — ${esc(a.fullName||a.id)} <span style="font-weight:400;color:var(--text3);font-size:12px">${esc(a.id)}${copyIdBtn(a.id,'Applicant ID')}</span>` : 'Add Applicant';
   document.getElementById('rec-modal-save-btn').textContent = a ? 'Update Applicant' : 'Save Applicant';
   document.getElementById('rec-modal-body').innerHTML = _applicantFormHTML(a);
   document.getElementById('rec-modal-overlay').classList.add('open');
+  if(a) loadApplicantAudit(a.id);
 
   const storeIdEl = document.getElementById('raf_storeId');
   if(storeIdEl) storeIdEl.addEventListener('input', _onApplicantStoreIdInput);
@@ -727,6 +744,7 @@ function _applicantFormHTML(a){
         <button type="button" class="rec-tab" data-tab="final">Final Interview${(a.finalInterviewDate||a.finalInterviewResult)?' <span class=\"rec-tab-dot\"></span>':''}</button>
         <button type="button" class="rec-tab" data-tab="obt">OBT${(a.obtStartDate||a.obtResult)?' <span class=\"rec-tab-dot\"></span>':''}</button>
         <button type="button" class="rec-tab" data-tab="deploy">Deployment &amp; Uniform${(a.deploymentDate||a.status)?' <span class=\"rec-tab-dot\"></span>':''}</button>
+        ${a.id?`<button type="button" class="rec-tab" data-tab="audit">Audit</button>`:''}
       </div>
 
       <div class="rec-tab-panel" data-panel="init">
@@ -768,8 +786,38 @@ function _applicantFormHTML(a){
         </div>
       </div>
 
+      ${a.id?`
+      <div class="rec-tab-panel" data-panel="audit">
+        <div class="dp-log-list" id="raf-audit-inner">
+          <div style="font-size:12px;color:var(--text3);padding:8px 0">Loading…</div>
+        </div>
+      </div>`:''}
+
     </div>
   `;
+}
+async function loadApplicantAudit(applicantId){
+  try{
+    if(!logCache){const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:H`});logCache=r.result.values||[];}
+    const entries=[...logCache].filter(r=>String(r[1]||'').trim()===String(applicantId).trim()).reverse();
+    const el=document.getElementById('raf-audit-inner');if(!el)return;
+    if(!entries.length){el.innerHTML=`<div class="audit-empty">No activity recorded yet</div>`;return;}
+    const dotClass={Added:'added',Updated:'changed',Deleted:'deleted',Deployed:'added'};
+    el.innerHTML=entries.map(r=>{
+      const action=r[3]||'Updated';
+      const from=r[4]||''; const to=r[5]||'';
+      const detail=r[7]||'';
+      return`<div class="dp-log-item">
+        <div class="dp-log-dot ${dotClass[action]||''}"></div>
+        <div class="dp-log-meta">
+          <div class="dp-log-action">${esc(action)}${from&&from!=='—'?` <span style="color:var(--text3);font-weight:400">${esc(from)} → </span><b>${esc(to)}</b>`:''}</div>
+          ${detail?`<div class="dp-log-detail">${esc(detail)}</div>`:''}
+          <div class="dp-log-detail">${esc(r[0]||'')} · ${esc(r[6]||'')}</div>
+        </div>
+        <div class="dp-log-time">${esc(r[0]?r[0].split(' ')[0]:'')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){const el=document.getElementById('raf-audit-inner');if(el)el.innerHTML=`<div class="audit-empty">Could not load audit trail</div>`;}
 }
 function _defaultApplicantTab(a){
   a = a||{};
@@ -788,6 +836,7 @@ function _switchApplicantTab(tab){
 }
 async function submitApplicantForm(){
   if(!canWrite()){denyWrite();return;}
+  if(_recSubmitting) return;
   const g = id => document.getElementById(id)?.value?.trim() || '';
 
   // Clear previous error states
@@ -845,12 +894,23 @@ async function submitApplicantForm(){
     uniformSize: g('raf_uniformSize'), uniformDeliveredDate: g('raf_uniformDeliveredDate')
   };
 
-  const ok = await saveApplicant(data);
+  const ok = await _recDoSubmit(data);
   if(ok){
     closeApplicantModal();
     _renderApplicantsTable();
     _renderKpis();
     _renderPipeline();
+  }
+}
+async function _recDoSubmit(data){
+  const saveBtn = document.getElementById('rec-modal-save-btn');
+  _recSubmitting = true;
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+  try{
+    return await saveApplicant(data);
+  } finally {
+    _recSubmitting = false;
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = editingApplicantId ? 'Update Applicant' : 'Save Applicant'; }
   }
 }
 
