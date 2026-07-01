@@ -26,57 +26,27 @@ async function renderHome() {
     return;
   }
 
-  // Render the page immediately with whatever logCache we have,
-  // then silently refresh the log and patch just the Recent Activity list.
-  _renderHomeContent();
+  // Show page instantly with cached log, then patch Recent Activity after fresh fetch
+  const _doRender = () => {
+    const total        = employees.length;
+    const active       = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
+                                               normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
+    const deployed     = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'DEPLOYED').length;
+    const missingReqs  = employees.filter(e => !requirementsComplete(e)).length;
+    const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
+    const notDeployed  = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
+      normalizeDeployStatus(e.deploymentStatus) !== 'DEPLOYED').length;
 
-  try {
-    const r = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
-    });
-    logCache = r.result.values || [];
-  } catch(e) { /* non-fatal */ }
+    const hour     = new Date().getHours();
+    const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
+    const userName = currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0] || 'there';
 
-  // Patch Recent Activity in-place without re-rendering the whole page
-  const recentEl = document.querySelector('.hd-recent-list');
-  if (recentEl) {
     const recentItems = _buildRecentList(6);
-    recentEl.innerHTML = recentItems.length
-      ? recentItems.map(r => `
-          <div class="hd-recent-item" onclick="openDetailPanel('${esc(r.id)}')" title="View profile">
-            ${Components.avatar(r.name, 30)}
-            <div class="hd-recent-body">
-              <div class="hd-recent-name">${esc(r.name)}</div>
-              <div class="hd-recent-action">${esc(r.action)}</div>
-            </div>
-            <div class="hd-recent-time">${esc(r.time)}</div>
-          </div>`).join('')
-      : `<div class="hd-empty-state">No recent activity</div>`;
-  }
-}
+    const bdayToday   = typeof getBirthdaysToday === 'function' ? getBirthdaysToday() : [];
+    const bdayMonth   = typeof getBirthdaysThisMonth === 'function' ? getBirthdaysThisMonth() : [];
 
-function _renderHomeContent() {
-  const total        = employees.length;
-  const active       = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
-                                             normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
-  const deployed     = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'DEPLOYED').length;
-  const missingReqs  = employees.filter(e => !requirementsComplete(e)).length;
-  const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
-  const notDeployed  = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
-    normalizeDeployStatus(e.deploymentStatus) !== 'DEPLOYED').length;
-
-  const hour     = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
-  const userName = currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0] || 'there';
-
-  const recentItems = _buildRecentList(6);
-  const bdayToday   = typeof getBirthdaysToday === 'function' ? getBirthdaysToday() : [];
-  const bdayMonth   = typeof getBirthdaysThisMonth === 'function' ? getBirthdaysThisMonth() : [];
-
-  // Clean up any popover/backdrop left detached in <body> from a previous
-  // render of this page (they get reparented to <body> when opened).
-  document.getElementById('hd-cal-popover')?.remove();
-  document.getElementById('hd-cal-popover-backdrop')?.remove();
+    document.getElementById('hd-cal-popover')?.remove();
+    document.getElementById('hd-cal-popover-backdrop')?.remove();
 
   document.getElementById('content').innerHTML = `
     <div class="hd-wrap">
@@ -262,6 +232,33 @@ function _renderHomeContent() {
   _injectHomeStyles();
   _phCalRender();
   _phLoadEventsAndRender();
+  }; // end _doRender
+
+  // Paint the page immediately (no blink)
+  _doRender();
+
+  // Then fetch fresh log in the background and patch only Recent Activity
+  try {
+    const r = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
+    });
+    logCache = r.result.values || [];
+    const recentEl = document.querySelector('.hd-recent-list');
+    if (recentEl) {
+      const items = _buildRecentList(6);
+      recentEl.innerHTML = items.length
+        ? items.map(r => `
+            <div class="hd-recent-item" onclick="openDetailPanel('${esc(r.id)}')" title="View profile">
+              ${Components.avatar(r.name, 30)}
+              <div class="hd-recent-body">
+                <div class="hd-recent-name">${esc(r.name)}</div>
+                <div class="hd-recent-action">${esc(r.action)}</div>
+              </div>
+              <div class="hd-recent-time">${esc(r.time)}</div>
+            </div>`).join('')
+        : `<div class="hd-empty-state">No recent activity</div>`;
+    }
+  } catch(e) { /* non-fatal */ }
 }
 
 // ============================================================
