@@ -110,7 +110,11 @@ function _injectPhase3Charts() {
     .sort((a, b) => a.date - b.date);
 
   const earliestLogDate = sortedLog.length ? sortedLog[0].date : null;
-  const currentTotal = employees.length;
+  // Anchor to the same "Active" population the funnel above reports (status
+  // Active, not Backout) — NOT the full raw roster, which also includes
+  // Resigned/AWOL/Terminated/Floating/Backout records and made this chart
+  // show a different, larger number (e.g. 366) than "Total Active" (233).
+  const currentTotal = activeEmployees.length;
 
   for (let i = _headcountRangeMonths - 1; i >= 0; i--) {
     const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -245,6 +249,15 @@ function _injectPhase3Charts() {
         const grad = gradCtx.createLinearGradient(0, 0, 0, 200);
         grad.addColorStop(0, isDark ? 'rgba(0,200,170,0.25)' : 'rgba(0,138,133,0.18)');
         grad.addColorStop(1, 'rgba(0,200,170,0)');
+
+        // Give the axis honest breathing room — with tiny month-to-month
+        // deltas (e.g. 366 -> 365), a tight auto-scaled axis makes a 1-person
+        // change look like a cliff. Pad relative to the actual headcount size.
+        const validCounts = monthCounts.filter(c => c != null);
+        const dataMin = validCounts.length ? Math.min(...validCounts) : 0;
+        const dataMax = validCounts.length ? Math.max(...validCounts) : 0;
+        const pad = Math.max(3, Math.ceil(dataMax * 0.03));
+
         _charts.headcount = new Chart(ctxH, {
           type: 'line',
           data: {
@@ -285,6 +298,8 @@ function _injectPhase3Charts() {
               },
               y: {
                 beginAtZero: false,
+                suggestedMin: Math.max(0, dataMin - pad),
+                suggestedMax: dataMax + pad,
                 grid: { color: gridColor },
                 border: { display: false },
                 ticks: { font: { size: 10, weight: '600' }, color: tickColor, precision: 0 }
