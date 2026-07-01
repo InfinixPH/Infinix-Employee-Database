@@ -12,6 +12,9 @@ let applicantsLoaded = false;
 let editingApplicantId = null;
 let recSearchTerm = '';
 let recStatusFilter = '';
+let recPipelineStageFilter = null;
+let recSortCol = null;
+let recSortDir = 1;
 let recPage = 1;
 let recPageSize = 10;
 
@@ -301,8 +304,10 @@ async function renderRecruitmentPage(){
   });
   document.getElementById('rec-status-filter').addEventListener('change', e=>{
     recStatusFilter = e.target.value;
+    recPipelineStageFilter = null;
     recPage = 1;
     _renderApplicantsTable();
+    _renderPipeline();
   });
 
   if(!storeCacheLoaded) loadStoreDetails();
@@ -361,19 +366,29 @@ function _renderKpis(){
     </div>`).join('');
 }
 
+const PIPELINE_STAGES = [
+  {key:'Screening',       name:'Screening',       predicate:a=>!a.initInterviewDate},
+  {key:'Interview',       name:'Interview',       predicate:a=>a.initInterviewDate && !a.finalInterviewDate},
+  {key:'JobOffer',        name:'Job Offer',       predicate:a=>normalizeFinalStatus(a.finalInterviewResult)==='PASSED' && !a.obtStartDate},
+  {key:'PreEmployment',   name:'Pre-Employment',  predicate:a=>a.obtStartDate && normalizeFinalStatus(a.completeRequirements)!=='YES'},
+  {key:'Onboarding',      name:'Onboarding',      predicate:a=>normalizeFinalStatus(a.status)==='DEPLOYED'}
+];
 function _renderPipeline(){
-  const stages = [
-    {name:'Screening', count: applicants.filter(a=>!a.initInterviewDate).length},
-    {name:'Interview', count: applicants.filter(a=>a.initInterviewDate && !a.finalInterviewDate).length},
-    {name:'Job Offer', count: applicants.filter(a=>normalizeFinalStatus(a.finalInterviewResult)==='PASSED' && !a.obtStartDate).length},
-    {name:'Pre-Employment', count: applicants.filter(a=>a.obtStartDate && normalizeFinalStatus(a.completeRequirements)!=='YES').length},
-    {name:'Onboarding', count: applicants.filter(a=>normalizeFinalStatus(a.status)==='DEPLOYED').length}
-  ];
+  const stages = PIPELINE_STAGES.map(s=>({...s, count: applicants.filter(s.predicate).length}));
   document.getElementById('rec-pipeline').innerHTML = stages.map((s,i)=>`
-    <div class="rec-pipeline-stage">
+    <div class="rec-pipeline-stage ${recPipelineStageFilter===s.key?'active':''}" onclick="_recFilterByStage('${s.key}')" title="Click to filter Applicants by this stage">
       <div class="rec-stage-header"><div class="rec-stage-num">${String(i+1).padStart(2,'0')}</div><div class="rec-stage-name">${s.name}</div></div>
       <div class="rec-stage-count">${s.count}</div>
     </div>`).join('');
+}
+function _recFilterByStage(key){
+  recPipelineStageFilter = (recPipelineStageFilter===key) ? null : key;
+  recStatusFilter = '';
+  const sel = document.getElementById('rec-status-filter');
+  if(sel) sel.value = '';
+  recPage = 1;
+  _renderApplicantsTable();
+  _renderPipeline();
 }
 
 // ============================================================
@@ -392,11 +407,28 @@ function _filteredApplicants(){
       String(a.rssName).toLowerCase().includes(q)
     );
   }
-  if(recStatusFilter) list = list.filter(a=>_applicantStage(a)===recStatusFilter);
-  else {
+  if(recPipelineStageFilter){
+    const stage = PIPELINE_STAGES.find(s=>s.key===recPipelineStageFilter);
+    if(stage) list = list.filter(stage.predicate);
+  } else if(recStatusFilter){
+    list = list.filter(a=>_applicantStage(a)===recStatusFilter);
+  } else {
     // Default view ("All Applicants"): Deployed applicants already live in
     // Active Workforce now, so keep them out of the day-to-day pipeline list.
     list = list.filter(a=>_applicantStage(a)!=='Deployed');
+  }
+  if(recSortCol){
+    const col = recSortCol;
+    list.sort((a,b)=>{
+      let av, bv;
+      if(col==='name'){ av=String(a.fullName||''); bv=String(b.fullName||''); }
+      else if(col==='batch'){ av=String(a.batchNo||'')+String(a.waveNo||''); bv=String(b.batchNo||'')+String(b.waveNo||''); }
+      else if(col==='store'){ av=String(a.storeAssignment||''); bv=String(b.storeAssignment||''); }
+      else if(col==='status'){ av=String(a.status||_applicantStage(a)); bv=String(b.status||_applicantStage(b)); }
+      else { av=String(a[col]||''); bv=String(b[col]||''); }
+      return av.localeCompare(bv, undefined, {numeric:true, sensitivity:'base'}) * recSortDir;
+    });
+    return list;
   }
   return list.sort((a,b)=>String(b.dateAdded).localeCompare(String(a.dateAdded)));
 }
@@ -425,17 +457,27 @@ function _resultBadge(result){
   if(r==='BACKOUT') return '<span class="rec-result rec-result-backout">BACKOUT</span>';
   return esc(result);
 }
+function _sortArrow(col){
+  if(recSortCol!==col) return '';
+  return recSortDir===1 ? ' ▲' : ' ▼';
+}
 function _applicantsHeaderRow(){
   return `<div class="rec-grid-row rec-grid-head">
-    <div>Applicant</div>
-    <div>Batch / Wave</div>
-    <div>Store</div>
+    <div class="rec-sortable" onclick="_recSort('name')">Applicant${_sortArrow('name')}</div>
+    <div class="rec-sortable" onclick="_recSort('batch')">Batch / Wave${_sortArrow('batch')}</div>
+    <div class="rec-sortable" onclick="_recSort('store')">Store${_sortArrow('store')}</div>
     <div>Initial Int.</div>
     <div>Final Int.</div>
     <div>OBT</div>
-    <div>Status</div>
+    <div class="rec-sortable" onclick="_recSort('status')">Status${_sortArrow('status')}</div>
     <div></div>
   </div>`;
+}
+function _recSort(col){
+  if(recSortCol===col) recSortDir = -recSortDir;
+  else { recSortCol = col; recSortDir = 1; }
+  recPage = 1;
+  _renderApplicantsTable();
 }
 function _renderApplicantsPagination(total,totalPages){
   const pg = document.getElementById('rec-pagination');
@@ -868,7 +910,9 @@ function _injectRecruitmentStyles(){
   .rec-ph-sub { font-size: 12px; color: var(--text3); line-height: 1.6; max-width: 280px; }
 
   .rec-pipeline-placeholder { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
-  .rec-pipeline-stage { background: var(--bg-frosted); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .rec-pipeline-stage { background: var(--bg-frosted); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: border-color .15s, background .15s; }
+  .rec-pipeline-stage:hover { border-color: var(--accent); }
+  .rec-pipeline-stage.active { border-color: var(--accent); background: rgba(0,200,170,.08); }
   .rec-stage-header { display: flex; align-items: center; gap: 8px; }
   .rec-stage-num { font-size: 10px; font-weight: 700; color: var(--text3); }
   .rec-stage-name { font-size: 11px; font-weight: 700; color: var(--text); }
@@ -891,6 +935,8 @@ function _injectRecruitmentStyles(){
   .rec-grid-row > div:nth-child(6),
   .rec-grid-row > div:nth-child(7) { text-align: center; }
   .rec-grid-head { color: var(--text3); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .4px; }
+  .rec-sortable { cursor: pointer; user-select: none; }
+  .rec-sortable:hover { color: var(--accent); }
   .rec-grid-body { cursor: pointer; }
   .rec-grid-body:hover { background: rgba(0,200,170,.03); }
   .rec-cell-name { font-weight: 600; color: var(--text); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
