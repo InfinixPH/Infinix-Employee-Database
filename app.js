@@ -63,7 +63,7 @@ const TABLE_COLUMNS = [
   { key:'status',          label:'Status',          always:false },
   { key:'statusDate',      label:'Status Date',     always:false },
   { key:'deploymentDate',  label:'Deploy Date',     always:false },
-  { key:'deploymentStatus',label:'Deploy Status',   always:false },
+  { key:'deploymentStatus',label:'Deployment Status', always:false },
   { key:'requirements',    label:'Requirements',    always:false },
   { key:'qrStatus',        label:'QR Status',       always:false },
   { key:'region',          label:'Region',          always:false },
@@ -326,7 +326,7 @@ function exportXLSX(){
     statusDate:'Status Date', statusRemarks:'Status Remarks',
     region:'Region', storeAssignment:'Store', storeId:'Store ID',
     rssName:'RSS Name', rssId:'RSS ID',
-    deploymentDate:'Deploy Date', deploymentStatus:'Deploy Status',
+    deploymentDate:'Deploy Date', deploymentStatus:'Deployment Status',
     qrStatus:'QR Status', contractStatus:'Contract Status', contractSentDate:'Contract Sent Date',
     firstName:'First Name', lastName:'Last Name', middleName:'Middle Name',
     dob:'Date of Birth', gender:'Gender', maritalStatus:'Marital Status',
@@ -1541,8 +1541,8 @@ function renderEmployeeTable(type){
           ${REGIONS.map(r=>`<option value="${esc(r)}" ${filterRegion===r?'selected':''}>${esc(r)}</option>`).join('')}
         </select>
         <select onchange="filterDeployStatus=this.value;onFilterChange()">
-          <option value="">All Deploy Status</option>
-          ${['DEPLOYED','NOT YET DEPLOYED','BACKOUT','-'].map(s=>`<option value="${esc(s)}" ${filterDeployStatus===s?'selected':''}>${esc(s)}</option>`).join('')}
+          <option value="">All Deployment Status</option>
+          ${['DEPLOYED','NOT YET DEPLOYED','-'].map(s=>`<option value="${esc(s)}" ${filterDeployStatus===s?'selected':''}>${esc(s)}</option>`).join('')}
         </select>
         <select onchange="filterQR=this.value;onFilterChange()">
           <option value="">All QR</option>
@@ -1575,7 +1575,7 @@ function renderEmployeeTable(type){
         </select>
         <button class="btn btn-primary btn-sm" onclick="doBulkStatusChange()">Apply</button>
         <div class="bulk-sep"></div>
-        <span class="bulk-label">Deploy status:</span>
+        <span class="bulk-label">Deployment status:</span>
         <select class="bulk-status-sel" id="bulk-deploy-sel">
           <option value="NOT YET DEPLOYED">Not Yet Deployed</option>
           <option value="DEPLOYED">Deployed</option>
@@ -2052,7 +2052,7 @@ function buildDetailHTML(e){
         <div class="dp-grid">
           ${field('Status',badgeHTML(e.status))}
           ${field('QR Status',badgeHTML(e.qrStatus||'NOT SCANNED',(e.qrStatus||'NOT SCANNED').replace(/ /g,'-')))}
-          ${field('Deploy Status',e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):'')}
+          ${field('Deployment Status',e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):'')}
           ${field('Deploy Date',esc(e.deploymentDate))}
           ${field('Contract',badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-')))}
           ${field('Status Date',esc(e.statusDate))}
