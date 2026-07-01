@@ -306,6 +306,12 @@ const Router = (() => {
 
     const _orig = openDetailPanel;
     window.openDetailPanel = function(id) {
+      if (!id) {
+        if (typeof toast === 'function') {
+          toast('This record has no Infinix ID yet — edit it from the table to add one before opening its profile.', 'error');
+        }
+        return;
+      }
       // Navigate to full profile page via hash
       navigate(`/profile/${id}`);
       // Only call _orig (side panel) if renderProfilePage is NOT available
