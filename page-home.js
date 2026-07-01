@@ -16,7 +16,7 @@ let _phCalMonth = new Date().getMonth();
 // ============================================================
 // MAIN RENDER
 // ============================================================
-async function renderHome() {
+function renderHome() {
   const titleEl = document.getElementById('topbar-title');
   if (titleEl) titleEl.textContent = '';
 
@@ -26,27 +26,28 @@ async function renderHome() {
     return;
   }
 
-  // Show page instantly with cached log, then patch Recent Activity after fresh fetch
-  const _doRender = () => {
-    const total        = employees.length;
-    const active       = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
-                                               normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
-    const deployed     = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'DEPLOYED').length;
-    const missingReqs  = employees.filter(e => !requirementsComplete(e)).length;
-    const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
-    const notDeployed  = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
-      normalizeDeployStatus(e.deploymentStatus) !== 'DEPLOYED').length;
+  const s            = getStats();
+  const total        = employees.length;
+  const active       = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
+                                             normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
+  const deployed     = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'DEPLOYED').length;
+  const missingReqs  = employees.filter(e => !requirementsComplete(e)).length;
+  const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
+  const notDeployed  = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
+    normalizeDeployStatus(e.deploymentStatus) !== 'DEPLOYED').length;
 
-    const hour     = new Date().getHours();
-    const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
-    const userName = currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0] || 'there';
+  const hour     = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
+  const userName = currentUser?.name?.split(' ')[0] || currentUser?.email?.split('@')[0] || 'there';
 
-    const recentItems = _buildRecentList(6);
-    const bdayToday   = typeof getBirthdaysToday === 'function' ? getBirthdaysToday() : [];
-    const bdayMonth   = typeof getBirthdaysThisMonth === 'function' ? getBirthdaysThisMonth() : [];
+  const recentItems = _buildRecentList(6);
+  const bdayToday   = typeof getBirthdaysToday === 'function' ? getBirthdaysToday() : [];
+  const bdayMonth   = typeof getBirthdaysThisMonth === 'function' ? getBirthdaysThisMonth() : [];
 
-    document.getElementById('hd-cal-popover')?.remove();
-    document.getElementById('hd-cal-popover-backdrop')?.remove();
+  // Clean up any popover/backdrop left detached in <body> from a previous
+  // render of this page (they get reparented to <body> when opened).
+  document.getElementById('hd-cal-popover')?.remove();
+  document.getElementById('hd-cal-popover-backdrop')?.remove();
 
   document.getElementById('content').innerHTML = `
     <div class="hd-wrap">
@@ -232,33 +233,6 @@ async function renderHome() {
   _injectHomeStyles();
   _phCalRender();
   _phLoadEventsAndRender();
-  }; // end _doRender
-
-  // Paint the page immediately (no blink)
-  _doRender();
-
-  // Then fetch fresh log in the background and patch only Recent Activity
-  try {
-    const r = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
-    });
-    logCache = r.result.values || [];
-    const recentEl = document.querySelector('.hd-recent-list');
-    if (recentEl) {
-      const items = _buildRecentList(6);
-      recentEl.innerHTML = items.length
-        ? items.map(r => `
-            <div class="hd-recent-item" onclick="openDetailPanel('${esc(r.id)}')" title="View profile">
-              ${Components.avatar(r.name, 30)}
-              <div class="hd-recent-body">
-                <div class="hd-recent-name">${esc(r.name)}</div>
-                <div class="hd-recent-action">${esc(r.action)}</div>
-              </div>
-              <div class="hd-recent-time">${esc(r.time)}</div>
-            </div>`).join('')
-        : `<div class="hd-empty-state">No recent activity</div>`;
-    }
-  } catch(e) { /* non-fatal */ }
 }
 
 // ============================================================
@@ -485,6 +459,8 @@ function _relativeTime(date) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+// Expose for backward compat
+function _phScrollToCalendar() { Router.go('calendar'); }
 // viewAllBirthdays is defined in app.js — no re-declaration needed here
 
 // ============================================================
