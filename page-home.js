@@ -173,7 +173,7 @@ function renderHome() {
           <div class="hd-recent-list">
             ${recentItems.length
               ? recentItems.map(r => `
-                <div class="hd-recent-item" onclick="openDetailPanel('${esc(r.id)}')" title="View profile">
+                <div class="hd-recent-item" onclick="openRecentActivityItem('${esc(r.id)}')" title="View profile">
                   ${Components.avatar(r.name, 30)}
                   <div class="hd-recent-body">
                     <div class="hd-recent-name">${esc(r.name)}</div>
