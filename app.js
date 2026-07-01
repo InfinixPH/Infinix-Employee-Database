@@ -534,7 +534,7 @@ async function ensureHeaders(){
     await chk(LOG_SHEET,LOG_HEADERS,'A1:H1');
     await chk(ROLE_LOG_SHEET,ROLE_LOG_HEADERS,'A1:E1');
     await chk(ANNOUNCEMENTS_SHEET,['ID','Title','Body','PostedBy','Timestamp','Active'],'A1:F1');
-    await chk(EVENTS_SHEET_APP,['ID','Title','Date','Time','EndTime','Note','PostedBy','Active'],'A1:H1');
+    await chk(EVENTS_SHEET_APP,['ID','Title','Date','Time','EndTime','Note','PostedBy','Active','Type'],'A1:I1');
     await chk(APPLICANTS_SHEET,APPLICANTS_HEADERS,`A1:${APPLICANTS_LAST_COL}1`);
   }catch(e){console.warn('Header setup:',e);}
 }
@@ -1420,7 +1420,7 @@ function _renderArchiveList(){
                       <button class="btn btn-tbl-delete" onclick="confirmDelete('${esc(e.infinixId)}','${esc(e.fullName||'')}')"><i class='fi fi-sr-trash' style='font-size:11px'></i> Del</button>
                     </td>
                     <td class="col-fullName"><div class="td-name">${esc(e.fullName||'')}</div></td>
-                    <td class="col-infinixId"><span class="td-id">${esc(e.infinixId||'')}</span></td>
+                    <td class="col-infinixId"><span class="td-id">${esc(e.infinixId||'')}</span>${copyIdBtn(e.infinixId,'Infinix ID')}</td>
                     <td class="col-status">${badgeHTML(e.status)}</td>
                     <td class="col-statusDate" style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>
                     <td class="col-region" style="color:var(--text2)">${esc(e.region||'—')}</td>
@@ -1624,7 +1624,7 @@ function renderTableRows(type){
 
   const colRender={
     fullName:e=>`<td class="col-fullName"><div class="td-name">${esc(e.fullName||'')}</div><div class="td-sub">${esc(e.email||'')}</div></td>`,
-    infinixId:e=>`<td class="col-infinixId"><span class="td-id">${esc(e.infinixId)}</span></td>`,
+    infinixId:e=>`<td class="col-infinixId"><span class="td-id">${esc(e.infinixId)}</span>${copyIdBtn(e.infinixId,'Infinix ID')}</td>`,
     status:e=>`<td class="col-status">${badgeHTML(e.status)}</td>`,
     statusDate:e=>`<td class="col-statusDate" style="color:var(--text2);font-size:12px">${esc(e.statusDate||'—')}</td>`,
     deploymentDate:e=>`<td class="col-deploymentDate" style="color:var(--text2);font-size:12px">${esc(e.deploymentDate||'—')}</td>`,
@@ -1633,7 +1633,7 @@ function renderTableRows(type){
     qrStatus:e=>{const qr=e.qrStatus||'NOT SCANNED';return`<td class="col-qrStatus">${badgeHTML(qr,qr.replace(/ /g,'-'))}</td>`},
     region:e=>`<td class="col-region" style="color:var(--text2)">${esc(e.region||'—')}</td>`,
     storeAssignment:e=>`<td class="col-storeAssignment" style="color:var(--text2)">${esc(e.storeAssignment||'—')}</td>`,
-    storeId:e=>`<td class="col-storeId" style="color:var(--text3);font-size:11px">${esc(e.storeId||'—')}</td>`,
+    storeId:e=>`<td class="col-storeId" style="color:var(--text3);font-size:11px">${esc(e.storeId||'—')}${copyIdBtn(e.storeId,'Store ID')}</td>`,
     rssName:e=>`<td class="col-rssName" style="color:var(--text2)">${esc(e.rssName||'—')}</td>`,
     bankName:e=>`<td class="col-bankName" style="color:var(--text2)">${esc(e.bankName||'—')}</td>`,
     contractStatus:e=>`<td class="col-contractStatus">${badgeHTML(e.contractStatus||'NOT YET SENT',(e.contractStatus||'NOT YET SENT').replace(/ /g,'-'))}</td>`,
@@ -1997,7 +1997,7 @@ function buildDetailHTML(e){
       </div>
       <div class="dp-hero-info">
         <div class="dp-hero-name">${esc(e.fullName||`${e.firstName||''} ${e.lastName||''}`.trim())}</div>
-        <div class="dp-hero-id">${esc(e.infinixId||'No ID')}</div>
+        <div class="dp-hero-id">${esc(e.infinixId||'No ID')}${e.infinixId?copyIdBtn(e.infinixId,'Infinix ID'):''}</div>
         <div class="dp-hero-badges">
           ${badgeHTML(e.status)}
           ${e.deploymentStatus?badgeHTML(e.deploymentStatus,e.deploymentStatus.replace(/ /g,'-')):''}
@@ -2050,7 +2050,7 @@ function buildDetailHTML(e){
         <div class="dp-grid">
           ${field('Region',esc(e.region))}
           ${field('Store',esc(e.storeAssignment))}
-          ${field('Store ID',esc(e.storeId))}
+          ${field('Store ID',esc(e.storeId)+copyIdBtn(e.storeId,'Store ID'))}
           ${field('RSS Name',esc(e.rssName))}
           ${field('RSS ID',esc(e.rssId))}
           ${field('Last Updated',esc(e.lastUpdated))}
@@ -2293,7 +2293,7 @@ function getFormHTML(emp){
       <div class="field-hint" id="hint-infinixId">Must start with 1700</div>
       <div class="dup-warning" id="dup-warning">⚠ This ID already exists in the system. Check before saving.</div>
     </div>
-    <div class="field req"><label>Employment Status</label>${sel('status',['Active','Floating','Resigned','AWOL','Terminated','Backout','-'])}</div>
+    <div class="field req"><label>Employment Status</label><select id="f_status" onchange="_autoFillStatusDate(this.value)">${['Active','Floating','Resigned','AWOL','Terminated','Backout','-'].map(o=>`<option value="${esc(o)}" ${v('status')===o?'selected':''}>${esc(o)||'—'}</option>`).join('')}</select></div>
     <div class="field"><label>Status Effective Date</label>${dateInp('statusDate')}</div>
     <div class="field"><label>Status Remarks</label>${inp('statusRemarks')}</div>
     <div class="field"><label>Deployment Date</label>${dateInp('deploymentDate')}</div>
@@ -2422,6 +2422,15 @@ function onMobileBlur(){
   const formatted=formatMobileNumber(el.value.trim());
   if(formatted)el.value=formatted;
   checkDupMobile();
+}
+function _autoFillStatusDate(newStatus){
+  const trueInactiveStatuses=['Floating','Resigned','AWOL','Terminated'];
+  const dateEl=document.getElementById('f_statusDate');
+  if(!dateEl||dateEl.value) return; // don't override a date the user already set
+  if(trueInactiveStatuses.includes(newStatus)){
+    dateEl.value=new Date().toISOString().split('T')[0];
+    dateEl.classList.remove('err');
+  }
 }
 function validateInfinixId(){
   const val=document.getElementById('f_infinixId')?.value.trim()||'';
@@ -2874,6 +2883,33 @@ function _dismissNotif(key){
 // ============================================================
 // UTILITIES
 // ============================================================
+async function copyToClipboard(text,label){
+  text=String(text||'').trim();
+  if(!text){toast('Nothing to copy','error');return;}
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+    } else {
+      // Fallback for non-HTTPS / older WebView contexts
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.style.position='fixed';ta.style.opacity='0';ta.style.left='-9999px';
+      document.body.appendChild(ta);
+      ta.focus();ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    toast((label||'Copied')+' — '+text,'success');
+  }catch(e){
+    console.warn('Copy failed:',e);
+    toast('Could not copy to clipboard','error');
+  }
+}
+function copyIdBtn(text,label){
+  if(!text)return'';
+  const safe=esc(text).replace(/'/g,"\\'");
+  return `<button type="button" class="copy-id-btn" title="Copy ${esc(label||'ID')}" onclick="event.stopPropagation();copyToClipboard('${safe}','${esc(label||'ID')} copied')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`;
+}
 function toast(msg,type=''){
   const el=document.getElementById('toast');
   // Don't let a routine success toast silently swallow a still-visible error.
