@@ -127,12 +127,12 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
       <i class="fi fi-sr-menu-burger" style="font-size:15px"></i>
     </button>
     <div class="brand-logo">
-      <div class="brand-logo-inner">
+      <button class="brand-logo-inner" onclick="Router.go('home')" title="Go to Home" style="background:none;border:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px">
         <img src="https://raw.githubusercontent.com/InfinixPH/Infinix-Employee-Database/main/infinixlogo.png" alt="Infinix"
              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
         <span style="display:none;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:var(--text);letter-spacing:1.5px">INFINIX</span>
         <div class="brand-sub">Workforce</div>
-      </div>
+      </button>
     </div>
   </div>
 
