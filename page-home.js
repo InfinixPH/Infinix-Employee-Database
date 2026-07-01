@@ -16,7 +16,7 @@ let _phCalMonth = new Date().getMonth();
 // ============================================================
 // MAIN RENDER
 // ============================================================
-function renderHome() {
+async function renderHome() {
   const titleEl = document.getElementById('topbar-title');
   if (titleEl) titleEl.textContent = '';
 
@@ -24,6 +24,16 @@ function renderHome() {
     document.getElementById('content').innerHTML =
       '<div style="padding:40px;text-align:center;color:var(--text3)">Loading…</div>';
     return;
+  }
+
+  // Fetch log if not in memory so Recent Activity is always current
+  if (!logCache || !logCache.length) {
+    try {
+      const r = await gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
+      });
+      logCache = r.result.values || [];
+    } catch(e) { /* non-fatal — Recent Activity will just show empty */ }
   }
 
   const s            = getStats();
