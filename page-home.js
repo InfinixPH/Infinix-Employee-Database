@@ -68,19 +68,6 @@ function renderHome() {
       </div>
 
       <!-- ═══════════════════════════════════════════════════
-           ANNOUNCEMENTS — carousel banner, manage button for HR/Owner
-      ═══════════════════════════════════════════════════ -->
-      ${(announcementsCache.length || (typeof canViewSensitive === 'function' && canViewSensitive())) ? `
-      <div class="hd-ann-banner" id="hd-ann-banner">
-        <div class="hd-ann-icon">📢</div>
-        <div id="ann-carousel-wrap" class="hd-ann-carousel-wrap"></div>
-        <div class="hd-ann-actions">
-          ${announcementsCache.length ? `<button class="hd-card-link" onclick="viewAllAnnouncements()">View all →</button>` : ''}
-          ${typeof canViewSensitive === 'function' && canViewSensitive() ? `<button class="hd-ann-manage-btn" onclick="openAnnouncementManager()" title="Post or manage announcements">Manage</button>` : ''}
-        </div>
-      </div>` : ''}
-
-      <!-- ═══════════════════════════════════════════════════
            KPI STRIP — 4 cards with real distinct metrics
       ═══════════════════════════════════════════════════ -->
       <div class="hd-kpi-strip">
@@ -246,7 +233,6 @@ function renderHome() {
   _injectHomeStyles();
   _phCalRender();
   _phLoadEventsAndRender();
-  if (typeof renderAnnouncementCarousel === 'function') renderAnnouncementCarousel();
 }
 
 // ============================================================
@@ -576,48 +562,6 @@ function _injectHomeStyles() {
     color: var(--accent);
   }
   .hd-hero-btn-outline:hover { border-color: var(--accent); background: rgba(0,200,170,.16); }
-
-  /* ═══ ANNOUNCEMENT BANNER ════════════════════════════════ */
-  .hd-ann-banner {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
-    min-height: 48px;
-  }
-  .hd-ann-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
-  .hd-ann-carousel-wrap {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .hd-ann-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  .hd-ann-manage-btn {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--accent);
-    background: var(--accent-dim);
-    border: 1px solid var(--border3);
-    border-radius: 6px;
-    padding: 5px 12px;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    transition: all .15s;
-  }
-  .hd-ann-manage-btn:hover { background: rgba(0,200,170,.16); }
-  @media (max-width: 600px) {
-    .hd-ann-banner { flex-wrap: wrap; }
-    .hd-ann-actions { width: 100%; justify-content: flex-end; }
-  }
 
   /* ═══ KPI STRIP ══════════════════════════════════════════ */
   .hd-kpi-strip {
