@@ -1042,14 +1042,8 @@ tbody td { padding: 10px 14px; font-size: 13px; white-space: nowrap; }
 .td-actions-cell { display: flex; gap: 4px; align-items: center; overflow: visible !important; min-width: 80px; }
 .td-actions-cell .btn-tbl-edit,
 .td-actions-cell .btn-tbl-delete {
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity .15s ease, transform .15s ease;
-  pointer-events: none;
-}
-tr:hover .td-actions-cell .btn-tbl-edit,
-tr:hover .td-actions-cell .btn-tbl-delete {
-  opacity: 1; transform: translateX(0); pointer-events: auto;
+  opacity: 1;
+  pointer-events: auto;
 }
 body.role-viewer tr:hover .td-actions-cell .btn-tbl-edit,
 body.role-viewer tr:hover .td-actions-cell .btn-tbl-delete { opacity: 0.35; }
