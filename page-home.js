@@ -26,15 +26,13 @@ async function renderHome() {
     return;
   }
 
-  // Fetch log if not in memory so Recent Activity is always current
-  if (!logCache || !logCache.length) {
-    try {
-      const r = await gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
-      });
-      logCache = r.result.values || [];
-    } catch(e) { /* non-fatal — Recent Activity will just show empty */ }
-  }
+  // Always fetch fresh log so Recent Activity reflects latest changes
+  try {
+    const r = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${LOG_SHEET}!A2:H`
+    });
+    logCache = r.result.values || [];
+  } catch(e) { /* non-fatal — Recent Activity will show cached or empty */ }
 
   const s            = getStats();
   const total        = employees.length;
