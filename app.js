@@ -710,7 +710,7 @@ function normalizeDeployStatus(status){
   if(s==='NOT YET DEPLOYED'||s==='NOT DEPLOYED')return 'NOT YET DEPLOYED';
   return s;
 }
-function isNotYetDeployedColL(value){return normalizeDeployStatus(value)==='NOT YET DEPLOYED';}
+function isNotYetDeployedColL(value){const n=normalizeDeployStatus(value);return n==='NOT YET DEPLOYED'||n==='';}
 function isInactiveStatus(status){return ['Floating','Resigned','AWOL','Terminated','Backout'].includes(normalizeStatus(status));}
 function isBackoutDeployment(deploymentStatus){return normalizeDeployStatus(deploymentStatus)==='BACKOUT';}
 function getTargetSheet(status,deploymentStatus){
@@ -1000,7 +1000,7 @@ function filteredEmployees(type){
   const q=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
   if(q)list=list.filter(e=>(e.fullName||'').toLowerCase().includes(q)||String(e.infinixId).toLowerCase().includes(q)||(e.storeAssignment||'').toLowerCase().includes(q)||(e.storeId||'').toLowerCase().includes(q)||(e.region||'').toLowerCase().includes(q)||(e.rssName||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q));
   if(filterRegion)list=list.filter(e=>normalizeRegion(e.region)===normalizeRegion(filterRegion));
-  if(filterDeployStatus)list=list.filter(e=>e.deploymentStatus===filterDeployStatus);
+  if(filterDeployStatus)list=list.filter(e=>(e.deploymentStatus||'NOT YET DEPLOYED')===filterDeployStatus);
   if(filterQR)list=list.filter(e=>e.qrStatus===filterQR);
   if(filterContractStatus)list=list.filter(e=>e.contractStatus===filterContractStatus);
   return sortEmployees(list);
