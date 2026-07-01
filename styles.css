@@ -559,6 +559,33 @@ body::before {
    ============================================================ */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; overflow-x: hidden; min-width: 0; position: relative; z-index: 5; }
 
+/* ============================================================
+   MOBILE SIDEBAR — slide-in overlay under 768px
+   ============================================================ */
+.sidebar-backdrop {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 9990;
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s ease;
+}
+.sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
+
+@media (max-width: 768px) {
+  .sidebar-backdrop { display: block; }
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 240px !important;
+    max-width: 82vw;
+    z-index: 9991;
+    transform: translateX(-100%);
+    box-shadow: 0 0 40px rgba(0,0,0,.5);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar.mobile-open { transform: translateX(0); }
+}
+
 .topbar {
   background: rgba(5,8,8,0.88);
   backdrop-filter: blur(48px) saturate(1.8);
@@ -2760,6 +2787,16 @@ html, body {
 .archive-toolbar {
   display: flex; gap: 10px; flex-wrap: wrap;
 }
+.log-search-input {
+  flex: 0 1 280px; min-width: 160px;
+  background: var(--bg-input, rgba(255,255,255,.06));
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px; color: var(--text);
+  outline: none; transition: border-color .15s;
+}
+.log-search-input:focus { border-color: var(--moss-green); }
 .archive-search {
   flex: 1; min-width: 200px;
   background: var(--bg-input, rgba(255,255,255,.06));
