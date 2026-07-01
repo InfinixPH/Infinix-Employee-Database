@@ -5,6 +5,8 @@
 // ============================================================
 'use strict';
 
+let _headcountRangeMonths = 6; // 3 / 6 / 12 — toggled via the Headcount Trend range control
+
 function renderAnalyticsPage() {
   if (typeof renderDashboard === 'function') {
     renderDashboard();
@@ -46,6 +48,12 @@ async function _ensureLogCacheLoaded() {
 }
 
 // ── Phase 3: Headcount Trend + Deployment Funnel + Region Table ──
+function _setHeadcountRange(months) {
+  if (_headcountRangeMonths === months) return;
+  _headcountRangeMonths = months;
+  _injectPhase3Charts();
+}
+
 function _injectPhase3Charts() {
   const dashMain = document.querySelector('.dash-main');
   if (!dashMain) return;
@@ -104,7 +112,7 @@ function _injectPhase3Charts() {
   const earliestLogDate = sortedLog.length ? sortedLog[0].date : null;
   const currentTotal = employees.length;
 
-  for (let i = 5; i >= 0; i--) {
+  for (let i = _headcountRangeMonths - 1; i >= 0; i--) {
     const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth  = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59);
     monthLabels.push(monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
@@ -126,7 +134,7 @@ function _injectPhase3Charts() {
     monthHasData.push(true);
   }
 
-  const hasAnyTrendData = monthHasData.filter(Boolean).length >= 3;
+  const hasAnyTrendData = monthHasData.filter(Boolean).length >= Math.min(3, _headcountRangeMonths);
 
   const section = document.createElement('div');
   section.id = 'phase3-charts';
@@ -138,6 +146,11 @@ function _injectPhase3Charts() {
       <div class="p3-card glass-card">
         <div class="p3-card-header">
           <span class="p3-card-title"><i class="fi fi-sr-chart-histogram"></i> Headcount Trend</span>
+          <div class="p3-range-toggle" role="group" aria-label="Headcount trend range">
+            ${[[3,'3M'],[6,'6M'],[12,'1Y']].map(([m,label])=>`
+              <button class="p3-range-btn ${_headcountRangeMonths===m?'active':''}" onclick="_setHeadcountRange(${m})">${label}</button>
+            `).join('')}
+          </div>
           <span class="p3-card-sub">${hasAnyTrendData ? 'Reconstructed from activity log' : 'Limited log history'}</span>
         </div>
         <div class="p3-chart-wrap">
@@ -503,6 +516,16 @@ function _injectAnalyticsStyles() {
     }
     .p3-card-sub { font-size: 11px; color: var(--text3); }
     [data-theme="light"] .p3-card-title { color: #0a8a85; opacity: 1; }
+
+    .p3-range-toggle { display: flex; gap: 2px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 7px; padding: 2px; }
+    [data-theme="light"] .p3-range-toggle { background: rgba(0,0,0,.03); }
+    .p3-range-btn {
+      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+      color: var(--text3); background: transparent; border: none; border-radius: 5px;
+      padding: 4px 9px; cursor: pointer; transition: all .15s;
+    }
+    .p3-range-btn:hover { color: var(--text); }
+    .p3-range-btn.active { background: var(--accent); color: #04231f; }
 
     .p3-chart-wrap { height: 200px; position: relative; }
 
