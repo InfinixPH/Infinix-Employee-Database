@@ -619,6 +619,7 @@ function openApplicantModal(id){
       const formatted = _formatMobile(mobileEl.value);
       mobileEl.value = formatted;
       mobileEl.classList.toggle('err', !!formatted && !_isValidMobile(formatted));
+      checkDupApplicantMobile();
     });
   }
   const emailEl = document.getElementById('raf_email');
@@ -627,13 +628,42 @@ function openApplicantModal(id){
       const v = emailEl.value.trim().toLowerCase();
       emailEl.value = v;
       emailEl.classList.toggle('err', !!v && !_isValidEmail(v));
+      checkDupApplicantEmail();
     });
   }
+  checkDupApplicantMobile();
+  checkDupApplicantEmail();
 
   document.querySelectorAll('#raf-tabs .rec-tab').forEach(btn=>{
     btn.addEventListener('click', ()=>_switchApplicantTab(btn.dataset.tab));
   });
   _switchApplicantTab(_defaultApplicantTab(a));
+}
+function checkDupApplicantMobile(){
+  const val = document.getElementById('raf_mobile')?.value.trim() || '';
+  const warn = document.getElementById('dup-warning-raf-mobile');
+  if(!warn) return;
+  if(!val){ warn.classList.remove('visible'); return; }
+  const dup = applicants.find(a => String(a.mobile||'').trim()===val && a.id!==(editingApplicantId||''));
+  if(dup){
+    warn.textContent = `⚠ This mobile number is already used by applicant "${dup.fullName||dup.id}" (${dup.id}).`;
+    warn.classList.add('visible');
+  } else {
+    warn.classList.remove('visible');
+  }
+}
+function checkDupApplicantEmail(){
+  const val = (document.getElementById('raf_email')?.value.trim() || '').toLowerCase();
+  const warn = document.getElementById('dup-warning-raf-email');
+  if(!warn) return;
+  if(!val){ warn.classList.remove('visible'); return; }
+  const dup = applicants.find(a => String(a.email||'').trim().toLowerCase()===val && a.id!==(editingApplicantId||''));
+  if(dup){
+    warn.textContent = `⚠ This email is already used by applicant "${dup.fullName||dup.id}" (${dup.id}).`;
+    warn.classList.add('visible');
+  } else {
+    warn.classList.remove('visible');
+  }
 }
 function _toTitleCase(s){
   return String(s||'').toLowerCase().replace(/\b\w/g, c=>c.toUpperCase());
@@ -732,10 +762,14 @@ function _applicantFormHTML(a){
       </div>
       <div class="rec-form-row">
         <div class="field"><label>Position <span class="req">*</span></label><select id="raf_position">${_opt(['',...APPLICANT_POSITIONS], a.position)}</select></div>
-        <div class="field"><label>Mobile No. <span class="req">*</span></label><input id="raf_mobile" type="text" placeholder="09XXXXXXXXX" value="${esc(a.mobile)}"></div>
+        <div class="field"><label>Mobile No. <span class="req">*</span></label><input id="raf_mobile" type="text" placeholder="09XXXXXXXXX" value="${esc(a.mobile)}" oninput="checkDupApplicantMobile()">
+          <div class="dup-warning" id="dup-warning-raf-mobile"></div>
+        </div>
       </div>
       <div class="rec-form-row">
-        <div class="field"><label>Email Address</label><input id="raf_email" type="email" value="${esc(a.email)}"></div>
+        <div class="field"><label>Email Address</label><input id="raf_email" type="email" value="${esc(a.email)}" oninput="checkDupApplicantEmail()">
+          <div class="dup-warning" id="dup-warning-raf-email"></div>
+        </div>
       </div>
 
       <div class="rec-form-section-label">Pipeline Stage</div>
