@@ -90,7 +90,19 @@ let detailEmpId=null;
 let logCache=null;
 let _charts={};
 let storeCache={}, storeCacheLoaded=false;
-let visibleCols=new Set(TABLE_COLUMNS.map(c=>c.key));
+let visibleCols=_loadVisibleCols();
+function _loadVisibleCols(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('hr_visible_cols')||'null');
+    if(Array.isArray(saved)&&saved.length){
+      const validKeys=new Set(TABLE_COLUMNS.map(c=>c.key));
+      const restored=new Set(saved.filter(k=>validKeys.has(k)));
+      TABLE_COLUMNS.forEach(c=>{ if(c.always) restored.add(c.key); }); // always-on cols can't be hidden
+      return restored;
+    }
+  }catch(e){ console.warn('Failed to restore column visibility:',e); }
+  return new Set(TABLE_COLUMNS.map(c=>c.key));
+}
 let missingFieldFilter=null;
 let bulkMode=false;
 let trackerDateFrom='', trackerDateTo='', trackerRegion='';
@@ -148,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // SIDEBAR INIT
 // ============================================================
 function initSidebar(){
+  if(window.innerWidth <= 768) return; // mobile uses overlay, not collapse
   const collapsed = localStorage.getItem('hr_sidebar_collapsed') === 'true';
   if(collapsed){
     const sidebar = document.getElementById('sidebar');
@@ -155,15 +168,52 @@ function initSidebar(){
   }
 }
 
+const MOBILE_SIDEBAR_BREAKPOINT = 768;
+
 function toggleSidebar(){
   const sidebar = document.getElementById('sidebar');
   if(!sidebar) return;
+  if(window.innerWidth <= MOBILE_SIDEBAR_BREAKPOINT){
+    const isOpen = sidebar.classList.toggle('mobile-open');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if(backdrop) backdrop.classList.toggle('open', isOpen);
+    if(typeof IX !== 'undefined') IX.createIcons();
+    return;
+  }
   const isCollapsed = sidebar.classList.toggle('collapsed');
   localStorage.setItem('hr_sidebar_collapsed', isCollapsed ? 'true' : 'false');
   // IX icons: rotation is handled by CSS (.sidebar.collapsed ~ .main .ix-toggle-icon)
   // No DOM swap needed — just ensure icons are rendered
   if(typeof IX !== 'undefined') IX.createIcons();
 }
+
+function closeMobileSidebar(){
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if(sidebar) sidebar.classList.remove('mobile-open');
+  if(backdrop) backdrop.classList.remove('open');
+}
+
+// Auto-close the mobile overlay sidebar after navigating to a page
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.getElementById('sidebar');
+  if(!sidebar) return;
+  sidebar.addEventListener('click', e => {
+    if(window.innerWidth > MOBILE_SIDEBAR_BREAKPOINT) return;
+    const target = e.target.closest('.nav-item:not(.nav-item-parent), .nav-subitem');
+    if(target) closeMobileSidebar();
+  });
+});
+
+// Keep sidebar state sane when crossing the mobile/desktop breakpoint
+window.addEventListener('resize', () => {
+  const sidebar = document.getElementById('sidebar');
+  if(window.innerWidth > MOBILE_SIDEBAR_BREAKPOINT){
+    closeMobileSidebar();
+  } else if(sidebar){
+    sidebar.classList.remove('collapsed');
+  }
+});
 
 // ============================================================
 // KEYBOARD SHORTCUTS
@@ -2141,10 +2191,65 @@ async function loadEmployeeAudit(infinixId){
 // ============================================================
 // ACTIVITY LOG
 // ============================================================
+const LOG_ICON_MAP={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated',Deployed:'log-added'};
+const LOG_SVG_MAP={
+  Added:`<i class="fi fi-sr-plus"></i>`,
+  'Status Changed / Moved':`<i class="fi fi-sr-rotate-right"></i>`,
+  Deleted:`<i class="fi fi-sr-trash"></i>`,
+  Updated:`<i class="fi fi-sr-edit"></i>`,
+  Deployed:`<i class="fi fi-sr-rocket"></i>`
+};
+function _buildLogRowsHTML(rows){
+  if(!rows.length){
+    return `<div class="log-empty-state">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1.5"/><path d="M9 12h6M9 16h4"/></svg>
+      <div class="log-empty-title">No matching entries</div>
+      <div class="log-empty-sub">Try a different name, ID, or action.</div>
+    </div>`;
+  }
+  return rows.map(r=>{
+    const action=r[3]||'';
+    const from=r[4]||'';
+    const to=r[5]||'';
+    const detail=r[7]||''; // column H — full change detail
+    let changeLine='';
+    if(from && from!=='—' && to && to!==from){
+      changeLine=` · <span style="color:var(--text3)">${esc(from)}</span> → <b>${esc(to)}</b>`;
+    }
+    const detailLine=detail?`<div class="log-detail">${esc(detail)}</div>`:'';
+    return`<div class="log-item">
+      <div class="log-icon ${LOG_ICON_MAP[action]||'log-updated'}">${LOG_SVG_MAP[action]||LOG_SVG_MAP['Updated']}</div>
+      <div class="log-meta"><b>${esc(r[2]||'')}</b> <span style="color:var(--text3);font-weight:400">(${esc(r[1]||'')})</span> — ${esc(action)}${changeLine}
+        ${detailLine}
+        <div class="log-time">${esc(r[0]||'')} · by ${esc(r[6]||'')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterActivityLog(){
+  const q=(document.getElementById('log-search')?.value||'').trim().toLowerCase();
+  const el=document.getElementById('log-list');
+  if(!el||!logCache) return;
+  const all=[...logCache].reverse();
+  const rows=q?all.filter(r=>
+    String(r[1]||'').toLowerCase().includes(q) ||   // ID
+    String(r[2]||'').toLowerCase().includes(q) ||   // name
+    String(r[3]||'').toLowerCase().includes(q) ||   // action
+    String(r[6]||'').toLowerCase().includes(q) ||   // user
+    String(r[7]||'').toLowerCase().includes(q)      // detail
+  ):all;
+  el.innerHTML=_buildLogRowsHTML(rows);
+}
 async function renderLog(){
   const _ttLog=document.getElementById('topbar-title');if(_ttLog)_ttLog.textContent='Activity Log';
   const _sub2=document.getElementById('topbar-sub'); if(_sub2) _sub2.textContent='All changes recorded automatically';
-  document.getElementById('content').innerHTML=`<div class="table-wrap"><div class="table-head"><h3>Activity Log</h3></div><div id="log-list" style="padding:6px 18px 16px">Loading...</div></div>`;
+  document.getElementById('content').innerHTML=`<div class="table-wrap">
+    <div class="table-head">
+      <h3>Activity Log</h3>
+      <input type="text" id="log-search" class="log-search-input" placeholder="Search by name, ID, action, or user…" oninput="filterActivityLog()" autocomplete="off" style="margin-left:auto;max-width:280px">
+    </div>
+    <div id="log-list" style="padding:6px 18px 16px">Loading...</div>
+  </div>`;
   showLoading(true,'Loading log...');
   try{
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${LOG_SHEET}!A2:H`});
@@ -2158,36 +2263,10 @@ async function renderLog(){
         <div class="log-empty-title">No Activity Yet</div>
         <div class="log-empty-sub">Changes to employee records will appear here automatically.</div>
       </div>`;
+      const searchEl=document.getElementById('log-search'); if(searchEl) searchEl.style.display='none';
       return;
     }
-    const iconMap={Added:'log-added','Status Changed / Moved':'log-changed',Deleted:'log-deleted',Updated:'log-updated',Deployed:'log-added'};
-    const svgMap={
-      Added:`<i class="fi fi-sr-plus"></i>`,
-      'Status Changed / Moved':`<i class="fi fi-sr-rotate-right"></i>`,
-      Deleted:`<i class="fi fi-sr-trash"></i>`,
-      Updated:`<i class="fi fi-sr-edit"></i>`,
-      Deployed:`<i class="fi fi-sr-rocket"></i>`
-    };
-    el.innerHTML=rows.map(r=>{
-      const action=r[3]||'';
-      const from=r[4]||'';
-      const to=r[5]||'';
-      const detail=r[7]||''; // column H — full change detail
-      // Build the change summary line
-      let changeLine='';
-      if(from && from!=='—' && to && to!==from){
-        changeLine=` · <span style="color:var(--text3)">${esc(from)}</span> → <b>${esc(to)}</b>`;
-      }
-      // Detail line shows every field that changed
-      const detailLine=detail?`<div class="log-detail">${esc(detail)}</div>`:'';
-      return`<div class="log-item">
-        <div class="log-icon ${iconMap[action]||'log-updated'}">${svgMap[action]||svgMap['Updated']}</div>
-        <div class="log-meta"><b>${esc(r[2]||'')}</b> <span style="color:var(--text3);font-weight:400">(${esc(r[1]||'')})</span> — ${esc(action)}${changeLine}
-          ${detailLine}
-          <div class="log-time">${esc(r[0]||'')} · by ${esc(r[6]||'')}</div>
-        </div>
-      </div>`;
-    }).join('');
+    el.innerHTML=_buildLogRowsHTML(rows);
   }catch(e){toast('Failed to load log: '+e.message,'error');}
   finally{showLoading(false);}
 }
