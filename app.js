@@ -427,6 +427,7 @@ function _onAuthReady(resp){
   clearTimeout(_silentAuthTimer);
   accessToken=resp.access_token;
   gapi.client.setToken({access_token:accessToken});
+  _scheduleTokenRefresh(resp.expires_in);
   setLoginStatus('Signed in! Loading data…','info');
   (async()=>{
     const user=await fetchUserInfo(accessToken);
@@ -480,6 +481,43 @@ function trySilentAuth(){
     clearTimeout(_silentAuthTimer);showLoginScreen(false);
   }
 }
+
+// ============================================================
+// BACKGROUND TOKEN REFRESH
+// Access tokens from Google's OAuth2 token client expire after
+// ~1hr. Without this, a user who leaves the tab open (no page
+// refresh) would still get silently logged out mid-session.
+// This keeps the session alive for as long as the tab stays
+// open and Google's silent re-auth keeps succeeding — it does
+// NOT solve the "logged out after closing/refreshing the tab"
+// case, which needs a real backend with a refresh token.
+// ============================================================
+let _tokenRefreshTimer=null;
+function _scheduleTokenRefresh(expiresInSec){
+  clearTimeout(_tokenRefreshTimer);
+  const seconds=Number(expiresInSec)||3600;
+  // Refresh 5 minutes before expiry, with a sane floor so a
+  // weird/low expires_in value can't cause a refresh storm.
+  const delay=Math.max((seconds-300)*1000,30000);
+  _tokenRefreshTimer=setTimeout(_refreshTokenSilently,delay);
+}
+function _refreshTokenSilently(){
+  if(!tokenClient||!currentUser)return;
+  tokenClient.requestAccessToken({
+    prompt:'',
+    login_hint:currentUser.email||'',
+    callback:(resp)=>{
+      if(resp&&resp.access_token){
+        accessToken=resp.access_token;
+        gapi.client.setToken({access_token:accessToken});
+        _scheduleTokenRefresh(resp.expires_in);
+      }
+      // If this silently fails, don't disrupt the user's current
+      // work — the next API call that needs a valid token will
+      // surface the normal sign-in flow, same as it does today.
+    }
+  });
+}
 function showLoginScreen(showWaiting){
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
@@ -487,6 +525,7 @@ function showLoginScreen(showWaiting){
 }
 
 function signOut(){
+  clearTimeout(_tokenRefreshTimer);
   if(accessToken){try{google.accounts.oauth2.revoke(accessToken);}catch(e){}}
   localStorage.removeItem('hr_user');
   sessionStorage.removeItem('hr_role');
