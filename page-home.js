@@ -31,8 +31,8 @@ function renderHome() {
   const active       = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
                                              normalizeDeployStatus(e.deploymentStatus) !== 'BACKOUT').length;
   const deployed     = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'DEPLOYED').length;
-  const missingReqs  = employees.filter(e => !requirementsComplete(e)).length;
-  const backoutCount = employees.filter(e => normalizeDeployStatus(e.deploymentStatus) === 'BACKOUT').length;
+  const withoutPromoter = (typeof storeCoverageComputed !== 'undefined' && storeCoverageComputed)
+    ? getStoreCoverageStats().withoutPromoter : null;
   const notDeployed  = employees.filter(e => normalizeStatus(e.status) === 'Active' &&
     normalizeDeployStatus(e.deploymentStatus) !== 'DEPLOYED').length;
 
@@ -83,16 +83,11 @@ function renderHome() {
           <div class="hd-kpi-val">${notDeployed}</div>
           <div class="hd-kpi-label">Pending Deploy</div>
         </div>
-        <div class="hd-kpi" onclick="drillDown('missingRequirements')" title="View missing requirements">
-          <div class="hd-kpi-val">${missingReqs}</div>
-          <div class="hd-kpi-label">Missing Reqs</div>
+        <div class="hd-kpi" id="hd-kpi-without-promoter" onclick="goToStoreList('NO')" title="View stores without a promoter">
+          <div class="hd-kpi-val">${withoutPromoter===null?'—':withoutPromoter}</div>
+          <div class="hd-kpi-label">Without Promoter</div>
         </div>
       </div>
-
-      <!-- ═══════════════════════════════════════════════════
-           STORE COVERAGE — how many stores have a promoter deployed
-      ═══════════════════════════════════════════════════ -->
-      <div id="hd-store-coverage-card">${_renderHomeStoreCoverageCard()}</div>
 
       <!-- ═══════════════════════════════════════════════════
            ROW A: Greeting card (left) + Calendar widget (right)
@@ -465,56 +460,17 @@ function _relativeTime(date) {
 }
 
 // ============================================================
-// STORE COVERAGE CARD — stores with a promoter deployed vs. total
+// "Without Promoter" KPI — updated in place after a background store
+// coverage recompute, so the number appears without a full page re-render.
 // Data comes from storeDetailsList / getStoreCoverageStats() in roles.js.
 // ============================================================
-function _renderHomeStoreCoverageCard(){
-  if(typeof storeDetailsList==='undefined' || !storeCoverageComputed || !storeDetailsList.length){
-    return `
-      <div class="hd-store-card">
-        <div class="hd-store-card-title">Store Coverage</div>
-        <div class="hd-store-card-loading">Loading store list…</div>
-      </div>`;
-  }
-  const stats = getStoreCoverageStats();
-  return `
-    <div class="hd-store-card">
-      <div class="hd-store-card-head">
-        <div class="hd-store-card-title">Store Coverage</div>
-        <div class="hd-store-card-link" onclick="Router.go('storelist')">View Store List →</div>
-      </div>
-      <div class="hd-store-card-body">
-        <div class="hd-store-ring-wrap">
-          <div class="hd-store-pct">${stats.pct}%</div>
-          <div class="hd-store-pct-label">of stores staffed</div>
-        </div>
-        <div class="hd-store-stats">
-          <div class="hd-store-stat" onclick="goToStoreList('')">
-            <div class="hd-store-stat-val">${stats.total}</div>
-            <div class="hd-store-stat-label">Total Stores</div>
-          </div>
-          <div class="hd-store-stat" onclick="goToStoreList('YES')">
-            <div class="hd-store-stat-val" style="color:#2E7D32">${stats.withPromoter}</div>
-            <div class="hd-store-stat-label">With Promoter</div>
-          </div>
-          <div class="hd-store-stat" onclick="goToStoreList('NO')">
-            <div class="hd-store-stat-val" style="color:#C62828">${stats.withoutPromoter}</div>
-            <div class="hd-store-stat-label">Without Promoter</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-// Called by refreshStoreCoverage() in roles.js after a background recompute,
-// so the card updates in place without a full page re-render.
 function refreshHomeStoreCoverageCard(){
-  const el = document.getElementById('hd-store-coverage-card');
-  if(el) el.innerHTML = _renderHomeStoreCoverageCard();
+  const el = document.getElementById('hd-kpi-without-promoter');
+  if(!el || typeof storeCoverageComputed === 'undefined' || !storeCoverageComputed) return;
+  const valEl = el.querySelector('.hd-kpi-val');
+  if(valEl) valEl.textContent = getStoreCoverageStats().withoutPromoter;
 }
 
-// Expose for backward compat
-function _phScrollToCalendar() { Router.go('calendar'); }
 // viewAllBirthdays is defined in app.js — no re-declaration needed here
 
 // ============================================================
@@ -539,22 +495,6 @@ function _injectHomeStyles() {
   .hd-row-b { margin-top: 16px; padding: 0 16px; }
 
   /* ═══ STORE COVERAGE CARD ═══════════════════════════════════ */
-  #hd-store-coverage-card { padding: 16px 16px 0; }
-  .hd-store-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
-  .hd-store-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .hd-store-card-title { font-size: 14px; font-weight: 800; color: var(--text); }
-  .hd-store-card-link { font-size: 12px; font-weight: 700; color: var(--accent); cursor: pointer; }
-  .hd-store-card-link:hover { text-decoration: underline; }
-  .hd-store-card-loading { font-size: 12.5px; color: var(--text3); padding: 8px 0; }
-  .hd-store-card-body { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-  .hd-store-ring-wrap { text-align: center; min-width: 90px; }
-  .hd-store-pct { font-size: 30px; font-weight: 900; color: var(--accent); line-height: 1; }
-  .hd-store-pct-label { font-size: 10.5px; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: .4px; }
-  .hd-store-stats { display: flex; gap: 24px; flex-wrap: wrap; }
-  .hd-store-stat { cursor: pointer; }
-  .hd-store-stat-val { font-size: 22px; font-weight: 900; color: var(--text); line-height: 1.1; }
-  .hd-store-stat-label { font-size: 10.5px; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; margin-top: 3px; }
-  .hd-store-stat:hover .hd-store-stat-val { text-decoration: underline; }
   .hd-row-c { margin-top: 16px; padding: 0 16px; }
 
   /* ═══ HERO — compact black hero matching reference screenshot ═══ */
