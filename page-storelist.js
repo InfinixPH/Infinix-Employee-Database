@@ -164,6 +164,15 @@ function _renderStoreListTable(){
   const arrow = c => slSortCol===c ? (slSortDir===1?' ▲':' ▼') : '';
   wrap.innerHTML = `
     <table class="sl-table">
+      <colgroup>
+        <col style="width:10%">
+        <col style="width:26%">
+        <col style="width:11%">
+        <col style="width:10%">
+        <col style="width:15%">
+        <col style="width:16%">
+        <col style="width:8%">
+      </colgroup>
       <thead>
         <tr>
           <th onclick="slSortBy('region')">Region${arrow('region')}</th>
@@ -171,7 +180,7 @@ function _renderStoreListTable(){
           <th onclick="slSortBy('shopId')">Shop ID${arrow('shopId')}</th>
           <th onclick="slSortBy('storeType')">Type${arrow('storeType')}</th>
           <th onclick="slSortBy('rssName')">RSS${arrow('rssName')}</th>
-          <th onclick="slSortBy('promoterStatus')">Promoter?${arrow('promoterStatus')}</th>
+          <th onclick="slSortBy('promoterStatus')">With Promoter${arrow('promoterStatus')}</th>
           <th onclick="slSortBy('promoterCount')">Count${arrow('promoterCount')}</th>
         </tr>
       </thead>
@@ -233,10 +242,10 @@ function _injectStoreListStyles(){
     .sl-search-input:focus, .sl-filter-select:focus { border-color:var(--accent); }
 
     .sl-table-wrap { overflow-x:auto; }
-    .sl-table { width:100%; border-collapse:collapse; font-size:12.5px; }
-    .sl-table th { text-align:left; padding:10px 12px; color:var(--text2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap; }
+    .sl-table { width:100%; min-width:820px; table-layout:fixed; border-collapse:collapse; font-size:12.5px; }
+    .sl-table th { text-align:left; padding:10px 12px; color:var(--text2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sl-table th:hover { color:var(--accent); }
-    .sl-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text); }
+    .sl-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sl-table tbody tr:hover { background:var(--bg-card-hover); }
 
     .sl-badge { display:inline-block; padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:800; letter-spacing:.3px; }
