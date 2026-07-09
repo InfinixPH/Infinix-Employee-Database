@@ -229,6 +229,14 @@ window.IX = { icon: () => '', createIcons: () => {}, PATHS: {} };
       </span>
       <span class="nav-label">Analytics</span>
     </div>
+
+    <!-- Store List -->
+    <div class="nav-item" onclick="Router.go('storelist')" id="nav-storelist" title="Store List">
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M3 9h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9z"/><path d="M9 20v-6h6v6"/></svg>
+      </span>
+      <span class="nav-label">Store List</span>
+    </div>
   </div>
   <div class="status-filters" id="status-filters" style="display:none"></div>
 
@@ -621,7 +629,7 @@ thead th.sort-asc::after, thead th.sort-desc::after { color: rgba(0,200,170,0.9)
   var BUILD = Date.now();
   var files = ['config.js','roles.js','charts.js','components.js','page-home.js',
     'page-profile.js','page-analytics.js','page-settings.js','page-calendar.js',
-    'page-recruitment.js','router.js','app.js'];
+    'page-recruitment.js','page-storelist.js','router.js','app.js'];
   files.forEach(function(f){
     document.write('<script src="'+f+'?v='+BUILD+'"><\/script>');
   });
