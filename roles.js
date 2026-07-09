@@ -321,30 +321,67 @@ function initRole(){
 const STORE_DETAILS_COLUMN_ALIASES = {
   region:     ['region'],
   city:       ['city'],
-  rssName:    ['responsible rss','rss','rss name'],
-  rssId:      ['rss user id','rss id'],
-  mallName:   ['mall name/location','mall name','location'],
-  dealerName: ['dealer name'],
-  storeName:  ['dcr name/store name','store name','dcr name'],
-  shopId:     ['shop id'],
-  storeType:  ['store type'],
+  rssName:    ['responsible rss','rss','rss name','rssname'],
+  rssId:      ['rss user id','rss id','rssid'],
+  mallName:   ['mall name/location','mall name','location','mall'],
+  dealerName: ['dealer name','dealername'],
+  storeName:  ['dcr name/store name','store name','dcr name','storename','dcrname'],
+  shopId:     ['shop id','shopid'],
+  storeType:  ['store type','storetype','type'],
 };
+// Strips ALL punctuation/slashes/parentheses, not just whitespace, so headers
+// like "DCR Name / Store Name" or "Store-Type" still match their alias.
 function _normalizeHeaderLabel(s){
-  return (s||'').toString().trim().toLowerCase().replace(/\s+/g,' ');
+  return (s||'').toString().trim().toLowerCase()
+    .replace(/[^\w\s]/g,' ')   // drop punctuation like / ( ) - _
+    .replace(/\s+/g,' ')
+    .trim();
 }
 // Builds { fieldName: columnIndex } by matching the sheet's real header row
-// against STORE_DETAILS_COLUMN_ALIASES. Falls back to the original fixed
-// position for any field whose header can't be found, so nothing breaks
-// outright if a header gets renamed unexpectedly.
+// against STORE_DETAILS_COLUMN_ALIASES. Matching is done two ways: exact
+// match first, then "header contains alias as a whole word" as a looser
+// second pass, so small wording differences in the sheet don't break it.
+//
+// IMPORTANT: if a field still can't be found, we do NOT silently fall back
+// to a hardcoded column position anymore. A guessed fallback is how a
+// renamed/reordered/inserted column in the sheet used to produce data that
+// looked plausible but was actually pulled from the wrong column (e.g. the
+// "everything is shifted one column over, Region is blank" bug). Instead we
+// mark it unresolved (-1), the row-builder below leaves that field blank,
+// and we log a clear console warning naming exactly which field failed and
+// what headers WERE seen, so it's immediately diagnosable instead of
+// quietly showing wrong data.
 function _buildStoreDetailsColumnMap(headerRow){
   const normalized = (headerRow||[]).map(_normalizeHeaderLabel);
-  const fallbackIndex = {region:0,city:1,rssName:2,rssId:3,mallName:4,dealerName:5,storeName:6,shopId:7,storeType:8};
   const map = {};
+  const unresolved = [];
   Object.keys(STORE_DETAILS_COLUMN_ALIASES).forEach(field=>{
-    const aliases = STORE_DETAILS_COLUMN_ALIASES[field];
-    const idx = normalized.findIndex(h=>aliases.includes(h));
-    map[field] = idx!==-1 ? idx : fallbackIndex[field];
+    // Normalize the aliases through the exact same function used on the
+    // sheet's real headers — otherwise an alias like 'dcr name/store name'
+    // (with a slash) never lines up with a normalized header (slash
+    // stripped), and that field silently fails to resolve.
+    const aliases = STORE_DETAILS_COLUMN_ALIASES[field].map(_normalizeHeaderLabel);
+    // Pass 1: exact match after normalization.
+    let idx = normalized.findIndex(h=>aliases.includes(h));
+    // Pass 2: header contains the alias as a substring — handles headers
+    // with extra descriptive text tacked on, e.g. "Mall Name / Location
+    // (if mall tell mall name, if sidestreet, tell side street name)".
+    if(idx===-1){
+      idx = normalized.findIndex(h=>aliases.some(a=>a && h.includes(a)));
+    }
+    map[field] = idx;
+    if(idx===-1) unresolved.push(field);
   });
+  if(unresolved.length){
+    console.warn(
+      '[Store Details] Could not match these columns by header name:', unresolved,
+      '\nActual header row read from the sheet was:', headerRow,
+      '\nThese fields will show as blank/— instead of guessing a column, to avoid silently showing data from the wrong column. Fix the header text in row 1 of the "Store Details" sheet to match one of:',
+      Object.fromEntries(unresolved.map(f=>[f, STORE_DETAILS_COLUMN_ALIASES[f]]))
+    );
+  } else {
+    console.log('[Store Details] Column map resolved OK:', map, 'from header row:', headerRow);
+  }
   return map;
 }
 
@@ -357,6 +394,9 @@ async function loadStoreDetails(){
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!A:K`});
     const rows=r.result.values||[];
     const colMap=_buildStoreDetailsColumnMap(rows[0]);
+    if(colMap.shopId===-1){
+      console.error('[Store Details] "Shop ID" column not found in row 1 of the sheet — the store list will be empty until that header is fixed. Header row read was:', rows[0]);
+    }
     storeCache={};
     storeDetailsList=[];
     for(let i=1;i<rows.length;i++){
