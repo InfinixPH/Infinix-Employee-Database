@@ -317,17 +317,30 @@ async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
     // Store Details columns: A=Region B=City C=Responsible RSS D=RSS User ID
-    // E=Mall Name/Location F=Dealer Name G=DCR Name/Store Name H=Shop ID I=Store Type J=Status
-    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!A:J`});
+    // E=Mall Name/Location F=Dealer Name G=DCR Name/Store Name H=Shop ID I=Store Type
+    // J=Promoter Status (YES/NO) K=Promoter Count — computed & written by the app, not manually edited.
+    const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!A:K`});
     const rows=r.result.values||[];
     storeCache={};
+    storeDetailsList=[];
     for(let i=1;i<rows.length;i++){
-      const region   =(rows[i][0]||'').trim();
-      const rssName  =(rows[i][2]||'').trim();
-      const rssId    =(rows[i][3]||'').trim();
-      const storeName=(rows[i][6]||'').trim();
-      const shopId   =(rows[i][7]||'').trim();
+      const row       =rows[i]||[];
+      const region    =(row[0]||'').trim();
+      const city      =(row[1]||'').trim();
+      const rssName   =(row[2]||'').trim();
+      const rssId     =(row[3]||'').trim();
+      const mallName  =(row[4]||'').trim();
+      const dealerName=(row[5]||'').trim();
+      const storeName =(row[6]||'').trim();
+      const shopId    =(row[7]||'').trim();
+      const storeType =(row[8]||'').trim();
       if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId, region};
+      if(!shopId) continue; // skip fully blank rows — they aren't real stores
+      storeDetailsList.push({
+        sheetRow: i+1, // 1-indexed row number in the Store Details sheet
+        region, city, rssName, rssId, mallName, dealerName, storeName, shopId, storeType,
+        promoterStatus:'', promoterCount:0
+      });
     }
     storeCacheLoaded=true;
   }catch(e){console.warn('Store Details load failed:',e);}
@@ -335,6 +348,62 @@ async function loadStoreDetails(){
 function lookupStore(shopId){
   if(!shopId)return null;
   return storeCache[shopId.trim().toUpperCase()]||null;
+}
+
+// ============================================================
+// STORE COVERAGE — how many stores have an Active promoter deployed
+// Cross-references Store Details (Shop ID) against the Active sheet
+// (Store ID) and writes YES/NO + count into Store Details columns J & K.
+// ============================================================
+function computeStoreCoverage(){
+  if(!storeDetailsList.length || typeof employees==='undefined') return;
+  const countByStoreId={};
+  employees.forEach(e=>{
+    if(e._sheet!==ACTIVE_SHEET) return;
+    if(normalizeStatus(e.status)!=='Active') return;
+    const sid=(e.storeId||'').trim().toUpperCase();
+    if(!sid) return;
+    countByStoreId[sid]=(countByStoreId[sid]||0)+1;
+  });
+  storeDetailsList.forEach(s=>{
+    const cnt=countByStoreId[s.shopId.toUpperCase()]||0;
+    s.promoterCount=cnt;
+    s.promoterStatus=cnt>0?'YES':'NO';
+  });
+  storeCoverageComputed=true;
+}
+function getStoreCoverageStats(){
+  const total=storeDetailsList.length;
+  const withPromoter=storeDetailsList.filter(s=>s.promoterStatus==='YES').length;
+  return {
+    total,
+    withPromoter,
+    withoutPromoter: total-withPromoter,
+    pct: total? Math.round((withPromoter/total)*100) : 0
+  };
+}
+async function syncStoreCoverageToSheet(){
+  if(!storeDetailsList.length) return;
+  try{
+    const data=storeDetailsList.map(s=>({
+      range:`${STORE_DETAILS_SHEET}!J${s.sheetRow}:K${s.sheetRow}`,
+      values:[[s.promoterStatus, s.promoterCount]]
+    }));
+    await gapi.client.sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId:SHEET_ID,
+      resource:{valueInputOption:'RAW', data}
+    });
+    storeCoverageSyncedAt=new Date();
+  }catch(e){console.warn('Store coverage sync failed:',e);}
+}
+// Called after data + store details are both loaded (initial load and manual refresh).
+// Fire-and-forget on the sheet write so it never blocks the UI.
+async function refreshStoreCoverage(){
+  if(typeof employees==='undefined' || !storeDetailsList.length) return;
+  computeStoreCoverage();
+  if(typeof renderStoreListPage==='function' && typeof currentView!=='undefined' && currentView==='storelist') renderStoreListPage();
+  if(typeof refreshHomeStoreCoverageCard==='function' && typeof currentView!=='undefined' && currentView==='home') refreshHomeStoreCoverageCard();
+  syncStoreCoverageToSheet();
 }
 function onStoreIdInput(){
   const shopIdEl   =document.getElementById('f_storeId');
