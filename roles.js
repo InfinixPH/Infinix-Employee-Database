@@ -313,27 +313,63 @@ function initRole(){
 // ============================================================
 // STORE LOOKUP
 // ============================================================
+// Maps each field we need to the possible header labels that could identify
+// its column in the "Store Details" sheet. Matching is done against the
+// actual header row (row 1) instead of a hardcoded column index, so if a
+// column is ever inserted, removed, or reordered in the sheet, every field
+// still lands in the right place instead of silently shifting over.
+const STORE_DETAILS_COLUMN_ALIASES = {
+  region:     ['region'],
+  city:       ['city'],
+  rssName:    ['responsible rss','rss','rss name'],
+  rssId:      ['rss user id','rss id'],
+  mallName:   ['mall name/location','mall name','location'],
+  dealerName: ['dealer name'],
+  storeName:  ['dcr name/store name','store name','dcr name'],
+  shopId:     ['shop id'],
+  storeType:  ['store type'],
+};
+function _normalizeHeaderLabel(s){
+  return (s||'').toString().trim().toLowerCase().replace(/\s+/g,' ');
+}
+// Builds { fieldName: columnIndex } by matching the sheet's real header row
+// against STORE_DETAILS_COLUMN_ALIASES. Falls back to the original fixed
+// position for any field whose header can't be found, so nothing breaks
+// outright if a header gets renamed unexpectedly.
+function _buildStoreDetailsColumnMap(headerRow){
+  const normalized = (headerRow||[]).map(_normalizeHeaderLabel);
+  const fallbackIndex = {region:0,city:1,rssName:2,rssId:3,mallName:4,dealerName:5,storeName:6,shopId:7,storeType:8};
+  const map = {};
+  Object.keys(STORE_DETAILS_COLUMN_ALIASES).forEach(field=>{
+    const aliases = STORE_DETAILS_COLUMN_ALIASES[field];
+    const idx = normalized.findIndex(h=>aliases.includes(h));
+    map[field] = idx!==-1 ? idx : fallbackIndex[field];
+  });
+  return map;
+}
+
 async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
-    // Store Details columns: A=Region B=City C=Responsible RSS D=RSS User ID
-    // E=Mall Name/Location F=Dealer Name G=DCR Name/Store Name H=Shop ID I=Store Type
+    // Store Details sheet — column order can vary, so columns are matched by
+    // header name (see STORE_DETAILS_COLUMN_ALIASES) rather than fixed position.
     // J=Promoter Status (YES/NO) K=Promoter Count — computed & written by the app, not manually edited.
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!A:K`});
     const rows=r.result.values||[];
+    const colMap=_buildStoreDetailsColumnMap(rows[0]);
     storeCache={};
     storeDetailsList=[];
     for(let i=1;i<rows.length;i++){
       const row       =rows[i]||[];
-      const region    =(row[0]||'').trim();
-      const city      =(row[1]||'').trim();
-      const rssName   =(row[2]||'').trim();
-      const rssId     =(row[3]||'').trim();
-      const mallName  =(row[4]||'').trim();
-      const dealerName=(row[5]||'').trim();
-      const storeName =(row[6]||'').trim();
-      const shopId    =(row[7]||'').trim();
-      const storeType =(row[8]||'').trim();
+      const region    =(row[colMap.region]||'').trim();
+      const city      =(row[colMap.city]||'').trim();
+      const rssName   =(row[colMap.rssName]||'').trim();
+      const rssId     =(row[colMap.rssId]||'').trim();
+      const mallName  =(row[colMap.mallName]||'').trim();
+      const dealerName=(row[colMap.dealerName]||'').trim();
+      const storeName =(row[colMap.storeName]||'').trim();
+      const shopId    =(row[colMap.shopId]||'').trim();
+      const storeType =(row[colMap.storeType]||'').trim();
       if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId, region};
       if(!shopId) continue; // skip fully blank rows — they aren't real stores
       storeDetailsList.push({
