@@ -401,8 +401,9 @@ async function syncStoreCoverageToSheet(){
 async function refreshStoreCoverage(){
   if(typeof employees==='undefined' || !storeDetailsList.length) return;
   computeStoreCoverage();
-  if(typeof renderStoreListPage==='function' && typeof currentView!=='undefined' && currentView==='storelist') renderStoreListPage();
+  if(typeof refreshStoreListPageIfActive==='function') refreshStoreListPageIfActive();
   if(typeof refreshHomeStoreCoverageCard==='function' && typeof currentView!=='undefined' && currentView==='home') refreshHomeStoreCoverageCard();
+  if(typeof _injectPhase3Charts==='function' && typeof currentView!=='undefined' && currentView==='analytics') _injectPhase3Charts();
   syncStoreCoverageToSheet();
 }
 function onStoreIdInput(){
