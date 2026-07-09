@@ -25,9 +25,25 @@ function renderAnalyticsPage() {
   // Ensure the activity log is actually loaded before computing the headcount
   // trend chart — previously this silently used whatever (often nothing) was
   // cached from prior navigation, producing inaccurate/empty trend data.
-  _ensureLogCacheLoaded().then(() => {
+  Promise.all([_ensureLogCacheLoaded(), _ensureStoreCoverageLoaded()]).then(() => {
     setTimeout(_injectPhase3Charts, 150);
   });
+}
+
+// Actively fetch + compute store coverage if it hasn't been loaded yet this
+// session, so the Store Coverage card has real numbers on first render
+// instead of waiting for the background refresh from sign-in to land.
+async function _ensureStoreCoverageLoaded() {
+  try {
+    if (typeof storeCacheLoaded !== 'undefined' && !storeCacheLoaded && typeof loadStoreDetails === 'function') {
+      await loadStoreDetails();
+    }
+    if (typeof storeCoverageComputed !== 'undefined' && !storeCoverageComputed && typeof computeStoreCoverage === 'function') {
+      computeStoreCoverage();
+    }
+  } catch (e) {
+    console.warn('Could not load store coverage for analytics:', e);
+  }
 }
 
 // Actively fetch the activity log sheet if it hasn't been loaded yet this
@@ -178,6 +194,15 @@ function _injectPhase3Charts() {
         </div>
       </div>
 
+    </div>
+
+    <!-- STORE COVERAGE -->
+    <div class="p3-card glass-card an-storecov-card" style="margin-top:16px">
+      <div class="p3-card-header" style="margin-bottom:12px">
+        <span class="p3-card-title"><i class="fi fi-sr-shop"></i> Store Coverage</span>
+        <span class="p3-card-link" onclick="Router.go('storelist')">View Store List →</span>
+      </div>
+      ${_renderAnalyticsStoreCoverageRow()}
     </div>
 
     <!-- REGION BREAKDOWN TABLE -->
@@ -366,6 +391,34 @@ function _funnelStep(label, count, ofPrevious, color) {
     </div>`;
 }
 
+// ── Store Coverage row — stores with a promoter deployed vs. total.
+// Data comes from storeDetailsList / getStoreCoverageStats() in roles.js.
+function _renderAnalyticsStoreCoverageRow() {
+  if (typeof storeDetailsList === 'undefined' || !storeCoverageComputed || !storeDetailsList.length) {
+    return `<div class="an-storecov-loading">Loading store list…</div>`;
+  }
+  const stats = getStoreCoverageStats();
+  return `
+    <div class="an-storecov-row">
+      <div class="an-storecov-kpi" onclick="goToStoreList('')" title="View all stores">
+        <div class="an-storecov-val">${stats.total}</div>
+        <div class="an-storecov-label">Total Stores</div>
+      </div>
+      <div class="an-storecov-kpi" onclick="goToStoreList('YES')" title="View stores with a promoter">
+        <div class="an-storecov-val" style="color:#00E676">${stats.withPromoter}</div>
+        <div class="an-storecov-label">With Promoter</div>
+      </div>
+      <div class="an-storecov-kpi" onclick="goToStoreList('NO')" title="View stores without a promoter">
+        <div class="an-storecov-val" style="color:#FF5252">${stats.withoutPromoter}</div>
+        <div class="an-storecov-label">Without Promoter</div>
+      </div>
+      <div class="an-storecov-kpi" title="Percentage of stores with a promoter deployed">
+        <div class="an-storecov-val">${stats.pct}%</div>
+        <div class="an-storecov-label">Coverage</div>
+      </div>
+    </div>`;
+}
+
 // ── Print / PDF single employee ──────────────────────────────
 function printEmployeeProfile(infinixId) {
   const emp = employees.find(e => String(e.infinixId) === String(infinixId));
@@ -531,6 +584,17 @@ function _injectAnalyticsStyles() {
     }
     .p3-card-sub { font-size: 11px; color: var(--text3); }
     [data-theme="light"] .p3-card-title { color: #0a8a85; opacity: 1; }
+    .p3-card-link { font-size: 12px; font-weight: 700; color: var(--accent); cursor: pointer; }
+    .p3-card-link:hover { text-decoration: underline; }
+
+    /* Store Coverage row */
+    .an-storecov-loading { font-size: 12.5px; color: var(--text3); padding: 8px 0; }
+    .an-storecov-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    @media (max-width: 640px) { .an-storecov-row { grid-template-columns: 1fr 1fr; } }
+    .an-storecov-kpi { background: var(--bg-mid, rgba(255,255,255,.03)); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: background .15s; }
+    .an-storecov-kpi:hover { background: var(--bg-card-hover, rgba(255,255,255,.06)); }
+    .an-storecov-val { font-size: 22px; font-weight: 900; color: var(--accent); line-height: 1.1; }
+    .an-storecov-label { font-size: 10.5px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
 
     .p3-range-toggle { display: flex; gap: 2px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 7px; padding: 2px; }
     [data-theme="light"] .p3-range-toggle { background: rgba(0,0,0,.03); }
