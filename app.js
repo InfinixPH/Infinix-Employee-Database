@@ -90,6 +90,7 @@ let detailEmpId=null;
 let logCache=null;
 let _charts={};
 let storeCache={}, storeCacheLoaded=false;
+let storeDetailsList=[], storeCoverageComputed=false, storeCoverageSyncedAt=null;
 let visibleCols=_loadVisibleCols();
 function _loadVisibleCols(){
   try{
@@ -442,6 +443,7 @@ function _onAuthReady(resp){
     showApp();
     if(!window._headersChecked){window._headersChecked=true;await ensureHeaders();}
     await Promise.all([loadData(),loadStoreDetails(),loadAnnouncements()]);
+    refreshStoreCoverage();
   })();
 }
 
@@ -638,6 +640,7 @@ async function refreshData(){
   btn.classList.add('spinning');
   storeCacheLoaded=false;
   await Promise.all([loadData(),loadStoreDetails()]);
+  refreshStoreCoverage();
   setTimeout(()=>btn.classList.remove('spinning'),500);
 }
 
@@ -1302,7 +1305,7 @@ function showView(v){
   currentPage=1;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   // Map view names to nav element ids
-  const navMap={home:'nav-dashboard',dashboard:'nav-dashboard',active:'nav-active',inactive:'nav-archive-parent',archive:'nav-archive-parent',tracker:'nav-tracker',log:'nav-log',analytics:'nav-analytics',settings:'nav-settings',calendar:'nav-calendar',recruitment:'nav-recruitment'};
+  const navMap={home:'nav-dashboard',dashboard:'nav-dashboard',active:'nav-active',inactive:'nav-archive-parent',archive:'nav-archive-parent',tracker:'nav-tracker',log:'nav-log',analytics:'nav-analytics',settings:'nav-settings',calendar:'nav-calendar',recruitment:'nav-recruitment',storelist:'nav-storelist'};
   const el=document.getElementById(navMap[v]||'nav-'+v);if(el)el.classList.add('active');
   renderSidebar();renderView();
 }
@@ -1338,6 +1341,7 @@ function renderView(){
   else if(currentView==='settings')renderSettingsPage();
   else if(currentView==='calendar')renderCalendarPage();
   else if(currentView==='recruitment')renderRecruitmentPage();
+  else if(currentView==='storelist')renderStoreListPage();
 
   // Activate any Lucide icons injected by page renderers
   if(typeof lucide !== 'undefined') lucide.createIcons();
