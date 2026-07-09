@@ -17,6 +17,7 @@
 //   #/log           → showView('log')
 //   #/analytics     → showView('analytics')   (future page-analytics.js)
 //   #/settings      → showView('settings')    (future page-settings.js)
+//   #/storelist     → showView('storelist')   (page-storelist.js)
 //   #/profile/:id   → openDetailPanel(id)
 //   (empty / unknown) → #/home
 // ============================================================
@@ -72,6 +73,10 @@ const Router = (() => {
     {
       pattern: /^\/archive$/,
       handler: () => _activateView('archive'),
+    },
+    {
+      pattern: /^\/storelist$/,
+      handler: () => _activateView('storelist'),
     },
     {
       pattern: /^\/archive\/(.+)$/,
