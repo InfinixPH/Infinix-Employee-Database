@@ -17,6 +17,13 @@ let slPageSize = 15;
 let slRegionSortCol = null;
 let slRegionSortDir = 1;
 
+// Sheet region values can be mixed-case ("North Luzon") while REGIONS (used
+// for the filter dropdown/summary) is upper-case ("NORTH LUZON"), so compare
+// case/whitespace-insensitively rather than with a strict === everywhere.
+function _regionEq(a, b){
+  return String(a||'').trim().toUpperCase() === String(b||'').trim().toUpperCase();
+}
+
 // Called from Home page drilldown links to jump straight into a filtered view.
 function goToStoreList(statusFilter){
   slStatusFilter = statusFilter || '';
@@ -132,7 +139,7 @@ function _renderRegionSummary(){
   if(!el) return;
 
   let rows = REGIONS.map(region=>{
-    const stores = storeDetailsList.filter(s=>s.region===region);
+    const stores = storeDetailsList.filter(s=>_regionEq(s.region, region));
     const total = stores.length;
     const withPromoter = stores.filter(s=>s.promoterStatus==='YES').length;
     const withoutPromoter = total - withPromoter;
@@ -166,7 +173,7 @@ function _renderRegionSummary(){
         </thead>
         <tbody>
           ${rows.map(r=>`
-            <tr class="${slRegionFilter===r.region?'sl-region-active':''}" onclick="_slFilterByRegion('${esc(r.region)}')">
+            <tr class="${_regionEq(slRegionFilter, r.region)?'sl-region-active':''}" onclick="_slFilterByRegion('${esc(r.region)}')">
               <td style="font-weight:700">${esc(r.region)}</td>
               <td>${r.total}</td>
               <td style="color:#2E7D32;font-weight:700">${r.withPromoter}</td>
@@ -198,7 +205,7 @@ function _slFilterByRegion(region){
 
 function _slFilteredList(){
   let list = storeDetailsList.slice();
-  if(slRegionFilter) list = list.filter(s=>s.region===slRegionFilter);
+  if(slRegionFilter) list = list.filter(s=>_regionEq(s.region, slRegionFilter));
   if(slStatusFilter) list = list.filter(s=>s.promoterStatus===slStatusFilter);
   const q = slSearchTerm.trim().toLowerCase();
   if(q) list = list.filter(s =>
