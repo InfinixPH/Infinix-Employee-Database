@@ -3063,3 +3063,13 @@ html, body {
 .tkt-store-row:hover .tkt-store-link {
   text-decoration: underline;
 }
+
+/* FIX: Store List columns shifted one position to the right */
+.sl-table tbody tr::before {
+  content: none !important;
+  display: none !important;
+}
+
+.sl-table tbody tr {
+  position: static;
+}
