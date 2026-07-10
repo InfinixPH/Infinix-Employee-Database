@@ -97,14 +97,21 @@ function _injectPhase3Charts() {
   const scanned = scannedList.length;
   const contracted = scannedList.filter(e => e.contractStatus === 'SENT').length;
 
-  // Region breakdown with deploy rate
+  // Region breakdown — compares official store counts vs. actual promoter
+  // coverage per region, using the same storeDetailsList data source as the
+  // Store List page (so numbers always agree between the two pages).
+  // "Deployed" can exceed "With Promoter" because a store can have more than
+  // one promoter assigned (promoterCount), while "With Promoter" just counts
+  // stores that have at least one.
   const RORDER = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
-  const regionData = RORDER.map(r => {
-    const reg = activeEmployees.filter(e => (e.region||'').toUpperCase().includes(r.split(' ')[0]) ||
-      (r === 'NCR' && (e.region||'').toUpperCase() === 'NCR'));
-    const dep = reg.filter(e => (e.deploymentStatus||'').toUpperCase().includes('DEPLOYED') && !(e.deploymentStatus||'').toUpperCase().includes('NOT')).length;
-    const pct = reg.length ? Math.round(dep / reg.length * 100) : 0;
-    return { region: r, total: reg.length, deployed: dep, pct };
+  const _hasStoreData = typeof storeDetailsList !== 'undefined' && storeDetailsList.length
+    && typeof _regionEq === 'function';
+  const regionData = !_hasStoreData ? [] : RORDER.map(r => {
+    const stores = storeDetailsList.filter(s => _regionEq(s.region, r));
+    const withPromoter = stores.filter(s => s.promoterStatus === 'YES').length;
+    const deployedCount = stores.reduce((sum, s) => sum + (s.promoterCount || 0), 0);
+    const pct = stores.length ? Math.round(withPromoter / stores.length * 100) : 0;
+    return { region: r, total: stores.length, withPromoter, deployed: deployedCount, pct };
   }).filter(r => r.total > 0).sort((a,b) => b.total - a.total);
 
   // ── Headcount trend (last 6 months) ──────────────────────────
@@ -209,23 +216,25 @@ function _injectPhase3Charts() {
     <div class="p3-card glass-card" style="margin-top:16px">
       <div class="p3-card-header" style="margin-bottom:12px">
         <span class="p3-card-title"><i class="fi fi-sr-marker"></i> Region Breakdown</span>
-        <span class="p3-card-sub">Deployment rate per region</span>
+        <span class="p3-card-sub">Stores vs. promoter coverage per region</span>
       </div>
-      <div class="rgn-grid">
+      <div class="rgn-grid rgn-grid-6col">
         <div class="rgn-head">
           <span class="rgn-c rgn-c-name">Region</span>
-          <span class="rgn-c rgn-c-num">Total</span>
+          <span class="rgn-c rgn-c-num">Stores</span>
+          <span class="rgn-c rgn-c-num">With Promoter</span>
           <span class="rgn-c rgn-c-num">Deployed</span>
-          <span class="rgn-c rgn-c-rate">Deploy Rate</span>
+          <span class="rgn-c rgn-c-rate">Coverage</span>
           <span class="rgn-c rgn-c-bar">Progress</span>
         </div>
         ${regionData.length===0
           ? `<div style="padding:20px;text-align:center;color:var(--text3);font-style:italic">No region data available</div>`
           : regionData.map(r=>`
-        <div class="rgn-row" title="${esc(r.region)} — ${r.deployed} deployed of ${r.total}">
+        <div class="rgn-row" title="${esc(r.region)} — ${r.total} stores, ${r.withPromoter} with a promoter, ${r.deployed} promoters deployed">
           <span class="rgn-c rgn-c-name" style="font-weight:600;color:var(--text)">${esc(r.region)}</span>
           <span class="rgn-c rgn-c-num"><strong>${r.total}</strong></span>
-          <span class="rgn-c rgn-c-num" style="color:#00E676;font-weight:700">${r.deployed}</span>
+          <span class="rgn-c rgn-c-num" style="color:#00E676;font-weight:700">${r.withPromoter}</span>
+          <span class="rgn-c rgn-c-num" style="color:#378ADD;font-weight:700">${r.deployed}</span>
           <span class="rgn-c rgn-c-rate">
             <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px;background:${r.pct>=70?'rgba(0,230,118,.15)':r.pct>=40?'rgba(255,215,64,.15)':'rgba(255,82,82,.15)'};color:${r.pct>=70?'#00E676':r.pct>=40?'#FFD740':'#FF5252'}">${r.pct}%</span>
           </span>
@@ -241,8 +250,9 @@ function _injectPhase3Charts() {
         <div class="rgn-row rgn-foot">
           <span class="rgn-c rgn-c-name"><strong>Total</strong></span>
           <span class="rgn-c rgn-c-num"><strong>${regionData.reduce((s,r)=>s+r.total,0)}</strong></span>
-          <span class="rgn-c rgn-c-num"><strong style="color:#00E676">${regionData.reduce((s,r)=>s+r.deployed,0)}</strong></span>
-          <span class="rgn-c rgn-c-rate"><strong>${regionData.reduce((s,r)=>s+r.total,0)?Math.round(regionData.reduce((s,r)=>s+r.deployed,0)/regionData.reduce((s,r)=>s+r.total,0)*100):0}%</strong></span>
+          <span class="rgn-c rgn-c-num"><strong style="color:#00E676">${regionData.reduce((s,r)=>s+r.withPromoter,0)}</strong></span>
+          <span class="rgn-c rgn-c-num"><strong style="color:#378ADD">${regionData.reduce((s,r)=>s+r.deployed,0)}</strong></span>
+          <span class="rgn-c rgn-c-rate"><strong>${regionData.reduce((s,r)=>s+r.total,0)?Math.round(regionData.reduce((s,r)=>s+r.withPromoter,0)/regionData.reduce((s,r)=>s+r.total,0)*100):0}%</strong></span>
           <span class="rgn-c rgn-c-bar"></span>
         </div>
       </div>
