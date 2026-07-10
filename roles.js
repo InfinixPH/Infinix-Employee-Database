@@ -330,9 +330,10 @@ async function loadStoreDetails(){
     const colMap=STORE_DETAILS_COL;
     storeCache={};
     storeDetailsList=[];
+    let _lastSeenRegion=''; // carries a region value down through merged-cell blank rows
     for(let i=1;i<rows.length;i++){
       const row       =rows[i]||[];
-      const region    =(row[colMap.region]||'').trim();
+      let region      =(row[colMap.region]||'').trim();
       const city      =(row[colMap.city]||'').trim();
       const rssName   =(row[colMap.rssName]||'').trim();
       const rssId     =(row[colMap.rssId]||'').trim();
@@ -341,6 +342,12 @@ async function loadStoreDetails(){
       const storeName =(row[colMap.storeName]||'').trim();
       const shopId    =(row[colMap.shopId]||'').trim();
       const storeType =(row[colMap.storeType]||'').trim();
+      // If Region is blank on a real store row, it's almost always because the
+      // Region column is merged vertically in the sheet for readability — the
+      // Sheets API only returns a value on the first row of a merged block and
+      // blank on every row after it. Forward-fill from the last real value.
+      if(region) _lastSeenRegion=region;
+      else if(shopId) region=_lastSeenRegion;
       if(shopId) storeCache[shopId.toUpperCase()]={storeName, rssName, rssId, region};
       if(!shopId) continue; // skip fully blank rows — they aren't real stores
       storeDetailsList.push({
