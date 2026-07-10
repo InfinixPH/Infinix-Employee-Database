@@ -21,7 +21,8 @@ let slRegionSortDir = 1;
 // for the filter dropdown/summary) is upper-case ("NORTH LUZON"), so compare
 // case/whitespace-insensitively rather than with a strict === everywhere.
 function _regionEq(a, b){
-  return String(a||'').trim().toUpperCase() === String(b||'').trim().toUpperCase();
+  const norm = v => String(v||'').trim().toUpperCase().replace(/\s+/g,' ');
+  return norm(a) === norm(b);
 }
 
 // Called from Home page drilldown links to jump straight into a filtered view.
