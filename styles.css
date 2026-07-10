@@ -2980,7 +2980,7 @@ html, body {
 .rgn-grid { width: 100%; }
 .rgn-head, .rgn-row {
   display: grid;
-  grid-template-columns: 1fr 80px 90px 110px 1fr;
+  grid-template-columns: 1fr 70px 100px 90px 110px 1fr;
   align-items: center;
   gap: 0;
 }
