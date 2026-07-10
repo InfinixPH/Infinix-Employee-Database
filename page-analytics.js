@@ -97,19 +97,19 @@ function _injectPhase3Charts() {
   const scanned = scannedList.length;
   const contracted = scannedList.filter(e => e.contractStatus === 'SENT').length;
 
-  // Region breakdown — compares official store counts vs. actual promoter
-  // coverage per region, using the same storeDetailsList data source as the
-  // Store List page (so numbers always agree between the two pages).
-  // "Deployed" can exceed "With Promoter" because a store can have more than
-  // one promoter assigned (promoterCount), while "With Promoter" just counts
-  // stores that have at least one.
+  // Region breakdown — Stores / With Promoter come from Store Details (the
+  // official store list). Deployed comes straight from the Active sheet's
+  // deploymentStatus per employee (same source as the "Deployed" KPI above),
+  // NOT from matching Store IDs against Store Details — the two sheets can
+  // be temporarily out of sync (e.g. Active sheet has pending edits), and
+  // we don't want that lag to hide people who are genuinely deployed.
   const RORDER = ['NCR','NORTH LUZON','CENTRAL LUZON','SOUTH LUZON','VISAYAS','MINDANAO'];
   const _hasStoreData = typeof storeDetailsList !== 'undefined' && storeDetailsList.length
     && typeof _regionEq === 'function';
   const regionData = !_hasStoreData ? [] : RORDER.map(r => {
     const stores = storeDetailsList.filter(s => _regionEq(s.region, r));
     const withPromoter = stores.filter(s => s.promoterStatus === 'YES').length;
-    const deployedCount = stores.reduce((sum, s) => sum + (s.promoterCount || 0), 0);
+    const deployedCount = deployedList.filter(e => e.region === r).length;
     const pct = stores.length ? Math.round(withPromoter / stores.length * 100) : 0;
     return { region: r, total: stores.length, withPromoter, deployed: deployedCount, pct };
   }).filter(r => r.total > 0).sort((a,b) => b.total - a.total);
