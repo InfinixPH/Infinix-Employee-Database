@@ -13,7 +13,7 @@ let slStatusFilter = ''; // '' | 'YES' | 'NO'
 let slSortCol = null;
 let slSortDir = 1;
 let slPage = 1;
-let slPageSize = 25;
+let slPageSize = 15;
 
 // Called from Home page drilldown links to jump straight into a filtered view.
 function goToStoreList(statusFilter){
@@ -200,13 +200,50 @@ function _renderStoreListTable(){
     </table>
   `;
 
-  if(pagEl){
-    pagEl.innerHTML = totalPages<=1 ? '' : `
-      <button class="page-btn" ${slPage<=1?'disabled':''} onclick="slPage--;_renderStoreListTable()">‹ Prev</button>
-      <span class="page-info">Page ${slPage} of ${totalPages}</span>
-      <button class="page-btn" ${slPage>=totalPages?'disabled':''} onclick="slPage++;_renderStoreListTable()">Next ›</button>
-    `;
+  _renderStoreListPagination(list.length, totalPages);
+}
+
+function _renderStoreListPagination(total, totalPages){
+  const pagEl = document.getElementById('sl-pagination');
+  if(!pagEl) return;
+  const start = total===0 ? 0 : (slPage-1)*slPageSize+1;
+  const end = Math.min(slPage*slPageSize, total);
+  let pages=[];
+  if(totalPages<=7){ for(let i=1;i<=totalPages;i++) pages.push(i); }
+  else{
+    pages=[1];
+    if(slPage>3) pages.push('...');
+    for(let i=Math.max(2,slPage-1); i<=Math.min(totalPages-1,slPage+1); i++) pages.push(i);
+    if(slPage<totalPages-2) pages.push('...');
+    pages.push(totalPages);
   }
+  pagEl.innerHTML = `
+    <div class="pagination-info">${total===0?'No records':`${start}–${end} of ${total}`}</div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <div class="pagination-controls">
+        <button class="page-btn" onclick="_slGoPage(1)" ${slPage===1?'disabled':''}>«</button>
+        <button class="page-btn" onclick="_slGoPage(${slPage-1})" ${slPage===1?'disabled':''}>‹</button>
+        ${pages.map(p=>p==='...'?`<span style="color:var(--text3);padding:0 4px;font-size:12px">…</span>`:`<button class="page-btn ${p===slPage?'active':''}" onclick="_slGoPage(${p})">${p}</button>`).join('')}
+        <button class="page-btn" onclick="_slGoPage(${slPage+1})" ${slPage===totalPages?'disabled':''}>›</button>
+        <button class="page-btn" onclick="_slGoPage(${totalPages})" ${slPage===totalPages?'disabled':''}>»</button>
+      </div>
+      <select class="page-size-sel" onchange="_slChangePageSize(parseInt(this.value))">
+        <option value="15" ${slPageSize===15?'selected':''}>15/page</option>
+        <option value="25" ${slPageSize===25?'selected':''}>25/page</option>
+        <option value="50" ${slPageSize===50?'selected':''}>50/page</option>
+        <option value="100" ${slPageSize===100?'selected':''}>100/page</option>
+      </select>
+    </div>`;
+}
+function _slGoPage(p){
+  const totalPages = Math.max(1, Math.ceil(_slFilteredList().length/slPageSize));
+  slPage = Math.max(1, Math.min(p, totalPages));
+  _renderStoreListTable();
+}
+function _slChangePageSize(s){
+  slPageSize = s;
+  slPage = 1;
+  _renderStoreListTable();
 }
 
 function _slKpiSkeleton(){
