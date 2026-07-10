@@ -14,6 +14,8 @@ let slSortCol = null;
 let slSortDir = 1;
 let slPage = 1;
 let slPageSize = 15;
+let slRegionSortCol = null;
+let slRegionSortDir = 1;
 
 // Called from Home page drilldown links to jump straight into a filtered view.
 function goToStoreList(statusFilter){
@@ -31,6 +33,13 @@ async function renderStoreListPage(){
   document.getElementById('content').innerHTML = `
     <div class="sl-wrap">
       <div id="sl-kpi-row" class="sl-kpi-row">${_slKpiSkeleton()}</div>
+
+      <div class="sl-section">
+        <div class="sl-section-header">
+          <div class="sl-section-title">By Region</div>
+        </div>
+        <div id="sl-region-summary"></div>
+      </div>
 
       <div class="sl-section">
         <div class="sl-section-header">
@@ -80,6 +89,7 @@ async function renderStoreListPage(){
   if(!storeCacheLoaded) await loadStoreDetails();
   if(!storeCoverageComputed) computeStoreCoverage();
   _renderKpiRow();
+  _renderRegionSummary();
   _renderStoreListTable();
 }
 
@@ -88,6 +98,7 @@ async function renderStoreListPage(){
 function refreshStoreListPageIfActive(){
   if(typeof currentView!=='undefined' && currentView==='storelist'){
     _renderKpiRow();
+    _renderRegionSummary();
     _renderStoreListTable();
   }
 }
@@ -114,6 +125,75 @@ function _renderKpiRow(){
       <div class="sl-kpi-label">Coverage</div>
     </div>
   `;
+}
+
+function _renderRegionSummary(){
+  const el = document.getElementById('sl-region-summary');
+  if(!el) return;
+
+  let rows = REGIONS.map(region=>{
+    const stores = storeDetailsList.filter(s=>s.region===region);
+    const total = stores.length;
+    const withPromoter = stores.filter(s=>s.promoterStatus==='YES').length;
+    const withoutPromoter = total - withPromoter;
+    const pct = total ? Math.round((withPromoter/total)*100) : 0;
+    return { region, total, withPromoter, withoutPromoter, pct };
+  });
+
+  if(slRegionSortCol){
+    rows.sort((a,b)=>{
+      const av = a[slRegionSortCol], bv = b[slRegionSortCol];
+      if(typeof av === 'string') return av.localeCompare(bv)*slRegionSortDir;
+      return (av-bv)*slRegionSortDir;
+    });
+  }
+
+  const arrow = c => slRegionSortCol===c ? (slRegionSortDir===1?' ▲':' ▼') : '';
+  el.innerHTML = `
+    <div class="sl-table-wrap">
+      <table class="sl-table sl-region-table">
+        <colgroup>
+          <col style="width:28%"><col style="width:18%"><col style="width:18%"><col style="width:18%"><col style="width:18%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th onclick="_slRegionSortBy('region')">Region${arrow('region')}</th>
+            <th onclick="_slRegionSortBy('total')">Total Stores${arrow('total')}</th>
+            <th onclick="_slRegionSortBy('withPromoter')">With Promoter${arrow('withPromoter')}</th>
+            <th onclick="_slRegionSortBy('withoutPromoter')">Without Promoter${arrow('withoutPromoter')}</th>
+            <th onclick="_slRegionSortBy('pct')">Coverage${arrow('pct')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr class="${slRegionFilter===r.region?'sl-region-active':''}" onclick="_slFilterByRegion('${esc(r.region)}')">
+              <td style="font-weight:700">${esc(r.region)}</td>
+              <td>${r.total}</td>
+              <td style="color:#2E7D32;font-weight:700">${r.withPromoter}</td>
+              <td style="color:#C62828;font-weight:700">${r.withoutPromoter}</td>
+              <td>${r.pct}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function _slRegionSortBy(col){
+  if(slRegionSortCol===col) slRegionSortDir*=-1; else { slRegionSortCol=col; slRegionSortDir=1; }
+  _renderRegionSummary();
+}
+
+function _slFilterByRegion(region){
+  slRegionFilter = (slRegionFilter===region) ? '' : region;
+  const sel = document.getElementById('sl-region-filter');
+  if(sel) sel.value = slRegionFilter;
+  slPage = 1;
+  _renderRegionSummary();
+  _renderStoreListTable();
+  const stores = document.getElementById('sl-table-wrap');
+  if(stores) stores.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 function _slFilteredList(){
@@ -165,13 +245,13 @@ function _renderStoreListTable(){
   wrap.innerHTML = `
     <table class="sl-table">
       <colgroup>
-        <col style="width:10%">
-        <col style="width:26%">
-        <col style="width:11%">
-        <col style="width:10%">
-        <col style="width:15%">
-        <col style="width:16%">
         <col style="width:8%">
+        <col style="width:29%">
+        <col style="width:10%">
+        <col style="width:9%">
+        <col style="width:20%">
+        <col style="width:15%">
+        <col style="width:9%">
       </colgroup>
       <thead>
         <tr>
@@ -188,10 +268,10 @@ function _renderStoreListTable(){
         ${pageItems.map(s=>`
           <tr>
             <td>${esc(s.region||'—')}</td>
-            <td style="font-weight:600">${esc(s.storeName||'—')}</td>
+            <td style="font-weight:600" title="${esc(s.storeName||'')}">${esc(s.storeName||'—')}</td>
             <td style="color:var(--text2);font-size:11px">${esc(s.shopId||'—')}</td>
             <td>${esc(s.storeType||'—')}</td>
-            <td>${esc(s.rssName||'—')}</td>
+            <td title="${esc(s.rssName||'')}">${esc(s.rssName||'—')}</td>
             <td><span class="sl-badge ${s.promoterStatus==='YES'?'sl-badge-yes':'sl-badge-no'}">${s.promoterStatus||'NO'}</span></td>
             <td>${s.promoterCount||0}</td>
           </tr>
@@ -279,11 +359,15 @@ function _injectStoreListStyles(){
     .sl-search-input:focus, .sl-filter-select:focus { border-color:var(--accent); }
 
     .sl-table-wrap { overflow-x:auto; }
-    .sl-table { width:100%; min-width:820px; table-layout:fixed; border-collapse:collapse; font-size:12.5px; }
-    .sl-table th { text-align:left; padding:10px 12px; color:var(--text2); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sl-table { width:100%; min-width:820px; table-layout:fixed; border-collapse:collapse; font-size:12px; }
+    .sl-table th { text-align:left; padding:9px 10px; color:var(--text2); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sl-table th:hover { color:var(--accent); }
-    .sl-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sl-table td { padding:9px 10px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sl-table tbody tr:hover { background:var(--bg-card-hover); }
+
+    .sl-region-table tbody tr { cursor:pointer; }
+    .sl-region-table tbody tr.sl-region-active { background:rgba(10,138,133,.12); }
+    .sl-region-table tbody tr.sl-region-active td:first-child { color:var(--accent); }
 
     .sl-badge { display:inline-block; padding:3px 9px; border-radius:20px; font-size:10.5px; font-weight:800; letter-spacing:.3px; }
     .sl-badge-yes { background:rgba(46,125,50,.15); color:#2E7D32; }
