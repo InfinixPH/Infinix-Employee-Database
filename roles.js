@@ -317,17 +317,37 @@ function initRole(){
 // against the sheet: A=Region, B=City, C=Responsible RSS, D=RSS User ID,
 // E=Mall Name/Location, F=Dealer Name, G=DCR Name/Store Name, H=Shop ID,
 // I=Store Type, J=Promoter Status, K=Promoter Count.
-const STORE_DETAILS_COL = {
+const STORE_DETAILS_COL_BASE = {
   region: 0, city: 1, rssName: 2, rssId: 3, mallName: 4,
   dealerName: 5, storeName: 6, shopId: 7, storeType: 8,
 };
+// Self-correcting: reads the ACTUAL header row from the live sheet every
+// time and finds which column literally contains the word "region". If
+// it's not exactly where STORE_DETAILS_COL_BASE assumes (column A), every
+// field gets shifted by that same offset automatically. This makes the
+// mapping immune to the live sheet having an extra column, a shifted
+// layout, or anything else different from what we assumed — it re-detects
+// itself on every load instead of trusting a hardcoded guess.
+function _resolveStoreDetailsColumns(headerRow){
+  const norm = (headerRow||[]).map(h=>String(h||'').trim().toLowerCase());
+  const foundRegionAt = norm.findIndex(h=>h.includes('region'));
+  const offset = foundRegionAt===-1 ? 0 : (foundRegionAt - STORE_DETAILS_COL_BASE.region);
+  if(offset!==0){
+    console.warn('[Store Details] Header row did not match the expected layout — auto-correcting by shifting columns by', offset, '. Header row read was:', headerRow);
+  } else {
+    console.log('[Store Details] Header row matched expected layout. Header row read was:', headerRow);
+  }
+  const shifted={};
+  Object.keys(STORE_DETAILS_COL_BASE).forEach(k=>{ shifted[k]=STORE_DETAILS_COL_BASE[k]+offset; });
+  return shifted;
+}
 
 async function loadStoreDetails(){
   if(storeCacheLoaded)return;
   try{
     const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${STORE_DETAILS_SHEET}!A:K`});
     const rows=r.result.values||[];
-    const colMap=STORE_DETAILS_COL;
+    const colMap=_resolveStoreDetailsColumns(rows[0]);
     storeCache={};
     storeDetailsList=[];
     let _lastSeenRegion=''; // carries a region value down through merged-cell blank rows
